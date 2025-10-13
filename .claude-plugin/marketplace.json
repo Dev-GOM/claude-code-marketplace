@@ -12,7 +12,14 @@
       "version": "1.0.0",
       "author": {
         "name": "Developer Utilities"
-      }
+      },
+      "category": "productivity",
+      "homepage": "https://github.com/Dev-GOM/claude-code-marketplace",
+      "keywords": [
+        "git",
+        "backup",
+        "automation"
+      ]
     },
     {
       "name": "todo-collector",
@@ -21,7 +28,15 @@
       "version": "1.0.0",
       "author": {
         "name": "Developer Utilities"
-      }
+      },
+      "category": "productivity",
+      "homepage": "https://github.com/Dev-GOM/claude-code-marketplace",
+      "keywords": [
+        "todo",
+        "fixme",
+        "comments",
+        "tracking"
+      ]
     },
     {
       "name": "complexity-monitor",
@@ -30,7 +45,15 @@
       "version": "1.0.0",
       "author": {
         "name": "Developer Utilities"
-      }
+      },
+      "category": "code-quality",
+      "homepage": "https://github.com/Dev-GOM/claude-code-marketplace",
+      "keywords": [
+        "complexity",
+        "quality",
+        "monitoring",
+        "refactoring"
+      ]
     },
     {
       "name": "auto-docs",
@@ -39,7 +62,15 @@
       "version": "1.0.0",
       "author": {
         "name": "Developer Utilities"
-      }
+      },
+      "category": "documentation",
+      "homepage": "https://github.com/Dev-GOM/claude-code-marketplace",
+      "keywords": [
+        "documentation",
+        "automation",
+        "changelog",
+        "readme"
+      ]
     }
   ]
 }
