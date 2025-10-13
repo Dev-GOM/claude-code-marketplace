@@ -76,7 +76,16 @@ Automatically updates project documentation based on code changes.
    /plugin install hook-auto-docs@dev-gom-plugins
    ```
 
-3. Check plugin installation:
+3. Restart Claude Code to load the plugins:
+   ```bash
+   claude
+   # or
+   claude -r  # Resume last session
+   # or
+   claude -c  # Continue in current directory
+   ```
+
+4. Check plugin installation:
    ```bash
    /plugin
    ```
