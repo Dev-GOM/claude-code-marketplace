@@ -3,9 +3,10 @@
   "version": "1.0.0",
   "description": "Automatically update project documentation based on code changes",
   "author": {
-    "name": "Developer Utilities"
+    "name": "Dev GOM"
   },
-  "category": "documentation",
+  "category": "hooks",
+  "homepage": "https://github.com/Dev-GOM/claude-code-marketplace",
   "keywords": [
     "documentation",
     "automation",

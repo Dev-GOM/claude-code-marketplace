@@ -1,8 +1,7 @@
 {
   "name": "developer-utilities",
   "owner": {
-    "name": "Developer Utilities",
-    "email": "dev@example.com"
+    "name": "Dev GOM"
   },
   "plugins": [
     {
@@ -11,9 +10,9 @@
       "description": "Automatically backup your work with git commits after each Claude session",
       "version": "1.0.0",
       "author": {
-        "name": "Developer Utilities"
+        "name": "Dev GOM"
       },
-      "category": "productivity",
+      "category": "hooks",
       "homepage": "https://github.com/Dev-GOM/claude-code-marketplace",
       "keywords": [
         "git",
@@ -27,9 +26,9 @@
       "description": "Collect all TODO and FIXME comments from your project",
       "version": "1.0.0",
       "author": {
-        "name": "Developer Utilities"
+        "name": "Dev GOM"
       },
-      "category": "productivity",
+      "category": "hooks",
       "homepage": "https://github.com/Dev-GOM/claude-code-marketplace",
       "keywords": [
         "todo",
@@ -44,9 +43,9 @@
       "description": "Monitor code complexity and maintain code quality",
       "version": "1.0.0",
       "author": {
-        "name": "Developer Utilities"
+        "name": "Dev GOM"
       },
-      "category": "code-quality",
+      "category": "hooks",
       "homepage": "https://github.com/Dev-GOM/claude-code-marketplace",
       "keywords": [
         "complexity",
@@ -61,9 +60,9 @@
       "description": "Automatically update project documentation based on code changes",
       "version": "1.0.0",
       "author": {
-        "name": "Developer Utilities"
+        "name": "Dev GOM"
       },
-      "category": "documentation",
+      "category": "hooks",
       "homepage": "https://github.com/Dev-GOM/claude-code-marketplace",
       "keywords": [
         "documentation",

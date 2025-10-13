@@ -3,10 +3,12 @@
   "version": "1.0.0",
   "description": "Collect all TODO and FIXME comments from your project",
   "author": {
-    "name": "Developer Utilities"
+    "name": "Dev GOM"
   },
-  "category": "productivity",
+  "category": "hooks",
+  "homepage": "https://github.com/Dev-GOM/claude-code-marketplace",
   "keywords": [
+    "productivity",
     "todo",
     "fixme",
     "comments",

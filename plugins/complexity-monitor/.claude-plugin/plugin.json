@@ -3,10 +3,12 @@
   "version": "1.0.0",
   "description": "Monitor code complexity and maintain code quality",
   "author": {
-    "name": "Developer Utilities"
+    "name": "Dev GOM"
   },
-  "category": "code-quality",
+  "category": "hooks",
+  "homepage": "https://github.com/Dev-GOM/claude-code-marketplace",
   "keywords": [
+    "code-quality",
     "complexity",
     "quality",
     "monitoring",
