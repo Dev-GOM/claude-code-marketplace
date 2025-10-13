@@ -206,11 +206,15 @@ function main() {
   const changedFiles = getChangedFiles();
 
   if (changedFiles.length === 0) {
-    console.log('[Complexity Monitor] No code files to analyze.');
+    const result = {
+      systemMessage: '✓ Complexity Monitor: No code files to analyze',
+      continue: true
+    };
+    console.log(JSON.stringify(result));
     return;
   }
 
-  console.log(`[Complexity Monitor] Analyzing ${changedFiles.length} file(s)...`);
+  console.error(`[Complexity Monitor] Analyzing ${changedFiles.length} file(s)...`);
 
   let totalIssues = 0;
   const results = [];
@@ -224,23 +228,27 @@ function main() {
   });
 
   if (totalIssues === 0) {
-    console.log('[Complexity Monitor] ✓ No complexity issues found.');
+    const result = {
+      systemMessage: '✓ Complexity Monitor: No complexity issues found',
+      continue: true
+    };
+    console.log(JSON.stringify(result));
     return;
   }
 
-  // Log issues
-  console.log(`[Complexity Monitor] ⚠ Found ${totalIssues} complexity issue(s):\n`);
+  // Log issues to stderr
+  console.error(`[Complexity Monitor] ⚠ Found ${totalIssues} complexity issue(s):\n`);
 
   results.forEach(({ filePath, analysis }) => {
     const relPath = path.relative(projectRoot, filePath);
-    console.log(`File: ${relPath}`);
+    console.error(`File: ${relPath}`);
 
     analysis.issues.forEach(issue => {
       const icon = issue.severity === 'warning' ? '⚠' : 'ℹ';
       const location = issue.line > 0 ? `:${issue.line}` : '';
-      console.log(`  ${icon} ${issue.message}`);
+      console.error(`  ${icon} ${issue.message}`);
     });
-    console.log('');
+    console.error('');
   });
 
   // Append to log file
@@ -255,7 +263,25 @@ function main() {
   const logPath = path.join(projectRoot, '.complexity-log.txt');
   fs.appendFileSync(logPath, logEntry, 'utf8');
 
-  console.log('[Complexity Monitor] Log appended to: .complexity-log.txt');
+  console.error('[Complexity Monitor] Log appended to: .complexity-log.txt');
+
+  // Count warnings vs info
+  let warnings = 0;
+  let infos = 0;
+  results.forEach(({ analysis }) => {
+    analysis.issues.forEach(issue => {
+      if (issue.severity === 'warning') warnings++;
+      else infos++;
+    });
+  });
+
+  // Output JSON for Claude Code
+  const message = `⚠️ Complexity Monitor found ${totalIssues} issue(s) in ${results.length} file(s) (${warnings} warnings, ${infos} info). Check .complexity-log.txt`;
+  const result = {
+    systemMessage: message,
+    continue: true
+  };
+  console.log(JSON.stringify(result));
 }
 
 main();

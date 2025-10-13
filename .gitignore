@@ -1,0 +1,19 @@
+# Plugin-generated files
+.todos-report.md
+.todos.txt
+.complexity-log.txt
+.docs-summary.md
+CHANGELOG.md
+
+# Node modules
+node_modules/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+/test
+/.claude
