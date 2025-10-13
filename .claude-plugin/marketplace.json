@@ -10,28 +10,36 @@
       "source": "./plugins/git-auto-backup",
       "description": "Automatically backup your work with git commits after each Claude session",
       "version": "1.0.0",
-      "author": "Developer Utilities"
+      "author": {
+        "name": "Developer Utilities"
+      }
     },
     {
       "name": "todo-collector",
       "source": "./plugins/todo-collector",
       "description": "Collect all TODO and FIXME comments from your project",
       "version": "1.0.0",
-      "author": "Developer Utilities"
+      "author": {
+        "name": "Developer Utilities"
+      }
     },
     {
       "name": "complexity-monitor",
       "source": "./plugins/complexity-monitor",
       "description": "Monitor code complexity and maintain code quality",
       "version": "1.0.0",
-      "author": "Developer Utilities"
+      "author": {
+        "name": "Developer Utilities"
+      }
     },
     {
       "name": "auto-docs",
       "source": "./plugins/auto-docs",
       "description": "Automatically update project documentation based on code changes",
       "version": "1.0.0",
-      "author": "Developer Utilities"
+      "author": {
+        "name": "Developer Utilities"
+      }
     }
   ]
 }
