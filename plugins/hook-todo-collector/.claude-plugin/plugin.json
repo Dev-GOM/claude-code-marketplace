@@ -8,7 +8,7 @@
   },
   "category": "hooks",
   "homepage": "https://github.com/Dev-GOM/claude-code-marketplace",
-  "repository": "https://github.com/Dev-GOM/claude-code-marketplace",
+  "repository": "https://github.com/Dev-GOM/claude-code-marketplace.git",
   "license": "MIT",
   "keywords": [
     "productivity",
