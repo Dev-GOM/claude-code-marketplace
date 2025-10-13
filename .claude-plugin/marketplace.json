@@ -3,6 +3,11 @@
   "owner": {
     "name": "Dev GOM"
   },
+  "metadata": {
+    "description": "Productivity plugins for Claude Code to automate development workflows",
+    "version": "1.0.0",
+    "homepage": "https://github.com/Dev-GOM/claude-code-marketplace"
+  },
   "plugins": [
     {
       "name": "hook-git-auto-backup",
