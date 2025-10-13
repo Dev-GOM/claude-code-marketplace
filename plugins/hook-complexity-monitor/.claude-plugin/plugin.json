@@ -8,6 +8,8 @@
   },
   "category": "hooks",
   "homepage": "https://github.com/Dev-GOM/claude-code-marketplace",
+  "repository": "https://github.com/Dev-GOM/claude-code-marketplace",
+  "license": "MIT",
   "keywords": [
     "code-quality",
     "complexity",
@@ -16,10 +18,17 @@
     "refactoring"
   ],
   "hooks": {
-    "postToolUse": {
-      "toolPattern": "(Edit|Write)",
-      "command": "node ${CLAUDE_PLUGIN_ROOT}/check-complexity.js",
-      "timeout": 10000
-    }
+    "PostToolUse": [
+      {
+        "matcher": "(Edit|Write)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/check-complexity.js",
+            "timeout": 10000
+          }
+        ]
+      }
+    ]
   }
 }

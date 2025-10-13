@@ -8,6 +8,8 @@
   },
   "category": "hooks",
   "homepage": "https://github.com/Dev-GOM/claude-code-marketplace",
+  "repository": "https://github.com/Dev-GOM/claude-code-marketplace",
+  "license": "MIT",
   "keywords": [
     "documentation",
     "automation",
@@ -15,9 +17,16 @@
     "readme"
   ],
   "hooks": {
-    "stop": {
-      "command": "node ${CLAUDE_PLUGIN_ROOT}/update-docs.js",
-      "timeout": 15000
-    }
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/update-docs.js",
+            "timeout": 15000
+          }
+        ]
+      }
+    ]
   }
 }

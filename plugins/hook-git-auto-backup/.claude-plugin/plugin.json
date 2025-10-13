@@ -8,6 +8,8 @@
   },
   "category": "hooks",
   "homepage": "https://github.com/Dev-GOM/claude-code-marketplace",
+  "repository": "https://github.com/Dev-GOM/claude-code-marketplace",
+  "license": "MIT",
   "keywords": [
     "productivity",
     "git",
@@ -15,9 +17,16 @@
     "automation"
   ],
   "hooks": {
-    "stop": {
-      "command": "node ${CLAUDE_PLUGIN_ROOT}/backup.js",
-      "timeout": 10000
-    }
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/backup.js",
+            "timeout": 10000
+          }
+        ]
+      }
+    ]
   }
 }

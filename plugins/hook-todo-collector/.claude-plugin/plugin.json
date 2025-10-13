@@ -8,6 +8,8 @@
   },
   "category": "hooks",
   "homepage": "https://github.com/Dev-GOM/claude-code-marketplace",
+  "repository": "https://github.com/Dev-GOM/claude-code-marketplace",
+  "license": "MIT",
   "keywords": [
     "productivity",
     "todo",
@@ -16,9 +18,16 @@
     "tracking"
   ],
   "hooks": {
-    "stop": {
-      "command": "node ${CLAUDE_PLUGIN_ROOT}/collect-todos.js",
-      "timeout": 15000
-    }
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/collect-todos.js",
+            "timeout": 15000
+          }
+        ]
+      }
+    ]
   }
 }
