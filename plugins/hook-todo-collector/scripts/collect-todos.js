@@ -98,6 +98,13 @@ function findTodosInFile(filePath) {
     const usesHashComments = hashCommentExtensions.includes(ext) || hashCommentFiles.includes(fileName);
 
     lines.forEach((line, index) => {
+      const trimmedLine = line.trim();
+
+      // Skip markdown headers (lines starting with #)
+      if ((ext === '.md' || ext === '.txt') && trimmedLine.startsWith('#')) {
+        return;
+      }
+
       // Apply common patterns (JS, CSS, HTML comments)
       TODO_PATTERNS.forEach(pattern => {
         const matches = [...line.matchAll(pattern)];
