@@ -1,0 +1,21 @@
+{
+  "name": "todo-collector",
+  "version": "1.0.0",
+  "description": "Collect all TODO and FIXME comments from your project",
+  "author": {
+    "name": "Developer Utilities"
+  },
+  "category": "productivity",
+  "keywords": [
+    "todo",
+    "fixme",
+    "comments",
+    "tracking"
+  ],
+  "hooks": {
+    "stop": {
+      "command": "node ${CLAUDE_PLUGIN_ROOT}/collect-todos.js",
+      "timeout": 15000
+    }
+  }
+}

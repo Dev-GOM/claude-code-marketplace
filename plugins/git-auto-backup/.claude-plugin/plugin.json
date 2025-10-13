@@ -1,0 +1,20 @@
+{
+  "name": "git-auto-backup",
+  "version": "1.0.0",
+  "description": "Automatically backup your work with git commits after each Claude session",
+  "author": {
+    "name": "Developer Utilities"
+  },
+  "category": "productivity",
+  "keywords": [
+    "git",
+    "backup",
+    "automation"
+  ],
+  "hooks": {
+    "stop": {
+      "command": "node ${CLAUDE_PLUGIN_ROOT}/backup.js",
+      "timeout": 10000
+    }
+  }
+}

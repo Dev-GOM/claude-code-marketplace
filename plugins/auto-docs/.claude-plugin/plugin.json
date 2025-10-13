@@ -1,0 +1,21 @@
+{
+  "name": "auto-docs",
+  "version": "1.0.0",
+  "description": "Automatically update project documentation based on code changes",
+  "author": {
+    "name": "Developer Utilities"
+  },
+  "category": "documentation",
+  "keywords": [
+    "documentation",
+    "automation",
+    "changelog",
+    "readme"
+  ],
+  "hooks": {
+    "stop": {
+      "command": "node ${CLAUDE_PLUGIN_ROOT}/update-docs.js",
+      "timeout": 15000
+    }
+  }
+}

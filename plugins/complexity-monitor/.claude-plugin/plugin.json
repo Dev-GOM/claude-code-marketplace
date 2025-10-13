@@ -1,0 +1,22 @@
+{
+  "name": "complexity-monitor",
+  "version": "1.0.0",
+  "description": "Monitor code complexity and maintain code quality",
+  "author": {
+    "name": "Developer Utilities"
+  },
+  "category": "code-quality",
+  "keywords": [
+    "complexity",
+    "quality",
+    "monitoring",
+    "refactoring"
+  ],
+  "hooks": {
+    "postToolUse": {
+      "toolPattern": "(Edit|Write)",
+      "command": "node ${CLAUDE_PLUGIN_ROOT}/check-complexity.js",
+      "timeout": 10000
+    }
+  }
+}
