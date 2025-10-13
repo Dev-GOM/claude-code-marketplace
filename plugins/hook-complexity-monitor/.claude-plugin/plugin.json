@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "Monitor code complexity and maintain code quality",
   "author": {
-    "name": "Dev GOM"
+    "name": "Dev GOM",
+    "url": "https://github.com/Dev-GOM/claude-code-marketplace"
   },
   "category": "hooks",
   "homepage": "https://github.com/Dev-GOM/claude-code-marketplace",

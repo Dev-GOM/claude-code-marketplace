@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "Automatically backup your work with git commits after each Claude session",
   "author": {
-    "name": "Dev GOM"
+    "name": "Dev GOM",
+    "url": "https://github.com/Dev-GOM/claude-code-marketplace"
   },
   "category": "hooks",
   "homepage": "https://github.com/Dev-GOM/claude-code-marketplace",
