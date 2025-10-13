@@ -70,10 +70,10 @@ Claude Code 세션이 끝날 때마다 자동으로 git 커밋을 생성하여 �
 
 2. 플러그인 설치:
    ```bash
-   /plugin install git-auto-backup@dev-gom-plugins
-   /plugin install todo-collector@dev-gom-plugins
-   /plugin install complexity-monitor@dev-gom-plugins
-   /plugin install auto-docs@dev-gom-plugins
+   /plugin install hook-git-auto-backup@dev-gom-plugins
+   /plugin install hook-todo-collector@dev-gom-plugins
+   /plugin install hook-complexity-monitor@dev-gom-plugins
+   /plugin install hook-auto-docs@dev-gom-plugins
    ```
 
 3. 플러그인 설치 확인:
@@ -128,7 +128,7 @@ const TODO_PATTERNS = [
 ### 특정 플러그인 비활성화
 
 ```bash
-/plugin uninstall git-auto-backup@dev-gom-plugins
+/plugin uninstall hook-git-auto-backup@dev-gom-plugins
 ```
 
 ## 출력 파일

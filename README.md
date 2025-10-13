@@ -70,10 +70,10 @@ Automatically updates project documentation based on code changes.
 
 2. Install plugins:
    ```bash
-   /plugin install git-auto-backup@dev-gom-plugins
-   /plugin install todo-collector@dev-gom-plugins
-   /plugin install complexity-monitor@dev-gom-plugins
-   /plugin install auto-docs@dev-gom-plugins
+   /plugin install hook-git-auto-backup@dev-gom-plugins
+   /plugin install hook-todo-collector@dev-gom-plugins
+   /plugin install hook-complexity-monitor@dev-gom-plugins
+   /plugin install hook-auto-docs@dev-gom-plugins
    ```
 
 3. Check plugin installation:
@@ -128,7 +128,7 @@ const TODO_PATTERNS = [
 ### Disable Specific Plugins
 
 ```bash
-/plugin uninstall git-auto-backup@dev-gom-plugins
+/plugin uninstall hook-git-auto-backup@dev-gom-plugins
 ```
 
 ## Output Files
