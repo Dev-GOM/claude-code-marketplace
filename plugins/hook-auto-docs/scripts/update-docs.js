@@ -243,70 +243,48 @@ function generateDocsSummary() {
 }
 
 function main() {
-  console.error('[Auto-Docs] Checking for documentation updates...');
+  console.log('[Auto-Docs] Checking for documentation updates...');
 
   const changes = getRecentChanges();
 
   if (!changes || changes.changedFiles.length === 0) {
-    const result = {
-      systemMessage: '✓ Auto-Docs: No recent changes detected',
-      continue: true
-    };
-    console.log(JSON.stringify(result));
+    console.log('[Auto-Docs] No recent changes detected.');
     return;
   }
 
-  const updatedFiles = [];
-  let hadErrors = false;
+  let updated = false;
 
   // Update README
   try {
     if (updateReadme()) {
-      console.error('[Auto-Docs] ✓ README.md updated');
-      updatedFiles.push('README.md');
+      console.log('[Auto-Docs] ✓ README.md updated');
+      updated = true;
     }
   } catch (error) {
-    console.error('[Auto-Docs] Could not update README.md');
-    hadErrors = true;
+    console.log('[Auto-Docs] Could not update README.md');
   }
 
   // Update CHANGELOG
   try {
     if (updateChangelog(changes)) {
-      console.error('[Auto-Docs] ✓ CHANGELOG.md updated');
-      updatedFiles.push('CHANGELOG.md');
+      console.log('[Auto-Docs] ✓ CHANGELOG.md updated');
+      updated = true;
     }
   } catch (error) {
-    console.error('[Auto-Docs] Could not update CHANGELOG.md');
-    hadErrors = true;
+    console.log('[Auto-Docs] Could not update CHANGELOG.md');
   }
 
   // Generate summary
   try {
     generateDocsSummary();
-    console.error('[Auto-Docs] ✓ Documentation summary generated');
-    updatedFiles.push('.docs-summary.md');
+    console.log('[Auto-Docs] ✓ Documentation summary generated');
   } catch (error) {
-    console.error('[Auto-Docs] Could not generate documentation summary');
-    hadErrors = true;
+    console.log('[Auto-Docs] Could not generate documentation summary');
   }
 
-  // Output JSON for Claude Code
-  let message = '';
-  if (updatedFiles.length > 0) {
-    message = `📝 Auto-Docs updated: ${updatedFiles.join(', ')}`;
-    if (hadErrors) {
-      message += ' (some errors occurred)';
-    }
-  } else {
-    message = '⚠️ Auto-Docs: Could not update documentation files';
+  if (updated) {
+    console.log('[Auto-Docs] Documentation files have been updated.');
   }
-
-  const result = {
-    systemMessage: message,
-    continue: true
-  };
-  console.log(JSON.stringify(result));
 }
 
 main();

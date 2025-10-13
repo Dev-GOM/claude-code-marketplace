@@ -35,23 +35,15 @@ function hasChanges() {
 
 // Main backup function
 function backup() {
-  console.error('[Git Auto-Backup] Checking for changes...');
+  console.log('[Git Auto-Backup] Checking for changes...');
 
   if (!isGitRepo()) {
-    const result = {
-      systemMessage: 'ℹ️ Git Auto-Backup: Not a git repository, skipping backup',
-      continue: true
-    };
-    console.log(JSON.stringify(result));
+    console.log('[Git Auto-Backup] Not a git repository. Skipping backup.');
     return;
   }
 
   if (!hasChanges()) {
-    const result = {
-      systemMessage: '✓ Git Auto-Backup: No changes to commit',
-      continue: true
-    };
-    console.log(JSON.stringify(result));
+    console.log('[Git Auto-Backup] No changes to commit.');
     return;
   }
 
@@ -61,7 +53,7 @@ function backup() {
 
     // Add all changes
     execSync('git add -A', { cwd: projectRoot, stdio: 'pipe' });
-    console.error('[Git Auto-Backup] Added all changes.');
+    console.log('[Git Auto-Backup] Added all changes.');
 
     // Create commit
     const commitMessage = `Auto-backup: ${timestamp}
@@ -73,31 +65,18 @@ function backup() {
       stdio: 'pipe'
     });
 
-    // Get commit hash
+    console.log(`[Git Auto-Backup] ✓ Backup committed successfully at ${timestamp}`);
+
+    // Optional: Show commit hash
     const commitHash = execSync('git rev-parse --short HEAD', {
       encoding: 'utf8',
       cwd: projectRoot
     }).trim();
-
-    console.error(`[Git Auto-Backup] ✓ Backup committed successfully at ${timestamp}`);
-    console.error(`[Git Auto-Backup] Commit hash: ${commitHash}`);
-
-    // Output JSON for Claude Code
-    const result = {
-      systemMessage: `✓ Git Auto-Backup: Changes committed successfully (${commitHash})`,
-      continue: true
-    };
-    console.log(JSON.stringify(result));
+    console.log(`[Git Auto-Backup] Commit hash: ${commitHash}`);
 
   } catch (error) {
     console.error('[Git Auto-Backup] Error during backup:', error.message);
-
-    // Output error to Claude Code
-    const result = {
-      systemMessage: `⚠️ Git Auto-Backup failed: ${error.message}`,
-      continue: true
-    };
-    console.log(JSON.stringify(result));
+    // Don't throw - we don't want to interrupt Claude's workflow
   }
 }
 
