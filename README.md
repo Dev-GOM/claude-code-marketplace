@@ -61,37 +61,33 @@ Automatically updates project documentation based on code changes.
 
 ## Installation
 
-### Method 1: Local Installation (Recommended for Development)
+### Quick Start (Recommended)
 
-1. Copy the `.claude-plugin` directory to your project root:
+1. Add the marketplace in Claude Code:
    ```bash
-   # From your project directory
-   cp -r /path/to/this/.claude-plugin ./
+   /plugin marketplace add https://github.com/Dev-GOM/claude-code-marketplace.git
    ```
 
-2. Install the marketplace in Claude Code:
+2. Install plugins:
    ```bash
-   # In Claude Code
-   /plugin marketplace add developer-utilities ./.claude-plugin/marketplace.json
+   /plugin install git-auto-backup@dev-gom-plugins
+   /plugin install todo-collector@dev-gom-plugins
+   /plugin install complexity-monitor@dev-gom-plugins
+   /plugin install auto-docs@dev-gom-plugins
    ```
 
-3. Install individual plugins:
+3. Check plugin installation:
    ```bash
-   /plugin install git-auto-backup@developer-utilities
-   /plugin install todo-collector@developer-utilities
-   /plugin install complexity-monitor@developer-utilities
-   /plugin install auto-docs@developer-utilities
+   /plugin
    ```
 
-### Method 2: GitHub Installation
+### Local Installation (For Development)
 
-1. Push this repository to GitHub
-
-2. Add the marketplace:
+1. Clone this repository and navigate to it
+2. Add the local marketplace:
    ```bash
-   /plugin marketplace add developer-utilities https://github.com/YOUR_USERNAME/YOUR_REPO
+   /plugin marketplace add dev-gom-plugins ./path/to/.claude-plugin/marketplace.json
    ```
-
 3. Install plugins as shown above
 
 ## Usage
@@ -132,7 +128,7 @@ const TODO_PATTERNS = [
 ### Disable Specific Plugins
 
 ```bash
-/plugin uninstall git-auto-backup@developer-utilities
+/plugin uninstall git-auto-backup@dev-gom-plugins
 ```
 
 ## Output Files
@@ -166,7 +162,7 @@ The plugins generate the following files in your project root:
 
 1. Check plugin installation:
    ```bash
-   /plugin list
+   /plugin
    ```
 
 2. Verify hooks are enabled in settings

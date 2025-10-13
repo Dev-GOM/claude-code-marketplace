@@ -61,37 +61,33 @@ Claude Code 세션이 끝날 때마다 자동으로 git 커밋을 생성하여 �
 
 ## 설치
 
-### 방법 1: 로컬 설치 (개발용 권장)
+### 빠른 시작 (권장)
 
-1. `.claude-plugin` 디렉토리를 프로젝트 루트에 복사:
+1. Claude Code에서 마켓플레이스 추가:
    ```bash
-   # 프로젝트 디렉토리에서
-   cp -r /path/to/this/.claude-plugin ./
+   /plugin marketplace add https://github.com/Dev-GOM/claude-code-marketplace.git
    ```
 
-2. Claude Code에 마켓플레이스 설치:
+2. 플러그인 설치:
    ```bash
-   # Claude Code에서
-   /plugin marketplace add developer-utilities ./.claude-plugin/marketplace.json
+   /plugin install git-auto-backup@dev-gom-plugins
+   /plugin install todo-collector@dev-gom-plugins
+   /plugin install complexity-monitor@dev-gom-plugins
+   /plugin install auto-docs@dev-gom-plugins
    ```
 
-3. 개별 플러그인 설치:
+3. 플러그인 설치 확인:
    ```bash
-   /plugin install git-auto-backup@developer-utilities
-   /plugin install todo-collector@developer-utilities
-   /plugin install complexity-monitor@developer-utilities
-   /plugin install auto-docs@developer-utilities
+   /plugin
    ```
 
-### 방법 2: GitHub 설치
+### 로컬 설치 (개발용)
 
-1. 이 저장소를 GitHub에 푸시
-
-2. 마켓플레이스 추가:
+1. 이 저장소를 클론하고 이동
+2. 로컬 마켓플레이스 추가:
    ```bash
-   /plugin marketplace add developer-utilities https://github.com/YOUR_USERNAME/YOUR_REPO
+   /plugin marketplace add dev-gom-plugins ./path/to/.claude-plugin/marketplace.json
    ```
-
 3. 위와 같이 플러그인 설치
 
 ## 사용법
@@ -132,7 +128,7 @@ const TODO_PATTERNS = [
 ### 특정 플러그인 비활성화
 
 ```bash
-/plugin uninstall git-auto-backup@developer-utilities
+/plugin uninstall git-auto-backup@dev-gom-plugins
 ```
 
 ## 출력 파일
@@ -166,7 +162,7 @@ const TODO_PATTERNS = [
 
 1. 플러그인 설치 확인:
    ```bash
-   /plugin list
+   /plugin
    ```
 
 2. 설정에서 hooks가 활성화되어 있는지 확인
