@@ -1,5 +1,5 @@
 {
-  "name": "auto-docs",
+  "name": "hook-auto-docs",
   "version": "1.0.0",
   "description": "Automatically update project documentation based on code changes",
   "author": {

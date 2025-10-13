@@ -1,5 +1,5 @@
 {
-  "name": "complexity-monitor",
+  "name": "hook-complexity-monitor",
   "version": "1.0.0",
   "description": "Monitor code complexity and maintain code quality",
   "author": {

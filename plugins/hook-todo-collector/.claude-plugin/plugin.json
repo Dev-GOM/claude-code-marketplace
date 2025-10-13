@@ -1,5 +1,5 @@
 {
-  "name": "todo-collector",
+  "name": "hook-todo-collector",
   "version": "1.0.0",
   "description": "Collect all TODO and FIXME comments from your project",
   "author": {
