@@ -191,7 +191,9 @@ Total Items: ${todos.length}
     report += `## ${type} (${grouped[type].length})\n\n`;
 
     grouped[type].forEach(todo => {
-      report += `- **${todo.file}:${todo.line}**\n`;
+      // Convert backslashes to forward slashes for cross-platform compatibility
+      const fileLink = todo.file.replace(/\\/g, '/');
+      report += `- **[${todo.file}:${todo.line}](${fileLink}#L${todo.line})**\n`;
       report += `  \`${todo.message}\`\n\n`;
     });
   });
@@ -209,7 +211,9 @@ Total Items: ${todos.length}
   Object.entries(byFile)
     .sort((a, b) => b[1] - a[1])
     .forEach(([file, count]) => {
-      report += `- ${file}: ${count} item(s)\n`;
+      // Convert backslashes to forward slashes for cross-platform compatibility
+      const fileLink = file.replace(/\\/g, '/');
+      report += `- [${file}](${fileLink}): ${count} item(s)\n`;
     });
 
   return report;
