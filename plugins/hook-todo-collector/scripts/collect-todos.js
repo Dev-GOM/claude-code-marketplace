@@ -2,6 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const readline = require('readline');
 
 const projectRoot = process.cwd();
 
@@ -219,7 +220,35 @@ Total Items: ${todos.length}
   return report;
 }
 
-function main() {
+function askUser(question) {
+  return new Promise((resolve) => {
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout
+    });
+
+    rl.question(question, (answer) => {
+      rl.close();
+      resolve(answer.toLowerCase().trim());
+    });
+  });
+}
+
+async function main() {
+  // Ask user for permission
+  console.log('\n📋 TODO Collector wants to scan your project for TODO/FIXME comments.');
+  const answer = await askUser('Run TODO scan? (Y/n): ');
+
+  if (answer === 'n' || answer === 'no') {
+    console.log('TODO scan skipped by user.');
+    const hookResult = {
+      systemMessage: 'TODO Collector: Scan skipped by user',
+      continue: true
+    };
+    console.log(JSON.stringify(hookResult));
+    return;
+  }
+
   // Console output for debugging/logs
   console.error('\n' + '='.repeat(60));
   console.error('📋 TODO Collector - Scanning project...');
@@ -279,4 +308,7 @@ function main() {
   console.log(JSON.stringify(hookResult));
 }
 
-main();
+main().catch(err => {
+  console.error('Error:', err);
+  process.exit(1);
+});

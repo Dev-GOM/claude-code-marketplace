@@ -1,4 +1,4 @@
-plugins\hook-todo-collector\scripts\collect-todos.js:40: [NOTE] .md and .txt files are excluded to avoid false positives from headers
+plugins\hook-todo-collector\scripts\collect-todos.js:41: [NOTE] .md and .txt files are excluded to avoid false positives from headers
 test\complex-nested.js:4: [TODO] Refactor this mess
 test\complex-nested.js:13: [FIXME] Too much nesting!
 test\complex-nested.js:27: [HACK] This function does too many things
