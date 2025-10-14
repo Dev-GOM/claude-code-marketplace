@@ -36,8 +36,8 @@ const EXTENSIONS = [
   '.html', '.vue', '.svelte',
   '.r', '.R', '.jl', '.coffee',
   '.sh', '.bash', '.ps1',
-  '.toml', '.ini', '.yaml', '.yml',
-  '.md', '.txt'
+  '.toml', '.ini', '.yaml', '.yml'
+  // Note: .md and .txt files are excluded to avoid false positives from headers
 ];
 
 // Patterns to search for
@@ -98,13 +98,6 @@ function findTodosInFile(filePath) {
     const usesHashComments = hashCommentExtensions.includes(ext) || hashCommentFiles.includes(fileName);
 
     lines.forEach((line, index) => {
-      const trimmedLine = line.trim();
-
-      // Skip markdown headers (lines starting with #)
-      if ((ext === '.md' || ext === '.txt') && trimmedLine.startsWith('#')) {
-        return;
-      }
-
       // Apply common patterns (JS, CSS, HTML comments)
       TODO_PATTERNS.forEach(pattern => {
         const matches = [...line.matchAll(pattern)];
