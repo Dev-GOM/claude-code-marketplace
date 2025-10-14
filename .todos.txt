@@ -1,0 +1,15 @@
+plugins\hook-todo-collector\scripts\collect-todos.js:40: [NOTE] .md and .txt files are excluded to avoid false positives from headers
+test\complex-nested.js:4: [TODO] Refactor this mess
+test\complex-nested.js:13: [FIXME] Too much nesting!
+test\complex-nested.js:27: [HACK] This function does too many things
+test\README.md:11: [TODO] This HTML comment should be detected
+test\README.md:12: [FIXME] This needs fixing
+test\README.md:17: [TODO] This code comment should be detected
+test\README.md:19: [HACK] Quick workaround
+test\simple-test.js:3: [TODO] Test TODO detection
+test\simple-test.js:4: [FIXME] Test FIXME detection
+test\simple-test.js:5: [HACK] Quick fix needed
+test\simple-test.js:13: [NOTE] Deep nesting for complexity test
+test\test.py:3: [TODO] Implement feature
+test\test.py:4: [FIXME] Bug in calculation
+test\test.py:7: [NOTE] Add validation

@@ -170,6 +170,13 @@ Total Items: ${todos.length}
     return report;
   }
 
+  // Add quick list at the top
+  report += `## Quick List\n\n\`\`\`\n`;
+  todos.forEach(todo => {
+    report += `${todo.file}:${todo.line}: [${todo.type}] ${todo.message}\n`;
+  });
+  report += `\`\`\`\n\n---\n\n`;
+
   // Group by type
   const grouped = todos.reduce((acc, todo) => {
     if (!acc[todo.type]) {
@@ -225,17 +232,6 @@ function main() {
   const outputPath = path.join(projectRoot, '.todos-report.md');
   fs.writeFileSync(outputPath, report, 'utf8');
 
-  // Also create a simple text version
-  const simpleOutput = todos.map(todo =>
-    `${todo.file}:${todo.line}: [${todo.type}] ${todo.message}`
-  ).join('\n');
-
-  fs.writeFileSync(
-    path.join(projectRoot, '.todos.txt'),
-    simpleOutput || 'No TODOs found',
-    'utf8'
-  );
-
   // Console logs for debugging
   console.error('\n' + '─'.repeat(60));
   if (todos.length > 0) {
@@ -251,9 +247,7 @@ function main() {
       console.error(`  - ${type}: ${grouped[type]}`);
     });
 
-    console.error(`\n📄 Reports generated:`);
-    console.error(`  - .todos-report.md (detailed)`);
-    console.error(`  - .todos.txt (simple list)`);
+    console.error(`\n📄 Report generated: .todos-report.md`);
   } else {
     console.error('✓ No TODO/FIXME comments found');
   }
@@ -271,7 +265,7 @@ function main() {
       `${type}: ${grouped[type]}`
     ).join(', ');
 
-    message = `📋 TODO Collector found ${todos.length} item(s) (${summary}). Reports saved to .todos-report.md and .todos.txt`;
+    message = `📋 TODO Collector found ${todos.length} item(s) (${summary}). Report saved to .todos-report.md`;
   } else {
     message = '✓ TODO Collector: No TODO/FIXME comments found in project';
   }
