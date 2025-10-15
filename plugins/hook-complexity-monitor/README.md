@@ -9,24 +9,39 @@ Monitors code complexity metrics and warns when thresholds are exceeded.
 - 📊 Calculates **cyclomatic complexity** (decision points)
 - 📏 Checks **function length** (lines per function)
 - 📄 Monitors **file length** (lines per file)
-- 🏗️ Tracks **nesting depth** (deeply nested code)
-- ⚡ Real-time feedback after Edit/Write operations
-- 📝 Logs all issues to `.complexity-log.txt`
-- 🎯 Only analyzes changed files (performance optimization)
+- 🏗️ Tracks **nesting depth** with exact line numbers
+- 🌐 Supports **11 programming languages** with dedicated analyzers
+- 🔄 **Auto-deletes** resolved issues from log
+- ⚡ Real-time analysis after Edit/Write operations
+- 📝 Maintains persistent log (`.complexity-log.md`) with clickable links
+- 🎯 Only analyzes files you modify
 
 ## How it Works
 
-This plugin uses the **PostToolUse hook** (Edit|Write) to run after you modify code.
+This plugin uses **two hooks** for comprehensive complexity tracking:
 
-1. Detect changed files using `git status --porcelain`
-2. Filter for code files only (JS, TS, Python, Java, Go, C++)
-3. For each file:
-   - Calculate cyclomatic complexity
+### PostToolUse Hook (`check-complexity.js`)
+Runs immediately after Write or Edit operations:
+1. Receives the modified file path from hook input (stdin)
+2. Checks if file has a supported extension (JS, TS, Python, Java, etc.)
+3. Selects appropriate language analyzer from registry
+4. Analyzes the file:
+   - Extract functions using language-specific patterns
+   - Calculate cyclomatic complexity per function
    - Measure function lengths
    - Check file length
-   - Analyze nesting depth
-4. Compare against thresholds
-5. Report issues and save to log file
+   - Analyze nesting depth with exact line tracking
+5. Compare metrics against thresholds
+6. Store issues in session file (`.state/complexity-session.json`)
+7. Records analyzed files even if no issues found
+
+### Stop Hook (`finalize-session.js`)
+Runs when your Claude Code session ends:
+1. Loads session data from `.state/complexity-session.json`
+2. Merges with existing log, updating file entries
+3. Auto-deletes resolved issues (files with empty issue arrays)
+4. Generates/updates `.complexity-log.md` with clickable file links
+5. Cleans up session file
 
 ## Installation
 
@@ -47,23 +62,32 @@ const THRESHOLDS = {
 
 ## Example Output
 
-When complexity issues are detected:
+### During Session (PostToolUse Hook)
+After editing a file, issues are tracked silently in the session file.
 
-```
-⚠️ Complexity Monitor found 3 issue(s) in 2 file(s) (2 warnings, 1 info). Check .complexity-log.txt
+### At Session End (Stop Hook)
+The consolidated log is generated/updated:
+
+### .complexity-log.md
+
+```markdown
+# Code Complexity Issues
+
+Last Updated: 2025-10-14 03:45:12
+
+## Issues by File
+
+### [utils.js](./src/utils.js#L45)
+
+- Function 'processData' has complexity 15 (threshold: 10)
+- Max nesting depth is 6 (threshold: 4) starts at line 53
+
+### [handlers.js](./src/handlers.js#L23)
+
+- Function 'handleRequest' has 75 lines (threshold: 50)
 ```
 
-### .complexity-log.txt
-
-```
-[2025-10-14 12:34:56]
-src/utils.js:
-  - Function 'processData' has complexity 15 (threshold: 10)
-  - Max nesting depth is 6 (threshold: 4)
-
-src/handlers.js:
-  - Function 'handleRequest' has 75 lines (threshold: 50)
-```
+**Note**: When you fix issues, they automatically disappear from the log at the next session end.
 
 ## Metrics Explained
 
@@ -252,9 +276,9 @@ Some legitimate reasons to exceed thresholds:
 
 ### Plugin not running?
 
-1. **Check hook is triggered**: Only runs after Edit/Write
+1. **Check hook is triggered**: Only runs after Edit/Write operations
 2. **Verify code files**: Must have supported extension
-3. **Check changes**: Uses git to detect changed files
+3. **Check file path**: Plugin receives file path from hook input (not git)
 
 ### False positives?
 
@@ -264,14 +288,16 @@ Some legitimate reasons to exceed thresholds:
 
 ### Missing some complex code?
 
-1. **Check file extension**: File must be in `CODE_EXTENSIONS`
-2. **Check git status**: File must show as changed
-3. **Function detection**: Ensure your function syntax is recognized
+1. **Check file extension**: File must be supported (11 languages available)
+2. **Modified during session**: Only files you Write/Edit are analyzed
+3. **Function detection**: Ensure your function syntax matches analyzer patterns
 
 ## Performance
 
-- **Only analyzes changed files** (not entire project)
-- **Typical analysis time**: < 1 second per file
+- **Only analyzes modified files** (not entire project)
+- **Language-specific analyzers** for accurate function extraction
+- **Typical analysis time**: < 100ms per file
+- **Session-based tracking** prevents redundant analysis
 - **No impact on Claude Code responsiveness**
 
 ## Related Plugins
@@ -282,31 +308,59 @@ Some legitimate reasons to exceed thresholds:
 
 ## Technical Details
 
-### Script Location
-`plugins/hook-complexity-monitor/scripts/check-complexity.js`
+### Script Locations
+- `plugins/hook-complexity-monitor/scripts/check-complexity.js` - Analyzes modified files
+- `plugins/hook-complexity-monitor/scripts/finalize-session.js` - Generates final log
+- `plugins/hook-complexity-monitor/scripts/analyzers/` - Language-specific analyzers
 
-### Hook Type
-`PostToolUse` - Runs after Edit/Write operations
+### Analyzer Architecture
+- **Base Analyzer**: Abstract class defining the analyzer interface
+- **BraceBasedAnalyzer**: Common logic for brace-based languages
+- **Language Analyzers**: JavaScript, Python, Java, Go, C/C++, C#, Rust, Swift, Kotlin, Ruby, PHP
+
+### Hook Types
+- **PostToolUse** (Write|Edit) - Analyzes files in real-time
+- **Stop** - Consolidates and updates the complexity log
+
+### State Files
+- `.state/complexity-session.json` - Tracks issues during session
+- Automatically cleaned up at session end
 
 ### Dependencies
 - Node.js
-- Git (for change detection)
 
 ### Timeout
-15 seconds
+- PostToolUse: 15 seconds
+- Stop: 10 seconds
+
+## Supported Languages
+
+The plugin includes specialized analyzers for:
+- **JavaScript/TypeScript** (`.js`, `.jsx`, `.ts`, `.tsx`, `.mjs`, `.cjs`)
+- **Python** (`.py`) - Uses indentation-based nesting
+- **Java** (`.java`)
+- **Go** (`.go`)
+- **C/C++** (`.c`, `.cpp`, `.cc`, `.cxx`, `.h`, `.hpp`)
+- **C#** (`.cs`)
+- **Rust** (`.rs`)
+- **Swift** (`.swift`)
+- **Kotlin** (`.kt`, `.kts`)
+- **Ruby** (`.rb`) - Uses `end` keyword tracking
+- **PHP** (`.php`)
+
+Each analyzer understands language-specific syntax for accurate function extraction and complexity calculation.
 
 ## Limitations
 
-- **Simple complexity calculation**: May not catch all complexity patterns
-- **Language-specific**: Function detection works best for JavaScript/TypeScript
-- **Regex-based**: May miss some function declarations
+- **Regex-based function detection**: May miss unusual function declarations
 - **No semantic analysis**: Doesn't understand code meaning
+- **Cyclomatic complexity**: Simplified calculation (not cognitive complexity)
 
 ## Future Improvements
 
 Ideas for contributions:
 - Cognitive complexity (more accurate than cyclomatic)
-- Better language support (Python, Java, Go)
+- More language analyzers (Scala, Haskell, Elixir, etc.)
 - Integration with linters (ESLint, Pylint)
 - Trend tracking over time
 - HTML reports with charts
