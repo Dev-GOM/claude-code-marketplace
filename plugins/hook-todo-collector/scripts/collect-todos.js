@@ -6,8 +6,43 @@ const { execSync } = require('child_process');
 
 const projectRoot = process.cwd();
 
+// Load configuration from .plugin-config (project root)
+function loadPluginConfig() {
+  const configPath = path.join(projectRoot, '.plugin-config', 'hook-todo-collector.json');
+
+  try {
+    if (fs.existsSync(configPath)) {
+      return JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    }
+  } catch (error) {
+    // Fall through to create default config
+  }
+
+  // Create default config if it doesn't exist
+  const defaultConfig = {
+    showLogs: false,
+    outputDirectory: '',
+    supportedExtensions: null,
+    excludeDirs: null,
+    commentTypes: null,
+    outputFormats: null
+  };
+
+  try {
+    const configDir = path.join(projectRoot, '.plugin-config');
+    if (!fs.existsSync(configDir)) {
+      fs.mkdirSync(configDir, { recursive: true });
+    }
+    fs.writeFileSync(configPath, JSON.stringify(defaultConfig, null, 2), 'utf8');
+  } catch (error) {
+    // Fail silently if we can't create the file
+  }
+
+  return defaultConfig;
+}
+
 // Load configuration from hooks.json
-function loadConfiguration() {
+function loadHooksConfiguration() {
   try {
     const hooksConfigPath = path.join(__dirname, '../hooks/hooks.json');
     const hooksConfig = JSON.parse(fs.readFileSync(hooksConfigPath, 'utf8'));
@@ -18,7 +53,10 @@ function loadConfiguration() {
   }
 }
 
-const config = loadConfiguration();
+// Merge plugin config with hooks config (plugin config takes priority)
+const pluginConfig = loadPluginConfig();
+const hooksConfig = loadHooksConfiguration();
+const config = { ...hooksConfig, ...pluginConfig };
 
 // Output directory (priority: config > plugin env > global env > default)
 const OUTPUT_DIR = config.outputDirectory
@@ -514,16 +552,18 @@ function main() {
     // Fail silently
   }
 
-  // Generate message for user (only when there are changes)
-  const parts = [];
-  if (changes.added.length > 0) parts.push(`${changes.added.length} added ✅`);
-  if (changes.removed.length > 0) parts.push(`${changes.removed.length} removed ❌`);
-  const message = `📋 TODO Collector: ${parts.join(', ')} in ${changedFilesRelative.length} file(s). Total: ${allTodos.length} TODO(s)`;
+  // Generate message for user (only when there are changes and showLogs is true)
+  if (config.showLogs !== false) {
+    const parts = [];
+    if (changes.added.length > 0) parts.push(`${changes.added.length} added ✅`);
+    if (changes.removed.length > 0) parts.push(`${changes.removed.length} removed ❌`);
+    const message = `📋 TODO Collector: ${parts.join(', ')} in ${changedFilesRelative.length} file(s). Total: ${allTodos.length} TODO(s)`;
 
-  console.log(JSON.stringify({
-    systemMessage: message,
-    continue: true
-  }));
+    console.log(JSON.stringify({
+      systemMessage: message,
+      continue: true
+    }));
+  }
 }
 
 main();

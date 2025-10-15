@@ -5,8 +5,40 @@ const path = require('path');
 
 const projectRoot = process.cwd();
 
+// Load configuration from .plugin-config (project root)
+function loadPluginConfig() {
+  const configPath = path.join(projectRoot, '.plugin-config', 'hook-session-summary.json');
+
+  try {
+    if (fs.existsSync(configPath)) {
+      return JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    }
+  } catch (error) {
+    // Fall through to create default config
+  }
+
+  // Create default config if it doesn't exist
+  const defaultConfig = {
+    showLogs: false,
+    outputDirectory: '',
+    outputFile: '.session-summary.md'
+  };
+
+  try {
+    const configDir = path.join(projectRoot, '.plugin-config');
+    if (!fs.existsSync(configDir)) {
+      fs.mkdirSync(configDir, { recursive: true });
+    }
+    fs.writeFileSync(configPath, JSON.stringify(defaultConfig, null, 2), 'utf8');
+  } catch (error) {
+    // Fail silently if we can't create the file
+  }
+
+  return defaultConfig;
+}
+
 // Load configuration from hooks.json
-function loadConfiguration() {
+function loadHooksConfiguration() {
   try {
     const hooksConfigPath = path.join(__dirname, '../hooks/hooks.json');
     const hooksConfig = JSON.parse(fs.readFileSync(hooksConfigPath, 'utf8'));
@@ -17,7 +49,10 @@ function loadConfiguration() {
   }
 }
 
-const config = loadConfiguration();
+// Merge plugin config with hooks config (plugin config takes priority)
+const pluginConfig = loadPluginConfig();
+const hooksConfig = loadHooksConfiguration();
+const config = { ...hooksConfig, ...pluginConfig };
 
 // Output directory (priority: config > plugin env > global env > default)
 const OUTPUT_DIR = config.outputDirectory
@@ -274,10 +309,13 @@ function main() {
     // Fail silently if cleanup fails
   }
 
-  console.log(JSON.stringify({
-    systemMessage: message,
-    continue: true
-  }));
+  // Show logs only if showLogs is true
+  if (config.showLogs !== false) {
+    console.log(JSON.stringify({
+      systemMessage: message,
+      continue: true
+    }));
+  }
 }
 
 main();

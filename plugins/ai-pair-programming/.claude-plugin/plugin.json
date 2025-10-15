@@ -1,0 +1,21 @@
+{
+  "name": "ai-pair-programming",
+  "version": "1.0.0",
+  "description": "AI Pair Programming Suite - Intelligent code review, bug hunting, and real-time programming assistance",
+  "author": {
+    "name": "Dev GOM",
+    "url": "https://github.com/Dev-GOM/claude-code-marketplace"
+  },
+  "homepage": "https://github.com/Dev-GOM/claude-code-marketplace",
+  "repository": "https://github.com/Dev-GOM/claude-code-marketplace.git",
+  "license": "MIT",
+  "keywords": [
+    "productivity",
+    "code-review",
+    "pair-programming",
+    "bug-detection",
+    "code-quality",
+    "ai-assistant"
+  ],
+  "hooks": "./hooks/hooks.json"
+}

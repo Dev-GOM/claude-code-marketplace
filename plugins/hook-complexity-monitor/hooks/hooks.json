@@ -16,7 +16,8 @@
             "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/check-complexity.js",
             "description": "Analyzes cyclomatic complexity, function length, file length, and nesting depth",
             "timeout": 10000,
-            "continueOnError": true
+            "continueOnError": true,
+            "suppressOutput": true
           }
         ]
       }

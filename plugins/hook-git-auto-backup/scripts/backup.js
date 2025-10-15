@@ -1,9 +1,43 @@
 #!/usr/bin/env node
 
 const { execSync } = require('child_process');
+const fs = require('fs');
+const path = require('path');
 
 // Get the project root directory (where the plugin is being used)
 const projectRoot = process.cwd();
+
+// Load configuration from .plugin-config (project root)
+function loadPluginConfig() {
+  const configPath = path.join(projectRoot, '.plugin-config', 'hook-git-auto-backup.json');
+
+  try {
+    if (fs.existsSync(configPath)) {
+      return JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    }
+  } catch (error) {
+    // Fall through to create default config
+  }
+
+  // Create default config if it doesn't exist
+  const defaultConfig = {
+    showLogs: false
+  };
+
+  try {
+    const configDir = path.join(projectRoot, '.plugin-config');
+    if (!fs.existsSync(configDir)) {
+      fs.mkdirSync(configDir, { recursive: true });
+    }
+    fs.writeFileSync(configPath, JSON.stringify(defaultConfig, null, 2), 'utf8');
+  } catch (error) {
+    // Fail silently if we can't create the file
+  }
+
+  return defaultConfig;
+}
+
+const config = loadPluginConfig();
 
 // Check if it's a git repository
 function isGitRepo() {
@@ -34,18 +68,22 @@ function hasChanges() {
 // Main backup function
 function backup() {
   if (!isGitRepo()) {
-    console.log(JSON.stringify({
-      systemMessage: 'ℹ️ Git Auto-Backup: Not a git repository, skipping backup',
-      continue: true
-    }));
+    if (config.showLogs !== false) {
+      console.log(JSON.stringify({
+        systemMessage: 'ℹ️ Git Auto-Backup: Not a git repository, skipping backup',
+        continue: true
+      }));
+    }
     return;
   }
 
   if (!hasChanges()) {
-    console.log(JSON.stringify({
-      systemMessage: '✓ Git Auto-Backup: No changes to commit',
-      continue: true
-    }));
+    if (config.showLogs !== false) {
+      console.log(JSON.stringify({
+        systemMessage: '✓ Git Auto-Backup: No changes to commit',
+        continue: true
+      }));
+    }
     return;
   }
 
@@ -72,18 +110,22 @@ function backup() {
       cwd: projectRoot
     }).trim();
 
-    // Output success (only this JSON will be displayed to user)
-    console.log(JSON.stringify({
-      systemMessage: `✓ Git Auto-Backup: Changes committed successfully (${commitHash})`,
-      continue: true
-    }));
+    // Output success (only if showLogs is true)
+    if (config.showLogs !== false) {
+      console.log(JSON.stringify({
+        systemMessage: `✓ Git Auto-Backup: Changes committed successfully (${commitHash})`,
+        continue: true
+      }));
+    }
 
   } catch (error) {
-    // Output error (only this JSON will be displayed to user)
-    console.log(JSON.stringify({
-      systemMessage: `⚠️ Git Auto-Backup failed: ${error.message}`,
-      continue: true
-    }));
+    // Output error (only if showLogs is true)
+    if (config.showLogs !== false) {
+      console.log(JSON.stringify({
+        systemMessage: `⚠️ Git Auto-Backup failed: ${error.message}`,
+        continue: true
+      }));
+    }
   }
 }
 

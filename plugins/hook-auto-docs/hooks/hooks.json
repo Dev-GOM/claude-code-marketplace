@@ -16,7 +16,8 @@
             "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/track-structure-changes.js",
             "description": "Records file changes for project structure tracking",
             "timeout": 5000,
-            "continueOnError": true
+            "continueOnError": true,
+            "suppressOutput": true
           }
         ]
       }

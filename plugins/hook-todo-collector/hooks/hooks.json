@@ -16,7 +16,8 @@
             "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/track-todos.js",
             "description": "Records modified files for TODO comparison",
             "timeout": 5000,
-            "continueOnError": true
+            "continueOnError": true,
+            "suppressOutput": true
           }
         ]
       }

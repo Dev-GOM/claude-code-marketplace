@@ -94,6 +94,27 @@
         "files",
         "productivity"
       ]
+    },
+    {
+      "name": "ai-pair-programming",
+      "source": "./plugins/ai-pair-programming",
+      "description": "Complete AI pair programming suite with slash commands, expert agents, and intelligent hooks",
+      "version": "1.0.0",
+      "author": {
+        "name": "Dev GOM"
+      },
+      "category": "productivity",
+      "homepage": "https://github.com/Dev-GOM/claude-code-marketplace",
+      "keywords": [
+        "pair-programming",
+        "code-review",
+        "agents",
+        "commands",
+        "hooks",
+        "ai-assistant",
+        "code-quality",
+        "bug-detection"
+      ]
     }
   ]
 }
