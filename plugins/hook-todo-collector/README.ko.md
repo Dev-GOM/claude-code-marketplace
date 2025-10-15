@@ -2,32 +2,39 @@
 
 > **언어**: [English](README.md) | [한국어](README.ko.md)
 
-프로젝트 전체를 스캔하여 모든 TODO, FIXME, HACK, XXX, NOTE, BUG 코멘트를 수집합니다.
+수정한 파일에서 TODO 코멘트를 추적하고 Claude Code 세션 중 변경사항을 감지합니다.
 
 ## 주요 기능
 
-- 🔍 모든 소스 파일에서 TODO 스타일 코멘트 스캔
+- 🔍 수정한 파일에서 TODO 스타일 코멘트 추적
 - 📊 다양한 코멘트 타입 지원: TODO, FIXME, HACK, BUG, XXX, NOTE
 - 🌐 여러 프로그래밍 언어 지원 (JS, TS, Python, Java, Go, C++ 등)
-- 📝 두 가지 리포트 형식 생성:
-  - `.todos-report.md` - 클릭 가능한 파일 링크가 포함된 상세 마크다운 리포트
-  - `.todos.txt` - 간단한 텍스트 목록
+- 📝 클릭 가능한 파일 링크가 포함된 상세 마크다운 리포트 생성: `.todos-report.md`
 - 📂 코멘트 타입과 파일별로 그룹화
+- 🔄 추가 및 제거된 TODO 자동 감지
+- ⚡ 수정한 파일만 스캔 (성능 최적화)
 - 🚫 `node_modules`, `dist`, `build` 등 일반적인 디렉토리 자동 제외
-- ⚡ 변경사항이 있을 때만 실행
 
 ## 동작 원리
 
-이 플러그인은 **Stop hook**을 사용하여 Claude Code 세션이 끝날 때 실행됩니다.
+이 플러그인은 **두 개의 hook**을 사용하여 지능적으로 TODO를 추적합니다:
 
-1. 커밋되지 않은 변경사항 확인 (`git status --porcelain`)
-2. 변경사항이 없으면 스캔 건너뛰기 (성능 최적화)
-3. 프로젝트 디렉토리 재귀적으로 탐색
-4. 정규식 패턴을 사용하여 TODO 스타일 코멘트 스캔
-5. 코멘트 텍스트와 위치(파일, 줄 번호) 추출
-6. 타입과 파일별로 그룹화 및 정렬
-7. 클릭 가능한 파일 링크가 포함된 리포트 생성
-8. 세션에 요약 표시
+### PostToolUse Hook (`track-todos.js`)
+Write, Edit, NotebookEdit 작업 후 실행:
+1. 수정된 파일 경로 캡처
+2. 추적 파일(`.state/todo-changed-files.json`)에 기록
+3. TODO 스캔을 위한 유효한 확장자를 가진 파일만 추적
+
+### Stop Hook (`collect-todos.js`)
+Claude Code 세션이 끝날 때 실행:
+1. 세션 중 수정된 파일 목록 로드
+2. 수정된 파일이 없으면 조용히 종료 (스캔 불필요)
+3. 수정된 파일만 TODO 스타일 코멘트 스캔
+4. 이전 TODO 상태와 비교하여 변경사항 감지
+5. 추가되거나 제거된 TODO 식별
+6. TODO 상태 업데이트 및 리포트 생성
+7. 요약 표시: "📋 TODO Collector: 3 added ✅, 1 removed ❌ in 2 file(s). Total: 15 TODO(s)"
+8. 추적 파일 정리
 
 ## 설치
 
@@ -37,11 +44,16 @@
 
 ## 사용법
 
-설치 후 자동으로 작동합니다. 세션이 끝나면:
+설치 후 자동으로 작동합니다:
+
+1. **세션 중**: 파일을 Write 또는 Edit하면 자동으로 추적됩니다
+2. **세션 종료 시**: 수정된 파일을 스캔하고 변경사항을 표시합니다:
 
 ```
-📋 TODO Collector found 12 item(s) (TODO: 5, FIXME: 3, BUG: 2, HACK: 1, NOTE: 1). Report saved to .todos-report.md
+📋 TODO Collector: 3 added ✅, 1 removed ❌ in 2 file(s). Total: 15 TODO(s)
 ```
+
+**참고**: 파일이 수정되지 않았거나 TODO 변경사항이 감지되지 않으면 플러그인은 조용히 종료됩니다.
 
 ## 지원하는 코멘트 형식
 
@@ -181,11 +193,12 @@ console.log(JSON.stringify({
 
 ## 성능
 
-플러그인은 성능을 위해 최적화되어 있습니다:
-- **변경사항이 없으면** 스캔 건너뛰기
+플러그인은 성능을 위해 고도로 최적화되어 있습니다:
+- **수정된 파일만 스캔** (전체 프로젝트가 아님)
+- **세션 중 수정된 파일이 없으면** 스캔 건너뛰기
 - 일반적인 빌드/의존성 디렉토리 **제외**
-- 모든 파일을 메모리에 로드하지 않고 **스트리밍**
-- **일반적인 스캔 시간**: 1000+ 파일 프로젝트에서 2초 미만
+- **상태 기반 추적** - 실제 변경사항만 리포트
+- **일반적인 스캔 시간**: 몇 개의 수정된 파일에 대해 100ms 미만
 
 ## 모범 사례
 
@@ -217,19 +230,18 @@ TODO를 검토하고 처리할 시간을 정기적으로 가지세요:
 
 ### 플러그인이 리포트를 생성하지 않나요?
 
-1. **변경사항 확인**:
-   ```bash
-   git status
-   ```
-   플러그인은 변경사항이 있을 때만 실행됩니다.
+1. **파일 수정**: 플러그인은 세션 중 수정한 파일만 스캔합니다
+   - Write 또는 Edit 도구 사용
+   - 파일은 유효한 확장자(`.js`, `.py` 등)를 가져야 합니다
 
-2. **플러그인 설치 확인**:
+2. **TODO 변경사항 확인**: 파일을 수정했지만 TODO를 추가/제거하지 않았다면 플러그인은 조용히 종료됩니다
+
+3. **플러그인 설치 확인**:
    ```bash
    /plugin
    ```
 
-3. **파일 권한 확인**:
-   플러그인이 프로젝트 루트에 쓸 수 있는지 확인하세요.
+4. **파일 권한 확인**: 플러그인이 프로젝트 루트에 쓸 수 있는지 확인하세요
 
 ### 일부 TODO가 누락되었나요?
 
@@ -246,17 +258,23 @@ TODO를 검토하고 처리할 시간을 정기적으로 가지세요:
 ## 기술 세부사항
 
 ### 스크립트 위치
-`plugins/hook-todo-collector/scripts/collect-todos.js`
+- `plugins/hook-todo-collector/scripts/track-todos.js` - 파일 수정 추적
+- `plugins/hook-todo-collector/scripts/collect-todos.js` - TODO 스캔 및 리포트
 
 ### Hook 타입
-`Stop` - 세션 종료 시 실행
+- **PostToolUse** (Write|Edit|NotebookEdit) - 수정된 파일 추적
+- **Stop** - 추적된 파일 스캔 및 리포트 생성
+
+### 상태 파일
+- `.state/todo-changed-files.json` - 세션 중 수정된 파일 추적
+- `.state/todo-state.json` - 변경 감지를 위한 이전 TODO 상태 저장
 
 ### 의존성
 - Node.js
-- Git (변경 감지용)
 
 ### 타임아웃
-15초
+- PostToolUse: 5초
+- Stop: 15초
 
 ## 기여하기
 

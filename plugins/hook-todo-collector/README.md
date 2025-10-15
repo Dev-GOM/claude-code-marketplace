@@ -2,32 +2,39 @@
 
 > **Language**: [English](README.md) | [한국어](README.ko.md)
 
-Scans your entire project and collects all TODO, FIXME, HACK, XXX, NOTE, and BUG comments.
+Tracks TODO comments in modified files and detects changes during your Claude Code sessions.
 
 ## Features
 
-- 🔍 Scans all source files for TODO-style comments
+- 🔍 Tracks TODO-style comments in files you modify
 - 📊 Supports multiple comment types: TODO, FIXME, HACK, BUG, XXX, NOTE
 - 🌐 Works with multiple programming languages (JS, TS, Python, Java, Go, C++, etc.)
-- 📝 Generates two report formats:
-  - `.todos-report.md` - Detailed markdown report with clickable file links
-  - `.todos.txt` - Simple text list
+- 📝 Generates detailed markdown report: `.todos-report.md` with clickable file links
 - 📂 Groups by comment type and file
+- 🔄 Detects added and removed TODOs automatically
+- ⚡ Only scans files you've modified (performance optimized)
 - 🚫 Automatically excludes `node_modules`, `dist`, `build`, and other common directories
-- ⚡ Only runs when there are changes
 
 ## How it Works
 
-This plugin uses the **Stop hook** to run when your Claude Code session ends.
+This plugin uses **two hooks** for intelligent TODO tracking:
 
-1. Check if there are uncommitted changes (`git status --porcelain`)
-2. If no changes, skip scanning (performance optimization)
-3. Walk through project directory recursively
-4. Scan files for TODO-style comments using regex patterns
-5. Extract comment text and location (file, line number)
-6. Group and sort by type and file
-7. Generate reports with clickable file links
-8. Display summary in session
+### PostToolUse Hook (`track-todos.js`)
+Runs after Write, Edit, or NotebookEdit operations:
+1. Captures the file path that was modified
+2. Records it in a tracking file (`.state/todo-changed-files.json`)
+3. Only tracks files with valid extensions for TODO scanning
+
+### Stop Hook (`collect-todos.js`)
+Runs when your Claude Code session ends:
+1. Loads the list of files modified during the session
+2. If no files were modified, exits silently (no scan needed)
+3. Scans only the modified files for TODO-style comments
+4. Compares with previous TODO state to detect changes
+5. Identifies which TODOs were added or removed
+6. Updates the TODO state and generates report
+7. Displays summary: "📋 TODO Collector: 3 added ✅, 1 removed ❌ in 2 file(s). Total: 15 TODO(s)"
+8. Cleans up tracking files
 
 ## Installation
 
@@ -37,11 +44,16 @@ This plugin uses the **Stop hook** to run when your Claude Code session ends.
 
 ## Usage
 
-Once installed, the plugin works automatically. When your session ends:
+Once installed, the plugin works automatically:
+
+1. **During your session**: As you Write or Edit files, they're tracked automatically
+2. **When session ends**: The plugin scans modified files and shows changes:
 
 ```
-📋 TODO Collector found 12 item(s) (TODO: 5, FIXME: 3, BUG: 2, HACK: 1, NOTE: 1). Report saved to .todos-report.md
+📋 TODO Collector: 3 added ✅, 1 removed ❌ in 2 file(s). Total: 15 TODO(s)
 ```
+
+**Note**: If no files were modified or no TODO changes detected, the plugin exits silently.
 
 ## Supported Comment Formats
 
@@ -182,11 +194,12 @@ console.log(JSON.stringify({
 
 ## Performance
 
-The plugin is optimized for performance:
-- **Skips scanning** if no changes detected
+The plugin is highly optimized for performance:
+- **Only scans modified files** (not the entire project)
+- **Skips scanning** if no files were modified during the session
 - **Excludes** common build/dependency directories
-- **Streams files** instead of loading all into memory
-- **Typical scan time**: < 2 seconds for projects with 1000+ files
+- **State-based tracking** - only reports actual changes
+- **Typical scan time**: < 100ms for a few modified files
 
 ## Best Practices
 
@@ -218,19 +231,18 @@ Use consistent TODO patterns:
 
 ### Plugin not generating reports?
 
-1. **Check for changes**:
-   ```bash
-   git status
-   ```
-   The plugin only runs when there are changes.
+1. **Modify a file**: The plugin only scans files you've modified during the session
+   - Use Write or Edit tools
+   - Files must have valid extensions (`.js`, `.py`, etc.)
 
-2. **Verify plugin is installed**:
+2. **Check for TODO changes**: If you modified files but didn't add/remove TODOs, the plugin exits silently
+
+3. **Verify plugin is installed**:
    ```bash
    /plugin
    ```
 
-3. **Check file permissions**:
-   Ensure the plugin can write to project root.
+4. **Check file permissions**: Ensure the plugin can write to project root
 
 ### Missing some TODOs?
 
@@ -246,18 +258,24 @@ Use consistent TODO patterns:
 
 ## Technical Details
 
-### Script Location
-`plugins/hook-todo-collector/scripts/collect-todos.js`
+### Script Locations
+- `plugins/hook-todo-collector/scripts/track-todos.js` - Tracks file modifications
+- `plugins/hook-todo-collector/scripts/collect-todos.js` - Scans and reports TODOs
 
-### Hook Type
-`Stop` - Runs when session ends
+### Hook Types
+- **PostToolUse** (Write|Edit|NotebookEdit) - Tracks modified files
+- **Stop** - Scans tracked files and generates report
+
+### State Files
+- `.state/todo-changed-files.json` - Tracks files modified during session
+- `.state/todo-state.json` - Stores previous TODO state for change detection
 
 ### Dependencies
 - Node.js
-- Git (for change detection)
 
 ### Timeout
-15 seconds
+- PostToolUse: 5 seconds
+- Stop: 15 seconds
 
 ## Contributing
 
