@@ -1,8 +1,11 @@
-# Plugin-generated files
+# Plugin-generated output files
 .todos-report.md
-.complexity-log.txt
-.docs-summary.md
-CHANGELOG.md
+.complexity-log.md
+.project-structure.md
+.session-summary.md
+
+# Plugin state directories (internal data - do not delete!)
+plugins/*/.state/
 
 # Node modules
 node_modules/
@@ -14,5 +17,5 @@ node_modules/
 # OS
 .DS_Store
 Thumbs.db
-/test
 /.claude
+/test

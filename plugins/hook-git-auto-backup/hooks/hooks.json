@@ -1,0 +1,29 @@
+{
+  "description": "Automatically creates git commits after each Claude Code session to prevent work loss",
+  "version": "1.0.0",
+  "author": "Dev GOM",
+  "lastUpdated": "2025-10-14",
+  "hooks": {
+    "Stop": [
+      {
+        "description": "Auto-commit changes when session ends",
+        "priority": 100,
+        "enabled": true,
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/backup.js",
+            "description": "Creates timestamped git commit with all changes",
+            "timeout": 10000,
+            "continueOnError": false
+          }
+        ]
+      }
+    ]
+  },
+  "configuration": {
+    "requireGitRepo": true,
+    "commitOnlyIfChanges": true,
+    "includeTimestamp": true
+  }
+}

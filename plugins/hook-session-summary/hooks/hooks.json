@@ -1,0 +1,54 @@
+{
+  "description": "Tracks all file operations during a Claude Code session and generates a summary report",
+  "version": "1.0.0",
+  "author": "Dev GOM",
+  "lastUpdated": "2025-10-14",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "description": "Track file operations in real-time as they happen",
+        "matcher": "Write|Edit|Read|NotebookEdit",
+        "priority": 50,
+        "enabled": true,
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/track-operation.js",
+            "description": "Records file operation to accumulated tracking file",
+            "timeout": 5000,
+            "continueOnError": true
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "description": "Generate session file operations summary when session ends",
+        "priority": 70,
+        "enabled": true,
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/session-summary.js",
+            "description": "Reads accumulated file operations and generates directory tree visualization",
+            "timeout": 10000,
+            "continueOnError": true
+          }
+        ]
+      }
+    ]
+  },
+  "configuration": {
+    "outputDirectory": "",
+    "outputFile": ".session-summary.md",
+    "trackedTools": ["Write", "Edit", "Read", "NotebookEdit"],
+    "operationPriority": ["Write", "Edit", "Read"],
+    "includeTimestamp": true,
+    "treeVisualization": true,
+    "statistics": {
+      "totalFiles": true,
+      "byOperationType": true,
+      "byFileExtension": false
+    }
+  }
+}

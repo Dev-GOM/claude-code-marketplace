@@ -2,62 +2,67 @@
 
 > **Language**: [English](README.md) | [한국어](README.ko.md)
 
+![Claude Code Session Log](images/claude-code-session-log.png)
+
 A collection of powerful productivity plugins for Claude Code to automate common development workflows.
 
 ## Included Plugins
 
-### 1. Git Auto-Backup
+### 1. 🔄 [Git Auto-Backup](plugins/hook-git-auto-backup/README.md)
+
 Automatically creates git commits after each Claude Code session to prevent work loss.
 
-**Features:**
-- Auto-commits all changes when session ends
-- Timestamped commit messages
-- Only commits when there are actual changes
-- Safe and non-intrusive
+**Quick Info:** Auto-commits all changes with timestamps when session ends | **Hook:** `Stop`
 
-**Hook:** `stop`
+**[📖 Read Full Documentation →](plugins/hook-git-auto-backup/README.md)**
 
-### 2. TODO Collector
-Scans your entire project and collects all TODO, FIXME, HACK, XXX, NOTE, and BUG comments.
+---
 
-**Features:**
-- Supports multiple programming languages
-- Generates detailed markdown report
-- Groups by comment type and file
-- Creates both `.todos-report.md` and `.todos.txt`
-- Excludes `node_modules` and build directories
+### 2. 📋 [TODO Collector](plugins/hook-todo-collector/README.md)
 
-**Hook:** `stop`
+Scans your entire project and collects all TODO, FIXME, HACK, XXX, NOTE, and BUG comments into a detailed report.
 
-### 3. Code Complexity Monitor
+**Quick Info:** Supports multiple languages, generates markdown report | **Hooks:** `PostToolUse` (Write|Edit|NotebookEdit), `Stop`
+
+![TODO Report Example](images/todos-report.png)
+
+**[📖 Read Full Documentation →](plugins/hook-todo-collector/README.md)**
+
+---
+
+### 3. 📊 [Code Complexity Monitor](plugins/hook-complexity-monitor/README.md)
+
 Monitors code complexity metrics and warns when thresholds are exceeded.
 
-**Features:**
-- Calculates cyclomatic complexity
-- Checks function and file length
-- Monitors nesting depth
-- Logs issues to `.complexity-log.txt`
-- Real-time feedback after code changes
+**Quick Info:** Tracks cyclomatic complexity, function/file length, nesting depth | **Hook:** `PostToolUse` (Edit|Write)
 
-**Thresholds:**
-- Cyclomatic Complexity: 10
-- Function Length: 50 lines
-- File Length: 500 lines
-- Nesting Depth: 4 levels
+![Complexity Log Example](images/complexity-log.png)
 
-**Hook:** `postToolUse` (Edit|Write)
+**[📖 Read Full Documentation →](plugins/hook-complexity-monitor/README.md)**
 
-### 4. Auto Documentation Updater
-Automatically updates project documentation based on code changes.
+---
 
-**Features:**
-- Updates README.md with project info
-- Maintains CHANGELOG.md
-- Tracks dependencies and scripts
-- Generates documentation summary
-- Auto-generated sections clearly marked
+### 4. 📝 [Auto Documentation Updater](plugins/hook-auto-docs/README.md)
 
-**Hook:** `stop`
+Automatically updates project documentation (README.md, CHANGELOG.md) based on code changes.
+
+**Quick Info:** Updates README, maintains CHANGELOG, tracks dependencies | **Hooks:** `PostToolUse` (Write), `Stop`
+
+![Project Structure Example](images/project-structure.png)
+
+**[📖 Read Full Documentation →](plugins/hook-auto-docs/README.md)**
+
+---
+
+### 5. 📊 [Session File Tracker](plugins/hook-session-summary/README.md)
+
+Tracks all file operations during a session and generates a summary report with directory tree visualization.
+
+**Quick Info:** Classifies files by operation type (Created, Modified, Read) | **Hooks:** `PostToolUse` (Write|Edit|Read|NotebookEdit), `Stop`
+
+![Session Summary Example](images/session-summary.png)
+
+**[📖 Read Full Documentation →](plugins/hook-session-summary/README.md)**
 
 ## Installation
 
@@ -74,6 +79,7 @@ Automatically updates project documentation based on code changes.
    /plugin install hook-todo-collector@dev-gom-plugins
    /plugin install hook-complexity-monitor@dev-gom-plugins
    /plugin install hook-auto-docs@dev-gom-plugins
+   /plugin install hook-session-summary@dev-gom-plugins
    ```
 
 3. Restart Claude Code to load the plugins:
@@ -107,38 +113,30 @@ Once installed, the plugins work automatically:
 - **TODO Collector**: Scans and reports TODOs when session ends
 - **Complexity Monitor**: Checks code after Edit/Write operations
 - **Auto-Docs**: Updates documentation when session ends
+- **Session File Tracker**: Summarizes file operations when session ends
 
 ## Configuration
 
-### Customize Complexity Thresholds
+Each plugin is fully customizable. For detailed configuration options:
 
-Edit `.claude-plugin/plugins/complexity-monitor/check-complexity.js`:
+- **[Git Auto-Backup Configuration →](plugins/hook-git-auto-backup/README.md#configuration)**
+- **[TODO Collector Configuration →](plugins/hook-todo-collector/README.md#configuration)**
+- **[Complexity Monitor Configuration →](plugins/hook-complexity-monitor/README.md#configuration)**
+- **[Auto-Docs Configuration →](plugins/hook-auto-docs/README.md#configuration)**
+- **[Session Tracker Configuration →](plugins/hook-session-summary/README.md#configuration)**
 
-```javascript
-const THRESHOLDS = {
-  cyclomaticComplexity: 15,  // Your custom value
-  functionLength: 100,       // Your custom value
-  fileLength: 1000,         // Your custom value
-  nesting: 5                // Your custom value
-};
-```
+### Quick Examples
 
-### Customize TODO Patterns
-
-Edit `.claude-plugin/plugins/todo-collector/collect-todos.js`:
-
-```javascript
-const TODO_PATTERNS = [
-  // Add your custom patterns
-  /\/\/\s*(IMPORTANT|REVIEW)[\s:]+(.+)/gi,
-];
-```
-
-### Disable Specific Plugins
-
+**Disable a specific plugin:**
 ```bash
 /plugin uninstall hook-git-auto-backup@dev-gom-plugins
 ```
+
+**Customize complexity thresholds:**
+See [Complexity Monitor Configuration](plugins/hook-complexity-monitor/README.md#configuration)
+
+**Add custom TODO patterns:**
+See [TODO Collector Configuration](plugins/hook-todo-collector/README.md#configuration)
 
 ## Output Files
 
@@ -148,6 +146,7 @@ The plugins generate the following files in your project root:
 - `.todos.txt` - Simple TODO list
 - `.complexity-log.txt` - Complexity issues log
 - `.docs-summary.md` - Documentation update summary
+- `.session-summary.md` - Session file operations summary
 - `CHANGELOG.md` - Project changelog (created if missing)
 
 **Tip:** Add these to `.gitignore` if you don't want to commit them:
@@ -157,6 +156,7 @@ The plugins generate the following files in your project root:
 .todos.txt
 .complexity-log.txt
 .docs-summary.md
+.session-summary.md
 ```
 
 ## Requirements
@@ -197,6 +197,17 @@ The plugins generate the following files in your project root:
 ### Complexity monitor showing false positives?
 
 Adjust thresholds in the plugin configuration file to match your project's needs.
+
+## Development
+
+### For Plugin Developers
+
+Each plugin has detailed technical documentation in its README:
+- [Git Auto-Backup Technical Details](plugins/hook-git-auto-backup/README.md#technical-details)
+- [TODO Collector Technical Details](plugins/hook-todo-collector/README.md#technical-details)
+- [Complexity Monitor Technical Details](plugins/hook-complexity-monitor/README.md#technical-details)
+- [Auto-Docs Technical Details](plugins/hook-auto-docs/README.md#technical-details)
+- [Session Tracker Technical Details](plugins/hook-session-summary/README.md#technical-details)
 
 ## Contributing
 

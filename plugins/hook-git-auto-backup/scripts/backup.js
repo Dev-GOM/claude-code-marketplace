@@ -1,8 +1,6 @@
 #!/usr/bin/env node
 
 const { execSync } = require('child_process');
-const path = require('path');
-const fs = require('fs');
 
 // Get the project root directory (where the plugin is being used)
 const projectRoot = process.cwd();
@@ -35,23 +33,19 @@ function hasChanges() {
 
 // Main backup function
 function backup() {
-  console.error('[Git Auto-Backup] Checking for changes...');
-
   if (!isGitRepo()) {
-    const result = {
+    console.log(JSON.stringify({
       systemMessage: 'ℹ️ Git Auto-Backup: Not a git repository, skipping backup',
       continue: true
-    };
-    console.log(JSON.stringify(result));
+    }));
     return;
   }
 
   if (!hasChanges()) {
-    const result = {
+    console.log(JSON.stringify({
       systemMessage: '✓ Git Auto-Backup: No changes to commit',
       continue: true
-    };
-    console.log(JSON.stringify(result));
+    }));
     return;
   }
 
@@ -61,7 +55,6 @@ function backup() {
 
     // Add all changes
     execSync('git add -A', { cwd: projectRoot, stdio: 'pipe' });
-    console.error('[Git Auto-Backup] Added all changes.');
 
     // Create commit
     const commitMessage = `Auto-backup: ${timestamp}
@@ -79,25 +72,18 @@ function backup() {
       cwd: projectRoot
     }).trim();
 
-    console.error(`[Git Auto-Backup] ✓ Backup committed successfully at ${timestamp}`);
-    console.error(`[Git Auto-Backup] Commit hash: ${commitHash}`);
-
-    // Output JSON for Claude Code
-    const result = {
+    // Output success (only this JSON will be displayed to user)
+    console.log(JSON.stringify({
       systemMessage: `✓ Git Auto-Backup: Changes committed successfully (${commitHash})`,
       continue: true
-    };
-    console.log(JSON.stringify(result));
+    }));
 
   } catch (error) {
-    console.error('[Git Auto-Backup] Error during backup:', error.message);
-
-    // Output error to Claude Code
-    const result = {
+    // Output error (only this JSON will be displayed to user)
+    console.log(JSON.stringify({
       systemMessage: `⚠️ Git Auto-Backup failed: ${error.message}`,
       continue: true
-    };
-    console.log(JSON.stringify(result));
+    }));
   }
 }
 

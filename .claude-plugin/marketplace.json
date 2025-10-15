@@ -62,7 +62,7 @@
     {
       "name": "hook-auto-docs",
       "source": "./plugins/hook-auto-docs",
-      "description": "Automatically update project documentation based on code changes",
+      "description": "Automatically track project structure changes and update documentation (README, CHANGELOG)",
       "version": "1.0.0",
       "author": {
         "name": "Dev GOM"
@@ -73,7 +73,26 @@
         "documentation",
         "automation",
         "changelog",
-        "readme"
+        "readme",
+        "structure"
+      ]
+    },
+    {
+      "name": "hook-session-summary",
+      "source": "./plugins/hook-session-summary",
+      "description": "Track and summarize all files used during a Claude Code session",
+      "version": "1.0.0",
+      "author": {
+        "name": "Dev GOM"
+      },
+      "category": "hooks",
+      "homepage": "https://github.com/Dev-GOM/claude-code-marketplace",
+      "keywords": [
+        "session",
+        "tracking",
+        "summary",
+        "files",
+        "productivity"
       ]
     }
   ]

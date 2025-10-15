@@ -2,62 +2,67 @@
 
 > **언어**: [English](README.md) | [한국어](README.ko.md)
 
+![Claude Code Session Log](images/claude-code-session-log.png)
+
 일반적인 개발 워크플로우를 자동화하는 강력한 Claude Code 생산성 플러그인 모음입니다.
 
 ## 포함된 플러그인
 
-### 1. Git 자동 백업
+### 1. 🔄 [Git Auto-Backup](plugins/hook-git-auto-backup/README.ko.md)
+
 Claude Code 세션이 끝날 때마다 자동으로 git 커밋을 생성하여 작업 손실을 방지합니다.
 
-**기능:**
-- 세션 종료 시 모든 변경사항 자동 커밋
-- 타임스탬프가 포함된 커밋 메시지
-- 실제 변경사항이 있을 때만 커밋
-- 안전하고 비침습적
+**요약:** 세션 종료 시 타임스탬프와 함께 모든 변경사항 자동 커밋 | **Hook:** `Stop`
 
-**Hook:** `stop`
+**[📖 전체 문서 보기 →](plugins/hook-git-auto-backup/README.ko.md)**
 
-### 2. TODO 수집기
-프로젝트 전체를 스캔하여 모든 TODO, FIXME, HACK, XXX, NOTE, BUG 주석을 수집합니다.
+---
 
-**기능:**
-- 여러 프로그래밍 언어 지원
-- 상세한 마크다운 리포트 생성
-- 주석 유형 및 파일별로 그룹화
-- `.todos-report.md`와 `.todos.txt` 생성
-- `node_modules` 및 빌드 디렉토리 제외
+### 2. 📋 [TODO Collector](plugins/hook-todo-collector/README.ko.md)
 
-**Hook:** `stop`
+프로젝트 전체를 스캔하여 모든 TODO, FIXME, HACK, XXX, NOTE, BUG 코멘트를 상세 리포트로 수집합니다.
 
-### 3. 코드 복잡도 모니터
+**요약:** 다양한 언어 지원, 마크다운 리포트 생성 | **Hooks:** `PostToolUse` (Write|Edit|NotebookEdit), `Stop`
+
+![TODO Report Example](images/todos-report.png)
+
+**[📖 전체 문서 보기 →](plugins/hook-todo-collector/README.ko.md)**
+
+---
+
+### 3. 📊 [Code Complexity Monitor](plugins/hook-complexity-monitor/README.ko.md)
+
 코드 복잡도 지표를 모니터링하고 임계값을 초과하면 경고합니다.
 
-**기능:**
-- 순환 복잡도 계산
-- 함수 및 파일 길이 확인
-- 중첩 깊이 모니터링
-- `.complexity-log.txt`에 이슈 기록
-- 코드 변경 후 실시간 피드백
+**요약:** 순환 복잡도, 함수/파일 길이, 중첩 깊이 추적 | **Hook:** `PostToolUse` (Edit|Write)
 
-**임계값:**
-- 순환 복잡도: 10
-- 함수 길이: 50줄
-- 파일 길이: 500줄
-- 중첩 깊이: 4단계
+![Complexity Log Example](images/complexity-log.png)
 
-**Hook:** `postToolUse` (Edit|Write)
+**[📖 전체 문서 보기 →](plugins/hook-complexity-monitor/README.ko.md)**
 
-### 4. 자동 문서 업데이터
-코드 변경사항을 기반으로 프로젝트 문서를 자동으로 업데이트합니다.
+---
 
-**기능:**
-- 프로젝트 정보로 README.md 업데이트
-- CHANGELOG.md 유지 관리
-- 의존성 및 스크립트 추적
-- 문서 요약 생성
-- 자동 생성 섹션 명확히 표시
+### 4. 📝 [Auto Documentation Updater](plugins/hook-auto-docs/README.ko.md)
 
-**Hook:** `stop`
+코드 변경사항을 기반으로 프로젝트 문서(README.md, CHANGELOG.md)를 자동으로 업데이트합니다.
+
+**요약:** README 업데이트, CHANGELOG 유지, 의존성 추적 | **Hooks:** `PostToolUse` (Write), `Stop`
+
+![Project Structure Example](images/project-structure.png)
+
+**[📖 전체 문서 보기 →](plugins/hook-auto-docs/README.ko.md)**
+
+---
+
+### 5. 📊 [Session File Tracker](plugins/hook-session-summary/README.ko.md)
+
+세션 동안 모든 파일 작업을 추적하고 디렉토리 트리 시각화가 포함된 요약 리포트를 생성합니다.
+
+**요약:** 작업 유형별 파일 분류 (Created, Modified, Read) | **Hooks:** `PostToolUse` (Write|Edit|Read|NotebookEdit), `Stop`
+
+![Session Summary Example](images/session-summary.png)
+
+**[📖 전체 문서 보기 →](plugins/hook-session-summary/README.ko.md)**
 
 ## 설치
 
@@ -74,6 +79,7 @@ Claude Code 세션이 끝날 때마다 자동으로 git 커밋을 생성하여 �
    /plugin install hook-todo-collector@dev-gom-plugins
    /plugin install hook-complexity-monitor@dev-gom-plugins
    /plugin install hook-auto-docs@dev-gom-plugins
+   /plugin install hook-session-summary@dev-gom-plugins
    ```
 
 3. 플러그인을 로드하기 위해 Claude Code 재시작:
@@ -103,42 +109,34 @@ Claude Code 세션이 끝날 때마다 자동으로 git 커밋을 생성하여 �
 
 설치 후 플러그인은 자동으로 작동합니다:
 
-- **Git 자동 백업**: Claude 세션 종료 후 커밋
-- **TODO 수집기**: 세션 종료 시 TODO 스캔 및 리포트
-- **복잡도 모니터**: Edit/Write 작업 후 코드 확인
-- **자동 문서**: 세션 종료 시 문서 업데이트
+- **Git Auto-Backup**: Claude 세션 종료 후 커밋
+- **TODO Collector**: 세션 종료 시 TODO 스캔 및 리포트
+- **Complexity Monitor**: Edit/Write 작업 후 코드 확인
+- **Auto-Docs**: 세션 종료 시 문서 업데이트
+- **Session File Tracker**: 세션 종료 시 파일 작업 요약
 
 ## 설정
 
-### 복잡도 임계값 커스터마이징
+각 플러그인은 완전히 커스터마이즈 가능합니다. 상세한 설정 옵션은:
 
-`.claude-plugin/plugins/complexity-monitor/check-complexity.js` 편집:
+- **[Git Auto-Backup 설정 →](plugins/hook-git-auto-backup/README.ko.md#설정)**
+- **[TODO Collector 설정 →](plugins/hook-todo-collector/README.ko.md#설정)**
+- **[Complexity Monitor 설정 →](plugins/hook-complexity-monitor/README.ko.md#설정)**
+- **[Auto-Docs 설정 →](plugins/hook-auto-docs/README.ko.md#설정)**
+- **[Session Tracker 설정 →](plugins/hook-session-summary/README.ko.md#설정)**
 
-```javascript
-const THRESHOLDS = {
-  cyclomaticComplexity: 15,  // 사용자 정의 값
-  functionLength: 100,       // 사용자 정의 값
-  fileLength: 1000,         // 사용자 정의 값
-  nesting: 5                // 사용자 정의 값
-};
-```
+### 빠른 예제
 
-### TODO 패턴 커스터마이징
-
-`.claude-plugin/plugins/todo-collector/collect-todos.js` 편집:
-
-```javascript
-const TODO_PATTERNS = [
-  // 사용자 정의 패턴 추가
-  /\/\/\s*(IMPORTANT|REVIEW)[\s:]+(.+)/gi,
-];
-```
-
-### 특정 플러그인 비활성화
-
+**특정 플러그인 비활성화:**
 ```bash
 /plugin uninstall hook-git-auto-backup@dev-gom-plugins
 ```
+
+**복잡도 임계값 커스터마이즈:**
+[Complexity Monitor 설정](plugins/hook-complexity-monitor/README.ko.md#설정) 참조
+
+**커스텀 TODO 패턴 추가:**
+[TODO Collector 설정](plugins/hook-todo-collector/README.ko.md#설정) 참조
 
 ## 출력 파일
 
@@ -148,6 +146,7 @@ const TODO_PATTERNS = [
 - `.todos.txt` - 간단한 TODO 목록
 - `.complexity-log.txt` - 복잡도 이슈 로그
 - `.docs-summary.md` - 문서 업데이트 요약
+- `.session-summary.md` - 세션 파일 작업 요약
 - `CHANGELOG.md` - 프로젝트 변경 이력 (없으면 생성)
 
 **팁:** 커밋하지 않으려면 `.gitignore`에 추가하세요:
@@ -157,6 +156,7 @@ const TODO_PATTERNS = [
 .todos.txt
 .complexity-log.txt
 .docs-summary.md
+.session-summary.md
 ```
 
 ## 요구사항
@@ -197,6 +197,17 @@ const TODO_PATTERNS = [
 ### 복잡도 모니터에서 오탐이 발생하나요?
 
 프로젝트의 필요에 맞게 플러그인 설정 파일에서 임계값을 조정하세요.
+
+## 개발
+
+### 플러그인 개발자를 위한 정보
+
+각 플러그인의 상세한 기술 문서는 해당 README에 있습니다:
+- [Git Auto-Backup 기술 세부사항](plugins/hook-git-auto-backup/README.ko.md#기술-세부사항)
+- [TODO Collector 기술 세부사항](plugins/hook-todo-collector/README.ko.md#기술-세부사항)
+- [Complexity Monitor 기술 세부사항](plugins/hook-complexity-monitor/README.ko.md#기술-세부사항)
+- [Auto-Docs 기술 세부사항](plugins/hook-auto-docs/README.ko.md#기술-세부사항)
+- [Session Tracker 기술 세부사항](plugins/hook-session-summary/README.ko.md#기술-세부사항)
 
 ## 기여
 

@@ -6,7 +6,6 @@
     "name": "Dev GOM",
     "url": "https://github.com/Dev-GOM/claude-code-marketplace"
   },
-  "category": "hooks",
   "homepage": "https://github.com/Dev-GOM/claude-code-marketplace",
   "repository": "https://github.com/Dev-GOM/claude-code-marketplace.git",
   "license": "MIT",
@@ -16,17 +15,5 @@
     "backup",
     "automation"
   ],
-  "hooks": {
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/backup.js",
-            "timeout": 10000
-          }
-        ]
-      }
-    ]
-  }
+  "hooks": "./hooks/hooks.json"
 }
