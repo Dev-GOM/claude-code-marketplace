@@ -63,7 +63,6 @@ When your session ends:
 
 ## Files Modified
 
-```
 claude-code-marketplace/
 ├── plugins/
 │   ├── hook-todo-collector/scripts/collect-todos.js [Modified ✓]
@@ -76,10 +75,8 @@ claude-code-marketplace/
 │   └── test.py [Created/Updated ✓]
 ├── HOOK_OUTPUT_BEHAVIOR.md [Created/Updated ✓]
 └── README.md [Modified ✓]
-```
 
 *Generated: 2025-10-14 12:34:56*
-```
 ```
 
 ## Hook Input/Output

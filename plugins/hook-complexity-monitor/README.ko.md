@@ -9,24 +9,39 @@
 - 📊 **순환 복잡도** 계산 (결정 지점)
 - 📏 **함수 길이** 확인 (함수당 줄 수)
 - 📄 **파일 길이** 모니터링 (파일당 줄 수)
-- 🏗️ **중첩 깊이** 추적 (깊게 중첩된 코드)
-- ⚡ Edit/Write 작업 후 실시간 피드백
-- 📝 모든 문제를 `.complexity-log.txt`에 로깅
-- 🎯 변경된 파일만 분석 (성능 최적화)
+- 🏗️ 정확한 줄 번호와 함께 **중첩 깊이** 추적
+- 🌐 전용 analyzer가 있는 **11개 프로그래밍 언어** 지원
+- 🔄 해결된 문제를 로그에서 **자동 삭제**
+- ⚡ Edit/Write 작업 후 실시간 분석
+- 📝 클릭 가능한 링크가 있는 지속적인 로그(`.complexity-log.md`) 유지
+- 🎯 수정한 파일만 분석
 
 ## 동작 원리
 
-이 플러그인은 **PostToolUse hook** (Edit|Write)을 사용하여 코드 수정 후 실행됩니다.
+이 플러그인은 포괄적인 복잡도 추적을 위해 **두 개의 hook**을 사용합니다:
 
-1. `git status --porcelain`을 사용하여 변경된 파일 감지
-2. 코드 파일만 필터링 (JS, TS, Python, Java, Go, C++)
-3. 각 파일에 대해:
-   - 순환 복잡도 계산
+### PostToolUse Hook (`check-complexity.js`)
+Write 또는 Edit 작업 직후 실행:
+1. hook 입력(stdin)으로부터 수정된 파일 경로 수신
+2. 파일이 지원되는 확장자를 가지고 있는지 확인 (JS, TS, Python, Java 등)
+3. registry에서 적절한 언어 analyzer 선택
+4. 파일 분석:
+   - 언어별 패턴을 사용하여 함수 추출
+   - 함수당 순환 복잡도 계산
    - 함수 길이 측정
    - 파일 길이 확인
-   - 중첩 깊이 분석
-4. 임계값과 비교
-5. 문제 보고 및 로그 파일에 저장
+   - 정확한 줄 추적과 함께 중첩 깊이 분석
+5. 지표를 임계값과 비교
+6. 세션 파일(`.state/complexity-session.json`)에 문제 저장
+7. 문제가 없어도 분석된 파일 기록
+
+### Stop Hook (`finalize-session.js`)
+Claude Code 세션이 끝날 때 실행:
+1. `.state/complexity-session.json`에서 세션 데이터 로드
+2. 기존 로그와 병합하여 파일 항목 업데이트
+3. 해결된 문제 자동 삭제 (빈 문제 배열이 있는 파일)
+4. 클릭 가능한 파일 링크가 있는 `.complexity-log.md` 생성/업데이트
+5. 세션 파일 정리
 
 ## 설치
 
@@ -47,23 +62,32 @@ const THRESHOLDS = {
 
 ## 출력 예시
 
-복잡도 문제가 감지되면:
+### 세션 중 (PostToolUse Hook)
+파일 편집 후 문제는 세션 파일에 자동으로 추적됩니다.
 
-```
-⚠️ Complexity Monitor found 3 issue(s) in 2 file(s) (2 warnings, 1 info). Check .complexity-log.txt
+### 세션 종료 시 (Stop Hook)
+통합 로그가 생성/업데이트됩니다:
+
+### .complexity-log.md
+
+```markdown
+# Code Complexity Issues
+
+Last Updated: 2025-10-14 03:45:12
+
+## Issues by File
+
+### [utils.js](./src/utils.js#L45)
+
+- Function 'processData' has complexity 15 (threshold: 10)
+- Max nesting depth is 6 (threshold: 4) starts at line 53
+
+### [handlers.js](./src/handlers.js#L23)
+
+- Function 'handleRequest' has 75 lines (threshold: 50)
 ```
 
-### .complexity-log.txt
-
-```
-[2025-10-14 12:34:56]
-src/utils.js:
-  - Function 'processData' has complexity 15 (threshold: 10)
-  - Max nesting depth is 6 (threshold: 4)
-
-src/handlers.js:
-  - Function 'handleRequest' has 75 lines (threshold: 50)
-```
+**참고**: 문제를 수정하면 다음 세션 종료 시 로그에서 자동으로 사라집니다.
 
 ## 지표 설명
 
@@ -252,9 +276,9 @@ function deeplyNested() {
 
 ### 플러그인이 실행되지 않나요?
 
-1. **hook이 트리거되는지 확인**: Edit/Write 후에만 실행됩니다
+1. **hook이 트리거되는지 확인**: Edit/Write 작업 후에만 실행됩니다
 2. **코드 파일 확인**: 지원되는 확장자여야 합니다
-3. **변경사항 확인**: git을 사용하여 변경된 파일을 감지합니다
+3. **파일 경로 확인**: 플러그인은 hook 입력으로부터 파일 경로를 받습니다 (git이 아님)
 
 ### 오탐이 발생하나요?
 
@@ -268,20 +292,49 @@ function deeplyNested() {
 - **Git Auto-Backup** - 변경사항 자동 커밋
 - **Session File Tracker** - 파일 작업 요약
 
+## 지원 언어
+
+플러그인은 다음 언어를 위한 전문 analyzer를 포함합니다:
+- **JavaScript/TypeScript** (`.js`, `.jsx`, `.ts`, `.tsx`, `.mjs`, `.cjs`)
+- **Python** (`.py`) - 들여쓰기 기반 중첩 사용
+- **Java** (`.java`)
+- **Go** (`.go`)
+- **C/C++** (`.c`, `.cpp`, `.cc`, `.cxx`, `.h`, `.hpp`)
+- **C#** (`.cs`)
+- **Rust** (`.rs`)
+- **Swift** (`.swift`)
+- **Kotlin** (`.kt`, `.kts`)
+- **Ruby** (`.rb`) - `end` 키워드 추적 사용
+- **PHP** (`.php`)
+
+각 analyzer는 정확한 함수 추출과 복잡도 계산을 위해 언어별 구문을 이해합니다.
+
 ## 기술 세부사항
 
 ### 스크립트 위치
-`plugins/hook-complexity-monitor/scripts/check-complexity.js`
+- `plugins/hook-complexity-monitor/scripts/check-complexity.js` - 수정된 파일 분석
+- `plugins/hook-complexity-monitor/scripts/finalize-session.js` - 최종 로그 생성
+- `plugins/hook-complexity-monitor/scripts/analyzers/` - 언어별 analyzer
+
+### Analyzer 아키텍처
+- **Base Analyzer**: analyzer 인터페이스를 정의하는 추상 클래스
+- **BraceBasedAnalyzer**: brace 기반 언어를 위한 공통 로직
+- **Language Analyzers**: JavaScript, Python, Java, Go, C/C++, C#, Rust, Swift, Kotlin, Ruby, PHP
 
 ### Hook 타입
-`PostToolUse` - Edit/Write 작업 후 실행
+- **PostToolUse** (Write|Edit) - 실시간으로 파일 분석
+- **Stop** - 복잡도 로그를 통합 및 업데이트
+
+### 상태 파일
+- `.state/complexity-session.json` - 세션 중 문제 추적
+- 세션 종료 시 자동으로 정리됨
 
 ### 의존성
 - Node.js
-- Git (변경 감지용)
 
 ### 타임아웃
-15초
+- PostToolUse: 15초
+- Stop: 10초
 
 ## 라이선스
 

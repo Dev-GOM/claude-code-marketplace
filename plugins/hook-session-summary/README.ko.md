@@ -33,7 +33,25 @@
 - `.session-summary.md`에 저장
 - 다음 세션을 위해 추적 파일 정리
 
+## Installation
+
+```bash
+/plugin install hook-session-summary@dev-gom-plugins
+```
+
+## Usage
+
+이 플러그인은 자동으로 실행됩니다. 세션을 종료할 때마다 `.session-summary.md` 파일이 프로젝트 루트에 생성됩니다.
+
+세션 종료 시:
+
+```
+📊 Session Summary: 9 files tracked (2 created/updated, 5 modified, 2 read). Saved to .session-summary.md
+```
+
 ## Example Output
+
+### .session-summary.md (상세 리포트)
 
 ```markdown
 # Session Summary
@@ -45,7 +63,6 @@
 
 ## Files Modified
 
-```
 claude-code-marketplace/
 ├── plugins/
 │   ├── hook-todo-collector/scripts/collect-todos.js [Modified ✓]
@@ -58,21 +75,9 @@ claude-code-marketplace/
 │   └── test.py [Created/Updated ✓]
 ├── HOOK_OUTPUT_BEHAVIOR.md [Created/Updated ✓]
 └── README.md [Modified ✓]
-```
 
 *Generated: 2025-10-14 12:34:56*
 ```
-```
-
-## Installation
-
-```bash
-/plugin install hook-session-summary
-```
-
-## Usage
-
-이 플러그인은 자동으로 실행됩니다. 세션을 종료할 때마다 `.session-summary.md` 파일이 프로젝트 루트에 생성됩니다.
 
 ## 환경 설정
 
@@ -172,9 +177,20 @@ claude-code-marketplace/
 3. 환경 변수 `CLAUDE_PLUGIN_OUTPUT_DIR`
 4. 기본값 (프로젝트 루트)
 
-## Technical Details
+## 파일 작업 분류
 
-### Hook Input/Output
+플러그인은 파일 작업을 다음과 같이 분류합니다:
+
+| 도구 | 작업 유형 | 아이콘 |
+|------|----------|-------|
+| Write | Created/Updated | ✓ |
+| Edit | Modified | ✓ |
+| Read | Read | 📖 |
+| NotebookEdit | Modified | ✓ |
+
+## Hook Input/Output
+
+### PostToolUse Hook Input
 
 **PostToolUse Hook Input**
 
@@ -253,6 +269,23 @@ claude-code-marketplace/
 - 실수로 수정된 파일 발견
 - 작업 범위 문서화
 
+### Git 커밋 메시지와 함께 사용
+
+세션 요약을 참고하여 더 나은 커밋 메시지 작성:
+
+```bash
+# 세션 요약 검토
+cat .session-summary.md
+
+# 커밋 메시지 작성에 활용
+git commit -m "hook 플러그인 출력 형식 업데이트
+
+- 4개 hook 스크립트를 단일 JSON 출력으로 수정
+- HOOK_OUTPUT_BEHAVIOR.md 문서 생성
+- README에 개발 가이드라인 추가
+"
+```
+
 ## Limitations
 
 - **Claude Code 도구만 추적**: Bash 명령으로 수정한 파일은 추적되지 않습니다
@@ -302,6 +335,23 @@ cat .session-operations.json
 - **TODO Collector** - TODO 코멘트 수집
 - **Complexity Monitor** - 코드 복잡도 모니터링
 
+## Future Improvements
+
+기여 아이디어:
+- 세션 시간 추적
+- 코드 변경 통계 (추가/삭제된 줄 수)
+- 여러 세션에 걸친 추세 분석
+- HTML 리포트 생성
+- 자동 커밋 메시지 제안
+
+## Contributing
+
+Pull request 환영합니다! [CONTRIBUTING.md](../../CONTRIBUTING.md) 참조
+
 ## License
 
-MIT
+MIT License - 자세한 내용은 [LICENSE](../../LICENSE) 참조
+
+## Credits
+
+[Claude Code Developer Utilities](../../README.ko.md) 컬렉션의 일부입니다.
