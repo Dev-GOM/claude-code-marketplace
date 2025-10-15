@@ -1,0 +1,63 @@
+{
+  "description": "Monitors code complexity metrics and warns when thresholds are exceeded",
+  "version": "1.0.0",
+  "author": "Dev GOM",
+  "lastUpdated": "2025-10-14",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "description": "Check code complexity after Write or Edit operations",
+        "matcher": "Write|Edit",
+        "priority": 100,
+        "enabled": true,
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/check-complexity.js",
+            "description": "Analyzes cyclomatic complexity, function length, file length, and nesting depth",
+            "timeout": 10000,
+            "continueOnError": true
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "description": "Finalize complexity session and write to log",
+        "priority": 80,
+        "enabled": true,
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/finalize-session.js",
+            "description": "Writes accumulated complexity issues to log file in session format",
+            "timeout": 5000,
+            "continueOnError": true
+          }
+        ]
+      }
+    ]
+  },
+  "configuration": {
+    "outputDirectory": "",
+    "thresholds": {
+      "cyclomaticComplexity": 10,
+      "functionLength": 50,
+      "fileLength": 500,
+      "nesting": 4
+    },
+    "supportedExtensions": [
+      ".js", ".jsx", ".ts", ".tsx",
+      ".py", ".java", ".go", ".c",
+      ".cpp", ".cs", ".rb", ".php",
+      ".rs", ".swift", ".kt", ".kts"
+    ],
+    "logFile": ".complexity-log.md",
+    "severityLevels": {
+      "complexity": "warning",
+      "nesting": "warning",
+      "fileLength": "warning",
+      "functionLength": "info"
+    }
+  }
+}

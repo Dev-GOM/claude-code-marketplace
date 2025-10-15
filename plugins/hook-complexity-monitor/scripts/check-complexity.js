@@ -2,152 +2,128 @@
 
 const fs = require('fs');
 const path = require('path');
+const analyzerRegistry = require('./analyzers/registry');
 
 const projectRoot = process.cwd();
 
+// Load configuration from hooks.json
+function loadConfiguration() {
+  try {
+    const hooksConfigPath = path.join(__dirname, '../hooks/hooks.json');
+    const hooksConfig = JSON.parse(fs.readFileSync(hooksConfigPath, 'utf8'));
+    return hooksConfig.configuration || {};
+  } catch (error) {
+    return {};
+  }
+}
+
+const config = loadConfiguration();
+
 // Complexity thresholds
-const THRESHOLDS = {
-  cyclomaticComplexity: 10,  // Max cyclomatic complexity per function
-  functionLength: 50,         // Max lines per function
-  fileLength: 500,           // Max lines per file
-  nesting: 4                 // Max nesting depth
+const THRESHOLDS = config.thresholds || {
+  cyclomaticComplexity: 10,
+  functionLength: 50,
+  fileLength: 500,
+  nesting: 4
 };
 
-// File extensions to check
-const CODE_EXTENSIONS = ['.js', '.jsx', '.ts', '.tsx', '.py', '.java', '.go', '.c', '.cpp'];
+// Get supported extensions from analyzer registry
+const CODE_EXTENSIONS = analyzerRegistry.getAllSupportedExtensions();
 
-function getChangedFiles() {
-  // Get the file that was just edited/written
-  // This would be passed as an argument in a real hook
-  // For now, we'll scan for recently modified files
-  const recentFiles = [];
+// Output configuration
+const OUTPUT_DIR = config.outputDirectory
+  || process.env.COMPLEXITY_LOG_DIR
+  || process.env.CLAUDE_PLUGIN_OUTPUT_DIR
+  || '';
 
-  try {
-    const { execSync } = require('child_process');
-    const gitStatus = execSync('git status --porcelain', {
-      encoding: 'utf8',
-      cwd: projectRoot,
-      stdio: 'pipe'
-    });
+const LOG_FILE = config.logFile || '.complexity-log.md';
 
-    gitStatus.split('\n').forEach(line => {
-      const match = line.match(/^\s*[AM?]\s+(.+)$/);
-      if (match) {
-        const filePath = path.join(projectRoot, match[1].trim());
-        if (CODE_EXTENSIONS.includes(path.extname(filePath))) {
-          recentFiles.push(filePath);
-        }
+// Session file
+const PLUGIN_STATE_DIR = path.join(__dirname, '..', '.state');
+const SESSION_FILE = path.join(PLUGIN_STATE_DIR, 'complexity-session.json');
+
+// Ensure plugin state directory exists
+if (!fs.existsSync(PLUGIN_STATE_DIR)) {
+  fs.mkdirSync(PLUGIN_STATE_DIR, { recursive: true });
+}
+
+/**
+ * Read Hook Input from stdin
+ */
+async function readHookInput() {
+  return new Promise((resolve) => {
+    let data = '';
+    process.stdin.on('data', chunk => { data += chunk; });
+    process.stdin.on('end', () => {
+      try {
+        resolve(JSON.parse(data));
+      } catch (error) {
+        resolve(null);
       }
     });
-  } catch (error) {
-    // If git fails, check for recently modified files
+  });
+}
+
+/**
+ * Get file path from Hook Input
+ */
+function getFileFromHookInput(hookInput) {
+  if (!hookInput || !hookInput.tool_name || !hookInput.tool_input) {
+    return null;
   }
 
-  return recentFiles;
-}
+  const toolName = hookInput.tool_name;
+  const params = hookInput.tool_input;
 
-function calculateCyclomaticComplexity(code) {
-  // Simple cyclomatic complexity calculator
-  // Count decision points: if, else, case, while, for, &&, ||, ?, catch
-  const patterns = [
-    /\bif\s*\(/g,
-    /\belse\s+if\s*\(/g,
-    /\bwhile\s*\(/g,
-    /\bfor\s*\(/g,
-    /\bcase\s+/g,
-    /\bcatch\s*\(/g,
-    /&&/g,
-    /\|\|/g,
-    /\?/g
-  ];
+  let filePath = null;
 
-  let complexity = 1; // Base complexity
-  patterns.forEach(pattern => {
-    const matches = code.match(pattern);
-    if (matches) {
-      complexity += matches.length;
-    }
-  });
-
-  return complexity;
-}
-
-function extractFunctions(code, filePath) {
-  const functions = [];
-  const ext = path.extname(filePath);
-
-  // Different patterns for different languages
-  let patterns = [];
-
-  if (['.js', '.jsx', '.ts', '.tsx'].includes(ext)) {
-    // JavaScript/TypeScript function patterns
-    patterns = [
-      /function\s+(\w+)\s*\([^)]*\)\s*{/g,
-      /(\w+)\s*=\s*\([^)]*\)\s*=>\s*{/g,
-      /(\w+)\s*:\s*\([^)]*\)\s*=>\s*{/g,
-      /async\s+function\s+(\w+)\s*\([^)]*\)\s*{/g
-    ];
+  // Get file path from different tools
+  if (toolName === 'Write' || toolName === 'write') {
+    filePath = params.file_path;
+  } else if (toolName === 'Edit' || toolName === 'edit') {
+    filePath = params.file_path;
+  } else if (toolName === 'NotebookEdit' || toolName === 'notebook_edit') {
+    filePath = params.notebook_path;
   }
 
-  const lines = code.split('\n');
+  if (!filePath) {
+    return null;
+  }
 
-  patterns.forEach(pattern => {
-    let match;
-    while ((match = pattern.exec(code)) !== null) {
-      const functionName = match[1] || 'anonymous';
-      const startPos = match.index;
-      const startLine = code.substring(0, startPos).split('\n').length;
+  // Convert to absolute path if needed
+  if (!path.isAbsolute(filePath)) {
+    filePath = path.join(projectRoot, filePath);
+  }
 
-      // Try to find function end (simplified - just count braces)
-      let braceCount = 1;
-      let pos = match.index + match[0].length;
-      let endLine = startLine;
+  // Check if it's a supported code file
+  if (!CODE_EXTENSIONS.includes(path.extname(filePath))) {
+    return null;
+  }
 
-      while (braceCount > 0 && pos < code.length) {
-        if (code[pos] === '{') braceCount++;
-        if (code[pos] === '}') braceCount--;
-        if (code[pos] === '\n') endLine++;
-        pos++;
-      }
-
-      const functionCode = code.substring(match.index, pos);
-      const length = endLine - startLine + 1;
-      const complexity = calculateCyclomaticComplexity(functionCode);
-
-      functions.push({
-        name: functionName,
-        startLine,
-        endLine,
-        length,
-        complexity
-      });
-    }
-  });
-
-  return functions;
+  return filePath;
 }
 
+/**
+ * Analyze file using appropriate language analyzer
+ */
 function analyzeFile(filePath) {
   try {
     const code = fs.readFileSync(filePath, 'utf8');
     const lines = code.split('\n');
     const fileLength = lines.length;
+    const ext = path.extname(filePath);
 
-    // Calculate max nesting depth
-    let maxNesting = 0;
-    let currentNesting = 0;
+    // Get appropriate analyzer for this file type
+    const analyzer = analyzerRegistry.getAnalyzer(ext);
+    if (!analyzer) {
+      return { issues: [], functions: [], fileLength: 0, maxNesting: 0 };
+    }
 
-    code.split('').forEach(char => {
-      if (char === '{') {
-        currentNesting++;
-        maxNesting = Math.max(maxNesting, currentNesting);
-      } else if (char === '}') {
-        currentNesting--;
-      }
-    });
+    // Extract functions using language-specific analyzer
+    const functions = analyzer.extractFunctions(code, lines);
 
-    // Extract and analyze functions
-    const functions = extractFunctions(code, filePath);
+    // Calculate nesting depth using language-specific analyzer
+    const { maxNesting, maxNestingLine } = analyzer.calculateNesting(code, lines);
 
     const issues = [];
 
@@ -158,7 +134,7 @@ function analyzeFile(filePath) {
         severity: 'warning',
         message: `File has ${fileLength} lines (threshold: ${THRESHOLDS.fileLength})`,
         file: path.relative(projectRoot, filePath),
-        line: 0
+        line: 1
       });
     }
 
@@ -169,7 +145,7 @@ function analyzeFile(filePath) {
         severity: 'warning',
         message: `Max nesting depth is ${maxNesting} (threshold: ${THRESHOLDS.nesting})`,
         file: path.relative(projectRoot, filePath),
-        line: 0
+        line: maxNestingLine
       });
     }
 
@@ -202,60 +178,43 @@ function analyzeFile(filePath) {
   }
 }
 
-function main() {
-  const changedFiles = getChangedFiles();
+async function main() {
+  // Read Hook Input
+  const hookInput = await readHookInput();
+  const filePath = getFileFromHookInput(hookInput);
 
-  if (changedFiles.length === 0) {
-    console.log('[Complexity Monitor] No code files to analyze.');
+  if (!filePath) {
     return;
   }
 
-  console.log(`[Complexity Monitor] Analyzing ${changedFiles.length} file(s)...`);
+  // Analyze file
+  const analysis = analyzeFile(filePath);
 
-  let totalIssues = 0;
-  const results = [];
+  // Load or create session file
+  let sessionData = { files: {} };
 
-  changedFiles.forEach(filePath => {
-    const analysis = analyzeFile(filePath);
-    if (analysis.issues.length > 0) {
-      totalIssues += analysis.issues.length;
-      results.push({ filePath, analysis });
+  try {
+    if (fs.existsSync(SESSION_FILE)) {
+      sessionData = JSON.parse(fs.readFileSync(SESSION_FILE, 'utf8'));
     }
-  });
-
-  if (totalIssues === 0) {
-    console.log('[Complexity Monitor] ✓ No complexity issues found.');
-    return;
+  } catch (error) {
+    sessionData = { files: {} };
   }
 
-  // Log issues
-  console.log(`[Complexity Monitor] ⚠ Found ${totalIssues} complexity issue(s):\n`);
+  // Add current file's issues to session
+  const relPath = path.relative(projectRoot, filePath);
+  if (analysis.issues.length > 0) {
+    sessionData.files[relPath] = analysis.issues.map(i => ({
+      message: i.message,
+      line: i.line
+    }));
+  } else {
+    // Record empty array to indicate "analyzed but no issues"
+    sessionData.files[relPath] = [];
+  }
 
-  results.forEach(({ filePath, analysis }) => {
-    const relPath = path.relative(projectRoot, filePath);
-    console.log(`File: ${relPath}`);
-
-    analysis.issues.forEach(issue => {
-      const icon = issue.severity === 'warning' ? '⚠' : 'ℹ';
-      const location = issue.line > 0 ? `:${issue.line}` : '';
-      console.log(`  ${icon} ${issue.message}`);
-    });
-    console.log('');
-  });
-
-  // Append to log file
-  const timestamp = new Date().toISOString();
-  const logEntry = `\n[${timestamp}]\n` +
-    results.map(({ filePath, analysis }) => {
-      const relPath = path.relative(projectRoot, filePath);
-      return `${relPath}:\n` +
-        analysis.issues.map(i => `  - ${i.message}`).join('\n');
-    }).join('\n') + '\n';
-
-  const logPath = path.join(projectRoot, '.complexity-log.txt');
-  fs.appendFileSync(logPath, logEntry, 'utf8');
-
-  console.log('[Complexity Monitor] Log appended to: .complexity-log.txt');
+  // Save session file
+  fs.writeFileSync(SESSION_FILE, JSON.stringify(sessionData, null, 2), 'utf8');
 }
 
 main();

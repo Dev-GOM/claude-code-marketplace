@@ -6,7 +6,6 @@
     "name": "Dev GOM",
     "url": "https://github.com/Dev-GOM/claude-code-marketplace"
   },
-  "category": "hooks",
   "homepage": "https://github.com/Dev-GOM/claude-code-marketplace",
   "repository": "https://github.com/Dev-GOM/claude-code-marketplace.git",
   "license": "MIT",
@@ -17,18 +16,5 @@
     "monitoring",
     "refactoring"
   ],
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/check-complexity.js",
-            "timeout": 10000
-          }
-        ]
-      }
-    ]
-  }
+  "hooks": "./hooks/hooks.json"
 }

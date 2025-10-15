@@ -1,0 +1,57 @@
+{
+  "description": "Automatically updates project documentation based on code changes",
+  "version": "1.0.0",
+  "author": "Dev GOM",
+  "lastUpdated": "2025-10-14",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "description": "Track file changes for structure documentation",
+        "matcher": "Write",
+        "priority": 50,
+        "enabled": true,
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/track-structure-changes.js",
+            "description": "Records file changes for project structure tracking",
+            "timeout": 5000,
+            "continueOnError": true
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "description": "Update project structure documentation",
+        "priority": 80,
+        "enabled": true,
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/update-structure-docs.js",
+            "description": "Generates or updates project structure documentation with directory tree, scripts, and dependencies",
+            "timeout": 15000,
+            "continueOnError": true
+          }
+        ]
+      }
+    ]
+  },
+  "configuration": {
+    "outputDirectory": "",
+    "excludeDirs": [
+      "node_modules",
+      ".git",
+      "dist",
+      "build",
+      "coverage",
+      ".next",
+      "out",
+      ".nuxt",
+      "vendor",
+      ".vscode",
+      ".idea"
+    ]
+  }
+}

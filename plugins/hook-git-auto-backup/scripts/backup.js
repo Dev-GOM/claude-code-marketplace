@@ -1,8 +1,6 @@
 #!/usr/bin/env node
 
 const { execSync } = require('child_process');
-const path = require('path');
-const fs = require('fs');
 
 // Get the project root directory (where the plugin is being used)
 const projectRoot = process.cwd();
@@ -35,15 +33,19 @@ function hasChanges() {
 
 // Main backup function
 function backup() {
-  console.log('[Git Auto-Backup] Checking for changes...');
-
   if (!isGitRepo()) {
-    console.log('[Git Auto-Backup] Not a git repository. Skipping backup.');
+    console.log(JSON.stringify({
+      systemMessage: 'ℹ️ Git Auto-Backup: Not a git repository, skipping backup',
+      continue: true
+    }));
     return;
   }
 
   if (!hasChanges()) {
-    console.log('[Git Auto-Backup] No changes to commit.');
+    console.log(JSON.stringify({
+      systemMessage: '✓ Git Auto-Backup: No changes to commit',
+      continue: true
+    }));
     return;
   }
 
@@ -53,7 +55,6 @@ function backup() {
 
     // Add all changes
     execSync('git add -A', { cwd: projectRoot, stdio: 'pipe' });
-    console.log('[Git Auto-Backup] Added all changes.');
 
     // Create commit
     const commitMessage = `Auto-backup: ${timestamp}
@@ -65,18 +66,24 @@ function backup() {
       stdio: 'pipe'
     });
 
-    console.log(`[Git Auto-Backup] ✓ Backup committed successfully at ${timestamp}`);
-
-    // Optional: Show commit hash
+    // Get commit hash
     const commitHash = execSync('git rev-parse --short HEAD', {
       encoding: 'utf8',
       cwd: projectRoot
     }).trim();
-    console.log(`[Git Auto-Backup] Commit hash: ${commitHash}`);
+
+    // Output success (only this JSON will be displayed to user)
+    console.log(JSON.stringify({
+      systemMessage: `✓ Git Auto-Backup: Changes committed successfully (${commitHash})`,
+      continue: true
+    }));
 
   } catch (error) {
-    console.error('[Git Auto-Backup] Error during backup:', error.message);
-    // Don't throw - we don't want to interrupt Claude's workflow
+    // Output error (only this JSON will be displayed to user)
+    console.log(JSON.stringify({
+      systemMessage: `⚠️ Git Auto-Backup failed: ${error.message}`,
+      continue: true
+    }));
   }
 }
 

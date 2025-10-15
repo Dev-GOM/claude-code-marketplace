@@ -1,7 +1,7 @@
 {
-  "name": "hook-todo-collector",
+  "name": "hook-session-summary",
   "version": "1.0.0",
-  "description": "Collect all TODO and FIXME comments from your project",
+  "description": "Track and summarize all files used during a Claude Code session",
   "author": {
     "name": "Dev GOM",
     "url": "https://github.com/Dev-GOM/claude-code-marketplace"
@@ -11,10 +11,10 @@
   "license": "MIT",
   "keywords": [
     "productivity",
-    "todo",
-    "fixme",
-    "comments",
-    "tracking"
+    "session",
+    "tracking",
+    "summary",
+    "files"
   ],
   "hooks": "./hooks/hooks.json"
 }
