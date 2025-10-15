@@ -1,5 +1,8 @@
 # Claude Code Developer Utilities
 
+> **⚠️ Important Notice (v2.0.17)**
+> There is a known issue where hook logs stack in the chat window. Until this is resolved, PostToolUse hook outputs are hidden using `suppressOutput: true` in hooks.json. Stop hook messages can be controlled via `.plugin-config/[plugin-name].json` with `"showLogs": false` (default). Set to `true` to enable. See [Configuration](#configuration) for details.
+
 > **Language**: [English](README.md) | [한국어](README.ko.md)
 
 ![Claude Code Session Log](images/claude-code-session-log.png)
@@ -42,11 +45,11 @@ Monitors code complexity metrics and warns when thresholds are exceeded.
 
 ---
 
-### 4. 📝 [Auto Documentation Updater](plugins/hook-auto-docs/README.md)
+### 4. 📝 [Auto Documentation Generator](plugins/hook-auto-docs/README.md)
 
-Automatically updates project documentation (README.md, CHANGELOG.md) based on code changes.
+Automatically scans and documents your project structure with directory tree, scripts, and dependencies.
 
-**Quick Info:** Updates README, maintains CHANGELOG, tracks dependencies | **Hooks:** `PostToolUse` (Write), `Stop`
+**Quick Info:** Generates project structure documentation, tracks file changes, extracts package.json info | **Hooks:** `PostToolUse` (Write), `Stop`
 
 ![Project Structure Example](images/project-structure.png)
 
@@ -64,6 +67,16 @@ Tracks all file operations during a session and generates a summary report with 
 
 **[📖 Read Full Documentation →](plugins/hook-session-summary/README.md)**
 
+---
+
+### 6. 🤖 [AI Pair Programming Suite](plugins/ai-pair-programming/README.md)
+
+Complete AI pair programming experience with slash commands, expert agents, and intelligent hooks integrated together.
+
+**Quick Info:** 5 slash commands + 4 expert agents + 3 intelligent hooks | **Commands:** `/pair`, `/review`, `/suggest`, `/fix`, `/explain` | **Agents:** `@code-reviewer`, `@bug-hunter`, `@architect`, `@performance-expert`
+
+**[📖 Read Full Documentation →](plugins/ai-pair-programming/README.md)**
+
 ## Installation
 
 ### Quick Start (Recommended)
@@ -80,6 +93,7 @@ Tracks all file operations during a session and generates a summary report with 
    /plugin install hook-complexity-monitor@dev-gom-plugins
    /plugin install hook-auto-docs@dev-gom-plugins
    /plugin install hook-session-summary@dev-gom-plugins
+   /plugin install ai-pair-programming@dev-gom-plugins
    ```
 
 3. Restart Claude Code to load the plugins:
@@ -114,16 +128,39 @@ Once installed, the plugins work automatically:
 - **Complexity Monitor**: Checks code after Edit/Write operations
 - **Auto-Docs**: Updates documentation when session ends
 - **Session File Tracker**: Summarizes file operations when session ends
+- **AI Pair Programming Suite**: Provides intelligent assistance with commands, agents, and hooks
 
 ## Configuration
 
-Each plugin is fully customizable. For detailed configuration options:
+### Plugin-Specific Settings
+
+Each plugin automatically creates a configuration file in `.plugin-config/[plugin-name].json` when first run. These files are preserved across plugin updates.
+
+**Common settings:**
+- `showLogs`: Control Stop hook log visibility (`false` by default to reduce chat clutter)
+
+**Example** - Enable logs for TODO Collector:
+
+Create or edit `.plugin-config/hook-todo-collector.json`:
+```json
+{
+  "showLogs": true,
+  "outputDirectory": "",
+  "supportedExtensions": null,
+  "excludeDirs": null,
+  "commentTypes": null,
+  "outputFormats": null
+}
+```
+
+For detailed configuration options:
 
 - **[Git Auto-Backup Configuration →](plugins/hook-git-auto-backup/README.md#configuration)**
 - **[TODO Collector Configuration →](plugins/hook-todo-collector/README.md#configuration)**
 - **[Complexity Monitor Configuration →](plugins/hook-complexity-monitor/README.md#configuration)**
 - **[Auto-Docs Configuration →](plugins/hook-auto-docs/README.md#configuration)**
 - **[Session Tracker Configuration →](plugins/hook-session-summary/README.md#configuration)**
+- **[AI Pair Programming Configuration →](plugins/ai-pair-programming/README.md#configuration)**
 
 ### Quick Examples
 
@@ -131,6 +168,9 @@ Each plugin is fully customizable. For detailed configuration options:
 ```bash
 /plugin uninstall hook-git-auto-backup@dev-gom-plugins
 ```
+
+**Enable hook logs for a specific plugin:**
+Edit `.plugin-config/[plugin-name].json` and set `"showLogs": true`
 
 **Customize complexity thresholds:**
 See [Complexity Monitor Configuration](plugins/hook-complexity-monitor/README.md#configuration)
@@ -145,18 +185,30 @@ The plugins generate the following files in your project root:
 - `.todos-report.md` - Detailed TODO report
 - `.todos.txt` - Simple TODO list
 - `.complexity-log.txt` - Complexity issues log
-- `.docs-summary.md` - Documentation update summary
+- `.project-structure.md` - Project structure documentation
 - `.session-summary.md` - Session file operations summary
-- `CHANGELOG.md` - Project changelog (created if missing)
+- `.pair-programming-session.md` - AI pair programming session report
 
-**Tip:** Add these to `.gitignore` if you don't want to commit them:
+**Plugin configuration files** (auto-generated in project root):
+
+- `.plugin-config/` - Plugin-specific configuration files (preserves settings across plugin updates)
+
+**Tip:** Add output files to `.gitignore` if you don't want to commit them. Configuration files in `.plugin-config/` should be committed to share settings with your team:
 
 ```gitignore
+# Plugin output files
 .todos-report.md
 .todos.txt
 .complexity-log.txt
-.docs-summary.md
+.project-structure.md
+.structure-state.json
+.structure-changes.json
 .session-summary.md
+.pair-programming-session.md
+.state/
+
+# Optional: Uncomment to exclude plugin configs (if you don't want to share settings)
+# .plugin-config/
 ```
 
 ## Requirements
@@ -208,6 +260,7 @@ Each plugin has detailed technical documentation in its README:
 - [Complexity Monitor Technical Details](plugins/hook-complexity-monitor/README.md#technical-details)
 - [Auto-Docs Technical Details](plugins/hook-auto-docs/README.md#technical-details)
 - [Session Tracker Technical Details](plugins/hook-session-summary/README.md#technical-details)
+- [AI Pair Programming Technical Details](plugins/ai-pair-programming/README.md#how-it-works)
 
 ## Contributing
 

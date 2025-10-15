@@ -19,3 +19,4 @@ node_modules/
 Thumbs.db
 /.claude
 /test
+/.plugin-config

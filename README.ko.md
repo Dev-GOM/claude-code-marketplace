@@ -1,5 +1,8 @@
 # Claude Code 개발자 유틸리티
 
+> **⚠️ 중요 공지 (v2.0.17)**
+> 채팅창에 훅 로그가 계속 쌓이는 이슈가 있습니다. 이 문제가 해결될 때까지 hooks.json에서 `suppressOutput: true`를 사용하여 PostToolUse 훅 출력을 숨겼습니다. Stop 훅 메시지는 `.plugin-config/[plugin-name].json`의 `"showLogs": false`(기본값)로 제어됩니다. `true`로 설정하면 활성화됩니다. 자세한 내용은 [설정](#설정)을 참조하세요.
+
 > **언어**: [English](README.md) | [한국어](README.ko.md)
 
 ![Claude Code Session Log](images/claude-code-session-log.png)
@@ -42,11 +45,11 @@ Claude Code 세션이 끝날 때마다 자동으로 git 커밋을 생성하여 �
 
 ---
 
-### 4. 📝 [Auto Documentation Updater](plugins/hook-auto-docs/README.ko.md)
+### 4. 📝 [Auto Documentation Generator](plugins/hook-auto-docs/README.ko.md)
 
-코드 변경사항을 기반으로 프로젝트 문서(README.md, CHANGELOG.md)를 자동으로 업데이트합니다.
+디렉토리 트리, 스크립트, 의존성을 포함한 프로젝트 구조를 자동으로 스캔하고 문서화합니다.
 
-**요약:** README 업데이트, CHANGELOG 유지, 의존성 추적 | **Hooks:** `PostToolUse` (Write), `Stop`
+**요약:** 프로젝트 구조 문서 생성, 파일 변경 추적, package.json 정보 추출 | **Hooks:** `PostToolUse` (Write), `Stop`
 
 ![Project Structure Example](images/project-structure.png)
 
@@ -64,6 +67,16 @@ Claude Code 세션이 끝날 때마다 자동으로 git 커밋을 생성하여 �
 
 **[📖 전체 문서 보기 →](plugins/hook-session-summary/README.ko.md)**
 
+---
+
+### 6. 🤖 [AI 페어 프로그래밍 스위트](plugins/ai-pair-programming/README.ko.md)
+
+슬래시 커맨드, 전문 에이전트, 지능형 훅이 통합된 완벽한 AI 페어 프로그래밍 경험.
+
+**요약:** 5개 슬래시 커맨드 + 4개 전문 에이전트 + 3개 지능형 훅 | **커맨드:** `/pair`, `/review`, `/suggest`, `/fix`, `/explain` | **에이전트:** `@code-reviewer`, `@bug-hunter`, `@architect`, `@performance-expert`
+
+**[📖 전체 문서 보기 →](plugins/ai-pair-programming/README.ko.md)**
+
 ## 설치
 
 ### 빠른 시작 (권장)
@@ -80,6 +93,7 @@ Claude Code 세션이 끝날 때마다 자동으로 git 커밋을 생성하여 �
    /plugin install hook-complexity-monitor@dev-gom-plugins
    /plugin install hook-auto-docs@dev-gom-plugins
    /plugin install hook-session-summary@dev-gom-plugins
+   /plugin install ai-pair-programming@dev-gom-plugins
    ```
 
 3. 플러그인을 로드하기 위해 Claude Code 재시작:
@@ -114,16 +128,39 @@ Claude Code 세션이 끝날 때마다 자동으로 git 커밋을 생성하여 �
 - **Complexity Monitor**: Edit/Write 작업 후 코드 확인
 - **Auto-Docs**: 세션 종료 시 문서 업데이트
 - **Session File Tracker**: 세션 종료 시 파일 작업 요약
+- **AI 페어 프로그래밍 스위트**: 커맨드, 에이전트, 훅으로 지능형 지원 제공
 
 ## 설정
 
-각 플러그인은 완전히 커스터마이즈 가능합니다. 상세한 설정 옵션은:
+### 플러그인별 설정
+
+각 플러그인은 첫 실행 시 `.plugin-config/[plugin-name].json` 설정 파일을 자동으로 생성합니다. 이 파일들은 플러그인 업데이트 시에도 보존됩니다.
+
+**공통 설정:**
+- `showLogs`: Stop 훅 로그 표시 여부 (`false`가 기본값으로 채팅 혼잡도 감소)
+
+**예제** - TODO Collector 로그 활성화:
+
+`.plugin-config/hook-todo-collector.json` 파일 생성 또는 편집:
+```json
+{
+  "showLogs": true,
+  "outputDirectory": "",
+  "supportedExtensions": null,
+  "excludeDirs": null,
+  "commentTypes": null,
+  "outputFormats": null
+}
+```
+
+상세한 설정 옵션:
 
 - **[Git Auto-Backup 설정 →](plugins/hook-git-auto-backup/README.ko.md#설정)**
 - **[TODO Collector 설정 →](plugins/hook-todo-collector/README.ko.md#설정)**
 - **[Complexity Monitor 설정 →](plugins/hook-complexity-monitor/README.ko.md#설정)**
 - **[Auto-Docs 설정 →](plugins/hook-auto-docs/README.ko.md#설정)**
 - **[Session Tracker 설정 →](plugins/hook-session-summary/README.ko.md#설정)**
+- **[AI 페어 프로그래밍 설정 →](plugins/ai-pair-programming/README.ko.md#설정)**
 
 ### 빠른 예제
 
@@ -131,6 +168,9 @@ Claude Code 세션이 끝날 때마다 자동으로 git 커밋을 생성하여 �
 ```bash
 /plugin uninstall hook-git-auto-backup@dev-gom-plugins
 ```
+
+**특정 플러그인의 훅 로그 활성화:**
+`.plugin-config/[plugin-name].json` 파일을 편집하고 `"showLogs": true`로 설정
 
 **복잡도 임계값 커스터마이즈:**
 [Complexity Monitor 설정](plugins/hook-complexity-monitor/README.ko.md#설정) 참조
@@ -145,18 +185,30 @@ Claude Code 세션이 끝날 때마다 자동으로 git 커밋을 생성하여 �
 - `.todos-report.md` - 상세한 TODO 리포트
 - `.todos.txt` - 간단한 TODO 목록
 - `.complexity-log.txt` - 복잡도 이슈 로그
-- `.docs-summary.md` - 문서 업데이트 요약
+- `.project-structure.md` - 프로젝트 구조 문서
 - `.session-summary.md` - 세션 파일 작업 요약
-- `CHANGELOG.md` - 프로젝트 변경 이력 (없으면 생성)
+- `.pair-programming-session.md` - AI 페어 프로그래밍 세션 리포트
 
-**팁:** 커밋하지 않으려면 `.gitignore`에 추가하세요:
+**플러그인 설정 파일** (프로젝트 루트에 자동 생성):
+
+- `.plugin-config/` - 플러그인별 설정 파일 (플러그인 업데이트 시에도 설정 보존)
+
+**팁:** 출력 파일은 커밋하지 않으려면 `.gitignore`에 추가하세요. `.plugin-config/`의 설정 파일은 팀과 설정을 공유하려면 커밋하세요:
 
 ```gitignore
+# 플러그인 출력 파일
 .todos-report.md
 .todos.txt
 .complexity-log.txt
-.docs-summary.md
+.project-structure.md
+.structure-state.json
+.structure-changes.json
 .session-summary.md
+.pair-programming-session.md
+.state/
+
+# 선택사항: 플러그인 설정을 제외하려면 주석 해제 (설정을 공유하지 않으려는 경우)
+# .plugin-config/
 ```
 
 ## 요구사항
@@ -208,6 +260,7 @@ Claude Code 세션이 끝날 때마다 자동으로 git 커밋을 생성하여 �
 - [Complexity Monitor 기술 세부사항](plugins/hook-complexity-monitor/README.ko.md#기술-세부사항)
 - [Auto-Docs 기술 세부사항](plugins/hook-auto-docs/README.ko.md#기술-세부사항)
 - [Session Tracker 기술 세부사항](plugins/hook-session-summary/README.ko.md#기술-세부사항)
+- [AI 페어 프로그래밍 기술 세부사항](plugins/ai-pair-programming/README.ko.md#동작-원리)
 
 ## 기여
 

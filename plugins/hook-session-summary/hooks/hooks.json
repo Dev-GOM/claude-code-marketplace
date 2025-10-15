@@ -16,7 +16,8 @@
             "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/track-operation.js",
             "description": "Records file operation to accumulated tracking file",
             "timeout": 5000,
-            "continueOnError": true
+            "continueOnError": true,
+            "suppressOutput": true
           }
         ]
       }

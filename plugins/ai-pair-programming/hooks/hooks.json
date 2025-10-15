@@ -1,0 +1,85 @@
+{
+  "description": "AI Pair Programming Suite - Intelligent code review, bug hunting, and real-time programming assistance with slash commands, expert agents, and intelligent hooks",
+  "version": "1.0.0",
+  "author": "Dev GOM",
+  "lastUpdated": "2025-10-16",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "description": "Track code changes and suggest review after significant modifications",
+        "matcher": "Write|Edit",
+        "priority": 60,
+        "enabled": true,
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/post-tool-use.js",
+            "description": "Monitors file changes and suggests code review after 5 files or 5 minutes",
+            "timeout": 5000,
+            "continueOnError": true,
+            "suppressOutput": true
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "description": "Validate code quality before git commits",
+        "matcher": "Bash",
+        "priority": 100,
+        "enabled": true,
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/pre-tool-use.js",
+            "description": "Warns about unreviewed code before committing",
+            "timeout": 3000,
+            "continueOnError": true
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "description": "Generate comprehensive AI pair programming session report",
+        "priority": 85,
+        "enabled": true,
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/session-end.js",
+            "description": "Creates session summary with statistics and recommendations",
+            "timeout": 5000,
+            "continueOnError": true
+          }
+        ]
+      }
+    ]
+  },
+  "configuration": {
+    "outputDirectory": "",
+    "stateDirectory": ".state",
+    "reviewThresholds": {
+      "fileChangeCount": 5,
+      "timeIntervalMinutes": 5,
+      "preCommitWarningFiles": 3,
+      "preCommitWarningMinutes": 10
+    },
+    "outputFiles": {
+      "sessionReport": ".pair-programming-session.md",
+      "reviewState": ".state/review-state.json"
+    },
+    "codeExtensions": [
+      ".js", ".ts", ".jsx", ".tsx",
+      ".py", ".java", ".cpp", ".c", ".cs",
+      ".go", ".rs", ".rb", ".php", ".swift",
+      ".kt", ".scala", ".r", ".m", ".h", ".hpp",
+      ".sql", ".sh", ".bash", ".ps1"
+    ],
+    "features": {
+      "autoReviewSuggestion": true,
+      "preCommitValidation": true,
+      "sessionReporting": true
+    }
+  }
+}
