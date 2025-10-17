@@ -1,13 +1,6 @@
-# Claude Code 개발자 유틸리티
-
-> **⚠️ 중요 공지 (v2.0.17)**
-> 채팅창에 훅 로그가 계속 쌓이는 이슈가 있습니다. 이 문제가 해결될 때까지 hooks.json에서 `suppressOutput: true`를 사용하여 PostToolUse 훅 출력을 숨겼습니다. Stop 훅 메시지는 `.plugin-config/[plugin-name].json`의 `"showLogs": false`(기본값)로 제어됩니다. `true`로 설정하면 활성화됩니다. 자세한 내용은 [설정](#설정)을 참조하세요.
+# Claude Code 플러그인
 
 > **언어**: [English](README.md) | [한국어](README.ko.md)
-
-![Claude Code Session Log](images/claude-code-session-log.png)
-
-일반적인 개발 워크플로우(Workflow)를 자동화하는 강력한 Claude Code 생산성 플러그인(Plugin) 모음입니다.
 
 <details>
 <summary><strong>📋 변경 이력</strong> (펼치기)</summary>
@@ -78,6 +71,13 @@
 - 🔇 `showLogs` 설정으로 선택적 로그 표시
 
 </details>
+
+> **⚠️ 중요 공지 (v2.0.17)**
+> 채팅창에 훅 로그가 계속 쌓이는 이슈가 있습니다. 이 문제가 해결될 때까지 hooks.json에서 `suppressOutput: true`를 사용하여 PostToolUse 훅 출력을 숨겼습니다. Stop 훅 메시지는 `.plugin-config/[plugin-name].json`의 `"showLogs": false`(기본값)로 제어됩니다. `true`로 설정하면 활성화됩니다. 자세한 내용은 [설정](#설정)을 참조하세요.
+
+일반적인 개발 워크플로우(Workflow)를 자동화하는 강력한 Claude Code 생산성 플러그인(Plugin) 모음입니다.
+
+![Claude Code Session Log](images/claude-code-session-log.png)
 
 ## 포함된 플러그인
 
