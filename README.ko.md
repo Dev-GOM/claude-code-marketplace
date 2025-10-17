@@ -77,6 +77,16 @@ Claude Code 세션이 끝날 때마다 자동으로 git 커밋을 생성하여 �
 
 **[📖 전체 문서 보기 →](plugins/ai-pair-programming/README.ko.md)**
 
+---
+
+### 7. 📋 [Spec-Kit 통합](plugins/spec-kit/README.ko.md)
+
+명세 주도 개발(SDD)을 위한 [GitHub Spec-Kit](https://github.com/github/spec-kit) 통합. 코딩 전에 무엇을(WHAT) 어떻게(HOW) 만들지 정의합니다.
+
+**요약:** 구조화된 개발 워크플로우를 위한 10개 슬래시 커맨드 | **커맨드:** `/spec-kit:init`, `/spec-kit:constitution`, `/spec-kit:specify`, `/spec-kit:plan`, `/spec-kit:tasks`, `/spec-kit:implement` | **워크플로우:** 헌법 → 명세 → 계획 → 작업 → 구현
+
+**[📖 전체 문서 보기 →](plugins/spec-kit/README.ko.md)**
+
 ## 설치
 
 ### 빠른 시작 (권장)
@@ -94,6 +104,7 @@ Claude Code 세션이 끝날 때마다 자동으로 git 커밋을 생성하여 �
    /plugin install hook-auto-docs@dev-gom-plugins
    /plugin install hook-session-summary@dev-gom-plugins
    /plugin install ai-pair-programming@dev-gom-plugins
+   /plugin install spec-kit@dev-gom-plugins
    ```
 
 3. 플러그인을 로드하기 위해 Claude Code 재시작:
@@ -129,6 +140,7 @@ Claude Code 세션이 끝날 때마다 자동으로 git 커밋을 생성하여 �
 - **Auto-Docs**: 세션 종료 시 문서 업데이트
 - **Session File Tracker**: 세션 종료 시 파일 작업 요약
 - **AI 페어 프로그래밍 스위트**: 커맨드, 에이전트, 훅으로 지능형 지원 제공
+- **Spec-Kit 통합**: `/spec-kit:*` 커맨드로 명세 주도 개발 워크플로우 안내
 
 ## 설정
 
@@ -161,6 +173,7 @@ Claude Code 세션이 끝날 때마다 자동으로 git 커밋을 생성하여 �
 - **[Auto-Docs 설정 →](plugins/hook-auto-docs/README.ko.md#설정)**
 - **[Session Tracker 설정 →](plugins/hook-session-summary/README.ko.md#설정)**
 - **[AI 페어 프로그래밍 설정 →](plugins/ai-pair-programming/README.ko.md#설정)**
+- **[Spec-Kit 문서 →](plugins/spec-kit/README.ko.md)**
 
 ### 빠른 예제
 
@@ -261,6 +274,7 @@ Claude Code 세션이 끝날 때마다 자동으로 git 커밋을 생성하여 �
 - [Auto-Docs 기술 세부사항](plugins/hook-auto-docs/README.ko.md#기술-세부사항)
 - [Session Tracker 기술 세부사항](plugins/hook-session-summary/README.ko.md#기술-세부사항)
 - [AI 페어 프로그래밍 기술 세부사항](plugins/ai-pair-programming/README.ko.md#동작-원리)
+- [Spec-Kit 통합 가이드](plugins/spec-kit/README.ko.md)
 
 ## 기여
 

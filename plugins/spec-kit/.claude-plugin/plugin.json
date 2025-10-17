@@ -1,0 +1,66 @@
+{
+  "name": "spec-kit",
+  "version": "1.0.0",
+  "description": "GitHub Spec-Kit integration for Specification-Driven Development - define WHAT and HOW before coding",
+  "author": {
+    "name": "Dev GOM",
+    "url": "https://github.com/Dev-GOM/claude-code-marketplace"
+  },
+  "homepage": "https://github.com/Dev-GOM/claude-code-marketplace",
+  "repository": "https://github.com/Dev-GOM/claude-code-marketplace.git",
+  "license": "MIT",
+  "keywords": [
+    "productivity",
+    "specification",
+    "planning",
+    "workflow",
+    "sdd",
+    "github",
+    "spec-kit",
+    "constitution",
+    "documentation",
+    "project-management"
+  ],
+  "commands": {
+    "init": {
+      "description": "spec-kit 프로젝트 초기화 및 CLI 설치 확인",
+      "source": "./commands/init.md"
+    },
+    "check": {
+      "description": "spec-kit CLI 설치 상태 확인",
+      "source": "./commands/check.md"
+    },
+    "constitution": {
+      "description": "프로젝트 원칙과 가이드라인 수립 (.specify/memory/constitution.md)",
+      "source": "./commands/constitution.md"
+    },
+    "specify": {
+      "description": "기능 명세 작성 (.specify/memory/specification.md)",
+      "source": "./commands/specify.md"
+    },
+    "plan": {
+      "description": "기술 계획 및 아키텍처 수립 (.specify/memory/plan.md)",
+      "source": "./commands/plan.md"
+    },
+    "tasks": {
+      "description": "구현 가능한 작업 단위로 분해 (.specify/memory/tasks.md)",
+      "source": "./commands/tasks.md"
+    },
+    "implement": {
+      "description": "명세와 계획을 기반으로 구현 실행",
+      "source": "./commands/implement.md"
+    },
+    "clarify": {
+      "description": "명세의 모호한 부분 명확화",
+      "source": "./commands/clarify.md"
+    },
+    "analyze": {
+      "description": "현재 명세 분석 및 검토",
+      "source": "./commands/analyze.md"
+    },
+    "checklist": {
+      "description": "구현 체크리스트 생성",
+      "source": "./commands/checklist.md"
+    }
+  }
+}

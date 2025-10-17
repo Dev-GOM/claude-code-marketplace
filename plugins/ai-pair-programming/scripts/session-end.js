@@ -3,6 +3,38 @@
 const fs = require('fs');
 const path = require('path');
 
+// Stop hook loop prevention - exit if already inside a stop hook
+if (process.env.STOP_HOOK_ACTIVE === 'true') {
+  process.exit(2);
+}
+
+// Timestamp-based duplicate execution prevention (Issue #9602 workaround)
+// Prevents Claude Code v2.0.17 bug where Stop hooks fire 3-4+ times
+const stateDir = path.join(__dirname, '..', '.state');
+const lockFile = path.join(stateDir, '.stop-hook.lock');
+const now = Date.now();
+
+try {
+  // Ensure state directory exists
+  if (!fs.existsSync(stateDir)) {
+    fs.mkdirSync(stateDir, { recursive: true });
+  }
+
+  // Check if hook ran recently (within 3 seconds)
+  if (fs.existsSync(lockFile)) {
+    const lastRun = parseInt(fs.readFileSync(lockFile, 'utf8'));
+    if (!isNaN(lastRun) && (now - lastRun < 3000)) {
+      // Hook ran too recently - likely a duplicate execution
+      process.exit(0);
+    }
+  }
+
+  // Update lock file with current timestamp
+  fs.writeFileSync(lockFile, now.toString(), 'utf8');
+} catch (error) {
+  // If lock file handling fails, continue anyway
+}
+
 // Load configuration from .plugin-config (project root)
 function loadPluginConfig(projectRoot) {
   const configPath = path.join(projectRoot, '.plugin-config', 'ai-pair-programming.json');
@@ -135,6 +167,8 @@ process.stdin.on('end', () => {
 
       console.log(JSON.stringify(output));
     }
+
+    process.exit(0);
 
   } catch (err) {
     console.error(JSON.stringify({ error: err.message }));

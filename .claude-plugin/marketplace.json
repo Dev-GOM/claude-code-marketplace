@@ -115,6 +115,28 @@
         "code-quality",
         "bug-detection"
       ]
+    },
+    {
+      "name": "spec-kit",
+      "source": "./plugins/spec-kit",
+      "description": "GitHub Spec-Kit integration for Specification-Driven Development - define WHAT and HOW before coding",
+      "version": "1.0.0",
+      "author": {
+        "name": "Dev GOM"
+      },
+      "category": "productivity",
+      "homepage": "https://github.com/Dev-GOM/claude-code-marketplace",
+      "keywords": [
+        "specification",
+        "planning",
+        "workflow",
+        "sdd",
+        "github",
+        "spec-kit",
+        "constitution",
+        "documentation",
+        "project-management"
+      ]
     }
   ]
 }

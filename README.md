@@ -77,6 +77,16 @@ Complete AI pair programming experience with slash commands, expert agents, and 
 
 **[📖 Read Full Documentation →](plugins/ai-pair-programming/README.md)**
 
+---
+
+### 7. 📋 [Spec-Kit Integration](plugins/spec-kit/README.md)
+
+[GitHub Spec-Kit](https://github.com/github/spec-kit) integration for Specification-Driven Development (SDD). Define WHAT and HOW before coding.
+
+**Quick Info:** 10 slash commands for structured development workflow | **Commands:** `/spec-kit:init`, `/spec-kit:constitution`, `/spec-kit:specify`, `/spec-kit:plan`, `/spec-kit:tasks`, `/spec-kit:implement` | **Workflow:** Constitution → Specification → Plan → Tasks → Implementation
+
+**[📖 Read Full Documentation →](plugins/spec-kit/README.md)**
+
 ## Installation
 
 ### Quick Start (Recommended)
@@ -94,6 +104,7 @@ Complete AI pair programming experience with slash commands, expert agents, and 
    /plugin install hook-auto-docs@dev-gom-plugins
    /plugin install hook-session-summary@dev-gom-plugins
    /plugin install ai-pair-programming@dev-gom-plugins
+   /plugin install spec-kit@dev-gom-plugins
    ```
 
 3. Restart Claude Code to load the plugins:
@@ -129,6 +140,7 @@ Once installed, the plugins work automatically:
 - **Auto-Docs**: Updates documentation when session ends
 - **Session File Tracker**: Summarizes file operations when session ends
 - **AI Pair Programming Suite**: Provides intelligent assistance with commands, agents, and hooks
+- **Spec-Kit Integration**: Use `/spec-kit:*` commands to guide specification-driven development workflow
 
 ## Configuration
 
@@ -161,6 +173,7 @@ For detailed configuration options:
 - **[Auto-Docs Configuration →](plugins/hook-auto-docs/README.md#configuration)**
 - **[Session Tracker Configuration →](plugins/hook-session-summary/README.md#configuration)**
 - **[AI Pair Programming Configuration →](plugins/ai-pair-programming/README.md#configuration)**
+- **[Spec-Kit Documentation →](plugins/spec-kit/README.md)**
 
 ### Quick Examples
 
@@ -261,6 +274,7 @@ Each plugin has detailed technical documentation in its README:
 - [Auto-Docs Technical Details](plugins/hook-auto-docs/README.md#technical-details)
 - [Session Tracker Technical Details](plugins/hook-session-summary/README.md#technical-details)
 - [AI Pair Programming Technical Details](plugins/ai-pair-programming/README.md#how-it-works)
+- [Spec-Kit Integration Guide](plugins/spec-kit/README.md)
 
 ## Contributing
 
