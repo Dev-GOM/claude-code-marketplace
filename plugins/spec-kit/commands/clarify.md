@@ -63,49 +63,77 @@ Issue: [문제 설명]
 4. **결정**: 사용자 의사결정
 5. **영향 분석**: 다른 부분에 미치는 영향
 
-## Step 4: Spec-Kit 명령 실행
+## Step 4: Save Draft and Execute Spec-Kit Command
 
-모든 이슈가 명확해지면, 해결된 내용을 정리하여 spec-kit 명령어에 전달합니다:
+### 4.1 수집된 정보를 Draft 파일로 저장
 
-**수집된 정보 정리:**
-Step 1-3에서 식별하고 해결한 모호한 부분들을 다음 형식으로 정리:
+먼저 `.specify/temp/` 디렉토리가 있는지 확인하고 없으면 생성:
 
-```
-해결된 이슈:
-
-1. [명세/계획] - [섹션명]
-   Issue: [원래 모호했던 내용]
-   Resolution: [명확해진 내용]
-   Rationale: [이렇게 결정한 이유]
-
-2. [명세/계획] - [섹션명]
-   Issue: [원래 모호했던 내용]
-   Resolution: [명확해진 내용]
-   Rationale: [이렇게 결정한 이유]
-
-영향받는 섹션:
-- specification.md: [섹션명] - [변경 내용]
-- plan.md: [섹션명] - [변경 내용]
-
-제거할 Open Questions:
-- [질문 1]
-- [질문 2]
+```bash
+mkdir -p .specify/temp
 ```
 
-**SlashCommand 도구로 실행:**
-정리된 정보를 인자로 전달하여 `/speckit.clarify` 명령을 실행합니다:
+Write 도구를 사용하여 수집된 정보를 `.specify/temp/clarify-draft.md` 파일로 저장합니다:
+
+```markdown
+# Clarify Draft
+
+## Resolved Issues
+
+### Issue 1: [명세/계획] - [섹션명]
+
+**Original (모호함)**: [원래 모호했던 내용]
+
+**Resolution (명확함)**: [Step 3에서 명확해진 내용]
+
+**Rationale**: [이렇게 결정한 이유]
+
+**Impact**: [다른 부분에 미치는 영향]
+
+### Issue 2: [명세/계획] - [섹션명]
+[Step 1-3에서 해결한 다른 이슈들...]
+
+## Affected Sections
+
+### specification.md
+- [섹션명]: [변경 내용]
+
+### plan.md
+- [섹션명]: [변경 내용]
+
+## Open Questions to Remove
+[Step 3에서 해결된 Open Questions 목록...]
+
+## New Acceptance Criteria
+[Step 3에서 추가된 명확한 수용 기준들...]
+
+## Technical Decisions
+[Step 3에서 결정된 기술적 선택사항들...]
+```
+
+### 4.2 Spec-Kit 명령 실행
+
+Draft 파일 경로를 전달하여 SlashCommand 도구로 `/speckit.clarify` 명령을 실행합니다:
 
 ```
-/speckit.clarify <위에서 정리한 정보 전체 + 사용자의 시스템 언어로 모든 내용을 작성하세요>
+/speckit.clarify .specify/temp/clarify-draft.md
+
+INSTRUCTION: Read the draft file at the path above using the Read tool. This draft contains ALL the resolved issues with clear resolutions and rationales. You MUST skip all identification and discussion steps (Step 1-3) and proceed directly to updating the specification.md and plan.md files:
+- Remove resolved Open Questions
+- Add clear requirements
+- Add specific acceptance criteria
+- Remove resolved Open Technical Questions
+- Reflect technical decisions
+- Record changes in changelog
+Use ONLY the information from the draft file. Do NOT ask the user for any additional information. Process all content in the user's system language.
 ```
 
-spec-kit 명령어는 이 정보를 받아서 사용자의 시스템 언어로:
-- Open Questions 섹션에서 해결된 항목 제거
-- 요구사항 섹션에 명확한 내용 추가
-- 수용 기준에 구체적 조건 추가
-- Open Technical Questions 제거
-- 기술 스택 결정 반영
-- 변경 로그 기록
+spec-kit 명령어는 draft 파일을 읽어서 specification.md와 plan.md를 업데이트합니다.
+
+**토큰 절약 효과:**
+- 긴 텍스트를 명령어 인자로 전달하지 않음
+- 파일 경로만 전달하여 효율적
+- Draft 파일로 디버깅 및 재사용 가능
 
 ## Example Clarification
 
