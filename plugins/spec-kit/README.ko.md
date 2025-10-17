@@ -6,21 +6,21 @@
 
 ## 개요
 
-이 플러그인은 [GitHub의 Spec-Kit](https://github.com/github/spec-kit) 방법론을 Claude Code에 도입하여 구조화된 개발 프로세스를 가능하게 합니다:
+이 플러그인은 [GitHub의 Spec-Kit](https://github.com/github/spec-kit) 방법론(Methodology)을 Claude Code에 도입하여 구조화된 개발 프로세스(Process)를 가능하게 합니다:
 
-**헌법** → **명세** → **계획** → **작업** → **구현**
+**헌법(Constitution)** → **명세(Specification)** → **계획(Plan)** → **작업(Tasks)** → **구현(Implementation)**
 
 코드부터 작성하지 않고, 무엇을 만들 것인지(명세)와 어떻게 만들 것인지(계획)를 먼저 정의한 후 코드를 작성합니다.
 
-> 💡 **Spec-Kit이란?** 명확한 요구사항과 계획을 구현 전에 정의하도록 돕는 GitHub이 개발한 명세 주도 개발(SDD) 프레임워크입니다. 자세한 내용은 [github.com/github/spec-kit](https://github.com/github/spec-kit)에서 확인하세요.
+> 💡 **Spec-Kit이란?** 명확한 요구사항과 계획을 구현 전에 정의하도록 돕는 GitHub이 개발한 명세 주도 개발(SDD) 프레임워크(Framework)입니다. 자세한 내용은 [github.com/github/spec-kit](https://github.com/github/spec-kit)에서 확인하세요.
 
 ## 주요 기능
 
-- 🎯 **명세 주도 워크플로우**: 아이디어부터 구현까지 체계적인 개발 프로세스
-- 📝 **10개의 슬래시 커맨드**: 각 개발 단계를 위한 직관적인 명령어
+- 🎯 **명세 주도 워크플로우(Workflow)**: 아이디어부터 구현까지 체계적인 개발 프로세스
+- 📝 **10개의 슬래시 커맨드(Slash Command)**: 각 개발 단계를 위한 직관적인 명령어
 - 🔧 **CLI 통합**: 공식 `specify-cli`를 사용하며 설치 가이드 제공
 - 📊 **진행 상황 추적**: 프로젝트 상태 및 완료도 분석
-- ✅ **품질 게이트**: 코드 품질을 위한 자동화된 체크리스트
+- ✅ **품질 게이트(Quality Gate)**: 코드 품질을 위한 자동화된 체크리스트(Checklist)
 - ⚠️ **스마트 사전 체크**: 일반적인 실수를 방지하는 자동 경고
 
 ## 사전 요구사항
@@ -35,32 +35,6 @@
    - 설치: `uv tool install specify-cli --from git+https://github.com/github/spec-kit.git`
 
 도구가 설치되지 않은 경우 플러그인이 설치 과정을 안내합니다.
-
-## 설치
-
-`.claude/plugins.json`에 추가:
-
-```json
-{
-  "plugins": [
-    {
-      "source": "marketplace:spec-kit"
-    }
-  ]
-}
-```
-
-또는 GitHub에서 직접 설치:
-
-```json
-{
-  "plugins": [
-    {
-      "source": "github:your-username/claude-code-marketplace/plugins/spec-kit"
-    }
-  ]
-}
-```
 
 ## 명령어
 
@@ -109,6 +83,117 @@
 /spec-kit:checklist
 ```
 
+## 반복적 워크플로우
+
+Spec-Kit은 **반복 설계 기반**입니다. 구현 중 새로운 것을 배우면서 이전 단계를 수정할 수 있습니다.
+
+### 이전 단계를 업데이트해야 할 때
+
+다음의 경우 명세, 계획 또는 헌법을 업데이트해야 합니다:
+- 🔍 구현 중 누락된 요구사항 발견
+- 💡 프로토타이핑(Prototyping)이나 테스트에서 새로운 인사이트(Insight) 도출
+- 🎯 비즈니스 우선순위 변경
+- ⚠️ 기술적 제약사항 발견
+- 🤔 미해결 질문(Open Questions) 명확화 필요
+
+### 업데이트 방법 (권장 접근법)
+
+#### 1. 명령어 재실행 (권장 방법) ✅
+
+해당 단계의 명령어를 다시 실행하세요. Claude가 컨텍스트를 유지하며 개선을 도와줍니다:
+
+```bash
+# 명세 변경이 필요한가요?
+/spec-kit:specify
+
+# 기술 계획 수정이 필요한가요?
+/spec-kit:plan
+
+# 헌법 업데이트가 필요한가요?
+/spec-kit:constitution
+```
+
+**이 방법이 최선인 이유:**
+- 📝 Claude가 변경 이유를 이해함 (컨텍스트(Context) 보존)
+- 🔄 하위 단계에 자동으로 변경사항 반영
+- ✅ 일관성 검사 및 검증 내장
+- 📋 대화 내 변경 이력 추적
+
+#### 2. Clarify 활용
+
+특정 부분의 모호함을 해결하거나 특정 섹션을 업데이트해야 할 때:
+
+```bash
+# 모호한 부분 명확화
+/spec-kit:clarify
+
+# 영향받는 단계 재생성
+/spec-kit:plan
+/spec-kit:tasks
+```
+
+**사용 시점:**
+- 명세/계획의 특정 부분 명확화 필요
+- 미해결 질문(Open Questions) 답변 필요
+- 사소한 개선 필요
+
+#### 3. 직접 파일 수정 (신중히 사용)
+
+사소한 외관상 변경만:
+
+```bash
+# .specify/memory/ 파일 직접 수정
+# - constitution.md
+# - specification.md
+# - plan.md
+
+# 하위 단계 재생성
+/spec-kit:tasks
+```
+
+**사용 대상:**
+- 오타 수정
+- 포맷 조정
+- 문구 개선
+
+**피해야 할 경우:**
+- 기능 추가/제거
+- 요구사항 변경
+- 대규모 재구성
+
+### 계단식 업데이트
+
+이전 단계 업데이트 후 하위 단계를 재생성하세요:
+
+```
+헌법 변경 → /spec-kit:specify → /spec-kit:plan → /spec-kit:tasks
+
+명세 변경 → /spec-kit:plan → /spec-kit:tasks
+
+계획 변경 → /spec-kit:tasks
+```
+
+### 예제: 구현 중 발견
+
+```bash
+# 구현 중 명세에서 누락된 중요한 엣지 케이스(Edge Case) 발견
+
+# 1. 새 요구사항으로 명세 업데이트
+/spec-kit:specify
+"오프라인 모드 처리를 추가해야 합니다..."
+
+# 2. 새 접근법으로 기술 계획 업데이트
+/spec-kit:plan
+
+# 3. 새 작업을 포함하도록 tasks 재생성
+/spec-kit:tasks
+
+# 4. 업데이트된 계획으로 구현 계속
+/spec-kit:implement
+```
+
+**핵심 원칙:** 반복을 받아들이세요. 새로운 것을 배웠을 때 명세를 업데이트하는 것이 오래된 요구사항에 맞춰 코딩하는 것보다 낫습니다.
+
 ## 프로젝트 구조
 
 초기화 후:
@@ -131,7 +216,7 @@ your-project/
 프로젝트의 "권리 장전" - 모든 결정을 안내하는 비협상 가능한 원칙:
 - 핵심 가치 (프라이버시, 성능, 접근성)
 - 기술 표준 (코드 품질, 테스팅, 보안)
-- 품질 게이트 (머지 전, 릴리스 전 체크리스트)
+- 품질 게이트(Quality Gate) (머지 전, 릴리스 전 체크리스트)
 
 ### 명세 (Specification)
 무엇을 만들 것인지 정의:
@@ -143,8 +228,8 @@ your-project/
 
 ### 계획 (Plan)
 어떻게 만들 것인지 정의:
-- 아키텍처와 기술 스택
-- 데이터 모델과 컴포넌트
+- 아키텍처(Architecture)와 기술 스택(Tech Stack)
+- 데이터 모델(Model)과 컴포넌트(Component)
 - 구현 단계
 - 성능 최적화
 - 테스트 전략
@@ -156,7 +241,7 @@ your-project/
 - 의존성 매핑
 - 진행 상황 추적
 
-## 아키텍처 및 토큰 효율성
+## 아키텍처(Architecture) 및 토큰 효율성
 
 이 플러그인은 최적의 토큰 효율성을 위해 2계층 아키텍처로 설계되었습니다:
 
@@ -366,7 +451,7 @@ ls -la plugins/spec-kit/.claude-plugin/
 [examples](examples/) 디렉토리에서 확인:
 - 샘플 헌법
 - 완전한 명세 예제
-- 기술 계획 템플릿
+- 기술 계획 템플릿(Template)
 
 ## 기여
 
@@ -393,15 +478,23 @@ MIT License - [LICENSE](LICENSE) 파일 참조.
 
 ---
 
-**버전**: 1.2.0
+**버전**: 1.3.0
 **최종 업데이트**: 2025-10-18
 **상태**: 베타
 
 ## 변경 이력
 
+### v1.3.0 (2025-10-18)
+- 🔄 **업데이트 모드 선택(Update Mode Selection)**: 모든 핵심 명령어가 기존 파일을 감지하고 두 가지 업데이트 옵션 제공
+- 📋 **완전 재생성(Full Regeneration)**: 요구사항이 크게 변경될 때 처음부터 완전히 다시 작성
+- ✏️ **부분 업데이트(Incremental Update)**: 타겟 변경을 위한 병합 기반 업데이트
+- 📖 **반복적 워크플로우 문서화(Iterative Workflow Documentation)**: 이전 단계를 언제, 어떻게 업데이트할지에 대한 포괄적인 가이드
+- 🎯 **컨텍스트 보존(Context Preservation)**: 명령어 재실행 시 대화 히스토리와 변경 이유 유지
+- ⚡ **계단식 업데이트(Cascade Updates)**: 변경 후 하위 단계 업데이트에 대한 명확한 안내
+
 ### v1.2.0 (2025-10-18)
-- ✨ **스마트 사전 체크**: plan, tasks, implement 명령어에서 Open Questions 자동 감지
-- 🎨 **통합 커밋 플로우**: 3가지 명확한 옵션이 있는 단일 결정 포인트 (품질 게이트 + 커밋 / 바로 커밋 / 건너뛰기)
+- ✨ **스마트 사전 체크(Smart Prerequisite Checks)**: plan, tasks, implement 명령어에서 미해결 질문(Open Questions) 자동 감지
+- 🎨 **통합 커밋 플로우(Unified Commit Flow)**: 3가지 명확한 옵션이 있는 단일 결정 포인트 (품질 게이트 + 커밋 / 바로 커밋 / 건너뛰기)
 - 📋 **더 나은 UX**: 각 커밋 옵션에 대한 상황별 적절한 안내
 - 🛡️ **오류 방지**: 진행하기 전에 불명확한 요구사항에 대해 경고
 - 📖 **문서화**: README에 포괄적인 "스마트 사전 체크" 섹션 추가

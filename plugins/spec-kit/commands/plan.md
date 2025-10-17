@@ -20,6 +20,47 @@ cat .specify/memory/specification.md
 
 없다면 먼저 `/spec-kit:constitution`, `/spec-kit:specify`를 실행하세요.
 
+## Step 0: Check Existing File and Choose Update Mode
+
+기존 계획 파일 확인:
+
+```bash
+cat .specify/memory/plan.md
+```
+
+### If File Exists - Choose Update Mode
+
+사용자에게 두 가지 옵션 제공:
+
+**📋 Option 1: 완전 재생성 (Full Regeneration)**
+- 처음부터 모든 정보를 다시 수집하여 새로 작성
+- 기존 계획은 참고용으로만 활용
+- **추천 시점:**
+  - 아키텍처가 크게 변경되었을 때
+  - 기술 스택을 완전히 바꾸고 싶을 때
+  - 새로운 관점으로 계획을 다시 작성하고 싶을 때
+  - 구현 전략을 근본적으로 재구성하고 싶을 때
+
+**✏️ Option 2: 부분 업데이트 (Incremental Update)**
+- 기존 계획을 보여주고 변경/추가할 부분만 질문
+- 기존 내용과 새 내용을 merge하여 업데이트
+- **추천 시점:**
+  - 특정 컴포넌트 설계 변경
+  - 새로운 라이브러리 추가
+  - 성능 최적화 전략 추가
+  - 테스트 전략 개선
+  - 일부 기술 스택 업데이트
+
+**사용자 선택에 따라 진행:**
+- Option 1 선택 시 → Step 1부터 정상 진행 (완전 재작성)
+- Option 2 선택 시 → 기존 계획 표시 + "어떤 부분을 업데이트하시겠습니까?" 질문 + 변경사항만 수집 후 merge
+
+### If File Not Exists
+
+Step 1부터 정상 진행 (처음 작성)
+
+---
+
 ## Step 1: Review Specification and Check Prerequisites
 
 명세를 읽고 이해:

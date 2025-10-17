@@ -36,32 +36,6 @@ This plugin requires external tools:
 
 The plugin will guide you through installation if not detected.
 
-## Installation
-
-Add to your `.claude/plugins.json`:
-
-```json
-{
-  "plugins": [
-    {
-      "source": "marketplace:spec-kit"
-    }
-  ]
-}
-```
-
-Or install from GitHub:
-
-```json
-{
-  "plugins": [
-    {
-      "source": "github:your-username/claude-code-marketplace/plugins/spec-kit"
-    }
-  ]
-}
-```
-
 ## Commands
 
 ### Core Workflow
@@ -108,6 +82,117 @@ Or install from GitHub:
 # 7. Check quality gates
 /spec-kit:checklist
 ```
+
+## Iterative Workflow
+
+Spec-Kit is **iterative by design**. You can revise earlier stages as you learn more during implementation.
+
+### When to Update Earlier Stages
+
+You should update specs, plans, or constitution when:
+- 🔍 You discover missing requirements during implementation
+- 💡 New insights emerge from prototyping or testing
+- 🎯 Business priorities change
+- ⚠️ Technical constraints reveal themselves
+- 🤔 Open Questions need clarification
+
+### How to Update (Recommended Approaches)
+
+#### 1. Re-run Commands (Best Practice) ✅
+
+Simply re-run the command to update that stage. Claude will maintain context and help refine:
+
+```bash
+# Need to change specification?
+/spec-kit:specify
+
+# Need to revise technical plan?
+/spec-kit:plan
+
+# Need to update constitution?
+/spec-kit:constitution
+```
+
+**Why this is best:**
+- 📝 Claude understands WHY you're changing things (context preserved)
+- 🔄 Downstream stages automatically reflect changes
+- ✅ Consistency checks and validation built-in
+- 📋 Change history tracked in conversation
+
+#### 2. Use Clarify for Specific Issues
+
+When you need to resolve ambiguities or update specific sections:
+
+```bash
+# Clarify ambiguous parts
+/spec-kit:clarify
+
+# Then regenerate affected stages
+/spec-kit:plan
+/spec-kit:tasks
+```
+
+**When to use:**
+- Specific parts of spec/plan need clarification
+- Open Questions need answering
+- Minor refinements needed
+
+#### 3. Direct File Editing (Use Sparingly)
+
+Only for minor cosmetic changes:
+
+```bash
+# Edit files directly in .specify/memory/
+# - constitution.md
+# - specification.md
+# - plan.md
+
+# Then regenerate downstream stages
+/spec-kit:tasks
+```
+
+**Only use for:**
+- Fixing typos
+- Formatting adjustments
+- Wording improvements
+
+**Avoid for:**
+- Adding/removing features
+- Changing requirements
+- Major restructuring
+
+### Cascade Updates
+
+After updating an earlier stage, regenerate downstream stages:
+
+```
+Constitution Changed → /spec-kit:specify → /spec-kit:plan → /spec-kit:tasks
+
+Specification Changed → /spec-kit:plan → /spec-kit:tasks
+
+Plan Changed → /spec-kit:tasks
+```
+
+### Example: Mid-Implementation Discovery
+
+```bash
+# During implementation, you realize the spec missed a critical edge case
+
+# 1. Update specification with new requirements
+/spec-kit:specify
+"I need to add handling for offline mode..."
+
+# 2. Update technical plan with new approach
+/spec-kit:plan
+
+# 3. Regenerate tasks to include new work
+/spec-kit:tasks
+
+# 4. Continue implementation with updated plan
+/spec-kit:implement
+```
+
+**Key Principle:** Embrace iteration. It's better to update specs when you learn something new than to code against outdated requirements.
 
 ## Project Structure
 
@@ -393,11 +478,19 @@ MIT License - see [LICENSE](LICENSE) file.
 
 ---
 
-**Version**: 1.2.0
+**Version**: 1.3.0
 **Last Updated**: 2025-10-18
 **Status**: Beta
 
 ## Changelog
+
+### v1.3.0 (2025-10-18)
+- 🔄 **Update Mode Selection**: All core commands now detect existing files and offer two update options
+- 📋 **Full Regeneration**: Complete rewrite from scratch when requirements drastically change
+- ✏️ **Incremental Update**: Merge-based updates for targeted changes
+- 📖 **Iterative Workflow Documentation**: Comprehensive guide on when and how to update earlier stages
+- 🎯 **Context Preservation**: Re-running commands maintains conversation history and change rationale
+- ⚡ **Cascade Updates**: Clear guidance on updating downstream stages after changes
 
 ### v1.2.0 (2025-10-18)
 - ✨ **Smart Prerequisite Checks**: Automatic Open Questions detection in plan, tasks, and implement commands

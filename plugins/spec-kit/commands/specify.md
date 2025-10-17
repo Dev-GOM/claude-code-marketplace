@@ -19,6 +19,47 @@ cat .specify/memory/constitution.md
 
 없다면 `/spec-kit:constitution`을 먼저 실행하세요.
 
+## Step 0: Check Existing File and Choose Update Mode
+
+기존 명세 파일 확인:
+
+```bash
+cat .specify/memory/specification.md
+```
+
+### If File Exists - Choose Update Mode
+
+사용자에게 두 가지 옵션 제공:
+
+**📋 Option 1: 완전 재생성 (Full Regeneration)**
+- 처음부터 모든 정보를 다시 수집하여 새로 작성
+- 기존 명세는 참고용으로만 활용
+- **추천 시점:**
+  - 요구사항이 크게 변경되었을 때
+  - 기능 범위가 완전히 바뀌었을 때
+  - 새로운 관점으로 명세를 다시 작성하고 싶을 때
+  - 구조를 완전히 재구성하고 싶을 때
+
+**✏️ Option 2: 부분 업데이트 (Incremental Update)**
+- 기존 명세를 보여주고 변경/추가할 부분만 질문
+- 기존 내용과 새 내용을 merge하여 업데이트
+- **추천 시점:**
+  - 특정 요구사항 추가/수정
+  - 새로운 사용자 스토리 추가
+  - 수용 기준(Acceptance Criteria) 개선
+  - UI/UX 플로우 업데이트
+  - 일부 섹션 명확화
+
+**사용자 선택에 따라 진행:**
+- Option 1 선택 시 → Step 1부터 정상 진행 (완전 재작성)
+- Option 2 선택 시 → 기존 명세 표시 + "어떤 부분을 업데이트하시겠습니까?" 질문 + 변경사항만 수집 후 merge
+
+### If File Not Exists
+
+Step 1부터 정상 진행 (처음 작성)
+
+---
+
 ## Step 1: Gather Requirements
 
 사용자와 대화하며 다음을 파악:

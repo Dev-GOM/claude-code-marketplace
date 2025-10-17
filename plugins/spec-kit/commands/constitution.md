@@ -19,6 +19,45 @@ ls .specify/memory/
 
 없다면 `/speckit:init`를 먼저 실행하세요.
 
+## Step 0: Check Existing File and Choose Update Mode
+
+기존 헌법 파일 확인:
+
+```bash
+cat .specify/memory/constitution.md
+```
+
+### If File Exists - Choose Update Mode
+
+사용자에게 두 가지 옵션 제공:
+
+**📋 Option 1: 완전 재생성 (Full Regeneration)**
+- 처음부터 모든 정보를 다시 수집하여 새로 작성
+- 기존 헌법은 참고용으로만 활용
+- **추천 시점:**
+  - 프로젝트 방향이 크게 변경되었을 때
+  - 핵심 가치나 원칙을 근본적으로 바꾸고 싶을 때
+  - 새로운 관점으로 헌법을 다시 정립하고 싶을 때
+
+**✏️ Option 2: 부분 업데이트 (Incremental Update)**
+- 기존 헌법을 보여주고 변경/추가할 부분만 질문
+- 기존 내용과 새 내용을 merge하여 업데이트
+- **추천 시점:**
+  - 특정 원칙이나 기준만 수정하고 싶을 때
+  - 새로운 품질 게이트 추가
+  - 기술 표준 업데이트 (예: 새 플랫폼 지원)
+  - 일부 원칙 개선 또는 명확화
+
+**사용자 선택에 따라 진행:**
+- Option 1 선택 시 → Step 1부터 정상 진행 (완전 재작성)
+- Option 2 선택 시 → 기존 헌법 표시 + "어떤 부분을 업데이트하시겠습니까?" 질문 + 변경사항만 수집 후 merge
+
+### If File Not Exists
+
+Step 1부터 정상 진행 (처음 작성)
+
+---
+
 ## Step 1: Understand Project Context
 
 사용자에게 다음을 질문:
