@@ -1,13 +1,6 @@
-# Claude Code Developer Utilities
-
-> **⚠️ Important Notice (v2.0.17)**
-> There is a known issue where hook logs stack in the chat window. Until this is resolved, PostToolUse hook outputs are hidden using `suppressOutput: true` in hooks.json. Stop hook messages can be controlled via `.plugin-config/[plugin-name].json` with `"showLogs": false` (default). Set to `true` to enable. See [Configuration](#configuration) for details.
+# Claude Code Plugins
 
 > **Language**: [English](README.md) | [한국어](README.ko.md)
-
-![Claude Code Session Log](images/claude-code-session-log.png)
-
-A collection of powerful productivity plugins for Claude Code to automate common development workflows.
 
 <details>
 <summary><strong>📋 Changelog</strong> (Click to expand)</summary>
@@ -78,6 +71,13 @@ A collection of powerful productivity plugins for Claude Code to automate common
 - 🔇 Optional log suppression with `showLogs` setting
 
 </details>
+
+> **⚠️ Important Notice (v2.0.17)**
+> There is a known issue where hook logs stack in the chat window. Until this is resolved, PostToolUse hook outputs are hidden using `suppressOutput: true` in hooks.json. Stop hook messages can be controlled via `.plugin-config/[plugin-name].json` with `"showLogs": false` (default). Set to `true` to enable. See [Configuration](#configuration) for details.
+
+A collection of powerful productivity plugins for Claude Code to automate common development workflows.
+
+![Claude Code Session Log](images/claude-code-session-log.png)
 
 ## Included Plugins
 
