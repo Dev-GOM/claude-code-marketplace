@@ -21,6 +21,7 @@ Instead of jumping straight into coding, define WHAT you're building (specificat
 - 🔧 **CLI Integration**: Uses official `specify-cli` with installation guidance
 - 📊 **Progress Tracking**: Analyze project status and completion
 - ✅ **Quality Gates**: Automated checklist for code quality
+- ⚠️ **Smart Prerequisite Checks**: Automatic warnings to prevent common mistakes
 
 ## Prerequisites
 
@@ -215,6 +216,100 @@ All plugin commands create draft files in `.specify/temp/`:
     ├── plan.md
     └── tasks.md
 ```
+
+## Smart Prerequisite Checks
+
+The plugin includes automatic prerequisite checks to prevent common mistakes and guide users toward better practices.
+
+### Automatic Warnings
+
+Commands automatically detect potential issues before proceeding:
+
+#### `/spec-kit:plan` - Open Questions Check
+```bash
+⚠️ **Warning**: Unresolved questions found in specification!
+
+We strongly recommend running `/spec-kit:clarify` before creating a plan.
+
+Proceeding with unclear requirements can lead to:
+- Wrong technology choices
+- Unnecessary rework
+- Confusion during implementation
+
+Continue anyway? (yes/no)
+```
+
+#### `/spec-kit:tasks` - Dual Check
+```bash
+⚠️ **Warning**: Unresolved questions in spec or plan!
+
+We strongly recommend running `/spec-kit:clarify` before breaking down tasks.
+
+Proceeding with unclear requirements can lead to:
+- Incomplete task definitions
+- Wrong dependency mapping
+- Direction changes during implementation
+- Time waste
+
+Continue anyway? (yes/no)
+```
+
+#### `/spec-kit:implement` - Project Status Check
+```bash
+⚠️ **Warning**: Unresolved questions in spec or plan!
+
+We strongly recommend running `/spec-kit:clarify` before starting implementation.
+
+Implementing with unclear requirements can lead to:
+- Coding in the wrong direction
+- Major refactoring later
+- Time and effort waste
+- Increased frustration
+
+Continue anyway? (yes/no)
+```
+
+### Smart Commit Flow
+
+The `/spec-kit:implement` command offers three commit options:
+
+```
+📋 **Commit Method Selection**
+
+How would you like to proceed?
+
+1. Run quality gate then commit (Recommended)
+   - Run `/spec-kit:checklist`
+   - Verify Pre-Merge Checklist passes
+   - Commit if passed
+   - Best for:
+     • Core feature completion
+     • Multiple tasks completed
+     • PR creation
+     • Release preparation
+
+2. Commit directly
+   - Basic quality checks only (lint, test)
+   - Quick progress
+   - Best for:
+     • Small fixes
+     • Work-in-progress saves
+     • Experimental changes
+
+3. Don't commit
+   - Continue with next task
+   - Batch multiple tasks together
+
+Choice: [1/2/3]
+```
+
+### Benefits of Smart Checks
+
+- 🛡️ **Prevents wasted effort**: Catches unclear requirements early
+- 🎯 **Improves quality**: Encourages quality gate usage
+- 📋 **Better workflow**: Promotes proper use of clarify/checklist commands
+- 👤 **User control**: All checks are recommendations with opt-out
+- 📖 **Clear guidance**: Specific commands and explanations provided
 
 ## Benefits
 

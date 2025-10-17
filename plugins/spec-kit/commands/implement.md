@@ -19,12 +19,47 @@ cat .specify/memory/tasks.md
 
 없다면 `/spec-kit:tasks`를 먼저 실행하세요.
 
-## Step 1: Review Tasks
+## Step 1: Review Tasks and Check Project Status
 
 작업 목록을 읽고:
 - 다음 작업 식별 (완료되지 않은 첫 번째 작업)
 - 의존성 확인 (차단 작업 없는지)
 - 수용 기준 확인
+
+**⚠️ 프로젝트 상태 체크:**
+
+구현 시작 전에 프로젝트 상태를 확인하세요:
+
+```bash
+# Open Questions 체크
+cat .specify/memory/specification.md | grep -A 5 "Open Questions"
+cat .specify/memory/plan.md | grep -A 5 "Open Technical Questions"
+```
+
+**만약 Open Questions가 있다면:**
+
+```
+⚠️ **경고**: 명세나 계획에 미해결 질문이 있습니다!
+
+구현을 시작하기 전에 `/spec-kit:clarify`를 실행하여 모호한 부분을 명확히 하는 것을 강력히 권장합니다.
+
+명확하지 않은 요구사항으로 구현하면:
+- 잘못된 방향으로 코드 작성
+- 나중에 대규모 리팩토링 필요
+- 시간과 노력 낭비
+- 좌절감 증가
+
+그래도 계속 진행하시겠습니까? (예/아니오)
+```
+
+사용자가 "아니오"를 선택하면 `/spec-kit:clarify`를 먼저 실행하도록 안내하세요.
+
+**💡 권장사항:**
+
+정기적으로 전체 상황을 파악하려면 `/spec-kit:analyze`를 실행하세요.
+- 진행률 확인
+- 차단 요소 식별
+- 다음 액션 파악
 
 ## Step 2: Confirm Task
 
@@ -96,12 +131,62 @@ Estimate: [시간]
 
 ## Step 6: Commit (Optional)
 
-작업 완료 후 커밋:
+**⚠️ git commit 전 품질 체크:**
+
+git commit하기 전에 기본 품질을 확인하세요:
 
 ```bash
-git add .
-git commit -m "feat: [작업 설명]"
+# 기본 품질 체크
+npm run lint
+npm test
 ```
+
+**💡 git commit 옵션 선택:**
+
+다음 중 하나를 선택하세요:
+
+```
+📋 **git commit 방법 선택**
+
+다음 중 어떻게 진행하시겠습니까?
+
+1. 품질 게이트 실행 후 git commit (권장)
+   - `/spec-kit:checklist` 실행
+   - Pre-Merge Checklist 통과 확인
+   - 통과 시 git commit 진행
+   - 적합한 경우:
+     • 핵심 기능 구현 완료
+     • 여러 작업 완료
+     • PR 생성 예정
+     • 릴리스 준비
+
+2. 바로 git commit
+   - 기본 품질 체크(lint, test)만 확인
+   - 빠르게 진행
+   - 적합한 경우:
+     • 작은 수정
+     • 진행 중 작업 저장
+     • 실험적 변경
+
+3. git commit 하지 않음
+   - 다음 작업 계속 진행
+   - 여러 작업을 모아서 git commit
+
+선택: [1/2/3]
+```
+
+**선택에 따른 진행:**
+
+- **선택 1**: `/spec-kit:checklist`를 먼저 실행하도록 안내
+  - 체크리스트 통과 후 git commit 진행
+
+- **선택 2**: 바로 git commit 진행
+  ```bash
+  git add .
+  git commit -m "feat: [작업 설명]"
+  ```
+
+- **선택 3**: git commit 건너뛰고 다음 단계로
 
 ## Step 7: Save Draft and Execute Spec-Kit Command
 
@@ -167,10 +252,10 @@ spec-kit 명령어는 draft 파일을 읽어서 구현을 진행하고 tasks.md�
 ## Implementation Best Practices
 
 ✅ **DO:**
-- 작은 단위로 커밋
+- 작은 단위로 git commit
 - 테스트 먼저 작성 (TDD 권장)
 - 헌법과 계획 준수
-- 명확한 커밋 메시지
+- 명확한 git commit 메시지
 
 ❌ **DON'T:**
 - 여러 작업을 한 번에
