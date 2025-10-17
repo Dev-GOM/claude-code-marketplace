@@ -68,45 +68,45 @@
 
 | 명령어 | 설명 | 사용 시점 |
 |--------|------|-----------|
-| `/speckit:init` | spec-kit 프로젝트 초기화 | 새 프로젝트 시작 시 |
-| `/speckit:check` | 설치 상태 확인 | 설정 문제 해결 시 |
-| `/speckit:constitution` | 프로젝트 원칙 정의 | 기능 작업 전 |
-| `/speckit:specify` | 기능 명세 작성 | 무엇을 만들지 정의 |
-| `/speckit:plan` | 기술 계획 작성 | 어떻게 만들지 정의 |
-| `/speckit:tasks` | 작업으로 분해 | 구현 계획 시 |
-| `/speckit:implement` | 작업 실행 | 개발 중 |
+| `/spec-kit:init` | spec-kit 프로젝트 초기화 | 새 프로젝트 시작 시 |
+| `/spec-kit:check` | 설치 상태 확인 | 설정 문제 해결 시 |
+| `/spec-kit:constitution` | 프로젝트 원칙 정의 | 기능 작업 전 |
+| `/spec-kit:specify` | 기능 명세 작성 | 무엇을 만들지 정의 |
+| `/spec-kit:plan` | 기술 계획 작성 | 어떻게 만들지 정의 |
+| `/spec-kit:tasks` | 작업으로 분해 | 구현 계획 시 |
+| `/spec-kit:implement` | 작업 실행 | 개발 중 |
 
 ### 유틸리티 명령어
 
 | 명령어 | 설명 | 사용 시점 |
 |--------|------|-----------|
-| `/speckit:clarify` | 모호한 부분 명확화 | 명세가 불명확할 때 |
-| `/speckit:analyze` | 프로젝트 상태 분석 | 진행 상황 검토 시 |
-| `/speckit:checklist` | 품질 게이트 실행 | 커밋/릴리스 전 |
+| `/spec-kit:clarify` | 모호한 부분 명확화 | 명세가 불명확할 때 |
+| `/spec-kit:analyze` | 프로젝트 상태 분석 | 진행 상황 검토 시 |
+| `/spec-kit:checklist` | 품질 게이트 실행 | 커밋/릴리스 전 |
 
 ## 워크플로우 예제
 
 ```bash
 # 1. 프로젝트 초기화
-/speckit:init
+/spec-kit:init
 
 # 2. 프로젝트 헌법 수립 (원칙 & 기준)
-/speckit:constitution
+/spec-kit:constitution
 
 # 3. 기능 명세 작성 (무엇을 만들 것인가)
-/speckit:specify
+/spec-kit:specify
 
 # 4. 기술 계획 작성 (어떻게 만들 것인가)
-/speckit:plan
+/spec-kit:plan
 
 # 5. 작업으로 분해
-/speckit:tasks
+/spec-kit:tasks
 
 # 6. 단계별 구현
-/speckit:implement
+/spec-kit:implement
 
 # 7. 품질 게이트 확인
-/speckit:checklist
+/spec-kit:checklist
 ```
 
 ## 프로젝트 구조
@@ -359,7 +359,7 @@ ls -la plugins/spec-kit/.claude-plugin/
 
 ### CLI가 설치되지 않음
 
-`/speckit:check`를 실행하여 진단하고 설치 지침을 받으세요.
+`/spec-kit:check`를 실행하여 진단하고 설치 지침을 받으세요.
 
 ## 예제
 
