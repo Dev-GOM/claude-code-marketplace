@@ -68,45 +68,45 @@ Or install from GitHub:
 
 | Command | Description | When to Use |
 |---------|-------------|-------------|
-| `/speckit:init` | Initialize spec-kit project | Starting new project |
-| `/speckit:check` | Check installation status | Troubleshooting setup |
-| `/speckit:constitution` | Define project principles | Before any feature work |
-| `/speckit:specify` | Write feature specifications | Defining WHAT to build |
-| `/speckit:plan` | Create technical plan | Defining HOW to build |
-| `/speckit:tasks` | Break down into tasks | Planning implementation |
-| `/speckit:implement` | Execute tasks | During development |
+| `/spec-kit:init` | Initialize spec-kit project | Starting new project |
+| `/spec-kit:check` | Check installation status | Troubleshooting setup |
+| `/spec-kit:constitution` | Define project principles | Before any feature work |
+| `/spec-kit:specify` | Write feature specifications | Defining WHAT to build |
+| `/spec-kit:plan` | Create technical plan | Defining HOW to build |
+| `/spec-kit:tasks` | Break down into tasks | Planning implementation |
+| `/spec-kit:implement` | Execute tasks | During development |
 
 ### Utility Commands
 
 | Command | Description | When to Use |
 |---------|-------------|-------------|
-| `/speckit:clarify` | Resolve ambiguities | When specs unclear |
-| `/speckit:analyze` | Analyze project status | Review progress |
-| `/speckit:checklist` | Run quality gates | Before commit/release |
+| `/spec-kit:clarify` | Resolve ambiguities | When specs unclear |
+| `/spec-kit:analyze` | Analyze project status | Review progress |
+| `/spec-kit:checklist` | Run quality gates | Before commit/release |
 
 ## Workflow Example
 
 ```bash
 # 1. Initialize project
-/speckit:init
+/spec-kit:init
 
 # 2. Establish project constitution (principles & standards)
-/speckit:constitution
+/spec-kit:constitution
 
 # 3. Write feature specification (WHAT to build)
-/speckit:specify
+/spec-kit:specify
 
 # 4. Create technical plan (HOW to build)
-/speckit:plan
+/spec-kit:plan
 
 # 5. Break down into tasks
-/speckit:tasks
+/spec-kit:tasks
 
 # 6. Implement step by step
-/speckit:implement
+/spec-kit:implement
 
 # 7. Check quality gates
-/speckit:checklist
+/spec-kit:checklist
 ```
 
 ## Project Structure
