@@ -294,50 +294,113 @@ cat .specify/memory/constitution.md
 3. 단계별 구현 전략이 명확함?
 4. 테스트 전략이 구체적임?
 
-## Step 5: Spec-Kit 명령 실행
+## Step 5: Save Draft and Execute Spec-Kit Command
 
-모든 정보가 확인되면, 수집한 내용을 정리하여 spec-kit 명령어에 전달합니다:
+### 5.1 수집된 정보를 Draft 파일로 저장
 
-**수집된 정보 정리:**
-Step 1-4에서 결정한 모든 내용을 다음 형식으로 정리:
+먼저 `.specify/temp/` 디렉토리가 있는지 확인하고 없으면 생성:
 
-```
-아키텍처:
-- Frontend: [프레임워크, 상태관리, 스타일링]
-- Data Layer: [스토리지, 캐싱 전략]
-- Services: [서비스 목록과 기술]
-
-기술 스택:
-- Language: [언어와 버전]
-- Build Tool: [도구]
-- Testing: [프레임워크]
-- Libraries: [라이브러리 목록과 선택 이유]
-
-데이터 모델:
-- [Model 1]: [필드 정의]
-- [Model 2]: [필드 정의]
-
-컴포넌트 구조:
-- [Component 1]: [역할과 props]
-- [Component 2]: [역할과 props]
-
-구현 단계:
-Phase 1: [작업 목록과 완료 기준]
-Phase 2: [작업 목록과 완료 기준]
-
-성능 최적화 전략: [전략 목록]
-보안 고려사항: [보안 조치]
-테스트 전략: [Unit/Integration/E2E 계획]
+```bash
+mkdir -p .specify/temp
 ```
 
-**SlashCommand 도구로 실행:**
-정리된 정보를 인자로 전달하여 `/speckit.plan` 명령을 실행합니다:
+Write 도구를 사용하여 수집된 정보를 `.specify/temp/plan-draft.md` 파일로 저장합니다:
+
+```markdown
+# Plan Draft
+
+## Architecture Overview
+[Step 2에서 작성한 아키텍처 개요...]
+
+### System Components
+
+#### Frontend
+- UI 프레임워크: [선택한 프레임워크]
+- 상태 관리: [선택한 상태 관리]
+- 스타일링: [선택한 스타일링]
+
+#### Data Layer
+[Step 2에서 작성한 데이터 레이어...]
+
+#### Services
+[Step 2에서 작성한 서비스들...]
+
+## Technology Stack
+
+### Core Technologies
+[Step 2에서 선택한 핵심 기술들...]
+
+### Libraries
+[Step 2에서 선택한 라이브러리들과 선택 이유...]
+
+### Development Tools
+[Step 2에서 선택한 개발 도구들...]
+
+## Data Models
+[Step 2에서 작성한 데이터 모델들...]
+
+## Database Schema
+[Step 2에서 작성한 데이터베이스 스키마...]
+
+## Component Architecture
+[Step 2에서 작성한 컴포넌트 아키텍처...]
+
+## Implementation Strategy
+[Step 2에서 작성한 구현 전략과 단계들...]
+
+## State Management
+[Step 2에서 작성한 상태 관리 전략...]
+
+## Performance Optimization
+[Step 2에서 작성한 성능 최적화 전략...]
+
+## Offline Support
+[Step 2에서 작성한 오프라인 지원 전략...]
+
+## Security Considerations
+[Step 2에서 작성한 보안 고려사항...]
+
+## Error Handling
+[Step 2에서 작성한 에러 처리 전략...]
+
+## Testing Strategy
+[Step 2에서 작성한 테스트 전략...]
+
+## Accessibility Implementation
+[Step 2에서 작성한 접근성 구현 계획...]
+
+## Browser Compatibility
+[Step 2에서 작성한 브라우저 호환성...]
+
+## Deployment Plan
+[Step 2에서 작성한 배포 계획...]
+
+## Monitoring & Analytics
+[Step 2에서 작성한 모니터링 전략...]
+
+## Migration Strategy
+[Step 2에서 작성한 마이그레이션 전략...]
+
+## Open Technical Questions
+[Step 2에서 작성한 미해결 기술 질문들...]
+```
+
+### 5.2 Spec-Kit 명령 실행
+
+Draft 파일 경로를 전달하여 SlashCommand 도구로 `/speckit.plan` 명령을 실행합니다:
 
 ```
-/speckit.plan <위에서 정리한 정보 전체 + 사용자의 시스템 언어로 모든 내용을 작성하세요>
+/speckit.plan .specify/temp/plan-draft.md
+
+INSTRUCTION: Read the draft file at the path above using the Read tool. This draft contains ALL the technical architecture, technology stack decisions, and implementation strategy. You MUST skip all information collection and discussion steps and proceed directly to writing the plan file. Use ONLY the information from the draft file. Do NOT ask the user for any additional information. Process all content in the user's system language.
 ```
 
-spec-kit 명령어는 이 정보를 받아서 사용자의 시스템 언어로 `.specify/memory/plan.md` 파일을 생성/업데이트합니다.
+spec-kit 명령어는 draft 파일을 읽어서 `.specify/memory/plan.md` 파일을 생성/업데이트합니다.
+
+**토큰 절약 효과:**
+- 긴 텍스트를 명령어 인자로 전달하지 않음
+- 파일 경로만 전달하여 효율적
+- Draft 파일로 디버깅 및 재사용 가능
 
 ## Next Steps
 

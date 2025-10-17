@@ -177,43 +177,94 @@ lighthouse https://localhost:3000 --view
 2. Consider adding more E2E tests
 ```
 
-## Step 5: Spec-Kit 명령 실행
+## Step 5: Save Draft and Execute Spec-Kit Command
 
-체크리스트 유형을 결정한 후, 실행할 체크 항목을 정리하여 spec-kit 명령어에 전달합니다:
+### 5.1 수집된 정보를 Draft 파일로 저장
 
-**수집된 정보 정리:**
-Step 1-4에서 결정한 체크리스트 유형과 실행할 항목들을 다음 형식으로 정리:
+먼저 `.specify/temp/` 디렉토리가 있는지 확인하고 없으면 생성:
 
-```
-체크리스트 유형: Pre-Merge / Pre-Release
-
-실행할 자동화 체크:
-- Lint: npm run lint
-- Tests: npm test
-- Coverage: npm run test:coverage (목표: >= 80%)
-- Type Check: tsc --noEmit
-- Bundle Size: npm run analyze (목표: < 50 KB)
-- Security: npm audit
-
-실행할 수동 체크:
-- Accessibility: Lighthouse score > 90
-- Keyboard navigation
-- Screen reader compatibility
-- Documentation: README, API docs, Changelog
-- Code Review: 승인 상태
-
-현재 상태:
-[이미 알고 있는 상태 정보가 있다면 여기에 추가]
+```bash
+mkdir -p .specify/temp
 ```
 
-**SlashCommand 도구로 실행:**
-정리된 정보를 인자로 전달하여 `/speckit.checklist` 명령을 실행합니다:
+Write 도구를 사용하여 수집된 정보를 `.specify/temp/checklist-draft.md` 파일로 저장합니다:
+
+```markdown
+# Checklist Draft
+
+## Checklist Type
+[Pre-Merge / Pre-Release]
+
+## Quality Gates from Constitution
+[Step 1에서 로드한 헌법의 품질 게이트들...]
+
+## Automated Checks
+
+### Code Quality
+- Command: npm run lint
+- Expected: No errors
+- Result: [Step 2 실행 결과]
+
+### Testing
+- Command: npm test
+- Expected: All pass
+- Result: [Step 2 실행 결과]
+
+### Coverage
+- Command: npm run test:coverage
+- Expected: >= 80%
+- Actual: [%]%
+- Result: [Step 2 실행 결과]
+
+### Type Check
+- Command: tsc --noEmit
+- Expected: No errors
+- Result: [Step 2 실행 결과]
+
+### Bundle Size
+- Command: npm run analyze
+- Expected: < 50 KB
+- Actual: [N] KB
+- Result: [Step 2 실행 결과]
+
+### Security
+- Command: npm audit
+- Expected: 0 vulnerabilities
+- Result: [Step 2 실행 결과]
+
+## Manual Checks
+
+### Accessibility
+[Step 3에서 확인한 접근성 체크 결과들...]
+
+### Documentation
+[Step 3에서 확인한 문서화 체크 결과들...]
+
+### Code Review
+[Step 3에서 확인한 코드 리뷰 상태...]
+
+## Summary
+- Overall Status: [Pass / Pass with Warnings / Fail]
+- Blockers: [N]개
+- Warnings: [N]개
+```
+
+### 5.2 Spec-Kit 명령 실행
+
+Draft 파일 경로를 전달하여 SlashCommand 도구로 `/speckit.checklist` 명령을 실행합니다:
 
 ```
-/speckit.checklist <위에서 정리한 정보 전체 + 사용자의 시스템 언어로 모든 내용을 작성하세요>
+/speckit.checklist .specify/temp/checklist-draft.md
+
+INSTRUCTION: Read the draft file at the path above using the Read tool. This draft contains ALL the checklist results including automated check outputs and manual check statuses. You MUST skip all execution steps (Step 1-3) and proceed directly to Step 4 (Generate Report) using the results from the draft. Use ONLY the information from the draft file. Do NOT re-run any checks or ask the user for additional information. Process all content in the user's system language.
 ```
 
-spec-kit 명령어는 이 정보를 받아서 사용자의 시스템 언어로 위의 Step 1-4 프로세스를 실행하고 결과 리포트를 생성합니다.
+spec-kit 명령어는 draft 파일을 읽어서 사용자의 시스템 언어로 Step 4 (Generate Report)를 실행하고 결과 리포트를 생성합니다.
+
+**토큰 절약 효과:**
+- 긴 텍스트를 명령어 인자로 전달하지 않음
+- 파일 경로만 전달하여 효율적
+- Draft 파일로 디버깅 및 재사용 가능
 
 ## Pre-Merge vs Pre-Release
 

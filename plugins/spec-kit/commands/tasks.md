@@ -115,42 +115,63 @@ graph TD
 - Medium: 2-4 hours
 - Large: 4-8 hours (더 크면 분해 필요)
 
-## Step 6: Spec-Kit 명령 실행
+## Step 6: Save Draft and Execute Spec-Kit Command
 
-모든 정보가 확인되면, 수집한 내용을 정리하여 spec-kit 명령어에 전달합니다:
+### 6.1 수집된 정보를 Draft 파일로 저장
 
-**수집된 정보 정리:**
-Step 1-5에서 식별하고 우선순위를 정한 작업들을 다음 형식으로 정리:
+먼저 `.specify/temp/` 디렉토리가 있는지 확인하고 없으면 생성:
 
-```
-Phase 1: [Phase Name]
-  Task 1.1: [작업명]
-    - Description: [작업 설명]
-    - Acceptance: [완료 기준 1], [완료 기준 2]
-    - Depends on: None
-    - Estimate: 2h
-
-  Task 1.2: [작업명]
-    - Description: [작업 설명]
-    - Acceptance: [완료 기준]
-    - Depends on: Task 1.1
-    - Estimate: 3h
-
-Phase 2: [Phase Name]
-  Task 2.1: ...
-
-의존성 관계:
-- Task 1.1 → Task 1.2 → Task 2.1
+```bash
+mkdir -p .specify/temp
 ```
 
-**SlashCommand 도구로 실행:**
-정리된 정보를 인자로 전달하여 `/speckit.tasks` 명령을 실행합니다:
+Write 도구를 사용하여 수집된 정보를 `.specify/temp/tasks-draft.md` 파일로 저장합니다:
+
+```markdown
+# Tasks Draft
+
+## Phase 1: [Phase Name]
+
+### Task 1.1: [작업명]
+- Description: [Step 2-3에서 작성한 작업 설명]
+- Acceptance:
+  - [완료 기준 1]
+  - [완료 기준 2]
+- Depends on: None
+- Estimate: 2h
+
+### Task 1.2: [작업명]
+[Step 2-3에서 작성한 작업 내용...]
+
+## Phase 2: [Phase Name]
+[Step 2-3에서 작성한 2단계 작업들...]
+
+## Task Dependencies
+[Step 4에서 정리한 의존성 관계...]
+
+## Task Priorities
+[Step 4에서 정한 우선순위...]
+
+## Time Estimates
+[Step 5에서 할당한 예상 시간들...]
+```
+
+### 6.2 Spec-Kit 명령 실행
+
+Draft 파일 경로를 전달하여 SlashCommand 도구로 `/speckit.tasks` 명령을 실행합니다:
 
 ```
-/speckit.tasks <위에서 정리한 정보 전체 + 사용자의 시스템 언어로 모든 내용을 작성하세요>
+/speckit.tasks .specify/temp/tasks-draft.md
+
+INSTRUCTION: Read the draft file at the path above using the Read tool. This draft contains ALL the tasks broken down by phase with descriptions, acceptance criteria, dependencies, and estimates. You MUST skip all information collection and breakdown steps and proceed directly to writing the tasks file. Use ONLY the information from the draft file. Do NOT ask the user for any additional information. Process all content in the user's system language.
 ```
 
-spec-kit 명령어는 이 정보를 받아서 사용자의 시스템 언어로 `.specify/memory/tasks.md` 파일을 생성/업데이트합니다.
+spec-kit 명령어는 draft 파일을 읽어서 `.specify/memory/tasks.md` 파일을 생성/업데이트합니다.
+
+**토큰 절약 효과:**
+- 긴 텍스트를 명령어 인자로 전달하지 않음
+- 파일 경로만 전달하여 효율적
+- Draft 파일로 디버깅 및 재사용 가능
 
 ## Next Steps
 

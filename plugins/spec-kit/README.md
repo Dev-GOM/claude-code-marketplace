@@ -155,6 +155,67 @@ Breaks the plan into actionable items:
 - Dependency mapping
 - Progress tracking
 
+## Architecture & Token Efficiency
+
+This plugin is designed with a two-layer architecture for optimal token efficiency:
+
+### Two-Layer Design
+
+1. **Plugin Commands** (`/spec-kit:*`)
+   - Interactive guidance layer
+   - Collects information through conversation
+   - Saves results to `.specify/temp/[command]-draft.md`
+   - Passes only file path + instructions to core commands
+
+2. **Core Commands** (`/speckit.*` - GitHub Spec-Kit)
+   - Execution layer
+   - Reads draft files directly
+   - Generates/updates `.specify/memory/` files
+   - Follows user instructions precisely
+
+### Token Optimization
+
+Instead of passing long text as command arguments:
+
+```bash
+# ❌ Inefficient: Passing all content as arguments
+/speckit.specify "Long specification with hundreds of lines..."
+
+# ✅ Efficient: Pass only file path + instruction
+/speckit.specify .specify/temp/specification-draft.md
+
+INSTRUCTION: Read the draft file and skip information collection steps.
+Use ONLY the information from the draft file. Do NOT ask for additional information.
+```
+
+**Benefits:**
+- 🚀 **Reduced token usage**: File path vs. full content
+- 📁 **Reusable drafts**: Debug and iterate easily
+- 🔄 **Clean workflow**: Separation of concerns
+- ⚡ **Faster execution**: Less context to process
+
+### Draft Files
+
+All plugin commands create draft files in `.specify/temp/`:
+
+```
+.specify/
+├── temp/                      # ← Draft files (temporary)
+│   ├── constitution-draft.md
+│   ├── specification-draft.md
+│   ├── plan-draft.md
+│   ├── tasks-draft.md
+│   ├── implement-draft.md
+│   ├── clarify-draft.md
+│   ├── analyze-draft.md
+│   └── checklist-draft.md
+└── memory/                    # ← Final files (persistent)
+    ├── constitution.md
+    ├── specification.md
+    ├── plan.md
+    └── tasks.md
+```
+
 ## Benefits
 
 ✅ **Clarity**: Know exactly what you're building before coding
@@ -162,6 +223,7 @@ Breaks the plan into actionable items:
 ✅ **Quality**: Built-in quality gates prevent regressions
 ✅ **Communication**: Specs serve as team documentation
 ✅ **Iterative**: Validate assumptions before heavy investment
+✅ **Token Efficient**: Optimized architecture minimizes token usage
 
 ## Troubleshooting
 
@@ -236,6 +298,20 @@ MIT License - see [LICENSE](LICENSE) file.
 
 ---
 
-**Version**: 1.0.0
-**Last Updated**: 2025-10-16
+**Version**: 1.1.0
+**Last Updated**: 2025-10-17
 **Status**: Beta
+
+## Changelog
+
+### v1.1.0 (2025-10-17)
+- ✨ **Token Efficiency**: Implemented two-layer architecture with draft files
+- 🚀 **Performance**: Reduced token usage by using file paths instead of full content
+- 📁 **Draft System**: All commands now create reusable draft files in `.specify/temp/`
+- 📝 **Instructions**: Added precise instructions for each command to skip redundant steps
+- 🌐 **Multi-language**: Enhanced system language detection for all commands
+
+### v1.0.0 (2025-10-16)
+- 🎉 Initial release
+- 📋 10 slash commands for complete SDD workflow
+- 🔧 Integration with GitHub Spec-Kit CLI

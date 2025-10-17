@@ -199,46 +199,106 @@ cat .specify/memory/constitution.md
 3. 엣지 케이스 식별 확인
 4. 상태를 "Approved"로 업데이트
 
-## Step 5: Spec-Kit 명령 실행
+## Step 5: Save Draft and Execute Spec-Kit Command
 
-모든 정보가 확인되면, 수집한 내용을 정리하여 spec-kit 명령어에 전달합니다:
+### 5.1 수집된 정보를 Draft 파일로 저장
 
-**수집된 정보 정리:**
-Step 1에서 수집한 모든 답변과 Step 2에서 구조화한 내용을 다음 형식으로 정리:
+먼저 `.specify/temp/` 디렉토리가 있는지 확인하고 없으면 생성:
 
-```
-기능명: [답변]
-대상 사용자: [답변]
-해결하려는 문제: [답변]
-성공 기준: [답변]
-제약사항: [답변]
-
-User Stories:
-- As a [사용자], I want [목표], So that [이점]
-- ...
-
-Must Have 요구사항:
-1. [요구사항]
-2. ...
-
-Should Have 요구사항:
-1. [요구사항]
-...
-
-수용 기준:
-- [기준 1]
-- [기준 2]
-...
+```bash
+mkdir -p .specify/temp
 ```
 
-**SlashCommand 도구로 실행:**
-정리된 정보를 인자로 전달하여 `/speckit.specify` 명령을 실행합니다:
+Write 도구를 사용하여 수집된 정보를 `.specify/temp/specification-draft.md` 파일로 저장합니다:
+
+```markdown
+# Specification Draft
+
+## Collected Information
+
+### 기능명
+[Step 1에서 수집한 답변]
+
+### 대상 사용자
+[Step 1에서 수집한 답변]
+
+### 해결하려는 문제
+[Step 1에서 수집한 답변]
+
+### 성공 기준
+[Step 1에서 수집한 답변]
+
+### 제약사항
+[Step 1에서 수집한 답변]
+
+## User Stories
+
+### Primary Stories
+[Step 2에서 작성한 주요 스토리들...]
+
+### Secondary Stories
+[Step 2에서 작성한 부가 스토리들...]
+
+## Requirements
+
+### Functional Requirements
+
+#### Must Have (P0)
+[Step 2에서 작성한 필수 요구사항들...]
+
+#### Should Have (P1)
+[Step 2에서 작성한 권장 요구사항들...]
+
+#### Could Have (P2)
+[Step 2에서 작성한 선택 요구사항들...]
+
+### Non-Functional Requirements
+[Step 2에서 작성한 비기능 요구사항들...]
+
+## User Interface
+[Step 2에서 작성한 UI 설명...]
+
+## User Flows
+[Step 2에서 작성한 사용자 흐름들...]
+
+## Acceptance Criteria
+[Step 2에서 작성한 수용 기준들...]
+
+## Edge Cases & Constraints
+[Step 2에서 작성한 엣지 케이스와 제약사항들...]
+
+## Dependencies
+[Step 2에서 작성한 의존성들...]
+
+## Out of Scope (V1)
+[Step 2에서 작성한 제외 항목들...]
+
+## Success Metrics
+[Step 2에서 작성한 성공 지표들...]
+
+## Risks & Mitigations
+[Step 2에서 작성한 위험과 완화 전략들...]
+
+## Open Questions
+[Step 2에서 작성한 미해결 질문들...]
+```
+
+### 5.2 Spec-Kit 명령 실행
+
+Draft 파일 경로를 전달하여 SlashCommand 도구로 `/speckit.specify` 명령을 실행합니다:
 
 ```
-/speckit.specify <위에서 정리한 정보 전체 + 사용자의 시스템 언어로 모든 내용을 작성하세요>
+/speckit.specify .specify/temp/specification-draft.md
+
+INSTRUCTION: Read the draft file at the path above using the Read tool. This draft contains ALL the information needed with complete user stories, requirements, and acceptance criteria. You MUST skip all information collection steps and proceed directly to writing the specification file. Use ONLY the information from the draft file. Do NOT ask the user for any additional information. Process all content in the user's system language.
 ```
 
-spec-kit 명령어는 이 정보를 받아서 사용자의 시스템 언어로 `.specify/memory/specification.md` 파일을 생성/업데이트합니다.
+spec-kit 명령어는 draft 파일을 읽어서 `.specify/memory/specification.md` 파일을 생성/업데이트합니다.
+
+**토큰 절약 효과:**
+- 긴 텍스트를 명령어 인자로 전달하지 않음
+- 파일 경로만 전달하여 효율적
+- Draft 파일로 디버깅 및 재사용 가능
 
 ## Common Mistakes to Avoid
 

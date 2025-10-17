@@ -95,45 +95,91 @@ cat .specify/memory/tasks.md
 - 🟢 문서 포맷팅
 - 🟢 예제 부족
 
-## Step 5: Spec-Kit 명령 실행
+## Step 5: Save Draft and Execute Spec-Kit Command
 
-분석 준비가 완료되면, 분석 범위와 초점을 정리하여 spec-kit 명령어에 전달합니다:
+### 5.1 수집된 정보를 Draft 파일로 저장
 
-**수집된 정보 정리:**
-Step 1-4에서 수집한 상태 정보와 발견사항을 다음 형식으로 정리:
+먼저 `.specify/temp/` 디렉토리가 있는지 확인하고 없으면 생성:
 
-```
-분석 초점:
-- Constitution: [상태와 이슈]
-- Specification: [상태와 이슈, Open Questions 개수]
-- Plan: [상태와 이슈, Open Technical Questions 개수]
-- Tasks: [진행률, 완료/진행/대기 개수]
-
-정합성 체크:
-- Spec ↔ Plan: [정합/불일치 상세]
-- Plan ↔ Tasks: [정합/불일치 상세]
-- Constitution ↔ All: [준수/위반 상세]
-
-식별된 차단 요소:
-High Priority:
-- [차단 요소 1]: [영향과 해결 방법]
-- [차단 요소 2]: [영향과 해결 방법]
-
-Medium Priority:
-- [이슈 1]
-
-현재 Phase: [Phase 번호] - [Phase Name]
-예상 남은 시간: [N] hours
+```bash
+mkdir -p .specify/temp
 ```
 
-**SlashCommand 도구로 실행:**
-정리된 정보를 인자로 전달하여 `/speckit.analyze` 명령을 실행합니다:
+Write 도구를 사용하여 수집된 정보를 `.specify/temp/analyze-draft.md` 파일로 저장합니다:
+
+```markdown
+# Analyze Draft
+
+## Document Status
+
+### Constitution
+- Status: [Step 2에서 확인한 상태]
+- Principles: [N]개
+- Quality Gates: [N]개
+- Issues: [식별된 이슈들]
+
+### Specification
+- Status: [Step 2에서 확인한 상태]
+- User Stories: [N]개
+- Acceptance Criteria: [N]개
+- Open Questions: [N]개
+- Issues: [식별된 이슈들]
+
+### Plan
+- Status: [Step 2에서 확인한 상태]
+- Phases: [N]개
+- Open Technical Questions: [N]개
+- Issues: [식별된 이슈들]
+
+### Tasks
+- Total: [N]개
+- Completed: [N]개 ([%]%)
+- In Progress: [N]개
+- Pending: [N]개
+
+## Alignment Check
+
+### Spec ↔ Plan
+[Step 3에서 확인한 정합성 상태와 이슈...]
+
+### Plan ↔ Tasks
+[Step 3에서 확인한 정합성 상태와 이슈...]
+
+### Constitution ↔ All
+[Step 3에서 확인한 준수 여부...]
+
+## Identified Blockers
+
+### High Priority (🔴)
+[Step 4에서 식별한 고우선순위 차단 요소들...]
+
+### Medium Priority (🟡)
+[Step 4에서 식별한 중우선순위 이슈들...]
+
+### Low Priority (🟢)
+[Step 4에서 식별한 저우선순위 이슈들...]
+
+## Current Status
+- Current Phase: [Phase 번호] - [Phase Name]
+- Estimated Remaining: [N] hours
+```
+
+### 5.2 Spec-Kit 명령 실행
+
+Draft 파일 경로를 전달하여 SlashCommand 도구로 `/speckit.analyze` 명령을 실행합니다:
 
 ```
-/speckit.analyze <위에서 정리한 정보 전체 + 사용자의 시스템 언어로 모든 내용을 작성하세요>
+/speckit.analyze .specify/temp/analyze-draft.md
+
+INSTRUCTION: Read the draft file at the path above using the Read tool. This draft contains ALL the analysis results including document status, alignment checks, and identified blockers. You MUST skip all data gathering and analysis steps (Step 1-4) and proceed directly to generating the comprehensive analysis report. Use ONLY the information from the draft file. Do NOT ask the user for any additional information or re-analyze the documents. Process all content in the user's system language.
 ```
 
-spec-kit 명령어는 이 정보를 받아서 사용자의 시스템 언어로 다음과 같은 리포트를 생성합니다:
+spec-kit 명령어는 draft 파일을 읽어서 사용자의 시스템 언어로 다음과 같은 리포트를 생성합니다:
+
+**토큰 절약 효과:**
+- 긴 텍스트를 명령어 인자로 전달하지 않음
+- 파일 경로만 전달하여 효율적
+- Draft 파일로 디버깅 및 재사용 가능
 
 ```markdown
 # Project Analysis Report
