@@ -9,6 +9,68 @@
 
 A collection of powerful productivity plugins for Claude Code to automate common development workflows.
 
+<details>
+<summary><strong>📋 Changelog</strong> (Click to expand)</summary>
+
+### Spec-Kit Integration
+
+#### v1.2.0 (2025-10-18)
+- ✨ **Smart Prerequisite Checks**: Automatic Open Questions detection in `/spec-kit:plan`, `/spec-kit:tasks`, and `/spec-kit:implement` commands
+- 🎨 **Unified Commit Flow**: Single decision point with 3 clear options (quality gate + commit / direct commit / skip)
+- 📋 **Better UX**: Context-appropriate guidance for each commit option
+- 🛡️ **Error Prevention**: Warns about unclear requirements before proceeding
+- 📖 **Documentation**: Added comprehensive "Smart Prerequisite Checks" section to READMEs
+
+#### v1.1.0 (2025-10-17)
+- ✨ **Token Efficiency**: Implemented two-layer architecture with draft files
+- 🚀 **Performance**: Reduced token usage by using file paths instead of full content
+- 📁 **Draft System**: All commands now create reusable draft files in `.specify/temp/`
+- 📝 **Instructions**: Added precise instructions for each command to skip redundant steps
+- 🌐 **Multi-language**: Enhanced system language detection for all commands
+
+#### v1.0.0 (2025-10-16)
+- 🎉 Initial release
+- 📋 10 slash commands for complete SDD workflow
+- 🔧 Integration with GitHub Spec-Kit CLI
+
+---
+
+### AI Pair Programming Suite
+
+#### v1.0.0 (2025-10-15)
+- 🎉 Initial release
+- 💬 5 slash commands: `/pair`, `/review`, `/suggest`, `/fix`, `/explain`
+- 🤖 4 expert agents: `@code-reviewer`, `@bug-hunter`, `@architect`, `@performance-expert`
+- 🔔 3 intelligent hooks: Code review on Edit/Write, bug detection, session summary
+- 🎨 Configuration system for all plugins
+
+---
+
+### TODO Collector
+
+#### v1.0.0 (2025-10-14)
+- 🎉 Initial release
+- 🔗 Clickable file links in TODO reports
+- 📝 Multiple comment types support (TODO, FIXME, HACK, XXX, NOTE, BUG)
+- 📊 Detailed markdown reports with statistics
+- 🎯 Skip markdown headers to avoid false positives
+- 🌐 Multi-language support
+
+---
+
+### Hook Plugins (Git Auto-Backup, Complexity Monitor, Auto-Docs, Session Summary)
+
+#### v1.0.0 (2025-10-14)
+- 🎉 Initial release
+- 🔄 **Git Auto-Backup**: Automatic git commits after sessions
+- 📊 **Complexity Monitor**: Code complexity tracking with configurable thresholds
+- 📝 **Auto-Docs**: Automatic project structure documentation
+- 📋 **Session Summary**: Track all file operations during sessions
+- ⚙️ Configurable via `.plugin-config/` files
+- 🔇 Optional log suppression with `showLogs` setting
+
+</details>
+
 ## Included Plugins
 
 ### 1. 🔄 [Git Auto-Backup](plugins/hook-git-auto-backup/README.md)
