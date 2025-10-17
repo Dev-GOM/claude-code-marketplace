@@ -19,6 +19,47 @@ cat .specify/memory/plan.md
 
 없다면 `/spec-kit:plan`을 먼저 실행하세요.
 
+## Step 0: Check Existing File and Choose Update Mode
+
+기존 작업 목록 파일 확인:
+
+```bash
+cat .specify/memory/tasks.md
+```
+
+### If File Exists - Choose Update Mode
+
+사용자에게 두 가지 옵션 제공:
+
+**📋 Option 1: 완전 재생성 (Full Regeneration)**
+- 처음부터 모든 정보를 다시 수집하여 새로 작성
+- 기존 작업 목록은 참고용으로만 활용
+- **추천 시점:**
+  - 계획이 크게 변경되어 작업 구조가 완전히 바뀌었을 때
+  - 구현 전략이 근본적으로 변경되었을 때
+  - 새로운 관점으로 작업을 다시 분해하고 싶을 때
+  - 우선순위를 완전히 재구성하고 싶을 때
+
+**✏️ Option 2: 부분 업데이트 (Incremental Update)**
+- 기존 작업 목록을 보여주고 변경/추가할 부분만 질문
+- 기존 내용과 새 내용을 merge하여 업데이트
+- **추천 시점:**
+  - 특정 Phase에 새 작업 추가
+  - 일부 작업의 수용 기준 변경
+  - 작업 예상 시간 조정
+  - 의존성 관계 업데이트
+  - 새로운 요구사항에 따른 작업 추가
+
+**사용자 선택에 따라 진행:**
+- Option 1 선택 시 → Step 1부터 정상 진행 (완전 재작성)
+- Option 2 선택 시 → 기존 작업 목록 표시 + "어떤 부분을 업데이트하시겠습니까?" 질문 + 변경사항만 수집 후 merge
+
+### If File Not Exists
+
+Step 1부터 정상 진행 (처음 작성)
+
+---
+
 ## Step 1: Review Plan and Check Prerequisites
 
 계획의 구현 전략(Implementation Strategy)을 집중적으로 검토:

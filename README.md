@@ -14,6 +14,14 @@ A collection of powerful productivity plugins for Claude Code to automate common
 
 ### Spec-Kit Integration
 
+#### v1.3.0 (2025-10-18)
+- 🔄 **Update Mode Selection**: All core commands now detect existing files and offer two update options
+- 📋 **Full Regeneration**: Complete rewrite from scratch when requirements drastically change
+- ✏️ **Incremental Update**: Merge-based updates for targeted changes
+- 📖 **Iterative Workflow Documentation**: Comprehensive guide on when and how to update earlier stages
+- 🎯 **Context Preservation**: Re-running commands maintains conversation history and change rationale
+- ⚡ **Cascade Updates**: Clear guidance on updating downstream stages after changes
+
 #### v1.2.0 (2025-10-18)
 - ✨ **Smart Prerequisite Checks**: Automatic Open Questions detection in `/spec-kit:plan`, `/spec-kit:tasks`, and `/spec-kit:implement` commands
 - 🎨 **Unified Commit Flow**: Single decision point with 3 clear options (quality gate + commit / direct commit / skip)

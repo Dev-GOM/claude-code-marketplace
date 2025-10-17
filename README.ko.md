@@ -7,16 +7,24 @@
 
 ![Claude Code Session Log](images/claude-code-session-log.png)
 
-일반적인 개발 워크플로우를 자동화하는 강력한 Claude Code 생산성 플러그인 모음입니다.
+일반적인 개발 워크플로우(Workflow)를 자동화하는 강력한 Claude Code 생산성 플러그인(Plugin) 모음입니다.
 
 <details>
 <summary><strong>📋 변경 이력</strong> (펼치기)</summary>
 
 ### Spec-Kit 통합
 
+#### v1.3.0 (2025-10-18)
+- 🔄 **업데이트 모드 선택(Update Mode Selection)**: 모든 핵심 명령어가 기존 파일을 감지하고 두 가지 업데이트 옵션 제공
+- 📋 **완전 재생성(Full Regeneration)**: 요구사항이 크게 변경되었을 때 처음부터 완전히 재작성
+- ✏️ **부분 업데이트(Incremental Update)**: 특정 변경사항만 타겟팅하는 병합 기반 업데이트
+- 📖 **반복적 워크플로우 문서화(Iterative Workflow Documentation)**: 이전 단계를 언제 어떻게 업데이트할지에 대한 종합 가이드
+- 🎯 **컨텍스트 보존(Context Preservation)**: 명령어 재실행 시 대화 이력과 변경 이유 유지
+- ⚡ **계단식 업데이트(Cascade Updates)**: 변경 후 하위 단계 업데이트에 대한 명확한 가이드
+
 #### v1.2.0 (2025-10-18)
-- ✨ **스마트 사전 체크**: `/spec-kit:plan`, `/spec-kit:tasks`, `/spec-kit:implement` 명령어에서 Open Questions 자동 감지
-- 🎨 **통합 커밋 플로우**: 3가지 명확한 옵션이 있는 단일 결정 포인트 (품질 게이트 + 커밋 / 바로 커밋 / 건너뛰기)
+- ✨ **스마트 사전 체크(Smart Prerequisite Checks)**: `/spec-kit:plan`, `/spec-kit:tasks`, `/spec-kit:implement` 명령어에서 미해결 질문(Open Questions) 자동 감지
+- 🎨 **통합 커밋 플로우(Unified Commit Flow)**: 3가지 명확한 옵션이 있는 단일 결정 포인트 (품질 게이트 + 커밋 / 바로 커밋 / 건너뛰기)
 - 📋 **더 나은 UX**: 각 커밋 옵션에 대한 상황별 적절한 안내
 - 🛡️ **오류 방지**: 진행하기 전에 불명확한 요구사항에 대해 경고
 - 📖 **문서화**: README에 포괄적인 "스마트 사전 체크" 섹션 추가
@@ -75,9 +83,9 @@
 
 ### 1. 🔄 [Git Auto-Backup](plugins/hook-git-auto-backup/README.ko.md)
 
-Claude Code 세션이 끝날 때마다 자동으로 git 커밋을 생성하여 작업 손실을 방지합니다.
+Claude Code 세션(Session)이 끝날 때마다 자동으로 git 커밋을 생성하여 작업 손실을 방지합니다.
 
-**요약:** 세션 종료 시 타임스탬프와 함께 모든 변경사항 자동 커밋 | **Hook:** `Stop`
+**요약:** 세션 종료 시 타임스탬프와 함께 모든 변경사항 자동 커밋 | **훅(Hook):** `Stop`
 
 **[📖 전체 문서 보기 →](plugins/hook-git-auto-backup/README.ko.md)**
 
@@ -85,9 +93,9 @@ Claude Code 세션이 끝날 때마다 자동으로 git 커밋을 생성하여 �
 
 ### 2. 📋 [TODO Collector](plugins/hook-todo-collector/README.ko.md)
 
-프로젝트 전체를 스캔하여 모든 TODO, FIXME, HACK, XXX, NOTE, BUG 코멘트를 상세 리포트로 수집합니다.
+프로젝트 전체를 스캔하여 모든 TODO, FIXME, HACK, XXX, NOTE, BUG 코멘트를 상세 리포트(Report)로 수집합니다.
 
-**요약:** 다양한 언어 지원, 마크다운 리포트 생성 | **Hooks:** `PostToolUse` (Write|Edit|NotebookEdit), `Stop`
+**요약:** 다양한 언어 지원, 마크다운 리포트 생성 | **훅(Hooks):** `PostToolUse` (Write|Edit|NotebookEdit), `Stop`
 
 ![TODO Report Example](images/todos-report.png)
 
@@ -99,7 +107,7 @@ Claude Code 세션이 끝날 때마다 자동으로 git 커밋을 생성하여 �
 
 코드 복잡도 지표를 모니터링하고 임계값을 초과하면 경고합니다.
 
-**요약:** 순환 복잡도, 함수/파일 길이, 중첩 깊이 추적 | **Hook:** `PostToolUse` (Edit|Write)
+**요약:** 순환 복잡도, 함수/파일 길이, 중첩 깊이 추적 | **훅(Hook):** `PostToolUse` (Edit|Write)
 
 ![Complexity Log Example](images/complexity-log.png)
 
@@ -111,7 +119,7 @@ Claude Code 세션이 끝날 때마다 자동으로 git 커밋을 생성하여 �
 
 디렉토리 트리, 스크립트, 의존성을 포함한 프로젝트 구조를 자동으로 스캔하고 문서화합니다.
 
-**요약:** 프로젝트 구조 문서 생성, 파일 변경 추적, package.json 정보 추출 | **Hooks:** `PostToolUse` (Write), `Stop`
+**요약:** 프로젝트 구조 문서 생성, 파일 변경 추적, package.json 정보 추출 | **훅(Hooks):** `PostToolUse` (Write), `Stop`
 
 ![Project Structure Example](images/project-structure.png)
 
@@ -123,7 +131,7 @@ Claude Code 세션이 끝날 때마다 자동으로 git 커밋을 생성하여 �
 
 세션 동안 모든 파일 작업을 추적하고 디렉토리 트리 시각화가 포함된 요약 리포트를 생성합니다.
 
-**요약:** 작업 유형별 파일 분류 (Created, Modified, Read) | **Hooks:** `PostToolUse` (Write|Edit|Read|NotebookEdit), `Stop`
+**요약:** 작업 유형별 파일 분류 (Created, Modified, Read) | **훅(Hooks):** `PostToolUse` (Write|Edit|Read|NotebookEdit), `Stop`
 
 ![Session Summary Example](images/session-summary.png)
 
@@ -133,7 +141,7 @@ Claude Code 세션이 끝날 때마다 자동으로 git 커밋을 생성하여 �
 
 ### 6. 🤖 [AI 페어 프로그래밍 스위트](plugins/ai-pair-programming/README.ko.md)
 
-슬래시 커맨드, 전문 에이전트, 지능형 훅이 통합된 완벽한 AI 페어 프로그래밍 경험.
+슬래시 커맨드(Slash Command), 전문 에이전트(Agent), 지능형 훅이 통합된 완벽한 AI 페어 프로그래밍 경험.
 
 **요약:** 5개 슬래시 커맨드 + 4개 전문 에이전트 + 3개 지능형 훅 | **커맨드:** `/pair`, `/review`, `/suggest`, `/fix`, `/explain` | **에이전트:** `@code-reviewer`, `@bug-hunter`, `@architect`, `@performance-expert`
 
@@ -143,9 +151,9 @@ Claude Code 세션이 끝날 때마다 자동으로 git 커밋을 생성하여 �
 
 ### 7. 📋 [Spec-Kit 통합](plugins/spec-kit/README.ko.md)
 
-명세 주도 개발(SDD)을 위한 [GitHub Spec-Kit](https://github.com/github/spec-kit) 통합. 코딩 전에 무엇을(WHAT) 어떻게(HOW) 만들지 정의합니다.
+명세 주도 개발(SDD, Specification-Driven Development)을 위한 [GitHub Spec-Kit](https://github.com/github/spec-kit) 통합. 코딩 전에 무엇을(WHAT) 어떻게(HOW) 만들지 정의합니다.
 
-**요약:** 구조화된 개발 워크플로우를 위한 10개 슬래시 커맨드 | **커맨드:** `/spec-kit:init`, `/spec-kit:constitution`, `/spec-kit:specify`, `/spec-kit:plan`, `/spec-kit:tasks`, `/spec-kit:implement` | **워크플로우:** 헌법 → 명세 → 계획 → 작업 → 구현
+**요약:** 구조화된 개발 워크플로우를 위한 10개 슬래시 커맨드 | **커맨드:** `/spec-kit:init`, `/spec-kit:constitution`, `/spec-kit:specify`, `/spec-kit:plan`, `/spec-kit:tasks`, `/spec-kit:implement` | **워크플로우:** 헌법(Constitution) → 명세(Specification) → 계획(Plan) → 작업(Tasks) → 구현(Implementation)
 
 **[📖 전체 문서 보기 →](plugins/spec-kit/README.ko.md)**
 
@@ -153,7 +161,7 @@ Claude Code 세션이 끝날 때마다 자동으로 git 커밋을 생성하여 �
 
 ### 빠른 시작 (권장)
 
-1. Claude Code에서 마켓플레이스 추가:
+1. Claude Code에서 마켓플레이스(Marketplace) 추가:
    ```bash
    /plugin marketplace add https://github.com/Dev-GOM/claude-code-marketplace.git
    ```
