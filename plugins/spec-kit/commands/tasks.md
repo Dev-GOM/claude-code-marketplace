@@ -19,12 +19,40 @@ cat .specify/memory/plan.md
 
 없다면 `/spec-kit:plan`을 먼저 실행하세요.
 
-## Step 1: Review Plan
+## Step 1: Review Plan and Check Prerequisites
 
 계획의 구현 전략(Implementation Strategy)을 집중적으로 검토:
 - 각 단계(Phase)의 작업들
 - 완료 기준
 - 의존성
+
+**⚠️ 사전 체크:**
+
+작업 분해 전에 명세와 계획의 완성도를 확인하세요:
+
+```bash
+# specification.md와 plan.md에서 Open Questions 체크
+cat .specify/memory/specification.md | grep -A 10 "Open Questions"
+cat .specify/memory/plan.md | grep -A 10 "Open Technical Questions"
+```
+
+**만약 Open Questions가 있다면:**
+
+```
+⚠️ **경고**: 명세나 계획에 미해결 질문이 있습니다!
+
+작업을 분해하기 전에 `/spec-kit:clarify`를 실행하여 모호한 부분을 명확히 하는 것을 강력히 권장합니다.
+
+명확하지 않은 요구사항으로 작업을 분해하면:
+- 불완전한 작업 정의
+- 잘못된 의존성 파악
+- 구현 중 방향 전환 필요
+- 시간 낭비
+
+그래도 계속 진행하시겠습니까? (예/아니오)
+```
+
+사용자가 "아니오"를 선택하면 `/spec-kit:clarify`를 먼저 실행하도록 안내하세요.
 
 ## Step 2: Identify Tasks
 

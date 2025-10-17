@@ -20,13 +20,39 @@ cat .specify/memory/specification.md
 
 없다면 먼저 `/spec-kit:constitution`, `/spec-kit:specify`를 실행하세요.
 
-## Step 1: Review Specification
+## Step 1: Review Specification and Check Prerequisites
 
 명세를 읽고 이해:
 - 어떤 기능을 구축해야 하는가?
 - 수용 기준은 무엇인가?
 - 성능 요구사항은?
 - 제약사항은?
+
+**⚠️ 사전 체크:**
+
+계획 작성 전에 명세의 완성도를 확인하세요:
+
+```bash
+# specification.md에서 Open Questions 체크
+cat .specify/memory/specification.md | grep -A 10 "Open Questions"
+```
+
+**만약 Open Questions가 있다면:**
+
+```
+⚠️ **경고**: 명세에 미해결 질문이 있습니다!
+
+계획을 작성하기 전에 `/spec-kit:clarify`를 실행하여 모호한 부분을 명확히 하는 것을 강력히 권장합니다.
+
+명확하지 않은 요구사항으로 계획을 작성하면:
+- 잘못된 기술 선택
+- 불필요한 재작업
+- 구현 중 혼란
+
+그래도 계속 진행하시겠습니까? (예/아니오)
+```
+
+사용자가 "아니오"를 선택하면 `/spec-kit:clarify`를 먼저 실행하도록 안내하세요.
 
 ## Step 2: Structure Technical Plan
 
