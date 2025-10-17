@@ -9,6 +9,68 @@
 
 일반적인 개발 워크플로우를 자동화하는 강력한 Claude Code 생산성 플러그인 모음입니다.
 
+<details>
+<summary><strong>📋 변경 이력</strong> (펼치기)</summary>
+
+### Spec-Kit 통합
+
+#### v1.2.0 (2025-10-18)
+- ✨ **스마트 사전 체크**: `/spec-kit:plan`, `/spec-kit:tasks`, `/spec-kit:implement` 명령어에서 Open Questions 자동 감지
+- 🎨 **통합 커밋 플로우**: 3가지 명확한 옵션이 있는 단일 결정 포인트 (품질 게이트 + 커밋 / 바로 커밋 / 건너뛰기)
+- 📋 **더 나은 UX**: 각 커밋 옵션에 대한 상황별 적절한 안내
+- 🛡️ **오류 방지**: 진행하기 전에 불명확한 요구사항에 대해 경고
+- 📖 **문서화**: README에 포괄적인 "스마트 사전 체크" 섹션 추가
+
+#### v1.1.0 (2025-10-17)
+- ✨ **토큰 효율성**: draft 파일을 사용하는 2계층 아키텍처 구현
+- 🚀 **성능**: 전체 내용 대신 파일 경로 사용으로 토큰 사용량 감소
+- 📁 **Draft 시스템**: 모든 명령어가 `.specify/temp/`에 재사용 가능한 draft 파일 생성
+- 📝 **지시사항**: 각 명령어마다 중복 단계를 건너뛰는 정확한 지시사항 추가
+- 🌐 **다국어**: 모든 명령어에 대한 시스템 언어 감지 개선
+
+#### v1.0.0 (2025-10-16)
+- 🎉 최초 릴리스
+- 📋 완전한 SDD 워크플로우를 위한 10개 슬래시 명령어
+- 🔧 GitHub Spec-Kit CLI와의 통합
+
+---
+
+### AI 페어 프로그래밍 스위트
+
+#### v1.0.0 (2025-10-15)
+- 🎉 최초 릴리스
+- 💬 5개 슬래시 커맨드: `/pair`, `/review`, `/suggest`, `/fix`, `/explain`
+- 🤖 4개 전문 에이전트: `@code-reviewer`, `@bug-hunter`, `@architect`, `@performance-expert`
+- 🔔 3개 지능형 훅: Edit/Write 시 코드 리뷰, 버그 감지, 세션 요약
+- 🎨 모든 플러그인을 위한 설정 시스템
+
+---
+
+### TODO Collector
+
+#### v1.0.0 (2025-10-14)
+- 🎉 최초 릴리스
+- 🔗 TODO 리포트에 클릭 가능한 파일 링크
+- 📝 다양한 코멘트 타입 지원 (TODO, FIXME, HACK, XXX, NOTE, BUG)
+- 📊 통계가 포함된 상세한 마크다운 리포트
+- 🎯 마크다운 헤더 건너뛰기로 오탐 방지
+- 🌐 다국어 지원
+
+---
+
+### 훅 플러그인들 (Git Auto-Backup, Complexity Monitor, Auto-Docs, Session Summary)
+
+#### v1.0.0 (2025-10-14)
+- 🎉 최초 릴리스
+- 🔄 **Git Auto-Backup**: 세션 종료 후 자동 git 커밋
+- 📊 **Complexity Monitor**: 설정 가능한 임계값으로 코드 복잡도 추적
+- 📝 **Auto-Docs**: 프로젝트 구조 자동 문서화
+- 📋 **Session Summary**: 세션 동안 모든 파일 작업 추적
+- ⚙️ `.plugin-config/` 파일을 통한 설정 가능
+- 🔇 `showLogs` 설정으로 선택적 로그 표시
+
+</details>
+
 ## 포함된 플러그인
 
 ### 1. 🔄 [Git Auto-Backup](plugins/hook-git-auto-backup/README.ko.md)

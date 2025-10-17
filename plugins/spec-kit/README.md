@@ -393,11 +393,18 @@ MIT License - see [LICENSE](LICENSE) file.
 
 ---
 
-**Version**: 1.1.0
-**Last Updated**: 2025-10-17
+**Version**: 1.2.0
+**Last Updated**: 2025-10-18
 **Status**: Beta
 
 ## Changelog
+
+### v1.2.0 (2025-10-18)
+- ✨ **Smart Prerequisite Checks**: Automatic Open Questions detection in plan, tasks, and implement commands
+- 🎨 **Unified Commit Flow**: Single decision point with 3 clear options (quality gate + commit / direct commit / skip)
+- 📋 **Better UX**: Context-appropriate guidance for each commit option
+- 🛡️ **Error Prevention**: Warns about unclear requirements before proceeding
+- 📖 **Documentation**: Added comprehensive "Smart Prerequisite Checks" section to READMEs
 
 ### v1.1.0 (2025-10-17)
 - ✨ **Token Efficiency**: Implemented two-layer architecture with draft files
