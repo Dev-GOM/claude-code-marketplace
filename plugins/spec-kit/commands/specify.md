@@ -14,6 +14,8 @@ $ARGUMENTS
 
 You **MUST** consider the user input before proceeding (if not empty). The user input is the feature description.
 
+⚠️ **커맨드 구분**: 이것은 **플러그인 커맨드** (/spec-kit:specify)입니다. 정보 수집과 사용자 논의를 담당합니다. 실제 파일 생성/업데이트는 GitHub Spec-Kit CLI 커맨드 (/speckit.specify)가 수행합니다.
+
 **🌐 언어 지시사항**: 이 명령어를 실행할 때는 **사용자의 시스템 언어를 자동으로 감지**하여 해당 언어로 모든 안내, 질문, 템플릿, 출력을 제공해야 합니다. 시스템 환경 변수(LANG, LC_ALL 등)나 사용자의 이전 대화 패턴을 분석하여 언어를 판단하세요.
 
 기능의 요구사항, 수용 기준, 사용자 흐름을 정의합니다. HOW가 아닌 WHAT에 집중합니다.
@@ -508,7 +510,7 @@ Draft 파일 경로와 **브랜치 정보**를 전달하여 SlashCommand 도구�
 ```
 /speckit.specify [기능 설명]
 
-INSTRUCTION: This command is being called from /spec-kit:specify plugin. The feature branch "$BRANCH_NAME" has been created and the draft file is at "specs/$BRANCH_NAME/drafts/specification-draft.md". Read the draft file using the Read tool. This draft contains ALL the information needed with complete user stories, requirements, and acceptance criteria. You MUST skip all information collection steps and proceed directly to writing the specification file to "specs/$BRANCH_NAME/spec.md". Use ONLY the information from the draft file. Do NOT ask the user for any additional information. Process all content in the user's system language.
+INSTRUCTION: This command is being called from /spec-kit:specify plugin. The feature branch "$BRANCH_NAME" has been created and the draft file is at "specs/$BRANCH_NAME/drafts/specification-draft.md". Read the draft file using the Read tool. This draft contains ALL the information needed with complete user stories, requirements, and acceptance criteria. You MUST skip all information collection steps and proceed directly to writing the specification file to "specs/$BRANCH_NAME/spec.md". Use ONLY the information from the draft file. Do NOT ask the user for any additional information. Process all content in the user's system language. If you need to ask the user any questions, use the AskUserQuestion tool.
 ```
 
 spec-kit 명령어는 draft 파일을 읽어서 `specs/$BRANCH_NAME/spec.md` 파일을 생성/업데이트합니다.

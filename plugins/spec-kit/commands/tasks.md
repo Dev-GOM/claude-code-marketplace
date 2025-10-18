@@ -14,6 +14,8 @@ $ARGUMENTS
 
 You **MUST** consider the user input before proceeding (if not empty).
 
+⚠️ **커맨드 구분**: 이것은 **플러그인 커맨드** (/spec-kit:tasks)입니다. 정보 수집과 사용자 논의를 담당합니다. 실제 파일 생성/업데이트는 GitHub Spec-Kit CLI 커맨드 (/speckit.tasks)가 수행합니다.
+
 **🌐 언어 지시사항**: 이 명령어를 실행할 때는 **사용자의 시스템 언어를 자동으로 감지**하여 해당 언어로 모든 안내, 질문, 작업 분해 가이드, 출력을 제공해야 합니다. 시스템 환경 변수(LANG, LC_ALL 등)나 사용자의 이전 대화 패턴을 분석하여 언어를 판단하세요.
 
 기술 계획을 작고 실행 가능한 작업으로 분해하여 단계별 구현 가이드를 만듭니다.
@@ -37,9 +39,6 @@ cat "specs/$CURRENT_BRANCH/plan.md"
 기존 작업 목록 파일 확인:
 
 ```bash
-# 현재 브랜치 확인
-CURRENT_BRANCH=$(git branch --show-current)
-
 # 작업 목록 파일 확인
 cat "specs/$CURRENT_BRANCH/tasks.md"
 ```
@@ -90,9 +89,6 @@ Step 1부터 정상 진행 (처음 작성)
 작업 분해 전에 명세와 계획의 완성도를 확인하세요:
 
 ```bash
-# 현재 브랜치 확인
-CURRENT_BRANCH=$(git branch --show-current)
-
 # specification.md와 plan.md에서 Open Questions 체크
 cat "specs/$CURRENT_BRANCH/spec.md" | grep -A 10 "Open Questions"
 cat "specs/$CURRENT_BRANCH/plan.md" | grep -A 10 "Open Technical Questions"
@@ -212,9 +208,6 @@ graph TD
 먼저 현재 기능의 drafts 디렉토리 생성:
 
 ```bash
-# 현재 브랜치 확인
-CURRENT_BRANCH=$(git branch --show-current)
-
 # drafts 디렉토리 생성
 mkdir -p "specs/$CURRENT_BRANCH/drafts"
 ```
@@ -257,7 +250,7 @@ Draft 파일 경로와 **브랜치 정보**를 전달하여 SlashCommand 도구�
 ```
 /speckit.tasks
 
-INSTRUCTION: This command is being called from /spec-kit:tasks plugin. The current branch is "$CURRENT_BRANCH" and the draft file is at "specs/$CURRENT_BRANCH/drafts/tasks-draft.md". Read the draft file using the Read tool. This draft contains ALL the tasks broken down by phase with descriptions, acceptance criteria, dependencies, and estimates. You MUST skip all information collection and breakdown steps and proceed directly to writing the tasks file to "specs/$CURRENT_BRANCH/tasks.md". Use ONLY the information from the draft file. Do NOT ask the user for any additional information. Process all content in the user's system language.
+INSTRUCTION: This command is being called from /spec-kit:tasks plugin. The current branch is "$CURRENT_BRANCH" and the draft file is at "specs/$CURRENT_BRANCH/drafts/tasks-draft.md". Read the draft file using the Read tool. This draft contains ALL the tasks broken down by phase with descriptions, acceptance criteria, dependencies, and estimates. You MUST skip all information collection and breakdown steps and proceed directly to writing the tasks file to "specs/$CURRENT_BRANCH/tasks.md". Use ONLY the information from the draft file. Do NOT ask the user for any additional information. Process all content in the user's system language. If you need to ask the user any questions, use the AskUserQuestion tool.
 ```
 
 spec-kit 명령어는 draft 파일을 읽어서 `specs/$CURRENT_BRANCH/tasks.md` 파일을 생성/업데이트합니다.
