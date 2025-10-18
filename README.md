@@ -188,6 +188,16 @@ Complete AI pair programming experience with slash commands, expert agents, and 
 
 **[📖 Read Full Documentation →](plugins/spec-kit/README.md)**
 
+---
+
+### 8. 🎮 [Unity Dev Toolkit](plugins/unity-dev-toolkit/README.md)
+
+Comprehensive Unity game development toolkit with intelligent scripting assistance, code refactoring, performance optimization, and UI Toolkit support.
+
+**Quick Info:** 4 expert agents + 5 Agent Skills + 3 slash commands + 10 production templates | **Commands:** `/unity:new-script`, `/unity:optimize-scene`, `/unity:setup-test` | **Agents:** `@unity-scripter`, `@unity-refactor`, `@unity-performance`, `@unity-architect` | **Features:** UI Toolkit templates (Editor + Runtime), automated code validation, scene optimization
+
+**[📖 Read Full Documentation →](plugins/unity-dev-toolkit/README.md)**
+
 ## Installation
 
 ### Quick Start (Recommended)
@@ -206,6 +216,7 @@ Complete AI pair programming experience with slash commands, expert agents, and 
    /plugin install hook-session-summary@dev-gom-plugins
    /plugin install ai-pair-programming@dev-gom-plugins
    /plugin install spec-kit@dev-gom-plugins
+   /plugin install unity-dev-toolkit@dev-gom-plugins
    ```
 
 3. Restart Claude Code to load the plugins:
@@ -242,6 +253,7 @@ Once installed, the plugins work automatically:
 - **Session File Tracker**: Summarizes file operations when session ends
 - **AI Pair Programming Suite**: Provides intelligent assistance with commands, agents, and hooks
 - **Spec-Kit Integration**: Use `/spec-kit:*` commands to guide specification-driven development workflow
+- **Unity Dev Toolkit**: Use `/unity:*` commands, invoke expert agents with `@unity-*`, and get automatic script validation through Agent Skills
 
 ## Configuration
 
