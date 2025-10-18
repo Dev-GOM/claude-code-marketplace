@@ -56,7 +56,8 @@ function loadPluginConfig() {
     includeDirs: null,
     excludeDirs: null,
     includeExtensions: null,
-    excludeExtensions: null
+    excludeExtensions: null,
+    includeEmptyDirs: true
   };
 
   try {
@@ -157,6 +158,9 @@ const EXCLUDED_EXTENSIONS = config.excludeExtensions
   ? config.excludeExtensions.map(ext => ext.startsWith('.') ? ext : `.${ext}`)
   : [];
 
+// Include empty directories (default: true)
+const INCLUDE_EMPTY_DIRS = config.includeEmptyDirs !== false;
+
 /**
  * Check if directory should be excluded
  */
@@ -213,15 +217,20 @@ function scanDirectory(dir, prefix = '', isLast = true, basePath = null) {
       const relativePath = path.relative(projectRoot, fullPath).replace(/\\/g, '/');
 
       if (stat.isDirectory()) {
-        entries.push({
-          line: `${prefix}${connector}${item}/`,
-          path: relativePath,
-          type: 'directory',
-          basePath: basePath
-        });
-
         const subEntries = scanDirectory(fullPath, prefix + extension, isLastItem, basePath);
-        entries.push(...subEntries);
+
+        // Only include directory if:
+        // 1. includeEmptyDirs is true, OR
+        // 2. Directory has content (subEntries.length > 0)
+        if (INCLUDE_EMPTY_DIRS || subEntries.length > 0) {
+          entries.push({
+            line: `${prefix}${connector}${item}/`,
+            path: relativePath,
+            type: 'directory',
+            basePath: basePath
+          });
+          entries.push(...subEntries);
+        }
       } else {
         // Check if file should be excluded based on extension
         if (!shouldExcludeFile(fullPath)) {
@@ -325,7 +334,8 @@ function generateDocumentation(structure, packageInfo, includedDirs = null) {
   // Show file extension filters if active
   if (INCLUDED_EXTENSIONS && INCLUDED_EXTENSIONS.length > 0) {
     doc += `**Included Extensions**: ${INCLUDED_EXTENSIONS.map(e => `\`${e}\``).join(', ')}\n\n`;
-  } else if (EXCLUDED_EXTENSIONS && EXCLUDED_EXTENSIONS.length > 0) {
+  }
+  if (EXCLUDED_EXTENSIONS && EXCLUDED_EXTENSIONS.length > 0) {
     doc += `**Excluded Extensions**: ${EXCLUDED_EXTENSIONS.map(e => `\`${e}\``).join(', ')}\n\n`;
   }
 
