@@ -478,11 +478,16 @@ MIT License - [LICENSE](LICENSE) 파일 참조.
 
 ---
 
-**버전**: 2.0.2
+**버전**: 2.0.3
 **최종 업데이트**: 2025-10-19
 **상태**: 베타
 
 ## 변경 이력
+
+### v2.0.3 (2025-10-19)
+- 🐛 **버그 수정**: 모든 커맨드 파일에서 중복된 `CURRENT_BRANCH=$(git branch --show-current)` 선언 제거
+- 📝 **문서화**: 플러그인 커맨드(`/spec-kit:*`)와 CLI 커맨드(`/speckit.*`) 혼동 방지를 위한 구분 설명 추가
+- 🔧 **코드 품질**: 각 커맨드에서 CURRENT_BRANCH를 정확히 한 번만 선언하도록 개선
 
 ### v2.0.2 (2025-10-19)
 - 📝 **문서화**: 모든 spec-kit 커맨드 INSTRUCTION에 AskUserQuestion 도구 사용 지침 추가

@@ -478,11 +478,16 @@ MIT License - see [LICENSE](LICENSE) file.
 
 ---
 
-**Version**: 2.0.2
+**Version**: 2.0.3
 **Last Updated**: 2025-10-19
 **Status**: Beta
 
 ## Changelog
+
+### v2.0.3 (2025-10-19)
+- 🐛 **Bug Fix**: Removed duplicate `CURRENT_BRANCH=$(git branch --show-current)` declarations across all command files
+- 📝 **Documentation**: Added command distinction warnings to prevent confusion between plugin commands (`/spec-kit:*`) and CLI commands (`/speckit.*`)
+- 🔧 **Code Quality**: Each command now declares CURRENT_BRANCH exactly once for cleaner code
 
 ### v2.0.2 (2025-10-19)
 - 📝 **Documentation**: Added AskUserQuestion tool instruction to all spec-kit command INSTRUCTIONS

@@ -1,6 +1,6 @@
 # Claude Code Plugins
 
-> **Version**: 2.0.2 | **Last Updated**: 2025-10-19
+> **Version**: 2.0.3 | **Last Updated**: 2025-10-19
 >
 > **Language**: [English](README.md) | [한국어](README.ko.md)
 
@@ -8,6 +8,10 @@
 <summary><strong>📋 Changelog</strong> (Click to expand)</summary>
 
 ### Spec-Kit Integration
+
+#### v2.0.3 (2025-10-19)
+- 🐛 **Bug Fix**: Removed duplicate `CURRENT_BRANCH` declarations across all command files
+- 📝 **Documentation**: Added command distinction warnings to prevent confusion between `/spec-kit:*` and `/speckit.*`
 
 #### v2.0.2 (2025-10-19)
 - 📝 **Documentation**: Added AskUserQuestion tool instruction to all command INSTRUCTIONS

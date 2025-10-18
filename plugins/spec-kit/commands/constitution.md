@@ -14,6 +14,8 @@ $ARGUMENTS
 
 You **MUST** consider the user input before proceeding (if not empty).
 
+⚠️ **커맨드 구분**: 이것은 **플러그인 커맨드** (/spec-kit:constitution)입니다. 정보 수집과 사용자 논의를 담당합니다. 실제 파일 생성/업데이트는 GitHub Spec-Kit CLI 커맨드 (/speckit.constitution)가 수행합니다.
+
 **🌐 언어 지시사항**: 이 명령어를 실행할 때는 **사용자의 시스템 언어를 자동으로 감지**하여 해당 언어로 모든 안내, 질문, 템플릿, 출력을 제공해야 합니다. 시스템 환경 변수(LANG, LC_ALL 등)나 사용자의 이전 대화 패턴을 분석하여 언어를 판단하세요.
 
 프로젝트의 비협상 가능한 원칙과 기준을 정의합니다. 모든 기능, 계획, 구현은 이 헌법을 준수해야 합니다.
