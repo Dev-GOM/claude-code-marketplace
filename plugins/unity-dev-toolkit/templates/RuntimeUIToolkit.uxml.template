@@ -1,0 +1,121 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
+    <!-- Main Container -->
+    <ui:VisualElement name="main-container" class="main-container">
+
+        <!-- Header Panel -->
+        <ui:VisualElement class="header-panel">
+            <ui:Label name="title-label" text="{{WINDOW_TITLE}}" class="title-label" />
+            <ui:Button name="close-button" text="×" class="close-button" />
+        </ui:VisualElement>
+
+        <!-- Content Panel -->
+        <ui:ScrollView class="content-panel">
+
+            <!-- Info Section -->
+            <ui:VisualElement class="info-section">
+                <ui:Label text="{{DESCRIPTION}}" class="description-label" />
+            </ui:VisualElement>
+
+            <!-- Input Section -->
+            <ui:VisualElement class="input-section">
+                <ui:Label text="User Input" class="section-label" />
+
+                <!-- Text Input -->
+                <ui:TextField
+                    name="input-field"
+                    label="Input"
+                    placeholder-text="Enter text..."
+                    class="input-field" />
+
+                <!-- Toggle Option -->
+                <ui:Toggle
+                    name="option-toggle"
+                    label="Enable Option"
+                    class="toggle-field" />
+
+                <!-- Slider -->
+                <ui:Slider
+                    name="slider-field"
+                    label="Value"
+                    low-value="0"
+                    high-value="100"
+                    show-input-field="true"
+                    class="slider-field" />
+            </ui:VisualElement>
+
+            <!-- Stats Section (Example: Health, Score, etc.) -->
+            <ui:VisualElement class="stats-section">
+                <ui:Label text="Statistics" class="section-label" />
+
+                <!-- Health Bar Example -->
+                <ui:VisualElement class="stat-item">
+                    <ui:Label text="Health" class="stat-label" />
+                    <ui:ProgressBar name="health-bar" class="health-bar" />
+                    <ui:Label name="health-value" text="100 / 100" class="stat-value" />
+                </ui:VisualElement>
+
+                <!-- Progress Bar -->
+                <ui:VisualElement class="stat-item">
+                    <ui:Label text="Progress" class="stat-label" />
+                    <ui:ProgressBar name="progress-bar" class="progress-bar" />
+                    <ui:Label name="progress-value" text="0%" class="stat-value" />
+                </ui:VisualElement>
+
+                <!-- Score Display -->
+                <ui:VisualElement class="stat-item">
+                    <ui:Label text="Score" class="stat-label" />
+                    <ui:Label name="score-label" text="0" class="score-value" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+
+            <!-- Action Buttons Section -->
+            <ui:VisualElement class="actions-section">
+                <ui:VisualElement class="button-row">
+                    <ui:Button
+                        name="action-button"
+                        text="Execute Action"
+                        class="action-button primary-button" />
+
+                    <ui:Button
+                        name="cancel-button"
+                        text="Cancel"
+                        class="action-button secondary-button" />
+                </ui:VisualElement>
+
+                <ui:VisualElement class="button-row">
+                    <ui:Button
+                        name="option1-button"
+                        text="Option 1"
+                        class="action-button tertiary-button" />
+
+                    <ui:Button
+                        name="option2-button"
+                        text="Option 2"
+                        class="action-button tertiary-button" />
+
+                    <ui:Button
+                        name="option3-button"
+                        text="Option 3"
+                        class="action-button tertiary-button" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+
+            <!-- Notification/Help Section -->
+            <ui:VisualElement class="notification-section">
+                <ui:HelpBox
+                    name="help-box"
+                    text="This is a runtime UI panel. You can customize this template for menus, HUD, inventory, or any game UI."
+                    message-type="Info"
+                    class="help-box" />
+            </ui:VisualElement>
+
+        </ui:ScrollView>
+
+        <!-- Footer/Status Bar -->
+        <ui:VisualElement class="footer-panel">
+            <ui:Label name="status-label" text="Status: Ready" class="status-label" />
+            <ui:Label name="timestamp-label" text="00:00:00" class="timestamp-label" />
+        </ui:VisualElement>
+
+    </ui:VisualElement>
+</ui:UXML>

@@ -1,0 +1,373 @@
+using NUnit.Framework;
+using UnityEngine;
+using UnityEngine.TestTools;
+using System.Collections;
+
+namespace {{NAMESPACE}}.Tests
+{
+    /// <summary>
+    /// Test suite for {{TARGET_CLASS}}
+    /// </summary>
+    public class {{CLASS_NAME}}
+    {
+        #region Test Setup
+        private {{TARGET_CLASS}} target;
+        private GameObject testGameObject;
+
+        /// <summary>
+        /// Setup before each test
+        /// </summary>
+        [SetUp]
+        public void SetUp()
+        {
+            // Create test GameObject
+            testGameObject = new GameObject("Test {{TARGET_CLASS}}");
+            target = testGameObject.AddComponent<{{TARGET_CLASS}}>();
+
+            // Additional setup here
+        }
+
+        /// <summary>
+        /// Cleanup after each test
+        /// </summary>
+        [TearDown]
+        public void TearDown()
+        {
+            // Cleanup
+            if (testGameObject != null)
+            {
+                Object.DestroyImmediate(testGameObject);
+            }
+
+            target = null;
+        }
+
+        /// <summary>
+        /// Setup once before all tests
+        /// </summary>
+        [OneTimeSetUp]
+        public void OneTimeSetUp()
+        {
+            // One-time setup here
+        }
+
+        /// <summary>
+        /// Cleanup once after all tests
+        /// </summary>
+        [OneTimeTearDown]
+        public void OneTimeTearDown()
+        {
+            // One-time cleanup here
+        }
+        #endregion
+
+        #region Basic Tests
+        /// <summary>
+        /// Tests that the component is created successfully
+        /// </summary>
+        [Test]
+        public void Component_IsCreatedSuccessfully()
+        {
+            // Assert
+            Assert.IsNotNull(target);
+            Assert.IsTrue(testGameObject.TryGetComponent<{{TARGET_CLASS}}>(out _));
+        }
+
+        /// <summary>
+        /// Tests default values are set correctly
+        /// </summary>
+        [Test]
+        public void DefaultValues_AreSetCorrectly()
+        {
+            // Assert
+            // Assert.AreEqual(expectedValue, target.PropertyName);
+            Assert.Pass("Add assertions for default values");
+        }
+        #endregion
+
+        #region Functionality Tests
+        /// <summary>
+        /// Tests a specific method with valid input
+        /// </summary>
+        [Test]
+        public void MethodName_WithValidInput_ReturnsExpectedResult()
+        {
+            // Arrange
+            var input = 5;
+            var expectedOutput = 10;
+
+            // Act
+            var result = target.MethodName(input);
+
+            // Assert
+            Assert.AreEqual(expectedOutput, result);
+        }
+
+        /// <summary>
+        /// Tests method behavior with null input
+        /// </summary>
+        [Test]
+        public void MethodName_WithNullInput_ThrowsException()
+        {
+            // Assert
+            Assert.Throws<System.ArgumentNullException>(() => {
+                target.MethodName(null);
+            });
+        }
+
+        /// <summary>
+        /// Tests method behavior with edge case
+        /// </summary>
+        [Test]
+        public void MethodName_WithEdgeCase_HandlesCorrectly()
+        {
+            // Arrange
+            var edgeCaseInput = 0;
+
+            // Act & Assert
+            Assert.DoesNotThrow(() => {
+                target.MethodName(edgeCaseInput);
+            });
+        }
+        #endregion
+
+        #region State Tests
+        /// <summary>
+        /// Tests state transition
+        /// </summary>
+        [Test]
+        public void StateTransition_FromInitialToActive_WorksCorrectly()
+        {
+            // Arrange
+            var initialState = target.CurrentState;
+
+            // Act
+            target.Activate();
+
+            // Assert
+            Assert.AreNotEqual(initialState, target.CurrentState);
+        }
+        #endregion
+
+        #region PlayMode Tests
+        /// <summary>
+        /// Tests component initialization in play mode
+        /// </summary>
+        [UnityTest]
+        public IEnumerator Initialization_InPlayMode_CompletesSuccessfully()
+        {
+            // Wait for Start to be called
+            yield return null;
+
+            // Assert
+            Assert.IsTrue(target.IsInitialized);
+        }
+
+        /// <summary>
+        /// Tests async operation completion
+        /// </summary>
+        [UnityTest]
+        public IEnumerator AsyncOperation_CompletesSuccessfully()
+        {
+            // Arrange
+            var operation = target.StartAsyncOperation();
+
+            // Act
+            yield return new WaitUntil(() => operation.IsDone);
+
+            // Assert
+            Assert.IsTrue(operation.Success);
+        }
+
+        /// <summary>
+        /// Tests behavior over multiple frames
+        /// </summary>
+        [UnityTest]
+        public IEnumerator Update_OverMultipleFrames_BehavesCorrectly()
+        {
+            // Arrange
+            var initialValue = target.SomeValue;
+
+            // Act
+            for (int i = 0; i < 10; i++)
+            {
+                yield return null; // Wait one frame
+            }
+
+            // Assert
+            Assert.AreNotEqual(initialValue, target.SomeValue);
+        }
+
+        /// <summary>
+        /// Tests coroutine execution
+        /// </summary>
+        [UnityTest]
+        public IEnumerator Coroutine_ExecutesCorrectly()
+        {
+            // Arrange
+            bool coroutineCompleted = false;
+            target.StartCoroutine(TestCoroutine(() => coroutineCompleted = true));
+
+            // Act
+            yield return new WaitForSeconds(1f);
+
+            // Assert
+            Assert.IsTrue(coroutineCompleted);
+        }
+
+        private IEnumerator TestCoroutine(System.Action onComplete)
+        {
+            yield return new WaitForSeconds(0.5f);
+            onComplete?.Invoke();
+        }
+        #endregion
+
+        #region Integration Tests
+        /// <summary>
+        /// Tests interaction with another component
+        /// </summary>
+        [Test]
+        public void Interaction_WithOtherComponent_WorksCorrectly()
+        {
+            // Arrange
+            var otherComponent = testGameObject.AddComponent<OtherComponent>();
+
+            // Act
+            target.InteractWith(otherComponent);
+
+            // Assert
+            Assert.IsTrue(otherComponent.HasBeenInteractedWith);
+
+            // Cleanup
+            Object.DestroyImmediate(otherComponent);
+        }
+        #endregion
+
+        #region Performance Tests
+        /// <summary>
+        /// Tests method performance
+        /// </summary>
+        [Test]
+        public void MethodName_ExecutionTime_IsUnderThreshold()
+        {
+            // Arrange
+            var stopwatch = new System.Diagnostics.Stopwatch();
+            var maxExecutionTimeMs = 10;
+
+            // Act
+            stopwatch.Start();
+            for (int i = 0; i < 1000; i++)
+            {
+                target.MethodName(i);
+            }
+            stopwatch.Stop();
+
+            // Assert
+            Assert.Less(stopwatch.ElapsedMilliseconds, maxExecutionTimeMs,
+                $"Method took {stopwatch.ElapsedMilliseconds}ms, expected under {maxExecutionTimeMs}ms");
+        }
+
+        /// <summary>
+        /// Tests that method doesn't allocate garbage
+        /// </summary>
+        [Test]
+        public void MethodName_DoesNotAllocateGarbage()
+        {
+            // Warm up
+            target.MethodName(0);
+
+            // Arrange
+            var initialMemory = System.GC.GetTotalMemory(true);
+
+            // Act
+            for (int i = 0; i < 1000; i++)
+            {
+                target.MethodName(i);
+            }
+
+            var finalMemory = System.GC.GetTotalMemory(false);
+            var allocatedBytes = finalMemory - initialMemory;
+
+            // Assert
+            Assert.Less(allocatedBytes, 1024, $"Allocated {allocatedBytes} bytes, expected < 1KB");
+        }
+        #endregion
+
+        #region Collision Tests
+        /// <summary>
+        /// Tests collision detection
+        /// </summary>
+        [UnityTest]
+        public IEnumerator OnCollision_TriggersCorrectly()
+        {
+            // Arrange
+            testGameObject.AddComponent<BoxCollider>();
+            testGameObject.AddComponent<Rigidbody>();
+
+            var otherObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            otherObject.transform.position = testGameObject.transform.position;
+
+            // Act
+            yield return new WaitForFixedUpdate();
+
+            // Assert
+            Assert.IsTrue(target.HasCollided);
+
+            // Cleanup
+            Object.Destroy(otherObject);
+        }
+        #endregion
+
+        #region Edge Cases
+        /// <summary>
+        /// Tests behavior with boundary values
+        /// </summary>
+        [TestCase(int.MinValue)]
+        [TestCase(0)]
+        [TestCase(int.MaxValue)]
+        public void MethodName_WithBoundaryValues_HandlesCorrectly(int value)
+        {
+            // Act & Assert
+            Assert.DoesNotThrow(() => {
+                target.MethodName(value);
+            });
+        }
+
+        /// <summary>
+        /// Tests behavior with multiple inputs
+        /// </summary>
+        [TestCase(1, 2, 3)]
+        [TestCase(5, 10, 15)]
+        [TestCase(-1, -2, -3)]
+        public void MethodName_WithVariousInputs_ProducesExpectedResults(int a, int b, int expected)
+        {
+            // Act
+            var result = target.MethodName(a, b);
+
+            // Assert
+            Assert.AreEqual(expected, result);
+        }
+        #endregion
+
+        #region Helper Methods
+        /// <summary>
+        /// Helper method to create a mock object
+        /// </summary>
+        private GameObject CreateMockObject(string name)
+        {
+            var obj = new GameObject(name);
+            // Configure mock object
+            return obj;
+        }
+
+        /// <summary>
+        /// Helper method to assert vector equality with tolerance
+        /// </summary>
+        private void AssertVectorEqual(Vector3 expected, Vector3 actual, float tolerance = 0.01f)
+        {
+            Assert.Less(Vector3.Distance(expected, actual), tolerance,
+                $"Expected {expected}, but got {actual}");
+        }
+        #endregion
+    }
+}

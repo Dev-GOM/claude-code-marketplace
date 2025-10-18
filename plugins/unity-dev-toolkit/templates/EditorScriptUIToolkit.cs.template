@@ -1,0 +1,328 @@
+#if UNITY_EDITOR
+using UnityEngine;
+using UnityEditor;
+using UnityEngine.UIElements;
+using UnityEditor.UIElements;
+
+namespace {{NAMESPACE}}.Editor
+{
+    /// <summary>
+    /// {{DESCRIPTION}}
+    /// UI Toolkit-based custom editor tool for Unity
+    /// </summary>
+    public class {{CLASS_NAME}} : EditorWindow
+    {
+        #region Serialized Fields
+        [SerializeField] private VisualTreeAsset visualTree;
+        [SerializeField] private StyleSheet styleSheet;
+        #endregion
+
+        #region Private Fields
+        private VisualElement rootVisualElement;
+        private TextField exampleTextField;
+        private Toggle exampleToggle;
+        private Button actionButton;
+        private Label statusLabel;
+        #endregion
+
+        #region Menu Items
+        /// <summary>
+        /// Opens the editor window
+        /// </summary>
+        [MenuItem("Tools/{{MENU_PATH}}/{{CLASS_NAME}}")]
+        public static void ShowWindow()
+        {
+            var window = GetWindow<{{CLASS_NAME}}>();
+            window.titleContent = new GUIContent("{{WINDOW_TITLE}}");
+            window.minSize = new Vector2(400, 300);
+        }
+        #endregion
+
+        #region Unity Editor Callbacks
+        /// <summary>
+        /// Called when the window is created
+        /// </summary>
+        public void CreateGUI()
+        {
+            // Load UXML and USS
+            LoadVisualTree();
+            LoadStyleSheet();
+
+            // Query UI elements
+            QueryUIElements();
+
+            // Setup event handlers
+            SetupEventHandlers();
+
+            // Initialize UI state
+            LoadSettings();
+            UpdateUI();
+        }
+
+        /// <summary>
+        /// Called when the window is destroyed
+        /// </summary>
+        private void OnDestroy()
+        {
+            SaveSettings();
+        }
+        #endregion
+
+        #region UI Setup
+        /// <summary>
+        /// Loads the UXML visual tree
+        /// </summary>
+        private void LoadVisualTree()
+        {
+            // Try to load UXML from the same folder as this script
+            string scriptPath = AssetDatabase.GetAssetPath(MonoScript.FromScriptableObject(this));
+            string folder = System.IO.Path.GetDirectoryName(scriptPath);
+            string uxmlPath = $"{folder}/{{FILE_NAME}}.uxml";
+
+            visualTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(uxmlPath);
+
+            if (visualTree != null)
+            {
+                rootVisualElement = visualTree.CloneTree();
+                rootElement.Add(rootVisualElement);
+            }
+            else
+            {
+                // Fallback: Create UI in code if UXML is missing
+                CreateFallbackUI();
+            }
+        }
+
+        /// <summary>
+        /// Loads the USS stylesheet
+        /// </summary>
+        private void LoadStyleSheet()
+        {
+            // Try to load USS from the same folder as this script
+            string scriptPath = AssetDatabase.GetAssetPath(MonoScript.FromScriptableObject(this));
+            string folder = System.IO.Path.GetDirectoryName(scriptPath);
+            string ussPath = $"{folder}/{{FILE_NAME}}.uss";
+
+            styleSheet = AssetDatabase.LoadAssetAtPath<StyleSheet>(ussPath);
+
+            if (styleSheet != null)
+            {
+                rootElement.styleSheets.Add(styleSheet);
+            }
+        }
+
+        /// <summary>
+        /// Creates a fallback UI if UXML is not found
+        /// </summary>
+        private void CreateFallbackUI()
+        {
+            var container = new VisualElement();
+            container.AddToClassList("container");
+
+            var label = new Label("{{WINDOW_TITLE}}");
+            label.AddToClassList("header");
+            container.Add(label);
+
+            var helpBox = new HelpBox("UXML file not found. Using fallback UI.", HelpBoxMessageType.Warning);
+            container.Add(helpBox);
+
+            rootElement.Add(container);
+        }
+
+        /// <summary>
+        /// Queries and caches UI elements from the visual tree
+        /// </summary>
+        private void QueryUIElements()
+        {
+            if (rootVisualElement == null) return;
+
+            // Query elements by name (must match UXML)
+            exampleTextField = rootVisualElement.Q<TextField>("example-text-field");
+            exampleToggle = rootVisualElement.Q<Toggle>("example-toggle");
+            actionButton = rootVisualElement.Q<Button>("action-button");
+            statusLabel = rootVisualElement.Q<Label>("status-label");
+        }
+
+        /// <summary>
+        /// Sets up event handlers for UI elements
+        /// </summary>
+        private void SetupEventHandlers()
+        {
+            if (actionButton != null)
+            {
+                actionButton.clicked += OnActionButtonClicked;
+            }
+
+            if (exampleTextField != null)
+            {
+                exampleTextField.RegisterValueChangedCallback(OnTextFieldChanged);
+            }
+
+            if (exampleToggle != null)
+            {
+                exampleToggle.RegisterValueChangedCallback(OnToggleChanged);
+            }
+        }
+        #endregion
+
+        #region Event Handlers
+        /// <summary>
+        /// Called when the action button is clicked
+        /// </summary>
+        private void OnActionButtonClicked()
+        {
+            if (exampleTextField == null) return;
+
+            string text = exampleTextField.value;
+
+            if (string.IsNullOrEmpty(text))
+            {
+                EditorUtility.DisplayDialog("Error", "Text field cannot be empty!", "OK");
+                return;
+            }
+
+            // Perform action
+            Debug.Log($"[{{CLASS_NAME}}] Action executed with text: {text}");
+            ProcessSelectedObjects();
+
+            UpdateStatus("Action completed successfully!");
+        }
+
+        /// <summary>
+        /// Called when the text field value changes
+        /// </summary>
+        private void OnTextFieldChanged(ChangeEvent<string> evt)
+        {
+            Debug.Log($"[{{CLASS_NAME}}] Text changed: {evt.newValue}");
+            // Auto-save on change
+            SaveSettings();
+        }
+
+        /// <summary>
+        /// Called when the toggle value changes
+        /// </summary>
+        private void OnToggleChanged(ChangeEvent<bool> evt)
+        {
+            Debug.Log($"[{{CLASS_NAME}}] Toggle changed: {evt.newValue}");
+            UpdateUI();
+            SaveSettings();
+        }
+        #endregion
+
+        #region Actions
+        /// <summary>
+        /// Processes all selected GameObjects in the scene
+        /// </summary>
+        private void ProcessSelectedObjects()
+        {
+            var selectedObjects = Selection.gameObjects;
+
+            if (selectedObjects.Length == 0)
+            {
+                UpdateStatus("No objects selected");
+                return;
+            }
+
+            foreach (var obj in selectedObjects)
+            {
+                Debug.Log($"[{{CLASS_NAME}}] Processing: {obj.name}");
+                // Process each object here
+            }
+
+            UpdateStatus($"Processed {selectedObjects.Length} objects");
+        }
+
+        /// <summary>
+        /// Updates the UI state based on current settings
+        /// </summary>
+        private void UpdateUI()
+        {
+            if (exampleToggle == null) return;
+
+            bool isEnabled = exampleToggle.value;
+
+            // Enable/disable UI elements based on toggle
+            if (exampleTextField != null)
+            {
+                exampleTextField.SetEnabled(isEnabled);
+            }
+
+            if (actionButton != null)
+            {
+                actionButton.SetEnabled(isEnabled);
+            }
+        }
+
+        /// <summary>
+        /// Updates the status label
+        /// </summary>
+        private void UpdateStatus(string message)
+        {
+            if (statusLabel != null)
+            {
+                statusLabel.text = message;
+            }
+        }
+        #endregion
+
+        #region Settings Persistence
+        /// <summary>
+        /// Loads settings from EditorPrefs
+        /// </summary>
+        private void LoadSettings()
+        {
+            if (exampleTextField != null)
+            {
+                exampleTextField.value = EditorPrefs.GetString("{{CLASS_NAME}}_TextField", "");
+            }
+
+            if (exampleToggle != null)
+            {
+                exampleToggle.value = EditorPrefs.GetBool("{{CLASS_NAME}}_Toggle", true);
+            }
+        }
+
+        /// <summary>
+        /// Saves settings to EditorPrefs
+        /// </summary>
+        private void SaveSettings()
+        {
+            if (exampleTextField != null)
+            {
+                EditorPrefs.SetString("{{CLASS_NAME}}_TextField", exampleTextField.value);
+            }
+
+            if (exampleToggle != null)
+            {
+                EditorPrefs.SetBool("{{CLASS_NAME}}_Toggle", exampleToggle.value);
+            }
+        }
+        #endregion
+
+        #region Context Menu Items
+        /// <summary>
+        /// Example context menu item for GameObject
+        /// </summary>
+        [MenuItem("GameObject/{{MENU_PATH}}/{{CLASS_NAME}} Action", false, 10)]
+        private static void ContextMenuAction()
+        {
+            var selected = Selection.activeGameObject;
+            if (selected != null)
+            {
+                Debug.Log($"[{{CLASS_NAME}}] Context action on: {selected.name}");
+                // Perform context action here
+            }
+        }
+
+        /// <summary>
+        /// Validates the context menu item
+        /// </summary>
+        [MenuItem("GameObject/{{MENU_PATH}}/{{CLASS_NAME}} Action", true)]
+        private static bool ValidateContextMenuAction()
+        {
+            return Selection.activeGameObject != null;
+        }
+        #endregion
+    }
+}
+#endif

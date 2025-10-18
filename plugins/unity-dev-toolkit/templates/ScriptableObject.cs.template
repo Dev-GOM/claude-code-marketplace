@@ -1,0 +1,166 @@
+using UnityEngine;
+using System.Collections.Generic;
+
+namespace {{NAMESPACE}}
+{
+    /// <summary>
+    /// {{DESCRIPTION}}
+    /// ScriptableObject for data storage and configuration
+    /// </summary>
+    [CreateAssetMenu(fileName = "{{FILE_NAME}}", menuName = "{{MENU_PATH}}/{{CLASS_NAME}}", order = 0)]
+    public class {{CLASS_NAME}} : ScriptableObject
+    {
+        #region Serialized Fields
+        [Header("Basic Info")]
+        [Tooltip("Display name for this data")]
+        [SerializeField] private string displayName;
+
+        [TextArea(3, 5)]
+        [SerializeField] private string description;
+
+        [Header("Configuration")]
+        [SerializeField] private float exampleValue = 1f;
+        [SerializeField] private int exampleCount = 10;
+
+        [Header("References")]
+        [SerializeField] private Sprite icon;
+        [SerializeField] private GameObject prefab;
+        #endregion
+
+        #region Properties
+        /// <summary>
+        /// Gets the display name
+        /// </summary>
+        public string DisplayName => displayName;
+
+        /// <summary>
+        /// Gets the description
+        /// </summary>
+        public string Description => description;
+
+        /// <summary>
+        /// Gets the example value
+        /// </summary>
+        public float ExampleValue => exampleValue;
+
+        /// <summary>
+        /// Gets the example count
+        /// </summary>
+        public int ExampleCount => exampleCount;
+
+        /// <summary>
+        /// Gets the icon sprite
+        /// </summary>
+        public Sprite Icon => icon;
+
+        /// <summary>
+        /// Gets the prefab reference
+        /// </summary>
+        public GameObject Prefab => prefab;
+        #endregion
+
+        #region Public Methods
+        /// <summary>
+        /// Example method for data validation
+        /// </summary>
+        public bool IsValid()
+        {
+            return !string.IsNullOrEmpty(displayName) &&
+                   exampleValue > 0 &&
+                   exampleCount > 0;
+        }
+
+        /// <summary>
+        /// Creates a deep copy of this ScriptableObject data
+        /// </summary>
+        public {{CLASS_NAME}} Clone()
+        {
+            var clone = CreateInstance<{{CLASS_NAME}}>();
+            clone.displayName = displayName;
+            clone.description = description;
+            clone.exampleValue = exampleValue;
+            clone.exampleCount = exampleCount;
+            clone.icon = icon;
+            clone.prefab = prefab;
+            return clone;
+        }
+        #endregion
+
+        #region Editor
+#if UNITY_EDITOR
+        /// <summary>
+        /// Validates the data when changed in the editor
+        /// </summary>
+        private void OnValidate()
+        {
+            // Clamp values to valid ranges
+            exampleValue = Mathf.Max(0f, exampleValue);
+            exampleCount = Mathf.Max(0, exampleCount);
+
+            // Validate display name
+            if (string.IsNullOrEmpty(displayName))
+            {
+                displayName = name;
+            }
+        }
+
+        /// <summary>
+        /// Called when the ScriptableObject is created
+        /// </summary>
+        private void Reset()
+        {
+            // Set default values
+            displayName = "New {{CLASS_NAME}}";
+            description = "Description for this {{CLASS_NAME}}";
+            exampleValue = 1f;
+            exampleCount = 10;
+        }
+
+        /// <summary>
+        /// Returns a string representation for debugging
+        /// </summary>
+        public override string ToString()
+        {
+            return $"{{CLASS_NAME}}: {displayName} (Value: {exampleValue}, Count: {exampleCount})";
+        }
+#endif
+        #endregion
+    }
+
+#if UNITY_EDITOR
+    /// <summary>
+    /// Custom editor for {{CLASS_NAME}}
+    /// Uncomment and customize if you need a custom inspector
+    /// </summary>
+    /*
+    [UnityEditor.CustomEditor(typeof({{CLASS_NAME}}))]
+    public class {{CLASS_NAME}}Editor : UnityEditor.Editor
+    {
+        public override void OnInspectorGUI()
+        {
+            var data = ({{CLASS_NAME}})target;
+
+            UnityEditor.EditorGUI.BeginChangeCheck();
+
+            // Draw default inspector
+            DrawDefaultInspector();
+
+            // Add custom GUI here
+            UnityEditor.EditorGUILayout.Space();
+            UnityEditor.EditorGUILayout.LabelField("Custom Section", UnityEditor.EditorStyles.boldLabel);
+
+            if (UnityEditor.EditorGUI.EndChangeCheck())
+            {
+                UnityEditor.EditorUtility.SetDirty(data);
+            }
+
+            // Validation display
+            if (!data.IsValid())
+            {
+                UnityEditor.EditorGUILayout.HelpBox("This data is invalid! Please check required fields.", UnityEditor.MessageType.Error);
+            }
+        }
+    }
+    */
+#endif
+}

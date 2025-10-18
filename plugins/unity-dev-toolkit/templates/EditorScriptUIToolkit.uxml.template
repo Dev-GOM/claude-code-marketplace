@@ -1,0 +1,113 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="True">
+    <!-- Main Container -->
+    <ui:VisualElement class="container">
+
+        <!-- Header Section -->
+        <ui:VisualElement class="header-section">
+            <ui:Label text="{{WINDOW_TITLE}}" class="header-title" />
+            <ui:Label text="{{DESCRIPTION}}" class="header-subtitle" />
+        </ui:VisualElement>
+
+        <!-- Content Section -->
+        <ui:ScrollView class="content-section">
+
+            <!-- Main Settings Group -->
+            <ui:VisualElement class="settings-group">
+                <ui:Label text="Main Settings" class="group-label" />
+
+                <!-- Example TextField -->
+                <ui:TextField
+                    label="Example Field"
+                    name="example-text-field"
+                    tooltip="Enter some text here"
+                    class="input-field" />
+
+                <!-- Example Toggle -->
+                <ui:Toggle
+                    label="Enable Feature"
+                    name="example-toggle"
+                    tooltip="Toggle to enable/disable"
+                    class="input-field" />
+
+                <!-- Example Dropdown -->
+                <uie:EnumField
+                    label="Example Enum"
+                    name="example-enum"
+                    tooltip="Select an option"
+                    class="input-field" />
+
+                <!-- Example Slider -->
+                <ui:Slider
+                    label="Example Slider"
+                    name="example-slider"
+                    low-value="0"
+                    high-value="100"
+                    show-input-field="true"
+                    tooltip="Adjust the value"
+                    class="input-field" />
+            </ui:VisualElement>
+
+            <!-- Advanced Settings Group -->
+            <ui:VisualElement class="settings-group">
+                <ui:Label text="Advanced Settings" class="group-label" />
+
+                <!-- Object Field -->
+                <uie:ObjectField
+                    label="Target Object"
+                    name="target-object-field"
+                    tooltip="Drag and drop a Unity Object"
+                    class="input-field" />
+
+                <!-- Integer Field -->
+                <uie:IntegerField
+                    label="Count"
+                    name="count-field"
+                    tooltip="Enter an integer value"
+                    class="input-field" />
+
+                <!-- Float Field -->
+                <uie:FloatField
+                    label="Scale Factor"
+                    name="scale-field"
+                    tooltip="Enter a float value"
+                    class="input-field" />
+            </ui:VisualElement>
+
+            <!-- Help Box -->
+            <ui:HelpBox
+                text="This is a help message explaining what this tool does. You can customize this message to provide useful information to users."
+                message-type="Info"
+                class="help-box" />
+
+        </ui:ScrollView>
+
+        <!-- Footer Section -->
+        <ui:VisualElement class="footer-section">
+
+            <!-- Button Container -->
+            <ui:VisualElement class="button-container">
+                <ui:Button
+                    text="Execute Action"
+                    name="action-button"
+                    tooltip="Click to execute the main action"
+                    class="primary-button" />
+
+                <ui:Button
+                    text="Reset"
+                    name="reset-button"
+                    tooltip="Reset all settings to default"
+                    class="secondary-button" />
+            </ui:VisualElement>
+
+            <!-- Status Bar -->
+            <ui:VisualElement class="status-bar">
+                <ui:Label
+                    text="Status: Ready"
+                    name="status-label"
+                    class="status-label" />
+            </ui:VisualElement>
+
+        </ui:VisualElement>
+
+    </ui:VisualElement>
+</ui:UXML>

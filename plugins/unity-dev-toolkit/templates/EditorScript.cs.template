@@ -1,0 +1,352 @@
+#if UNITY_EDITOR
+using UnityEngine;
+using UnityEditor;
+using System.IO;
+
+namespace {{NAMESPACE}}.Editor
+{
+    /// <summary>
+    /// {{DESCRIPTION}}
+    /// Custom editor tool for Unity
+    /// </summary>
+    public class {{CLASS_NAME}} : EditorWindow
+    {
+        #region Private Fields
+        private string exampleField = "";
+        private bool exampleToggle = false;
+        private int selectedTab = 0;
+        private Vector2 scrollPosition = Vector2.zero;
+        #endregion
+
+        #region Menu Items
+        /// <summary>
+        /// Opens the editor window
+        /// </summary>
+        [MenuItem("Tools/{{MENU_PATH}}/{{CLASS_NAME}}")]
+        public static void ShowWindow()
+        {
+            var window = GetWindow<{{CLASS_NAME}}>("{{WINDOW_TITLE}}");
+            window.minSize = new Vector2(400, 300);
+            window.Show();
+        }
+        #endregion
+
+        #region Unity Editor Callbacks
+        /// <summary>
+        /// Called when the window is enabled
+        /// </summary>
+        private void OnEnable()
+        {
+            LoadSettings();
+        }
+
+        /// <summary>
+        /// Called when the window is disabled
+        /// </summary>
+        private void OnDisable()
+        {
+            SaveSettings();
+        }
+
+        /// <summary>
+        /// Draws the editor GUI
+        /// </summary>
+        private void OnGUI()
+        {
+            DrawHeader();
+            EditorGUILayout.Space();
+
+            scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
+
+            DrawTabs();
+            EditorGUILayout.Space();
+
+            switch (selectedTab)
+            {
+                case 0:
+                    DrawMainTab();
+                    break;
+                case 1:
+                    DrawSettingsTab();
+                    break;
+                case 2:
+                    DrawAboutTab();
+                    break;
+            }
+
+            EditorGUILayout.EndScrollView();
+
+            EditorGUILayout.Space();
+            DrawFooter();
+        }
+        #endregion
+
+        #region GUI Drawing
+        /// <summary>
+        /// Draws the window header
+        /// </summary>
+        private void DrawHeader()
+        {
+            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+            EditorGUILayout.LabelField("{{WINDOW_TITLE}}", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("{{DESCRIPTION}}", EditorStyles.miniLabel);
+            EditorGUILayout.EndVertical();
+        }
+
+        /// <summary>
+        /// Draws the tab selection
+        /// </summary>
+        private void DrawTabs()
+        {
+            selectedTab = GUILayout.Toolbar(selectedTab, new string[] { "Main", "Settings", "About" });
+        }
+
+        /// <summary>
+        /// Draws the main tab content
+        /// </summary>
+        private void DrawMainTab()
+        {
+            EditorGUILayout.LabelField("Main Panel", EditorStyles.boldLabel);
+            EditorGUILayout.Space();
+
+            // Example field
+            exampleField = EditorGUILayout.TextField("Example Field:", exampleField);
+
+            // Example toggle
+            exampleToggle = EditorGUILayout.Toggle("Example Toggle:", exampleToggle);
+
+            EditorGUILayout.Space();
+
+            // Action button
+            if (GUILayout.Button("Execute Action", GUILayout.Height(30)))
+            {
+                ExecuteMainAction();
+            }
+
+            // Help box
+            EditorGUILayout.HelpBox("This is a help message explaining what this tool does.", MessageType.Info);
+        }
+
+        /// <summary>
+        /// Draws the settings tab content
+        /// </summary>
+        private void DrawSettingsTab()
+        {
+            EditorGUILayout.LabelField("Settings", EditorStyles.boldLabel);
+            EditorGUILayout.Space();
+
+            // Add settings GUI here
+            EditorGUILayout.LabelField("Configure tool settings here");
+
+            EditorGUILayout.Space();
+
+            if (GUILayout.Button("Reset to Defaults"))
+            {
+                ResetToDefaults();
+            }
+        }
+
+        /// <summary>
+        /// Draws the about tab content
+        /// </summary>
+        private void DrawAboutTab()
+        {
+            EditorGUILayout.LabelField("About", EditorStyles.boldLabel);
+            EditorGUILayout.Space();
+
+            EditorGUILayout.LabelField("{{WINDOW_TITLE}}", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("Version: 1.0.0");
+            EditorGUILayout.LabelField("Author: {{AUTHOR}}");
+            EditorGUILayout.Space();
+
+            EditorGUILayout.LabelField("Description:", EditorStyles.boldLabel);
+            EditorGUILayout.TextArea("{{DESCRIPTION}}", EditorStyles.wordWrappedLabel);
+        }
+
+        /// <summary>
+        /// Draws the window footer
+        /// </summary>
+        private void DrawFooter()
+        {
+            EditorGUILayout.BeginHorizontal(EditorStyles.helpBox);
+            EditorGUILayout.LabelField($"Status: Ready", EditorStyles.miniLabel);
+            EditorGUILayout.EndHorizontal();
+        }
+        #endregion
+
+        #region Actions
+        /// <summary>
+        /// Executes the main action
+        /// </summary>
+        private void ExecuteMainAction()
+        {
+            // Validate input
+            if (string.IsNullOrEmpty(exampleField))
+            {
+                EditorUtility.DisplayDialog("Error", "Example field cannot be empty!", "OK");
+                return;
+            }
+
+            // Show progress bar for long operations
+            EditorUtility.DisplayProgressBar("Processing", "Please wait...", 0.5f);
+
+            try
+            {
+                // Perform the main action here
+                Debug.Log($"[{{CLASS_NAME}}] Executing action with field: {exampleField}");
+
+                // Example: Process all selected objects
+                ProcessSelectedObjects();
+
+                EditorUtility.DisplayDialog("Success", "Action completed successfully!", "OK");
+            }
+            catch (System.Exception e)
+            {
+                EditorUtility.DisplayDialog("Error", $"Action failed: {e.Message}", "OK");
+                Debug.LogError($"[{{CLASS_NAME}}] Error: {e}");
+            }
+            finally
+            {
+                EditorUtility.ClearProgressBar();
+            }
+        }
+
+        /// <summary>
+        /// Processes all selected GameObjects in the scene
+        /// </summary>
+        private void ProcessSelectedObjects()
+        {
+            var selectedObjects = Selection.gameObjects;
+
+            if (selectedObjects.Length == 0)
+            {
+                Debug.LogWarning("[{{CLASS_NAME}}] No objects selected");
+                return;
+            }
+
+            foreach (var obj in selectedObjects)
+            {
+                // Process each object
+                Debug.Log($"[{{CLASS_NAME}}] Processing: {obj.name}");
+            }
+        }
+
+        /// <summary>
+        /// Resets all settings to default values
+        /// </summary>
+        private void ResetToDefaults()
+        {
+            exampleField = "";
+            exampleToggle = false;
+            SaveSettings();
+            Repaint();
+        }
+        #endregion
+
+        #region Settings Persistence
+        /// <summary>
+        /// Loads settings from EditorPrefs
+        /// </summary>
+        private void LoadSettings()
+        {
+            exampleField = EditorPrefs.GetString("{{CLASS_NAME}}_ExampleField", "");
+            exampleToggle = EditorPrefs.GetBool("{{CLASS_NAME}}_ExampleToggle", false);
+        }
+
+        /// <summary>
+        /// Saves settings to EditorPrefs
+        /// </summary>
+        private void SaveSettings()
+        {
+            EditorPrefs.SetString("{{CLASS_NAME}}_ExampleField", exampleField);
+            EditorPrefs.SetBool("{{CLASS_NAME}}_ExampleToggle", exampleToggle);
+        }
+        #endregion
+
+        #region Context Menu Items
+        /// <summary>
+        /// Example context menu item for GameObject
+        /// </summary>
+        [MenuItem("GameObject/{{MENU_PATH}}/{{CLASS_NAME}} Action", false, 10)]
+        private static void ContextMenuAction()
+        {
+            var selected = Selection.activeGameObject;
+            if (selected != null)
+            {
+                Debug.Log($"[{{CLASS_NAME}}] Context action on: {selected.name}");
+                // Perform context action here
+            }
+        }
+
+        /// <summary>
+        /// Validates the context menu item
+        /// </summary>
+        [MenuItem("GameObject/{{MENU_PATH}}/{{CLASS_NAME}} Action", true)]
+        private static bool ValidateContextMenuAction()
+        {
+            return Selection.activeGameObject != null;
+        }
+        #endregion
+
+        #region Utility Methods
+        /// <summary>
+        /// Creates a folder if it doesn't exist
+        /// </summary>
+        private static void EnsureFolderExists(string path)
+        {
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+                AssetDatabase.Refresh();
+            }
+        }
+
+        /// <summary>
+        /// Saves an asset at the specified path
+        /// </summary>
+        private static void SaveAsset(Object asset, string path)
+        {
+            AssetDatabase.CreateAsset(asset, path);
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            EditorUtility.FocusProjectWindow();
+            Selection.activeObject = asset;
+        }
+        #endregion
+    }
+
+    /// <summary>
+    /// Custom inspector for a specific component
+    /// Uncomment and customize if needed
+    /// </summary>
+    /*
+    [CustomEditor(typeof(TargetComponent))]
+    public class TargetComponentEditor : Editor
+    {
+        public override void OnInspectorGUI()
+        {
+            var component = (TargetComponent)target;
+
+            EditorGUI.BeginChangeCheck();
+
+            // Draw default inspector
+            DrawDefaultInspector();
+
+            // Add custom GUI
+            EditorGUILayout.Space();
+            EditorGUILayout.LabelField("Custom Inspector", EditorStyles.boldLabel);
+
+            if (GUILayout.Button("Custom Action"))
+            {
+                // Perform custom action
+            }
+
+            if (EditorGUI.EndChangeCheck())
+            {
+                EditorUtility.SetDirty(component);
+            }
+        }
+    }
+    */
+}
+#endif

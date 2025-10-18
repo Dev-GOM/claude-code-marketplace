@@ -137,6 +137,28 @@
         "documentation",
         "project-management"
       ]
+    },
+    {
+      "name": "unity-dev-toolkit",
+      "source": "./plugins/unity-dev-toolkit",
+      "description": "Unity development toolkit with intelligent scripting, code refactoring, performance optimization, UI Toolkit support, and testing automation",
+      "version": "1.2.0",
+      "author": {
+        "name": "Dev GOM"
+      },
+      "category": "game-development",
+      "homepage": "https://github.com/Dev-GOM/claude-code-marketplace",
+      "keywords": [
+        "unity",
+        "game-development",
+        "csharp",
+        "performance",
+        "testing",
+        "automation",
+        "scripting",
+        "optimization",
+        "agents"
+      ]
     }
   ]
 }

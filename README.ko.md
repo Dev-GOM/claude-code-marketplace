@@ -70,6 +70,37 @@
 - ⚙️ `.plugin-config/` 파일을 통한 설정 가능
 - 🔇 `showLogs` 설정으로 선택적 로그 표시
 
+---
+
+### Unity Dev Toolkit
+
+#### v1.2.0 (2025-10-18)
+- 🎨 **UI Toolkit 템플릿**: Editor와 Runtime 모두를 위한 완전한 UI Toolkit 템플릿 추가 (총 6개 파일)
+- 📝 **Editor 템플릿**: UXML/USS를 사용한 EditorWindow (C#, UXML, USS)
+- 🎮 **Runtime 템플릿**: UXML/USS를 사용한 게임 UI용 UIDocument (C#, UXML, USS)
+- ⚡ **새 Skill 추가**: UI Toolkit 개발 지원을 위한 `unity-uitoolkit` Skill 추가
+- 📚 **템플릿 개수**: 7개에서 10개의 프로덕션 수준 템플릿으로 증가
+- 🔗 **크로스 참조**: 새로운 UI Toolkit 기능 참조를 위해 Skills 업데이트
+
+#### v1.1.0 (2025-10-18)
+- 🤖 **새 Agent 추가**: 코드 리팩토링 및 품질 개선을 위한 `@unity-refactor` Agent 추가
+- 📝 **Skills 향상**: 모든 Skills에 "When to Use vs Other Components" 섹션 추가
+- 🔗 **컴포넌트 통합**: Skills vs Agents vs Commands 사용 시기에 대한 명확한 가이드
+- 📚 **문서화**: 컴포넌트 간 참조 및 사용 패턴 개선
+
+#### v1.0.1 (2025-10-18)
+- 📝 **Skill 문서 최적화**: SKILL.md 파일 간소화 (834 → 197 라인, 76% 감소)
+- 🎯 **Progressive Disclosure**: 간결한 스킬 문서화를 위한 모범 사례 적용
+- 🗑️ **중복 제거**: "When to Use This Skill" 섹션 제거 (스킬 활성화는 description 필드로 결정됨)
+- ⚡ **토큰 효율성**: 더 빠른 스킬 로딩 및 활성화를 위한 컨텍스트 크기 감소
+
+#### v1.0.0 (2025-10-18)
+- 🎉 최초 릴리스
+- 📝 3개 슬래시 커맨드: `/unity:new-script`, `/unity:optimize-scene`, `/unity:setup-test`
+- 🤖 3개 전문 에이전트: `@unity-scripter`, `@unity-performance`, `@unity-architect` (v1.1.0에서 4개로 확장)
+- ⚡ 4개 Agent Skills: `unity-script-validator`, `unity-scene-optimizer`, `unity-template-generator`, `unity-ui-selector` (v1.2.0에서 5개로 확장)
+- 📄 MonoBehaviour, ScriptableObject, Editor, Test 스크립트를 위한 프로덕션 수준 템플릿
+
 </details>
 
 > **⚠️ 중요 공지 (v2.0.17)**

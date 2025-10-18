@@ -1,0 +1,22 @@
+{
+  "name": "unity-dev-toolkit",
+  "version": "1.2.0",
+  "description": "Unity Development Toolkit - Expert agents for scripting/refactoring/optimization, script templates, and Agent Skills for Unity C# development",
+  "author": {
+    "name": "Dev GOM",
+    "url": "https://github.com/Dev-GOM/claude-code-marketplace"
+  },
+  "homepage": "https://github.com/Dev-GOM/claude-code-marketplace",
+  "repository": "https://github.com/Dev-GOM/claude-code-marketplace.git",
+  "license": "MIT",
+  "keywords": [
+    "unity",
+    "game-development",
+    "csharp",
+    "performance",
+    "testing",
+    "automation",
+    "scripting",
+    "skills"
+  ]
+}
