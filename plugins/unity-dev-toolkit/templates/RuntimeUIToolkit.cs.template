@@ -1,0 +1,490 @@
+using UnityEngine;
+using UnityEngine.UIElements;
+
+namespace {{NAMESPACE}}.UI
+{
+    /// <summary>
+    /// {{DESCRIPTION}}
+    /// Runtime UI Toolkit controller for game UI (HUD, menus, inventory, etc.)
+    /// </summary>
+    [RequireComponent(typeof(UIDocument))]
+    public class {{CLASS_NAME}} : MonoBehaviour
+    {
+        #region Serialized Fields
+        [Header("UI Document")]
+        [SerializeField] private UIDocument uiDocument;
+
+        [Header("Visual Assets")]
+        [SerializeField] private VisualTreeAsset visualTreeAsset;
+        [SerializeField] private StyleSheet styleSheet;
+
+        [Header("Settings")]
+        [SerializeField] private bool hideOnStart = false;
+        [SerializeField] private bool pauseGameWhenVisible = false;
+        #endregion
+
+        #region Private Fields
+        private VisualElement root;
+        private VisualElement mainContainer;
+
+        // UI Element references
+        private Label titleLabel;
+        private Label statusLabel;
+        private Button actionButton;
+        private Button closeButton;
+        private ProgressBar progressBar;
+        private TextField inputField;
+        private Toggle optionToggle;
+
+        private bool isVisible = true;
+        private float previousTimeScale;
+        #endregion
+
+        #region Properties
+        /// <summary>
+        /// Whether the UI is currently visible
+        /// </summary>
+        public bool IsVisible => isVisible;
+
+        /// <summary>
+        /// The root VisualElement of the UI
+        /// </summary>
+        public VisualElement Root => root;
+        #endregion
+
+        #region Unity Lifecycle
+        /// <summary>
+        /// Initialize UI Document reference
+        /// </summary>
+        private void Awake()
+        {
+            if (uiDocument == null)
+            {
+                uiDocument = GetComponent<UIDocument>();
+            }
+
+            // Load visual tree and stylesheet if not set in inspector
+            if (visualTreeAsset != null && uiDocument.visualTreeAsset == null)
+            {
+                uiDocument.visualTreeAsset = visualTreeAsset;
+            }
+
+            if (styleSheet != null)
+            {
+                uiDocument.rootVisualElement.styleSheets.Add(styleSheet);
+            }
+        }
+
+        /// <summary>
+        /// Setup UI elements and event handlers
+        /// </summary>
+        private void OnEnable()
+        {
+            if (uiDocument == null || uiDocument.rootVisualElement == null)
+            {
+                Debug.LogError($"[{nameof({{CLASS_NAME}})}] UIDocument or root not found!");
+                return;
+            }
+
+            root = uiDocument.rootVisualElement;
+
+            // Query UI elements
+            QueryUIElements();
+
+            // Setup event handlers
+            SetupEventHandlers();
+
+            // Initialize UI state
+            InitializeUI();
+
+            // Handle visibility
+            if (hideOnStart)
+            {
+                Hide();
+            }
+        }
+
+        /// <summary>
+        /// Cleanup event handlers
+        /// </summary>
+        private void OnDisable()
+        {
+            CleanupEventHandlers();
+
+            // Restore time scale if paused
+            if (pauseGameWhenVisible && Time.timeScale == 0f)
+            {
+                Time.timeScale = previousTimeScale;
+            }
+        }
+
+        /// <summary>
+        /// Handle input
+        /// </summary>
+        private void Update()
+        {
+            // Example: Toggle visibility with Escape key
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                ToggleVisibility();
+            }
+
+            // Update dynamic UI elements
+            UpdateDynamicElements();
+        }
+        #endregion
+
+        #region UI Setup
+        /// <summary>
+        /// Query and cache references to UI elements
+        /// </summary>
+        private void QueryUIElements()
+        {
+            mainContainer = root.Q<VisualElement>("main-container");
+            titleLabel = root.Q<Label>("title-label");
+            statusLabel = root.Q<Label>("status-label");
+            actionButton = root.Q<Button>("action-button");
+            closeButton = root.Q<Button>("close-button");
+            progressBar = root.Q<ProgressBar>("progress-bar");
+            inputField = root.Q<TextField>("input-field");
+            optionToggle = root.Q<Toggle>("option-toggle");
+        }
+
+        /// <summary>
+        /// Setup event handlers for UI elements
+        /// </summary>
+        private void SetupEventHandlers()
+        {
+            if (actionButton != null)
+            {
+                actionButton.clicked += OnActionButtonClicked;
+            }
+
+            if (closeButton != null)
+            {
+                closeButton.clicked += OnCloseButtonClicked;
+            }
+
+            if (inputField != null)
+            {
+                inputField.RegisterValueChangedCallback(OnInputFieldChanged);
+            }
+
+            if (optionToggle != null)
+            {
+                optionToggle.RegisterValueChangedCallback(OnOptionToggleChanged);
+            }
+        }
+
+        /// <summary>
+        /// Cleanup event handlers to prevent memory leaks
+        /// </summary>
+        private void CleanupEventHandlers()
+        {
+            if (actionButton != null)
+            {
+                actionButton.clicked -= OnActionButtonClicked;
+            }
+
+            if (closeButton != null)
+            {
+                closeButton.clicked -= OnCloseButtonClicked;
+            }
+
+            if (inputField != null)
+            {
+                inputField.UnregisterValueChangedCallback(OnInputFieldChanged);
+            }
+
+            if (optionToggle != null)
+            {
+                optionToggle.UnregisterValueChangedCallback(OnOptionToggleChanged);
+            }
+        }
+
+        /// <summary>
+        /// Initialize UI with default values
+        /// </summary>
+        private void InitializeUI()
+        {
+            if (titleLabel != null)
+            {
+                titleLabel.text = "{{WINDOW_TITLE}}";
+            }
+
+            if (statusLabel != null)
+            {
+                statusLabel.text = "Ready";
+            }
+
+            if (progressBar != null)
+            {
+                progressBar.value = 0f;
+            }
+
+            UpdateUI();
+        }
+        #endregion
+
+        #region Event Handlers
+        /// <summary>
+        /// Called when the action button is clicked
+        /// </summary>
+        private void OnActionButtonClicked()
+        {
+            Debug.Log($"[{nameof({{CLASS_NAME}})}] Action button clicked");
+
+            if (inputField != null && string.IsNullOrEmpty(inputField.value))
+            {
+                UpdateStatus("Please enter a value first!");
+                return;
+            }
+
+            // Perform action here
+            PerformAction();
+
+            UpdateStatus("Action completed successfully!");
+        }
+
+        /// <summary>
+        /// Called when the close button is clicked
+        /// </summary>
+        private void OnCloseButtonClicked()
+        {
+            Debug.Log($"[{nameof({{CLASS_NAME}})}] Close button clicked");
+            Hide();
+        }
+
+        /// <summary>
+        /// Called when the input field value changes
+        /// </summary>
+        private void OnInputFieldChanged(ChangeEvent<string> evt)
+        {
+            Debug.Log($"[{nameof({{CLASS_NAME}})}] Input changed: {evt.newValue}");
+
+            // Validate input
+            ValidateInput(evt.newValue);
+        }
+
+        /// <summary>
+        /// Called when the toggle value changes
+        /// </summary>
+        private void OnOptionToggleChanged(ChangeEvent<bool> evt)
+        {
+            Debug.Log($"[{nameof({{CLASS_NAME}})}] Toggle changed: {evt.newValue}");
+
+            // Update UI based on toggle
+            UpdateUI();
+        }
+        #endregion
+
+        #region Actions
+        /// <summary>
+        /// Main action logic
+        /// </summary>
+        private void PerformAction()
+        {
+            if (inputField == null) return;
+
+            string value = inputField.value;
+
+            // Implement your action logic here
+            Debug.Log($"[{nameof({{CLASS_NAME}})}] Performing action with value: {value}");
+
+            // Example: Update progress
+            if (progressBar != null)
+            {
+                progressBar.value = 100f;
+            }
+        }
+
+        /// <summary>
+        /// Validate user input
+        /// </summary>
+        private void ValidateInput(string input)
+        {
+            if (actionButton == null) return;
+
+            bool isValid = !string.IsNullOrEmpty(input);
+            actionButton.SetEnabled(isValid);
+
+            if (!isValid)
+            {
+                UpdateStatus("Input is required");
+            }
+            else
+            {
+                UpdateStatus("Ready");
+            }
+        }
+
+        /// <summary>
+        /// Update UI based on current state
+        /// </summary>
+        private void UpdateUI()
+        {
+            if (optionToggle == null) return;
+
+            bool isEnabled = optionToggle.value;
+
+            // Enable/disable elements based on toggle
+            if (inputField != null)
+            {
+                inputField.SetEnabled(isEnabled);
+            }
+
+            if (actionButton != null)
+            {
+                actionButton.SetEnabled(isEnabled);
+            }
+        }
+
+        /// <summary>
+        /// Update dynamic UI elements every frame
+        /// </summary>
+        private void UpdateDynamicElements()
+        {
+            // Example: Update a timer, health bar, score, etc.
+            // This runs every frame, so keep it lightweight
+        }
+
+        /// <summary>
+        /// Update status message
+        /// </summary>
+        private void UpdateStatus(string message)
+        {
+            if (statusLabel != null)
+            {
+                statusLabel.text = message;
+            }
+        }
+        #endregion
+
+        #region Visibility Control
+        /// <summary>
+        /// Show the UI
+        /// </summary>
+        public void Show()
+        {
+            if (mainContainer != null)
+            {
+                mainContainer.style.display = DisplayStyle.Flex;
+                isVisible = true;
+
+                if (pauseGameWhenVisible)
+                {
+                    previousTimeScale = Time.timeScale;
+                    Time.timeScale = 0f;
+                }
+
+                OnShow();
+            }
+        }
+
+        /// <summary>
+        /// Hide the UI
+        /// </summary>
+        public void Hide()
+        {
+            if (mainContainer != null)
+            {
+                mainContainer.style.display = DisplayStyle.None;
+                isVisible = false;
+
+                if (pauseGameWhenVisible && Time.timeScale == 0f)
+                {
+                    Time.timeScale = previousTimeScale;
+                }
+
+                OnHide();
+            }
+        }
+
+        /// <summary>
+        /// Toggle UI visibility
+        /// </summary>
+        public void ToggleVisibility()
+        {
+            if (isVisible)
+            {
+                Hide();
+            }
+            else
+            {
+                Show();
+            }
+        }
+
+        /// <summary>
+        /// Called when UI is shown
+        /// </summary>
+        protected virtual void OnShow()
+        {
+            Debug.Log($"[{nameof({{CLASS_NAME}})}] UI shown");
+        }
+
+        /// <summary>
+        /// Called when UI is hidden
+        /// </summary>
+        protected virtual void OnHide()
+        {
+            Debug.Log($"[{nameof({{CLASS_NAME}})}] UI hidden");
+        }
+        #endregion
+
+        #region Public Methods
+        /// <summary>
+        /// Set progress bar value (0-100)
+        /// </summary>
+        public void SetProgress(float value)
+        {
+            if (progressBar != null)
+            {
+                progressBar.value = Mathf.Clamp(value, 0f, 100f);
+            }
+        }
+
+        /// <summary>
+        /// Set title text
+        /// </summary>
+        public void SetTitle(string title)
+        {
+            if (titleLabel != null)
+            {
+                titleLabel.text = title;
+            }
+        }
+
+        /// <summary>
+        /// Get input field value
+        /// </summary>
+        public string GetInputValue()
+        {
+            return inputField != null ? inputField.value : string.Empty;
+        }
+
+        /// <summary>
+        /// Set input field value
+        /// </summary>
+        public void SetInputValue(string value)
+        {
+            if (inputField != null)
+            {
+                inputField.value = value;
+            }
+        }
+        #endregion
+
+        #region Gizmos
+#if UNITY_EDITOR
+        /// <summary>
+        /// Draw gizmos in the editor
+        /// </summary>
+        private void OnDrawGizmos()
+        {
+            // Draw debug visualization if needed
+        }
+#endif
+        #endregion
+    }
+}

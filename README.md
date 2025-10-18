@@ -70,6 +70,37 @@
 - ⚙️ Configurable via `.plugin-config/` files
 - 🔇 Optional log suppression with `showLogs` setting
 
+---
+
+### Unity Dev Toolkit
+
+#### v1.2.0 (2025-10-18)
+- 🎨 **UI Toolkit Templates**: Added complete UI Toolkit templates for both Editor and Runtime (6 files total)
+- 📝 **Editor Templates**: EditorWindow with UXML/USS (C#, UXML, USS)
+- 🎮 **Runtime Templates**: UIDocument for game UI with UXML/USS (C#, UXML, USS)
+- ⚡ **New Skill**: Added `unity-uitoolkit` skill for UI Toolkit development assistance
+- 📚 **Template Count**: Increased from 7 to 10 production-ready templates
+- 🔗 **Cross-References**: Updated Skills to reference new UI Toolkit capabilities
+
+#### v1.1.0 (2025-10-18)
+- 🤖 **New Agent**: Added `@unity-refactor` agent for code refactoring and quality improvement
+- 📝 **Skills Enhancement**: Added "When to Use vs Other Components" sections to all Skills
+- 🔗 **Component Integration**: Clear guidance on when to use Skills vs Agents vs Commands
+- 📚 **Documentation**: Improved cross-component references and usage patterns
+
+#### v1.0.1 (2025-10-18)
+- 📝 **Skill Documentation Optimization**: Simplified SKILL.md files (834 → 197 lines, 76% reduction)
+- 🎯 **Progressive Disclosure**: Applied best practices for concise skill documentation
+- 🗑️ **Removed Redundancy**: Eliminated "When to Use This Skill" sections (skill activation is determined by description field)
+- ⚡ **Token Efficiency**: Reduced context size for faster skill loading and activation
+
+#### v1.0.0 (2025-10-18)
+- 🎉 Initial release
+- 📝 3 slash commands: `/unity:new-script`, `/unity:optimize-scene`, `/unity:setup-test`
+- 🤖 3 expert agents: `@unity-scripter`, `@unity-performance`, `@unity-architect` (expanded to 4 in v1.1.0)
+- ⚡ 4 Agent Skills: `unity-script-validator`, `unity-scene-optimizer`, `unity-template-generator`, `unity-ui-selector` (expanded to 5 in v1.2.0)
+- 📄 Production-ready templates for MonoBehaviour, ScriptableObject, Editor, and Test scripts
+
 </details>
 
 > **⚠️ Important Notice (v2.0.17)**

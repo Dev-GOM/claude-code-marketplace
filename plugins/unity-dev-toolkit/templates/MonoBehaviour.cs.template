@@ -1,0 +1,239 @@
+using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
+
+namespace {{NAMESPACE}}
+{
+    /// <summary>
+    /// {{DESCRIPTION}}
+    /// </summary>
+    public class {{CLASS_NAME}} : MonoBehaviour
+    {
+        #region Serialized Fields
+        [Header("Settings")]
+        [Tooltip("{{TOOLTIP}}")]
+        [SerializeField] private float exampleField = 1f;
+
+        [Header("References")]
+        [SerializeField] private Transform targetTransform;
+        #endregion
+
+        #region Private Fields
+        private bool isInitialized;
+        private Rigidbody rb;
+        #endregion
+
+        #region Properties
+        /// <summary>
+        /// Gets whether this component is initialized
+        /// </summary>
+        public bool IsInitialized => isInitialized;
+        #endregion
+
+        #region Unity Lifecycle
+        /// <summary>
+        /// Called when the script instance is being loaded
+        /// Use for component references and initialization that doesn't depend on other objects
+        /// </summary>
+        private void Awake()
+        {
+            CacheComponents();
+        }
+
+        /// <summary>
+        /// Called before the first frame update
+        /// Use for initialization that depends on other objects being initialized
+        /// </summary>
+        private void Start()
+        {
+            Initialize();
+        }
+
+        /// <summary>
+        /// Called once per frame
+        /// Use for non-physics updates (input, animations, UI)
+        /// </summary>
+        private void Update()
+        {
+            if (!isInitialized)
+                return;
+
+            // Update logic here
+        }
+
+        /// <summary>
+        /// Called at fixed time intervals
+        /// Use for physics updates
+        /// </summary>
+        private void FixedUpdate()
+        {
+            if (!isInitialized)
+                return;
+
+            // Physics logic here
+        }
+
+        /// <summary>
+        /// Called after all Update functions have been called
+        /// Use for camera following, finalizing transformations
+        /// </summary>
+        private void LateUpdate()
+        {
+            // Late update logic here
+        }
+
+        /// <summary>
+        /// Called when the object becomes enabled and active
+        /// </summary>
+        private void OnEnable()
+        {
+            // Subscribe to events
+            SubscribeToEvents();
+        }
+
+        /// <summary>
+        /// Called when the object becomes disabled
+        /// </summary>
+        private void OnDisable()
+        {
+            // Unsubscribe from events
+            UnsubscribeFromEvents();
+        }
+
+        /// <summary>
+        /// Called when the MonoBehaviour will be destroyed
+        /// </summary>
+        private void OnDestroy()
+        {
+            Cleanup();
+        }
+        #endregion
+
+        #region Initialization
+        /// <summary>
+        /// Caches component references
+        /// </summary>
+        private void CacheComponents()
+        {
+            rb = GetComponent<Rigidbody>();
+        }
+
+        /// <summary>
+        /// Initializes the component
+        /// </summary>
+        private void Initialize()
+        {
+            if (isInitialized)
+                return;
+
+            // Initialization logic here
+            ValidateSetup();
+
+            isInitialized = true;
+        }
+
+        /// <summary>
+        /// Validates that all required references are set
+        /// </summary>
+        private void ValidateSetup()
+        {
+            if (targetTransform == null)
+            {
+                Debug.LogWarning($"[{name}] Target Transform is not assigned!", this);
+            }
+        }
+        #endregion
+
+        #region Public Methods
+        /// <summary>
+        /// Example public method
+        /// </summary>
+        public void DoSomething()
+        {
+            // Implementation here
+        }
+        #endregion
+
+        #region Private Methods
+        /// <summary>
+        /// Example private helper method
+        /// </summary>
+        private void HelperMethod()
+        {
+            // Helper implementation here
+        }
+        #endregion
+
+        #region Event Handlers
+        /// <summary>
+        /// Subscribes to necessary events
+        /// </summary>
+        private void SubscribeToEvents()
+        {
+            // Event subscription here
+        }
+
+        /// <summary>
+        /// Unsubscribes from events
+        /// </summary>
+        private void UnsubscribeFromEvents()
+        {
+            // Event unsubscription here
+        }
+
+        /// <summary>
+        /// Called when a collision occurs
+        /// </summary>
+        private void OnCollisionEnter(Collision collision)
+        {
+            // Collision handling here
+        }
+
+        /// <summary>
+        /// Called when entering a trigger collider
+        /// </summary>
+        private void OnTriggerEnter(Collider other)
+        {
+            // Trigger handling here
+        }
+        #endregion
+
+        #region Cleanup
+        /// <summary>
+        /// Performs cleanup operations
+        /// </summary>
+        private void Cleanup()
+        {
+            // Cleanup logic here
+        }
+        #endregion
+
+        #region Editor
+#if UNITY_EDITOR
+        /// <summary>
+        /// Draws gizmos in the editor for debugging
+        /// </summary>
+        private void OnDrawGizmos()
+        {
+            // Gizmo drawing here
+        }
+
+        /// <summary>
+        /// Draws gizmos when the object is selected
+        /// </summary>
+        private void OnDrawGizmosSelected()
+        {
+            // Selected gizmo drawing here
+        }
+
+        /// <summary>
+        /// Validates the component in the editor
+        /// </summary>
+        private void OnValidate()
+        {
+            // Editor validation here
+        }
+#endif
+        #endregion
+    }
+}
