@@ -188,6 +188,16 @@ Claude Code 세션(Session)이 끝날 때마다 자동으로 git 커밋을 생�
 
 **[📖 전체 문서 보기 →](plugins/spec-kit/README.ko.md)**
 
+---
+
+### 8. 🎮 [Unity Dev Toolkit](plugins/unity-dev-toolkit/README.ko.md)
+
+지능형 스크립팅 지원, 코드 리팩토링, 성능 최적화, UI Toolkit 지원을 갖춘 종합 Unity 게임 개발 도구.
+
+**요약:** 4개 전문 에이전트 + 5개 Agent Skills + 3개 슬래시 커맨드 + 10개 프로덕션 템플릿 | **커맨드:** `/unity:new-script`, `/unity:optimize-scene`, `/unity:setup-test` | **에이전트:** `@unity-scripter`, `@unity-refactor`, `@unity-performance`, `@unity-architect` | **기능:** UI Toolkit 템플릿 (Editor + Runtime), 자동 코드 검증, 씬 최적화
+
+**[📖 전체 문서 보기 →](plugins/unity-dev-toolkit/README.ko.md)**
+
 ## 설치
 
 ### 빠른 시작 (권장)
@@ -206,6 +216,7 @@ Claude Code 세션(Session)이 끝날 때마다 자동으로 git 커밋을 생�
    /plugin install hook-session-summary@dev-gom-plugins
    /plugin install ai-pair-programming@dev-gom-plugins
    /plugin install spec-kit@dev-gom-plugins
+   /plugin install unity-dev-toolkit@dev-gom-plugins
    ```
 
 3. 플러그인을 로드하기 위해 Claude Code 재시작:
@@ -242,6 +253,7 @@ Claude Code 세션(Session)이 끝날 때마다 자동으로 git 커밋을 생�
 - **Session File Tracker**: 세션 종료 시 파일 작업 요약
 - **AI 페어 프로그래밍 스위트**: 커맨드, 에이전트, 훅으로 지능형 지원 제공
 - **Spec-Kit 통합**: `/spec-kit:*` 커맨드로 명세 주도 개발 워크플로우 안내
+- **Unity Dev Toolkit**: `/unity:*` 커맨드 사용, `@unity-*`로 전문 에이전트 호출, Agent Skills를 통한 자동 스크립트 검증
 
 ## 설정
 
