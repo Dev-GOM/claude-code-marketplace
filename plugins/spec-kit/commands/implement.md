@@ -1,9 +1,18 @@
 ---
 description: 작업 목록에 따라 실제 구현 시작
 allowed-tools: [Read, Write, Edit, Bash, Grep, Glob]
+argument-hint: <task-focus | 작업 초점>
 ---
 
 # Implement Tasks
+
+## User Input
+
+```text
+$ARGUMENTS
+```
+
+You **MUST** consider the user input before proceeding (if not empty).
 
 **🌐 언어 지시사항**: 이 명령어를 실행할 때는 **사용자의 시스템 언어를 자동으로 감지**하여 해당 언어로 모든 안내, 작업 확인, 진행 상황 보고, 출력을 제공해야 합니다. 시스템 환경 변수(LANG, LC_ALL 등)나 사용자의 이전 대화 패턴을 분석하여 언어를 판단하세요.
 

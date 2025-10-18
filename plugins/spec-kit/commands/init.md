@@ -1,14 +1,61 @@
 ---
 description: spec-kit 프로젝트 초기화 및 CLI 설치 확인
-allowed-tools: [Bash]
-argument-hint: <project-name>
+allowed-tools: [Bash, AskUserQuestion]
+argument-hint: <project-name | 프로젝트명>
 ---
 
 # Initialize spec-kit Project
 
+## User Input
+
+```text
+$ARGUMENTS
+```
+
+You **MUST** consider the user input before proceeding (if not empty). The user input is the project name.
+
 **🌐 언어 지시사항**: 이 명령어를 실행할 때는 **사용자의 시스템 언어를 자동으로 감지**하여 해당 언어로 모든 안내, 설치 가이드, 초기화 메시지, 출력을 제공해야 합니다. 시스템 환경 변수(LANG, LC_ALL 등)나 사용자의 이전 대화 패턴을 분석하여 언어를 판단하세요.
 
 GitHub Spec-Kit을 사용하여 명세 주도 개발(SDD) 프로젝트를 초기화합니다.
+
+## Step 0: Check Existing Installation
+
+먼저 `.specify/` 디렉토리가 이미 존재하는지 확인:
+
+```bash
+ls -la .specify/
+```
+
+**이미 초기화된 경우:**
+
+AskUserQuestion 도구를 사용하여 사용자에게 확인:
+
+```json
+{
+  "questions": [{
+    "question": "이미 spec-kit 프로젝트가 초기화되어 있습니다. 어떻게 하시겠습니까?",
+    "header": "재초기화",
+    "multiSelect": false,
+    "options": [
+      {
+        "label": "새로 초기화 (기존 데이터 삭제)",
+        "description": ".specify/ 폴더를 삭제하고 처음부터 다시 초기화합니다. 기존의 constitution, specification, plan, tasks 파일이 모두 삭제됩니다."
+      },
+      {
+        "label": "취소 (기존 설정 유지)",
+        "description": "초기화를 취소하고 기존 spec-kit 프로젝트를 그대로 사용합니다."
+      }
+    ]
+  }]
+}
+```
+
+- **"새로 초기화"** 선택 시: Step 1으로 진행
+- **"취소"** 선택 시: 초기화를 중단하고 기존 프로젝트 사용 안내
+
+**초기화되지 않은 경우:**
+
+바로 Step 1으로 진행
 
 ## Step 1: Installation Check
 

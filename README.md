@@ -7,6 +7,12 @@
 
 ### Spec-Kit Integration
 
+#### v1.4.0 (2025-10-18)
+- 🔄 **Re-initialization Check**: `/spec-kit:init` now detects existing installations and asks user confirmation before re-initializing
+- 📝 **Command Arguments Support**: All commands now accept `$ARGUMENTS` for user input
+- 🏷️ **Argument Hints**: Added bilingual (English/Korean) argument hints to all commands for better UX
+- 🌐 **Enhanced User Input**: Commands can now be invoked with inline arguments (e.g., `/spec-kit:specify Add user authentication`)
+
 #### v1.3.0 (2025-10-18)
 - 🔄 **Update Mode Selection**: All core commands now detect existing files and offer two update options
 - 📋 **Full Regeneration**: Complete rewrite from scratch when requirements drastically change
