@@ -571,7 +571,9 @@ function main() {
   const report = generateReportWithChanges(allTodos, changes, changedFilesRelative);
 
   // Save to file
-  const outputFormats = config.outputFormats || [`.${PROJECT_NAME}-todos-report.md`];
+  const outputFormats = (config.outputFormats && config.outputFormats.length > 0)
+    ? config.outputFormats
+    : [`.${PROJECT_NAME}-todos-report.md`];
   const outputPath = getOutputPath(outputFormats[0]);
   fs.writeFileSync(outputPath, report, 'utf8');
 

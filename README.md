@@ -68,6 +68,12 @@
 
 ### TODO Collector
 
+#### v1.1.1 (2025-10-18)
+- 🐛 **Bug Fix**: Fixed empty array handling for `outputFormats` configuration
+
+#### v1.1.0 (2025-10-18)
+- 📛 **Project-Named Output Files**: All generated files now include project name to prevent conflicts across multiple projects
+
 #### v1.0.0 (2025-10-14)
 - 🎉 Initial release
 - 🔗 Clickable file links in TODO reports
@@ -98,6 +104,10 @@
 ---
 
 ### Auto-Docs
+
+#### v1.4.0 (2025-10-18)
+- 📁 **Empty Directory Control**: Added `includeEmptyDirs` configuration option to control empty directory inclusion
+- 🐛 **Bug Fix**: Fixed extension filter display to show both filters when both are active
 
 #### v1.3.0 (2025-10-18)
 - 📄 **File Extension Filtering**: Added `includeExtensions` and `excludeExtensions` configuration options

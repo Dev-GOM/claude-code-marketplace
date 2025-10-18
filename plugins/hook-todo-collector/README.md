@@ -285,6 +285,22 @@ Contributions welcome! Ideas:
 - TODO priority levels
 - Aging/staleness detection
 
+## Version
+
+**Current Version**: 1.1.1
+
+## Changelog
+
+### v1.1.1 (2025-10-18)
+- Fixed empty array handling for `outputFormats` configuration
+
+### v1.1.0 (2025-10-18)
+- Added project-scoped file naming using project directory name
+- Prevents file collisions across multiple projects
+
+### v1.0.0
+- Initial release
+
 ## License
 
 MIT License - See [LICENSE](../../LICENSE) for details

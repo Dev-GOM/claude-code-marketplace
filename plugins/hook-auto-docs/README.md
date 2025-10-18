@@ -254,6 +254,30 @@ Use the generated project structure documentation to:
 - PostToolUse: 5 seconds
 - Stop: 15 seconds
 
+## Version
+
+**Current Version**: 1.4.0
+
+## Changelog
+
+### v1.4.0 (2025-10-18)
+- Added `includeEmptyDirs` configuration option to control empty directory inclusion
+- Fixed extension filter display to show both filters when both are active
+
+### v1.3.0 (2025-10-18)
+- Added `includeExtensions` and `excludeExtensions` configuration options for file extension filtering
+- Both filters work together (AND condition) for fine-grained control
+
+### v1.2.0 (2025-10-18)
+- Added project-scoped file naming using project directory name
+- Prevents file collisions across multiple projects
+
+### v1.1.0 (2025-10-18)
+- Added selective directory scanning with `includeDirs` configuration option
+
+### v1.0.0
+- Initial release
+
 ## License
 
 MIT License - See [LICENSE](../../LICENSE) for details
