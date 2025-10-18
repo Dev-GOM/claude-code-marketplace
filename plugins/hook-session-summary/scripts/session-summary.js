@@ -109,12 +109,15 @@ function getOutputPath(filename) {
   return path.join(projectRoot, filename);
 }
 
+// Project name for file naming (current directory name)
+const PROJECT_NAME = path.basename(projectRoot);
+
 // Session file stored in plugin directory (not in project root)
 const PLUGIN_STATE_DIR = path.join(__dirname, '..', '.state');
-const OPERATIONS_FILE = path.join(PLUGIN_STATE_DIR, 'session-operations.json');
+const OPERATIONS_FILE = path.join(PLUGIN_STATE_DIR, `${PROJECT_NAME}-session-operations.json`);
 
 // Output file path (from config or default)
-const OUTPUT_FILE = config.outputFile || '.session-summary.md';
+const OUTPUT_FILE = config.outputFile || `.${PROJECT_NAME}-session-summary.md`;
 
 /**
  * Load file operations from accumulated tracking file

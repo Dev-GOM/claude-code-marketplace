@@ -1,6 +1,6 @@
 {
   "name": "hook-complexity-monitor",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Monitor code complexity and maintain code quality",
   "author": {
     "name": "Dev GOM",

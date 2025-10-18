@@ -54,7 +54,9 @@ function loadPluginConfig() {
     showLogs: false,
     outputDirectory: '',
     includeDirs: null,
-    excludeDirs: null
+    excludeDirs: null,
+    includeExtensions: null,
+    excludeExtensions: null
   };
 
   try {
@@ -109,10 +111,13 @@ function getOutputPath(filename) {
   return path.join(projectRoot, filename);
 }
 
+// Project name for file naming (current directory name)
+const PROJECT_NAME = path.basename(projectRoot);
+
 // State files stored in plugin directory (not in project root)
 const PLUGIN_STATE_DIR = path.join(__dirname, '..', '.state');
-const STATE_FILE = path.join(PLUGIN_STATE_DIR, 'structure-state.json');
-const CHANGES_FILE = path.join(PLUGIN_STATE_DIR, 'structure-changes.json');
+const STATE_FILE = path.join(PLUGIN_STATE_DIR, `${PROJECT_NAME}-structure-state.json`);
+const CHANGES_FILE = path.join(PLUGIN_STATE_DIR, `${PROJECT_NAME}-structure-changes.json`);
 
 // Ensure plugin state directory exists
 if (!fs.existsSync(PLUGIN_STATE_DIR)) {
@@ -120,7 +125,7 @@ if (!fs.existsSync(PLUGIN_STATE_DIR)) {
 }
 
 // Output file goes to configured output directory
-const OUTPUT_FILE = getOutputPath('.project-structure.md');
+const OUTPUT_FILE = getOutputPath(`.${PROJECT_NAME}-project-structure.md`);
 
 // Directories to include (if specified, only these will be scanned)
 const INCLUDED_DIRS = config.includeDirs && config.includeDirs.length > 0
@@ -142,12 +147,43 @@ const EXCLUDED_DIRS = config.excludeDirs || [
   '.idea'
 ];
 
+// File extensions to include (if specified, only these will be included)
+const INCLUDED_EXTENSIONS = config.includeExtensions && config.includeExtensions.length > 0
+  ? config.includeExtensions.map(ext => ext.startsWith('.') ? ext : `.${ext}`)
+  : null;
+
+// File extensions to exclude from scanning
+const EXCLUDED_EXTENSIONS = config.excludeExtensions
+  ? config.excludeExtensions.map(ext => ext.startsWith('.') ? ext : `.${ext}`)
+  : [];
+
 /**
  * Check if directory should be excluded
  */
 function shouldExcludeDir(dirPath) {
   const dirName = path.basename(dirPath);
   return EXCLUDED_DIRS.includes(dirName) || dirName.startsWith('.');
+}
+
+/**
+ * Check if file should be excluded based on extension
+ */
+function shouldExcludeFile(filePath) {
+  const ext = path.extname(filePath);
+
+  // First, check if file is in include list (if specified)
+  if (INCLUDED_EXTENSIONS && INCLUDED_EXTENSIONS.length > 0) {
+    if (!INCLUDED_EXTENSIONS.includes(ext)) {
+      return true; // Not in include list - exclude
+    }
+  }
+
+  // Then, check if file is in exclude list
+  if (EXCLUDED_EXTENSIONS.includes(ext)) {
+    return true; // In exclude list - exclude
+  }
+
+  return false; // Include the file
 }
 
 /**
@@ -187,12 +223,15 @@ function scanDirectory(dir, prefix = '', isLast = true, basePath = null) {
         const subEntries = scanDirectory(fullPath, prefix + extension, isLastItem, basePath);
         entries.push(...subEntries);
       } else {
-        entries.push({
-          line: `${prefix}${connector}[${item}](${relativePath})`,
-          path: relativePath,
-          type: 'file',
-          basePath: basePath
-        });
+        // Check if file should be excluded based on extension
+        if (!shouldExcludeFile(fullPath)) {
+          entries.push({
+            line: `${prefix}${connector}[${item}](${relativePath})`,
+            path: relativePath,
+            type: 'file',
+            basePath: basePath
+          });
+        }
       }
     });
   } catch (error) {
@@ -281,6 +320,13 @@ function generateDocumentation(structure, packageInfo, includedDirs = null) {
   // Show which directories are included if filtering is active
   if (includedDirs && includedDirs.length > 0) {
     doc += `**Scanned Directories**: ${includedDirs.map(d => `\`${d}\``).join(', ')}\n\n`;
+  }
+
+  // Show file extension filters if active
+  if (INCLUDED_EXTENSIONS && INCLUDED_EXTENSIONS.length > 0) {
+    doc += `**Included Extensions**: ${INCLUDED_EXTENSIONS.map(e => `\`${e}\``).join(', ')}\n\n`;
+  } else if (EXCLUDED_EXTENSIONS && EXCLUDED_EXTENSIONS.length > 0) {
+    doc += `**Excluded Extensions**: ${EXCLUDED_EXTENSIONS.map(e => `\`${e}\``).join(', ')}\n\n`;
   }
 
   // Project info from package.json

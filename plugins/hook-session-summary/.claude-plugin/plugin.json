@@ -1,6 +1,6 @@
 {
   "name": "hook-session-summary",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Track and summarize all files used during a Claude Code session",
   "author": {
     "name": "Dev GOM",

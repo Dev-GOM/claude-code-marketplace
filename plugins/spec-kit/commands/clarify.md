@@ -1,6 +1,6 @@
 ---
 description: 명세나 계획의 모호한 부분을 명확히 하고 Open Questions 해결
-allowed-tools: [Read, Write, Edit]
+allowed-tools: [Read, Write, Edit, AskUserQuestion]
 argument-hint: <question-or-topic | 질문 또는 주제>
 ---
 
@@ -41,26 +41,55 @@ cat .specify/memory/plan.md
 - "Option A/B" 같은 미결정 사항
 - 모호한 표현 ("적절한", "충분한", "빠른" 등)
 
-## Step 2: List Issues
+## Step 2: List Issues and Select
 
-발견한 모호한 사항을 사용자에게 제시:
+발견한 모호한 사항을 리스트로 정리한 후, AskUserQuestion 도구를 사용하여 사용자에게 선택하도록 합니다:
 
+**발견된 이슈 예시:**
 ```
 다음 사항들이 명확하지 않습니다:
 
-**1. [명세/계획] - [섹션명]**
-Issue: [문제 설명]
-Options:
-- A: [옵션 A]
-- B: [옵션 B]
-- C: [옵션 C]
+1. [명세] - 인증 방식
+   Issue: OAuth2 vs JWT 중 어떤 것을 사용할지 미결정
 
-**2. [명세/계획] - [섹션명]**
-Issue: [문제 설명]
-...
+2. [계획] - 데이터베이스 선택
+   Issue: PostgreSQL vs MongoDB 선택 필요
 
-어떤 것부터 명확히 하시겠습니까?
+3. [명세] - 성능 기준
+   Issue: "빠른 응답 시간"이 구체적이지 않음
 ```
+
+**AskUserQuestion으로 선택:**
+
+```json
+{
+  "questions": [{
+    "question": "명확하지 않은 사항들을 발견했습니다. 어떤 것부터 명확히 하시겠습니까?",
+    "header": "명확화 우선순위",
+    "multiSelect": false,
+    "options": [
+      {
+        "label": "[명세] 인증 방식 (OAuth2 vs JWT)",
+        "description": "사용자 인증 방법을 결정해야 합니다. 보안 요구사항과 사용자 경험에 영향을 미칩니다."
+      },
+      {
+        "label": "[계획] 데이터베이스 선택",
+        "description": "PostgreSQL vs MongoDB 중 선택이 필요합니다. 데이터 구조와 쿼리 패턴에 영향을 미칩니다."
+      },
+      {
+        "label": "[명세] 성능 기준 구체화",
+        "description": "\"빠른 응답 시간\"을 구체적인 숫자로 정의해야 합니다."
+      },
+      {
+        "label": "모든 이슈를 순서대로 처리",
+        "description": "위에서부터 순서대로 모든 이슈를 명확히 합니다."
+      }
+    ]
+  }]
+}
+```
+
+**참고:** 실제로는 발견된 이슈에 맞춰 options를 동적으로 생성해야 합니다.
 
 ## Step 3: Discuss and Resolve
 

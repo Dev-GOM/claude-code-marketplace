@@ -36,11 +36,14 @@ const OUTPUT_DIR = config.outputDirectory
   || process.env.CLAUDE_PLUGIN_OUTPUT_DIR
   || '';
 
-const LOG_FILE = config.logFile || '.complexity-log.md';
+// Project name for file naming (current directory name)
+const PROJECT_NAME = path.basename(projectRoot);
+
+const LOG_FILE = config.logFile || `.${PROJECT_NAME}-complexity-log.md`;
 
 // Session file
 const PLUGIN_STATE_DIR = path.join(__dirname, '..', '.state');
-const SESSION_FILE = path.join(PLUGIN_STATE_DIR, 'complexity-session.json');
+const SESSION_FILE = path.join(PLUGIN_STATE_DIR, `${PROJECT_NAME}-complexity-session.json`);
 
 // Ensure plugin state directory exists
 if (!fs.existsSync(PLUGIN_STATE_DIR)) {
