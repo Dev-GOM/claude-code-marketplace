@@ -109,13 +109,14 @@ cat "specs/$CURRENT_BRANCH/plan.md"
 
 ### 4.1 수집된 정보를 Draft 파일로 저장
 
-먼저 `.specify/temp/` 디렉토리가 있는지 확인하고 없으면 생성:
+먼저 현재 브랜치의 drafts 디렉토리가 있는지 확인하고 없으면 생성:
 
 ```bash
-mkdir -p .specify/temp
+CURRENT_BRANCH=$(git branch --show-current)
+mkdir -p "specs/$CURRENT_BRANCH/drafts"
 ```
 
-Write 도구를 사용하여 수집된 정보를 `.specify/temp/clarify-draft.md` 파일로 저장합니다:
+Write 도구를 사용하여 수집된 정보를 `specs/$CURRENT_BRANCH/drafts/clarify-draft.md` 파일로 저장합니다:
 
 ```markdown
 # Clarify Draft
@@ -158,9 +159,9 @@ Write 도구를 사용하여 수집된 정보를 `.specify/temp/clarify-draft.md
 Draft 파일 경로를 전달하여 SlashCommand 도구로 `/speckit.clarify` 명령을 실행합니다:
 
 ```
-/speckit.clarify .specify/temp/clarify-draft.md
+/speckit.clarify specs/$CURRENT_BRANCH/drafts/clarify-draft.md
 
-INSTRUCTION: Read the draft file at the path above using the Read tool. This draft contains ALL the resolved issues with clear resolutions and rationales. You MUST skip all identification and discussion steps (Step 1-3) and proceed directly to updating the specification.md and plan.md files:
+INSTRUCTION: Read the draft file at the path above using the Read tool. This draft contains ALL the resolved issues with clear resolutions and rationales. You MUST skip all identification and discussion steps (Step 1-3) and proceed directly to updating the spec.md and plan.md files in the current branch:
 - Remove resolved Open Questions
 - Add clear requirements
 - Add specific acceptance criteria
@@ -170,7 +171,7 @@ INSTRUCTION: Read the draft file at the path above using the Read tool. This dra
 Use ONLY the information from the draft file. Do NOT ask the user for any additional information. Process all content in the user's system language.
 ```
 
-spec-kit 명령어는 draft 파일을 읽어서 specification.md와 plan.md를 업데이트합니다.
+spec-kit 명령어는 draft 파일을 읽어서 spec.md와 plan.md를 업데이트합니다.
 
 **토큰 절약 효과:**
 - 긴 텍스트를 명령어 인자로 전달하지 않음
@@ -208,7 +209,7 @@ spec-kit 명령어는 draft 파일을 읽어서 specification.md와 plan.md를 �
 ## Next Steps
 
 명확화 후:
-1. `.specify/memory/specification.md` 및 `plan.md` 파일 업데이트 확인
+1. `specs/$CURRENT_BRANCH/spec.md` 및 `plan.md` 파일 업데이트 확인
 2. 필요시 명세 재검토: `/spec-kit:specify`
 3. 필요시 계획 업데이트: `/spec-kit:plan`
 4. 작업 조정: `/spec-kit:tasks`
@@ -239,7 +240,7 @@ AskUserQuestion 도구를 사용하여 사용자에게 다음 작업을 물어�
       },
       {
         "label": "업데이트된 파일 검토",
-        "description": "변경된 specification.md 또는 plan.md 파일을 검토하고 싶습니다."
+        "description": "변경된 spec.md 또는 plan.md 파일을 검토하고 싶습니다."
       },
       {
         "label": "다른 명령어 실행",

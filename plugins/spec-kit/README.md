@@ -478,11 +478,15 @@ MIT License - see [LICENSE](LICENSE) file.
 
 ---
 
-**Version**: 2.0.0
+**Version**: 2.0.1
 **Last Updated**: 2025-10-19
 **Status**: Beta
 
 ## Changelog
+
+### v2.0.1 (2025-10-19)
+- 🐛 **Bug Fix**: Fixed clarify command draft file paths to use branch-based structure (`specs/[branch]/drafts/` instead of `.specify/temp/`)
+- 📝 **Documentation**: Updated clarify.md to reference correct file paths for the new workflow
 
 ### v2.0.0 (2025-10-19)
 - 🔄 **Branch-Based Workflow**: Complete restructuring to support per-branch feature specifications
