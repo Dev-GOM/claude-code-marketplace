@@ -112,8 +112,14 @@ You can configure the plugin's behavior in the `configuration` section of `hooks
 - **Default**: `""` (project root)
 - **Example**: `"docs"`, `".claude-output"`
 
+#### `includeDirs`
+- **Description**: List of specific directories to scan (if empty, scans entire project)
+- **Default**: `[]` (empty - scans all directories except excluded ones)
+- **Example**: `["src", "lib"]` - only scans `src` and `lib` folders
+- **Use Case**: Useful for large projects where you only want to document specific parts
+
 #### `excludeDirs`
-- **Description**: List of directories to exclude from project structure scan
+- **Description**: List of directories to exclude from project structure scan (ignored if `includeDirs` is set)
 - **Default**: `["node_modules", ".git", "dist", "build", "coverage", ".next", "out", ".nuxt", "vendor", ".vscode", ".idea"]`
 - **Example**: Add/remove directories from the array
 
@@ -126,6 +132,7 @@ Edit the `plugins/hook-auto-docs/hooks/hooks.json` file:
   "hooks": { ... },
   "configuration": {
     "outputDirectory": "docs",
+    "includeDirs": ["src", "lib"],
     "excludeDirs": [
       "node_modules",
       ".git",
@@ -144,6 +151,8 @@ Edit the `plugins/hook-auto-docs/hooks/hooks.json` file:
   }
 }
 ```
+
+**Note**: If `includeDirs` is set to a non-empty array, only those directories will be scanned and `excludeDirs` will be ignored.
 
 ### Configuration Priority
 
