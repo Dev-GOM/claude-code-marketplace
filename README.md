@@ -7,6 +7,13 @@
 
 ### Spec-Kit Integration
 
+#### v1.6.0 (2025-10-18)
+- 🤝 **Interactive User Prompts**: All commands now use AskUserQuestion for better user interaction
+- 🔄 **Update Mode Selection**: specify, plan, and tasks commands prompt users to choose between Full Regeneration or Incremental Update
+- ⚠️ **Smart Warnings**: implement command warns about Open Questions and offers to run clarify first
+- 📋 **Issue Prioritization**: clarify command lets users select which ambiguous items to address first
+- 🎯 **Improved UX**: Visual option cards with clear descriptions replace text-based prompts
+
 #### v1.5.0 (2025-10-18)
 - 📊 **Project Status Display**: When canceling re-initialization, displays current project structure and progress
 - 🗺️ **Smart Navigation**: Analyzes existing files (constitution, specification, plan, tasks) and recommends next steps
@@ -73,6 +80,12 @@
 
 ### Hook Plugins (Git Auto-Backup, Complexity Monitor, Auto-Docs, Session Summary)
 
+#### v1.1.0 (2025-10-18) - Complexity Monitor, Session Summary, TODO Collector
+- 📛 **Project-Named Output Files**: All generated files now include project name to prevent conflicts across multiple projects
+- 🏷️ **File Naming**: Changed from `.complexity-log.md` to `.{project-name}-complexity-log.md` (same for all hooks)
+- 🔀 **Multi-Project Support**: Work on multiple projects simultaneously without file collisions
+- 📁 **State Isolation**: Each project's tracking files are now separate in plugin `.state` directory
+
 #### v1.0.0 (2025-10-14)
 - 🎉 Initial release
 - 🔄 **Git Auto-Backup**: Automatic git commits after sessions
@@ -85,6 +98,19 @@
 ---
 
 ### Auto-Docs
+
+#### v1.3.0 (2025-10-18)
+- 📄 **File Extension Filtering**: Added `includeExtensions` and `excludeExtensions` configuration options
+- 🎯 **Selective File Inclusion**: Include only specific file types (e.g., `.js`, `.ts`, `.json`)
+- 🚫 **File Type Exclusion**: Exclude unwanted file types (e.g., `.meta`, `.log`, `.tmp`)
+- 🔧 **Flexible Configuration**: Specify extensions with or without dot (`.meta` or `meta`)
+- 📋 **AND Condition**: Both filters work together for fine-grained control (include first, then exclude)
+- 💡 **Use Cases**: Focus on source code only, exclude build artifacts, hide metadata files
+
+#### v1.2.0 (2025-10-18)
+- 📛 **Project-Named Output Files**: Generated files now include project name (`.{project-name}-project-structure.md`)
+- 🔀 **Multi-Project Support**: Work on multiple projects simultaneously without file collisions
+- 📁 **State Isolation**: Project-specific state files in plugin directory
 
 #### v1.1.0 (2025-10-18)
 - 📁 **Selective Directory Scanning**: Added `includeDirs` configuration to scan only specific directories

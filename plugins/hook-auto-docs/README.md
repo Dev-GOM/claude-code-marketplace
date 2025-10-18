@@ -123,6 +123,20 @@ You can configure the plugin's behavior in the `configuration` section of `hooks
 - **Default**: `["node_modules", ".git", "dist", "build", "coverage", ".next", "out", ".nuxt", "vendor", ".vscode", ".idea"]`
 - **Example**: Add/remove directories from the array
 
+#### `includeExtensions`
+- **Description**: List of file extensions to include (if empty, all files are included unless excluded)
+- **Default**: `[]` (empty - includes all file extensions except excluded ones)
+- **Example**: `[".js", ".ts", ".jsx", ".tsx"]` - only includes JavaScript/TypeScript files
+- **Note**: Can be specified with or without dot (`.meta` or `meta`)
+- **Use Case**: Focus documentation on specific file types (e.g., only source code, only configs)
+
+#### `excludeExtensions`
+- **Description**: List of file extensions to exclude from project structure (works together with `includeExtensions`)
+- **Default**: `[]` (empty - no extensions excluded)
+- **Example**: `[".meta", ".log", ".tmp"]` - excludes Unity meta files, logs, and temp files
+- **Note**: Can be specified with or without dot (`.meta` or `meta`)
+- **Use Case**: Hide unnecessary file types from documentation (e.g., Unity `.meta` files, build artifacts)
+
 ### How to Change Settings
 
 Edit the `plugins/hook-auto-docs/hooks/hooks.json` file:
@@ -147,12 +161,17 @@ Edit the `plugins/hook-auto-docs/hooks/hooks.json` file:
       ".idea",
       "tmp",
       "cache"
-    ]
+    ],
+    "includeExtensions": [],
+    "excludeExtensions": [".meta", ".log", ".tmp"]
   }
 }
 ```
 
-**Note**: If `includeDirs` is set to a non-empty array, only those directories will be scanned and `excludeDirs` will be ignored.
+**Filter Rules**:
+- If `includeDirs` is set to a non-empty array, only those directories will be scanned and `excludeDirs` will be ignored
+- If `includeExtensions` is set, only those extensions are included first, then `excludeExtensions` is applied to filter them further
+- Both extension filters work together (AND condition) for maximum flexibility
 
 ### Configuration Priority
 

@@ -123,6 +123,20 @@ claude-code-marketplace/
 - **기본값**: `["node_modules", ".git", "dist", "build", "coverage", ".next", "out", ".nuxt", "vendor", ".vscode", ".idea"]`
 - **예시**: 배열에 디렉토리 추가/제거
 
+#### `includeExtensions`
+- **설명**: 포함할 파일 확장자 목록 (비어있으면 제외된 확장자를 제외한 모든 파일 포함)
+- **기본값**: `[]` (비어있음 - 제외된 확장자를 제외한 모든 확장자 포함)
+- **예시**: `[".js", ".ts", ".jsx", ".tsx"]` - JavaScript/TypeScript 파일만 포함
+- **참고**: 점(.)을 포함하거나 제외하고 지정 가능 (`.meta` 또는 `meta`)
+- **사용 사례**: 특정 파일 타입에만 집중 (예: 소스 코드만, 설정 파일만)
+
+#### `excludeExtensions`
+- **설명**: 프로젝트 구조에서 제외할 파일 확장자 목록 (`includeExtensions`와 함께 작동)
+- **기본값**: `[]` (비어있음 - 제외되는 확장자 없음)
+- **예시**: `[".meta", ".log", ".tmp"]` - Unity 메타 파일, 로그, 임시 파일 제외
+- **참고**: 점(.)을 포함하거나 제외하고 지정 가능 (`.meta` 또는 `meta`)
+- **사용 사례**: 불필요한 파일 타입 숨기기 (예: Unity `.meta` 파일, 빌드 산출물)
+
 ### 설정 변경 방법
 
 `plugins/hook-auto-docs/hooks/hooks.json` 파일을 편집하세요:
@@ -147,12 +161,17 @@ claude-code-marketplace/
       ".idea",
       "tmp",
       "cache"
-    ]
+    ],
+    "includeExtensions": [],
+    "excludeExtensions": [".meta", ".log", ".tmp"]
   }
 }
 ```
 
-**참고**: `includeDirs`가 비어있지 않은 배열로 설정되면, 해당 디렉토리들만 스캔되고 `excludeDirs`는 무시됩니다.
+**필터링 규칙**:
+- `includeDirs`가 비어있지 않은 배열로 설정되면, 해당 디렉토리들만 스캔되고 `excludeDirs`는 무시됩니다
+- `includeExtensions`가 설정되면 해당 확장자만 먼저 포함한 후, `excludeExtensions`로 추가 필터링합니다
+- 두 확장자 필터는 함께 작동하여 (AND 조건) 최대한의 유연성을 제공합니다
 
 ### 설정 우선순위
 

@@ -113,10 +113,13 @@ function getOutputPath(filename) {
   return path.join(projectRoot, filename);
 }
 
+// Project name for file naming (current directory name)
+const PROJECT_NAME = path.basename(projectRoot);
+
 // State files stored in plugin directory (not in project root)
 const PLUGIN_STATE_DIR = path.join(__dirname, '..', '.state');
-const TODO_STATE_FILE = path.join(PLUGIN_STATE_DIR, 'todo-state.json');
-const CHANGED_FILES_FILE = path.join(PLUGIN_STATE_DIR, 'todo-changed-files.json');
+const TODO_STATE_FILE = path.join(PLUGIN_STATE_DIR, `${PROJECT_NAME}-todo-state.json`);
+const CHANGED_FILES_FILE = path.join(PLUGIN_STATE_DIR, `${PROJECT_NAME}-todo-changed-files.json`);
 
 // Ensure plugin state directory exists
 if (!fs.existsSync(PLUGIN_STATE_DIR)) {
@@ -568,7 +571,7 @@ function main() {
   const report = generateReportWithChanges(allTodos, changes, changedFilesRelative);
 
   // Save to file
-  const outputFormats = config.outputFormats || ['.todos-report.md'];
+  const outputFormats = config.outputFormats || [`.${PROJECT_NAME}-todos-report.md`];
   const outputPath = getOutputPath(outputFormats[0]);
   fs.writeFileSync(outputPath, report, 'utf8');
 

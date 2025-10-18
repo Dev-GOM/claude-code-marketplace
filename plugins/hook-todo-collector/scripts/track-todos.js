@@ -41,9 +41,12 @@ function getOutputPath(filename) {
   return path.join(projectRoot, filename);
 }
 
+// Project name for file naming (current directory name)
+const PROJECT_NAME = path.basename(projectRoot);
+
 // State files stored in plugin directory (not in project root)
 const PLUGIN_STATE_DIR = path.join(__dirname, '..', '.state');
-const CHANGED_FILES_FILE = path.join(PLUGIN_STATE_DIR, 'todo-changed-files.json');
+const CHANGED_FILES_FILE = path.join(PLUGIN_STATE_DIR, `${PROJECT_NAME}-todo-changed-files.json`);
 
 // Ensure plugin state directory exists
 if (!fs.existsSync(PLUGIN_STATE_DIR)) {
