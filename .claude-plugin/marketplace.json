@@ -5,7 +5,7 @@
   },
   "metadata": {
     "description": "Productivity plugins for Claude Code to automate development workflows",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "homepage": "https://github.com/Dev-GOM/claude-code-marketplace"
   },
   "plugins": [
@@ -120,7 +120,7 @@
       "name": "spec-kit",
       "source": "./plugins/spec-kit",
       "description": "GitHub Spec-Kit integration for Specification-Driven Development - define WHAT and HOW before coding",
-      "version": "1.6.0",
+      "version": "2.0.0",
       "author": {
         "name": "Dev GOM"
       },

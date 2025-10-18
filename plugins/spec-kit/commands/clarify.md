@@ -31,8 +31,12 @@ Spec-Kit 문서에서 찾을 수 있는 것들:
 명세와 계획을 읽고 불명확한 부분 식별:
 
 ```bash
-cat .specify/memory/specification.md
-cat .specify/memory/plan.md
+# 현재 브랜치 확인
+CURRENT_BRANCH=$(git branch --show-current)
+
+# 명세와 계획 읽기
+cat "specs/$CURRENT_BRANCH/spec.md"
+cat "specs/$CURRENT_BRANCH/plan.md"
 ```
 
 다음을 찾기:
@@ -209,6 +213,54 @@ spec-kit 명령어는 draft 파일을 읽어서 specification.md와 plan.md를 �
 3. 필요시 계획 업데이트: `/spec-kit:plan`
 4. 작업 조정: `/spec-kit:tasks`
 5. 구현 진행: `/spec-kit:implement`
+
+## What's Next?
+
+AskUserQuestion 도구를 사용하여 사용자에게 다음 작업을 물어봅니다:
+
+```json
+{
+  "questions": [{
+    "question": "명확화 작업이 완료되었습니다. 다음 단계로 무엇을 진행하시겠습니까?",
+    "header": "다음 단계",
+    "multiSelect": false,
+    "options": [
+      {
+        "label": "명세 업데이트 (/spec-kit:specify)",
+        "description": "명확화된 내용을 반영하여 명세를 업데이트합니다."
+      },
+      {
+        "label": "기술 구현 계획 작성 (/spec-kit:plan)",
+        "description": "명세가 충분히 명확하다면 기술 구현 계획을 수립합니다. (권장 다음 단계)"
+      },
+      {
+        "label": "작업 분해 (/spec-kit:tasks)",
+        "description": "계획이 이미 있다면 작업 목록을 생성합니다."
+      },
+      {
+        "label": "업데이트된 파일 검토",
+        "description": "변경된 specification.md 또는 plan.md 파일을 검토하고 싶습니다."
+      },
+      {
+        "label": "다른 명령어 실행",
+        "description": "위 선택지에 없는 다른 spec-kit 명령어를 직접 입력하여 실행합니다."
+      },
+      {
+        "label": "작업 완료",
+        "description": "지금은 여기까지만 작업하겠습니다."
+      }
+    ]
+  }]
+}
+```
+
+**사용자 선택에 따라:**
+- **명세 업데이트** 선택 시 → `/spec-kit:specify` 명령 실행 안내
+- **기술 구현 계획 작성** 선택 시 → `/spec-kit:plan` 명령 실행 안내
+- **작업 분해** 선택 시 → `/spec-kit:tasks` 명령 실행 안내
+- **업데이트된 파일 검토** 선택 시 → 변경된 파일 표시 후 다시 선택지 제공
+- **다른 명령어 실행** 선택 시 → 사용자가 원하는 명령어 입력 요청
+- **작업 완료** 선택 시 → 세션 종료
 
 ---
 

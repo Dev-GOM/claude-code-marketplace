@@ -1,11 +1,29 @@
 # Claude Code Plugins
 
+> **Version**: 2.0.0 | **Last Updated**: 2025-10-19
+>
 > **Language**: [English](README.md) | [한국어](README.ko.md)
 
 <details>
 <summary><strong>📋 Changelog</strong> (Click to expand)</summary>
 
 ### Spec-Kit Integration
+
+#### v2.0.0 (2025-10-19)
+- 🔄 **Branch-Based Workflow**: Complete restructuring to support per-branch feature specifications
+- 📁 **Path Changes**: Migrated from `.specify/memory/` to `specs/[branch-name]/` structure for feature files
+- ✨ **Workflow Selection**: `/spec-kit:specify` command now offers choice between creating new specs or rewriting existing ones
+- 🔗 **PowerShell Integration**: Integrated with `create-new-feature.ps1` script for automated branch creation
+- 🎯 **Branch Detection**: All commands now automatically detect current branch and work with correct spec files
+- 📋 **Next Step Guidance**: Added AskUserQuestion prompts to all commands for workflow navigation
+- ⚠️ **BREAKING CHANGE**: Existing v1.x users must migrate their specs to the new branch-based structure
+
+#### v1.7.0 (2025-10-19)
+- 🔄 **Next Step Suggestions**: All commands now prompt users for next actions after completion using AskUserQuestion
+- 🎯 **Workflow Guidance**: Each command suggests contextually relevant next steps (e.g., specify → clarify/plan, tasks → implement)
+- 📋 **Smart Navigation**: Users can choose to continue workflow, review files, or complete session
+- 💡 **Improved User Experience**: Clear visual option cards for next action selection
+- 🚀 **Seamless Workflow**: Reduces friction by guiding users through the entire SDD process
 
 #### v1.6.0 (2025-10-18)
 - 🤝 **Interactive User Prompts**: All commands now use AskUserQuestion for better user interaction
