@@ -7,6 +7,12 @@
 
 ### Spec-Kit Integration
 
+#### v1.5.0 (2025-10-18)
+- 📊 **Project Status Display**: When canceling re-initialization, displays current project structure and progress
+- 🗺️ **Smart Navigation**: Analyzes existing files (constitution, specification, plan, tasks) and recommends next steps
+- 🎯 **Context-Aware Guidance**: Shows completed stages and suggests appropriate next command
+- 💡 **Workflow Clarity**: Helps users understand where they are in the SDD workflow
+
 #### v1.4.0 (2025-10-18)
 - 🔄 **Re-initialization Check**: `/spec-kit:init` now detects existing installations and asks user confirmation before re-initializing
 - 📝 **Command Arguments Support**: All commands now accept `$ARGUMENTS` for user input
