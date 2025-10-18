@@ -72,6 +72,17 @@
 
 ---
 
+### Auto-Docs
+
+#### v1.1.0 (2025-10-18)
+- 📁 **Selective Directory Scanning**: Added `includeDirs` configuration to scan only specific directories
+- 🎯 **Focused Documentation**: Generate project structure for selected folders instead of entire project
+- ⚙️ **Configuration Priority**: `includeDirs` takes precedence over `excludeDirs` when set
+- 📚 **Large Project Support**: Useful for documenting specific parts of large codebases
+- 🌐 **Multi-language Documentation**: Updated both English and Korean READMEs
+
+---
+
 ### Unity Dev Toolkit
 
 #### v1.2.0 (2025-10-18)

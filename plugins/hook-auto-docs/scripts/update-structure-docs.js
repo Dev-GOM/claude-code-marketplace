@@ -53,6 +53,7 @@ function loadPluginConfig() {
   const defaultConfig = {
     showLogs: false,
     outputDirectory: '',
+    includeDirs: null,
     excludeDirs: null
   };
 
@@ -121,6 +122,11 @@ if (!fs.existsSync(PLUGIN_STATE_DIR)) {
 // Output file goes to configured output directory
 const OUTPUT_FILE = getOutputPath('.project-structure.md');
 
+// Directories to include (if specified, only these will be scanned)
+const INCLUDED_DIRS = config.includeDirs && config.includeDirs.length > 0
+  ? config.includeDirs
+  : null;
+
 // Directories to exclude from scanning
 const EXCLUDED_DIRS = config.excludeDirs || [
   'node_modules',
@@ -147,7 +153,7 @@ function shouldExcludeDir(dirPath) {
 /**
  * Scan directory structure
  */
-function scanDirectory(dir, prefix = '', isLast = true) {
+function scanDirectory(dir, prefix = '', isLast = true, basePath = null) {
   const entries = [];
 
   try {
@@ -174,16 +180,18 @@ function scanDirectory(dir, prefix = '', isLast = true) {
         entries.push({
           line: `${prefix}${connector}${item}/`,
           path: relativePath,
-          type: 'directory'
+          type: 'directory',
+          basePath: basePath
         });
 
-        const subEntries = scanDirectory(fullPath, prefix + extension, isLastItem);
+        const subEntries = scanDirectory(fullPath, prefix + extension, isLastItem, basePath);
         entries.push(...subEntries);
       } else {
         entries.push({
           line: `${prefix}${connector}[${item}](${relativePath})`,
           path: relativePath,
-          type: 'file'
+          type: 'file',
+          basePath: basePath
         });
       }
     });
@@ -263,12 +271,17 @@ function getPackageInfo() {
 /**
  * Generate structure documentation
  */
-function generateDocumentation(structure, packageInfo) {
+function generateDocumentation(structure, packageInfo, includedDirs = null) {
   const now = new Date();
   const timestamp = now.toISOString().replace('T', ' ').slice(0, 19);
 
   let doc = `# Project Structure\n\n`;
   doc += `**Generated**: ${timestamp}\n\n`;
+
+  // Show which directories are included if filtering is active
+  if (includedDirs && includedDirs.length > 0) {
+    doc += `**Scanned Directories**: ${includedDirs.map(d => `\`${d}\``).join(', ')}\n\n`;
+  }
 
   // Project info from package.json
   if (packageInfo) {
@@ -317,10 +330,31 @@ function generateDocumentation(structure, packageInfo) {
 
   // Directory structure
   doc += `## Directory Structure\n\n`;
-  doc += `${path.basename(projectRoot)}/\n`;
-  structure.forEach(entry => {
-    doc += `${entry.line}\n`;
-  });
+
+  if (includedDirs && includedDirs.length > 0) {
+    // Show each included directory separately
+    includedDirs.forEach((dirPath, index) => {
+      const dirName = path.basename(dirPath);
+      if (index > 0) doc += `\n`;
+      doc += `### ${dirPath}\n\n`;
+      doc += `${dirName}/\n`;
+
+      // Filter entries for this directory
+      const dirEntries = structure.filter(entry => {
+        return entry.basePath === dirPath;
+      });
+
+      dirEntries.forEach(entry => {
+        doc += `${entry.line}\n`;
+      });
+    });
+  } else {
+    // Show full project structure
+    doc += `${path.basename(projectRoot)}/\n`;
+    structure.forEach(entry => {
+      doc += `${entry.line}\n`;
+    });
+  }
 
   return doc;
 }
@@ -340,13 +374,30 @@ function main() {
   }
 
   // Scan directory structure
-  const structure = scanDirectory(projectRoot);
+  let structure = [];
+
+  if (INCLUDED_DIRS && INCLUDED_DIRS.length > 0) {
+    // Scan only specified directories
+    INCLUDED_DIRS.forEach(includedDir => {
+      const fullPath = path.isAbsolute(includedDir)
+        ? includedDir
+        : path.join(projectRoot, includedDir);
+
+      if (fs.existsSync(fullPath) && fs.statSync(fullPath).isDirectory()) {
+        const dirEntries = scanDirectory(fullPath, '', true, includedDir);
+        structure.push(...dirEntries);
+      }
+    });
+  } else {
+    // Scan entire project
+    structure = scanDirectory(projectRoot);
+  }
 
   // Get package.json info
   const packageInfo = getPackageInfo();
 
   // Generate documentation
-  const documentation = generateDocumentation(structure, packageInfo);
+  const documentation = generateDocumentation(structure, packageInfo, INCLUDED_DIRS);
 
   // Save documentation
   fs.writeFileSync(OUTPUT_FILE, documentation, 'utf8');
@@ -369,7 +420,10 @@ function main() {
 
   // Generate message for user
   let message = '';
-  if (isFirstRun) {
+  if (INCLUDED_DIRS && INCLUDED_DIRS.length > 0) {
+    const fileCount = structure.filter(e => e.type === 'file').length;
+    message = `📚 Auto-Docs: Generated structure for ${INCLUDED_DIRS.length} director${INCLUDED_DIRS.length > 1 ? 'ies' : 'y'} (${fileCount} files)`;
+  } else if (isFirstRun) {
     message = `📚 Auto-Docs: Generated project structure documentation (${structure.filter(e => e.type === 'file').length} files)`;
   } else {
     message = `📚 Auto-Docs: Updated project structure (${changes.files.length} file(s) changed)`;

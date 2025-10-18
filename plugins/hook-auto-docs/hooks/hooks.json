@@ -41,6 +41,7 @@
   },
   "configuration": {
     "outputDirectory": "",
+    "includeDirs": [],
     "excludeDirs": [
       "node_modules",
       ".git",

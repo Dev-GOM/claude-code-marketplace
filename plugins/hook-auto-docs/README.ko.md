@@ -112,8 +112,14 @@ claude-code-marketplace/
 - **기본값**: `""` (프로젝트 루트)
 - **예시**: `"docs"`, `".claude-output"`
 
+#### `includeDirs`
+- **설명**: 스캔할 특정 디렉토리 목록 (비어있으면 전체 프로젝트 스캔)
+- **기본값**: `[]` (비어있음 - 제외 디렉토리 외 모든 디렉토리 스캔)
+- **예시**: `["src", "lib"]` - `src`와 `lib` 폴더만 스캔
+- **사용 사례**: 대규모 프로젝트에서 특정 부분만 문서화하고 싶을 때 유용
+
 #### `excludeDirs`
-- **설명**: 프로젝트 구조 스캔 시 제외할 디렉토리 목록
+- **설명**: 프로젝트 구조 스캔 시 제외할 디렉토리 목록 (`includeDirs`가 설정되면 무시됨)
 - **기본값**: `["node_modules", ".git", "dist", "build", "coverage", ".next", "out", ".nuxt", "vendor", ".vscode", ".idea"]`
 - **예시**: 배열에 디렉토리 추가/제거
 
@@ -126,6 +132,7 @@ claude-code-marketplace/
   "hooks": { ... },
   "configuration": {
     "outputDirectory": "docs",
+    "includeDirs": ["src", "lib"],
     "excludeDirs": [
       "node_modules",
       ".git",
@@ -144,6 +151,8 @@ claude-code-marketplace/
   }
 }
 ```
+
+**참고**: `includeDirs`가 비어있지 않은 배열로 설정되면, 해당 디렉토리들만 스캔되고 `excludeDirs`는 무시됩니다.
 
 ### 설정 우선순위
 
