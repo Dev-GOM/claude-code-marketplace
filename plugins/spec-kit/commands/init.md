@@ -51,11 +51,114 @@ AskUserQuestion 도구를 사용하여 사용자에게 확인:
 ```
 
 - **"새로 초기화"** 선택 시: Step 1으로 진행
-- **"취소"** 선택 시: 초기화를 중단하고 기존 프로젝트 사용 안내
+- **"취소"** 선택 시: 아래 "Step 0.1: 기존 프로젝트 상태 확인"으로 진행
 
 **초기화되지 않은 경우:**
 
 바로 Step 1으로 진행
+
+## Step 0.1: 기존 프로젝트 상태 확인
+
+사용자가 "취소"를 선택한 경우, 현재 프로젝트의 상태를 확인하고 다음 작업을 안내합니다.
+
+### 1. 프로젝트 구조 표시
+
+```bash
+tree -L 2 .specify/
+```
+
+또는 Windows의 경우:
+
+```bash
+ls -R .specify/ | head -30
+```
+
+### 2. 각 파일 존재 여부 확인
+
+```bash
+ls -lh .specify/memory/constitution.md 2>/dev/null && echo "✅ Constitution" || echo "❌ Constitution"
+ls -lh .specify/memory/specification.md 2>/dev/null && echo "✅ Specification" || echo "❌ Specification"
+ls -lh .specify/memory/plan.md 2>/dev/null && echo "✅ Plan" || echo "❌ Plan"
+ls -lh .specify/memory/tasks.md 2>/dev/null && echo "✅ Tasks" || echo "❌ Tasks"
+```
+
+### 3. 진행 상태 분석 및 다음 작업 안내
+
+파일 존재 여부에 따라 다음 작업을 안내:
+
+**Constitution이 없는 경우:**
+```
+📋 현재 상태: spec-kit이 초기화되었지만 아직 프로젝트 원칙이 정의되지 않았습니다.
+
+🚀 다음 작업:
+   /spec-kit:constitution
+
+   프로젝트의 핵심 원칙과 기준을 정의하세요.
+```
+
+**Constitution은 있지만 Specification이 없는 경우:**
+```
+📋 현재 상태: 프로젝트 원칙이 정의되었습니다.
+
+✅ 완료: Constitution
+❌ 대기: Specification → Plan → Tasks → Implementation
+
+🚀 다음 작업:
+   /spec-kit:specify <기능 설명>
+
+   구현할 기능의 요구사항을 정의하세요.
+   예: /spec-kit:specify Add user authentication with OAuth2
+```
+
+**Specification은 있지만 Plan이 없는 경우:**
+```
+📋 현재 상태: 기능 명세가 작성되었습니다.
+
+✅ 완료: Constitution, Specification
+❌ 대기: Plan → Tasks → Implementation
+
+🚀 다음 작업:
+   /spec-kit:plan
+
+   명세를 기반으로 기술 구현 계획을 수립하세요.
+```
+
+**Plan은 있지만 Tasks가 없는 경우:**
+```
+📋 현재 상태: 기술 계획이 수립되었습니다.
+
+✅ 완료: Constitution, Specification, Plan
+❌ 대기: Tasks → Implementation
+
+🚀 다음 작업:
+   /spec-kit:tasks
+
+   계획을 실행 가능한 작업으로 분해하세요.
+```
+
+**Tasks까지 있는 경우:**
+```
+📋 현재 상태: 모든 계획 단계가 완료되었습니다!
+
+✅ 완료: Constitution, Specification, Plan, Tasks
+🎯 준비됨: Implementation
+
+🚀 다음 작업:
+   /spec-kit:implement
+
+   정의된 작업을 기반으로 구현을 시작하세요.
+
+💡 또는 다음 명령어들을 사용할 수 있습니다:
+   - /spec-kit:clarify : 모호한 부분 명확화
+   - /spec-kit:analyze : 프로젝트 상태 분석
+   - /spec-kit:checklist : 품질 게이트 체크리스트 실행
+```
+
+### 4. 명령어 종료
+
+기존 프로젝트 상태를 확인하고 안내한 후 초기화 명령어를 종료합니다.
+
+새로 초기화하려면 다시 `/spec-kit:init`을 실행하고 "새로 초기화"를 선택하세요.
 
 ## Step 1: Installation Check
 
