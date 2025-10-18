@@ -23,7 +23,11 @@ You **MUST** consider the user input before proceeding (if not empty).
 작업 목록이 먼저 존재해야 합니다:
 
 ```bash
-cat .specify/memory/tasks.md
+# 현재 브랜치 확인
+CURRENT_BRANCH=$(git branch --show-current)
+
+# 작업 목록 파일 확인
+cat "specs/$CURRENT_BRANCH/tasks.md"
 ```
 
 없다면 `/spec-kit:tasks`를 먼저 실행하세요.
@@ -40,9 +44,12 @@ cat .specify/memory/tasks.md
 구현 시작 전에 프로젝트 상태를 확인하세요:
 
 ```bash
+# 현재 브랜치 확인
+CURRENT_BRANCH=$(git branch --show-current)
+
 # Open Questions 체크
-cat .specify/memory/specification.md | grep -A 5 "Open Questions"
-cat .specify/memory/plan.md | grep -A 5 "Open Technical Questions"
+cat "specs/$CURRENT_BRANCH/spec.md" | grep -A 5 "Open Questions"
+cat "specs/$CURRENT_BRANCH/plan.md" | grep -A 5 "Open Technical Questions"
 ```
 
 **만약 Open Questions가 있다면:**
@@ -136,7 +143,8 @@ Estimate: [시간]
 작업 완료 시 tasks.md 업데이트:
 
 ```bash
-# tasks.md의 체크박스를 완료로 표시
+# 현재 브랜치의 tasks.md 체크박스를 완료로 표시
+# specs/$CURRENT_BRANCH/tasks.md
 # - [ ] Task X → - [x] Task X
 ```
 
@@ -211,13 +219,17 @@ npm test
 
 ### 7.1 수집된 정보를 Draft 파일로 저장
 
-먼저 `.specify/temp/` 디렉토리가 있는지 확인하고 없으면 생성:
+먼저 현재 기능의 drafts 디렉토리 생성:
 
 ```bash
-mkdir -p .specify/temp
+# 현재 브랜치 확인
+CURRENT_BRANCH=$(git branch --show-current)
+
+# drafts 디렉토리 생성
+mkdir -p "specs/$CURRENT_BRANCH/drafts"
 ```
 
-Write 도구를 사용하여 수집된 정보를 `.specify/temp/implement-draft.md` 파일로 저장합니다:
+Write 도구를 사용하여 수집된 정보를 `specs/$CURRENT_BRANCH/drafts/implement-draft.md` 파일로 저장합니다:
 
 ```markdown
 # Implement Draft
@@ -251,12 +263,12 @@ Write 도구를 사용하여 수집된 정보를 `.specify/temp/implement-draft.
 
 ### 7.2 Spec-Kit 명령 실행
 
-Draft 파일 경로를 전달하여 SlashCommand 도구로 `/speckit.implement` 명령을 실행합니다:
+Draft 파일 경로와 **브랜치 정보**를 전달하여 SlashCommand 도구로 `/speckit.implement` 명령을 실행합니다:
 
 ```
-/speckit.implement .specify/temp/implement-draft.md
+/speckit.implement
 
-INSTRUCTION: Read the draft file at the path above using the Read tool. This draft contains ALL the task details, implementation approach, and quality checks needed. You MUST skip all discussion and confirmation steps (Step 1-2) and proceed directly to Step 3 (Implement). Use ONLY the information from the draft file. Do NOT ask the user for any additional information. After completing the implementation, update tasks.md. Process all content in the user's system language.
+INSTRUCTION: This command is being called from /spec-kit:implement plugin. The current branch is "$CURRENT_BRANCH" and the draft file is at "specs/$CURRENT_BRANCH/drafts/implement-draft.md". Read the draft file using the Read tool. This draft contains ALL the task details, implementation approach, and quality checks needed. You MUST skip all discussion and confirmation steps (Step 1-2) and proceed directly to Step 3 (Implement). Use ONLY the information from the draft file. Do NOT ask the user for any additional information. After completing the implementation, update "specs/$CURRENT_BRANCH/tasks.md". Process all content in the user's system language.
 ```
 
 spec-kit 명령어는 draft 파일을 읽어서 구현을 진행하고 tasks.md를 업데이트합니다.
@@ -285,10 +297,58 @@ spec-kit 명령어는 draft 파일을 읽어서 구현을 진행하고 tasks.md�
 ## Next Steps
 
 구현 진행 중:
-1. 작업 완료 후 `.specify/memory/tasks.md` 파일 업데이트 확인
+1. 작업 완료 후 `specs/$CURRENT_BRANCH/tasks.md` 파일 업데이트 확인
 2. `/spec-kit:implement` - 다음 작업 계속 진행
 3. `/spec-kit:analyze` - 전체 진행 상황 분석
 4. `/spec-kit:checklist` - 품질 게이트 확인
+
+## What's Next?
+
+AskUserQuestion 도구를 사용하여 사용자에게 다음 작업을 물어봅니다:
+
+```json
+{
+  "questions": [{
+    "question": "현재 작업이 완료되었습니다. 다음 단계로 무엇을 진행하시겠습니까?",
+    "header": "다음 단계",
+    "multiSelect": false,
+    "options": [
+      {
+        "label": "다음 작업 계속 (/spec-kit:implement)",
+        "description": "작업 목록의 다음 작업을 계속 구현합니다. (권장)"
+      },
+      {
+        "label": "전체 진행 상황 분석 (/spec-kit:analyze)",
+        "description": "현재까지의 구현 진행 상황과 품질을 종합적으로 분석합니다."
+      },
+      {
+        "label": "품질 게이트 확인 (/spec-kit:checklist)",
+        "description": "헌법에 정의된 품질 게이트를 확인하고 체크리스트를 실행합니다."
+      },
+      {
+        "label": "작업 목록 확인",
+        "description": "현재 작업 진행 상황을 specs/[브랜치]/tasks.md 파일에서 확인합니다."
+      },
+      {
+        "label": "다른 명령어 실행",
+        "description": "위 선택지에 없는 다른 spec-kit 명령어를 직접 입력하여 실행합니다."
+      },
+      {
+        "label": "작업 완료",
+        "description": "지금은 여기까지만 작업하겠습니다."
+      }
+    ]
+  }]
+}
+```
+
+**사용자 선택에 따라:**
+- **다음 작업 계속** 선택 시 → `/spec-kit:implement` 명령 재실행 안내
+- **전체 진행 상황 분석** 선택 시 → `/spec-kit:analyze` 명령 실행 안내
+- **품질 게이트 확인** 선택 시 → `/spec-kit:checklist` 명령 실행 안내
+- **작업 목록 확인** 선택 시 → `cat "specs/$CURRENT_BRANCH/tasks.md"` 실행 후 다시 선택지 제공
+- **다른 명령어 실행** 선택 시 → 사용자가 원하는 명령어 입력 요청
+- **작업 완료** 선택 시 → 세션 종료
 
 ---
 

@@ -233,6 +233,44 @@ spec-kit 명령어는 draft 파일을 읽어서 `.specify/memory/constitution.md
 3. `/spec-kit:specify` - 헌법을 준수하는 기능 명세 작성
 4. 버전 관리에 커밋
 
+## What's Next?
+
+AskUserQuestion 도구를 사용하여 사용자에게 다음 작업을 물어봅니다:
+
+```json
+{
+  "questions": [{
+    "question": "헌법 작성이 완료되었습니다. 다음 단계로 무엇을 진행하시겠습니까?",
+    "header": "다음 단계",
+    "multiSelect": false,
+    "options": [
+      {
+        "label": "기능 명세 작성 (/spec-kit:specify)",
+        "description": "헌법을 기반으로 구현할 기능의 요구사항과 수용 기준을 정의합니다. (권장 다음 단계)"
+      },
+      {
+        "label": "헌법 파일 검토",
+        "description": "생성된 .specify/memory/constitution.md 파일을 먼저 검토하고 싶습니다."
+      },
+      {
+        "label": "다른 명령어 실행",
+        "description": "위 선택지에 없는 다른 spec-kit 명령어를 직접 입력하여 실행합니다."
+      },
+      {
+        "label": "작업 완료",
+        "description": "지금은 여기까지만 작업하겠습니다."
+      }
+    ]
+  }]
+}
+```
+
+**사용자 선택에 따라:**
+- **기능 명세 작성** 선택 시 → `/spec-kit:specify` 명령 실행 안내
+- **헌법 파일 검토** 선택 시 → `cat .specify/memory/constitution.md` 실행 후 다시 선택지 제공
+- **다른 명령어 실행** 선택 시 → 사용자가 원하는 명령어 입력 요청 (또는 AskUserQuestion의 자동 "Other" 옵션 활용)
+- **작업 완료** 선택 시 → 세션 종료
+
 ---
 
 **참고**:

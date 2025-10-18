@@ -478,11 +478,20 @@ MIT License - see [LICENSE](LICENSE) file.
 
 ---
 
-**Version**: 1.3.0
-**Last Updated**: 2025-10-18
+**Version**: 2.0.0
+**Last Updated**: 2025-10-19
 **Status**: Beta
 
 ## Changelog
+
+### v2.0.0 (2025-10-19)
+- 🔄 **Branch-Based Workflow**: Complete restructuring to support per-branch feature specifications
+- 📁 **Path Changes**: Migrated from `.specify/memory/` to `specs/[branch-name]/` structure for feature files
+- ✨ **Workflow Selection**: specify command now offers choice between creating new specs or rewriting existing ones
+- 🔗 **PowerShell Integration**: Integrated with `create-new-feature.ps1` script for automated branch creation
+- 🎯 **Branch Detection**: All commands now automatically detect current branch and work with correct spec files
+- 📋 **Next Step Guidance**: Added AskUserQuestion prompts to all commands for workflow navigation
+- ⚠️ **BREAKING CHANGE**: Existing v1.x users must migrate their specs to the new branch-based structure
 
 ### v1.3.0 (2025-10-18)
 - 🔄 **Update Mode Selection**: All core commands now detect existing files and offer two update options

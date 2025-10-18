@@ -1,6 +1,6 @@
 {
   "name": "spec-kit",
-  "version": "1.6.0",
+  "version": "2.0.0",
   "description": "GitHub Spec-Kit integration for Specification-Driven Development - define WHAT and HOW before coding",
   "author": {
     "name": "Dev GOM",
@@ -35,15 +35,15 @@
       "source": "./commands/constitution.md"
     },
     "specify": {
-      "description": "기능 명세 작성 (.specify/memory/specification.md)",
+      "description": "기능 명세 작성 (specs/[브랜치]/spec.md) - 브랜치 기반 워크플로우",
       "source": "./commands/specify.md"
     },
     "plan": {
-      "description": "기술 계획 및 아키텍처 수립 (.specify/memory/plan.md)",
+      "description": "기술 계획 및 아키텍처 수립 (specs/[브랜치]/plan.md)",
       "source": "./commands/plan.md"
     },
     "tasks": {
-      "description": "구현 가능한 작업 단위로 분해 (.specify/memory/tasks.md)",
+      "description": "구현 가능한 작업 단위로 분해 (specs/[브랜치]/tasks.md)",
       "source": "./commands/tasks.md"
     },
     "implement": {

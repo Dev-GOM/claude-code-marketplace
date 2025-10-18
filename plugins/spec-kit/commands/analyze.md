@@ -32,10 +32,16 @@ spec-kit 프로젝트의 전체 상태를 분석하고 진행 상황을 리포�
 모든 spec-kit 파일 읽기:
 
 ```bash
+# 현재 브랜치 확인
+CURRENT_BRANCH=$(git branch --show-current)
+
+# 헌법 (전역)
 cat .specify/memory/constitution.md
-cat .specify/memory/specification.md
-cat .specify/memory/plan.md
-cat .specify/memory/tasks.md
+
+# 기능별 파일들 (브랜치별)
+cat "specs/$CURRENT_BRANCH/spec.md"
+cat "specs/$CURRENT_BRANCH/plan.md"
+cat "specs/$CURRENT_BRANCH/tasks.md"
 ```
 
 ## Step 2: Analyze Completeness
@@ -108,13 +114,17 @@ cat .specify/memory/tasks.md
 
 ### 5.1 수집된 정보를 Draft 파일로 저장
 
-먼저 `.specify/temp/` 디렉토리가 있는지 확인하고 없으면 생성:
+먼저 현재 기능의 drafts 디렉토리 생성:
 
 ```bash
-mkdir -p .specify/temp
+# 현재 브랜치 확인
+CURRENT_BRANCH=$(git branch --show-current)
+
+# drafts 디렉토리 생성
+mkdir -p "specs/$CURRENT_BRANCH/drafts"
 ```
 
-Write 도구를 사용하여 수집된 정보를 `.specify/temp/analyze-draft.md` 파일로 저장합니다:
+Write 도구를 사용하여 수집된 정보를 `specs/$CURRENT_BRANCH/drafts/analyze-draft.md` 파일로 저장합니다:
 
 ```markdown
 # Analyze Draft
@@ -175,12 +185,12 @@ Write 도구를 사용하여 수집된 정보를 `.specify/temp/analyze-draft.md
 
 ### 5.2 Spec-Kit 명령 실행
 
-Draft 파일 경로를 전달하여 SlashCommand 도구로 `/speckit.analyze` 명령을 실행합니다:
+Draft 파일 경로와 **브랜치 정보**를 전달하여 SlashCommand 도구로 `/speckit.analyze` 명령을 실행합니다:
 
 ```
-/speckit.analyze .specify/temp/analyze-draft.md
+/speckit.analyze
 
-INSTRUCTION: Read the draft file at the path above using the Read tool. This draft contains ALL the analysis results including document status, alignment checks, and identified blockers. You MUST skip all data gathering and analysis steps (Step 1-4) and proceed directly to generating the comprehensive analysis report. Use ONLY the information from the draft file. Do NOT ask the user for any additional information or re-analyze the documents. Process all content in the user's system language.
+INSTRUCTION: This command is being called from /spec-kit:analyze plugin. The current branch is "$CURRENT_BRANCH" and the draft file is at "specs/$CURRENT_BRANCH/drafts/analyze-draft.md". Read the draft file using the Read tool. This draft contains ALL the analysis results including document status, alignment checks, and identified blockers. You MUST skip all data gathering and analysis steps (Step 1-4) and proceed directly to generating the comprehensive analysis report. Use ONLY the information from the draft file. Do NOT ask the user for any additional information or re-analyze the documents. Process all content in the user's system language.
 ```
 
 spec-kit 명령어는 draft 파일을 읽어서 사용자의 시스템 언어로 다음과 같은 리포트를 생성합니다:
@@ -257,6 +267,59 @@ spec-kit 명령어는 draft 파일을 읽어서 사용자의 시스템 언어로
 - 작업 완료율 낮음 → `/spec-kit:implement`
 - 품질 확인 필요 → `/spec-kit:checklist`
 - 계획 수정 필요 → `/spec-kit:plan`
+
+## What's Next?
+
+AskUserQuestion 도구를 사용하여 사용자에게 다음 작업을 물어봅니다:
+
+```json
+{
+  "questions": [{
+    "question": "프로젝트 분석이 완료되었습니다. 분석 결과를 바탕으로 다음 단계로 무엇을 진행하시겠습니까?",
+    "header": "다음 단계",
+    "multiSelect": false,
+    "options": [
+      {
+        "label": "구현 계속 (/spec-kit:implement)",
+        "description": "분석 결과를 반영하여 남은 작업들을 계속 구현합니다. (권장)"
+      },
+      {
+        "label": "모호한 부분 명확화 (/spec-kit:clarify)",
+        "description": "분석에서 발견된 Open Questions를 해결합니다."
+      },
+      {
+        "label": "명세 업데이트 (/spec-kit:specify)",
+        "description": "분석 결과 명세를 수정해야 한다면 업데이트합니다."
+      },
+      {
+        "label": "계획 업데이트 (/spec-kit:plan)",
+        "description": "분석 결과 계획을 조정해야 한다면 업데이트합니다."
+      },
+      {
+        "label": "품질 게이트 확인 (/spec-kit:checklist)",
+        "description": "품질 기준을 확인하고 체크리스트를 실행합니다."
+      },
+      {
+        "label": "다른 명령어 실행",
+        "description": "위 선택지에 없는 다른 spec-kit 명령어를 직접 입력하여 실행합니다."
+      },
+      {
+        "label": "작업 완료",
+        "description": "지금은 여기까지만 작업하겠습니다."
+      }
+    ]
+  }]
+}
+```
+
+**사용자 선택에 따라:**
+- **구현 계속** 선택 시 → `/spec-kit:implement` 명령 실행 안내
+- **모호한 부분 명확화** 선택 시 → `/spec-kit:clarify` 명령 실행 안내
+- **명세 업데이트** 선택 시 → `/spec-kit:specify` 명령 실행 안내
+- **계획 업데이트** 선택 시 → `/spec-kit:plan` 명령 실행 안내
+- **품질 게이트 확인** 선택 시 → `/spec-kit:checklist` 명령 실행 안내
+- **다른 명령어 실행** 선택 시 → 사용자가 원하는 명령어 입력 요청
+- **작업 완료** 선택 시 → 세션 종료
 
 ---
 

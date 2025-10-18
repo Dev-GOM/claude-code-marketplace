@@ -28,17 +28,163 @@ cat .specify/memory/constitution.md
 
 없다면 `/spec-kit:constitution`을 먼저 실행하세요.
 
-## Step 0: Check Existing File and Choose Update Mode
+## Step -1: 워크플로우 선택
 
-기존 명세 파일 확인:
+먼저 새 기능 명세를 작성할 것인지, 기존 명세를 수정할 것인지 결정합니다.
+
+### 현재 Git 브랜치 확인
 
 ```bash
-cat .specify/memory/specification.md
+git branch --show-current
 ```
 
-### If File Exists - Choose Update Mode
+### 사용 가능한 기능 목록 확인
+
+```bash
+ls -la specs/ 2>/dev/null || echo "No specs directory yet"
+```
+
+### 사용자에게 워크플로우 선택 요청
 
 AskUserQuestion 도구를 사용하여 사용자에게 확인:
+
+```json
+{
+  "questions": [{
+    "question": "어떤 작업을 진행하시겠습니까?",
+    "header": "워크플로우 선택",
+    "multiSelect": false,
+    "options": [
+      {
+        "label": "새 기능 명세 작성",
+        "description": "새로운 기능에 대한 명세를 작성합니다. 새 Git 브랜치와 specs/[브랜치명]/ 디렉토리가 생성됩니다."
+      },
+      {
+        "label": "기존 명세 수정",
+        "description": "현재 브랜치의 기존 명세를 수정하거나 업데이트합니다."
+      }
+    ]
+  }]
+}
+```
+
+**사용자 선택에 따라 진행:**
+
+#### 선택 1: 새 기능 명세 작성
+
+→ **Step 0-A (새 기능)로 이동**
+
+#### 선택 2: 기존 명세 수정
+
+→ **Step 0-B (기존 수정)로 이동**
+
+---
+
+## Step 0-A: 새 기능 생성 워크플로우
+
+사용자가 "새 기능 명세 작성"을 선택한 경우:
+
+### 1. 기능 설명 확인
+
+사용자가 $ARGUMENTS로 기능 설명을 제공했는지 확인:
+
+- **제공됨**: 해당 설명 사용
+- **제공 안 됨**: 사용자에게 기능 설명 입력 요청
+
+```
+새로운 기능에 대해 설명해 주세요.
+예: "Add user authentication with OAuth2"
+예: "Implement real-time chat functionality"
+```
+
+### 2. Short Name 생성
+
+기능 설명을 분석하여 2-4단어의 간결한 short-name 생성:
+
+- 핵심 키워드 추출
+- 동사-명사 형식 선호 (예: "add-user-auth", "fix-payment-bug")
+- 기술 용어 보존 (OAuth2, API, JWT 등)
+
+예시:
+- "I want to add user authentication" → "user-auth"
+- "Implement OAuth2 integration for the API" → "oauth2-api-integration"
+- "Create a dashboard for analytics" → "analytics-dashboard"
+
+### 3. create-new-feature 스크립트 실행
+
+GitHub spec-kit CLI의 create-new-feature 스크립트를 실행하여 새 브랜치 생성:
+
+**Windows (Git Bash 권장):**
+```bash
+FEATURE_DESC="[기능 설명]"
+SHORT_NAME="[생성한 short-name]"
+
+# PowerShell 스크립트 실행 (JSON 출력)
+powershell -File ".specify/scripts/powershell/create-new-feature.ps1" -Json -ShortName "$SHORT_NAME" "$FEATURE_DESC"
+```
+
+**Windows (PowerShell):**
+```powershell
+.specify\scripts\powershell\create-new-feature.ps1 -Json -ShortName "[생성한 short-name]" "[기능 설명]"
+```
+
+스크립트는 다음을 반환합니다 (JSON):
+```json
+{
+  "BRANCH_NAME": "001-user-auth",
+  "SPEC_FILE": "/absolute/path/to/specs/001-user-auth/spec.md",
+  "FEATURE_NUM": "001",
+  "HAS_GIT": true
+}
+```
+
+### 4. 반환된 정보 파싱
+
+JSON 출력에서 다음 정보 추출:
+- `BRANCH_NAME`: 생성된 브랜치 이름 (예: "001-user-auth")
+- `SPEC_FILE`: spec.md 파일의 절대 경로
+- `FEATURE_NUM`: 기능 번호 (001, 002, ...)
+
+### 5. Step 1로 진행
+
+→ **Step 1 (정보 수집)로 이동**
+
+---
+
+## Step 0-B: 기존 명세 수정 워크플로우
+
+사용자가 "기존 명세 수정"을 선택한 경우:
+
+### 1. 현재 브랜치 확인
+
+```bash
+CURRENT_BRANCH=$(git branch --show-current)
+echo "현재 브랜치: $CURRENT_BRANCH"
+```
+
+### 2. specs 디렉토리에서 브랜치 폴더 찾기
+
+```bash
+if [ -d "specs/$CURRENT_BRANCH" ]; then
+  FEATURE_DIR="specs/$CURRENT_BRANCH"
+  SPEC_FILE="$FEATURE_DIR/spec.md"
+else
+  echo "⚠️ 현재 브랜치($CURRENT_BRANCH)에 대한 spec 폴더를 찾을 수 없습니다."
+  echo ""
+  echo "사용 가능한 기능 목록:"
+  ls -1 specs/
+fi
+```
+
+### 3-A. 브랜치 폴더 있는 경우
+
+기존 spec.md 파일 확인:
+
+```bash
+cat "$SPEC_FILE"
+```
+
+AskUserQuestion 도구로 사용자에게 업데이트 모드 확인:
 
 ```json
 {
@@ -60,13 +206,34 @@ AskUserQuestion 도구를 사용하여 사용자에게 확인:
 }
 ```
 
-**사용자 선택에 따라 진행:**
-- **"완전 재생성"** 선택 시 → Step 1부터 정상 진행 (완전 재작성)
-- **"부분 업데이트"** 선택 시 → 기존 명세 표시 + "어떤 부분을 업데이트하시겠습니까?" 질문 + 변경사항만 수집 후 merge
+**선택에 따라:**
+- **완전 재생성**: Step 1부터 정상 진행
+- **부분 업데이트**: 기존 명세 표시 + 변경 부분만 질문 + merge
 
-### If File Not Exists
+→ **Step 1로 이동**
 
-Step 1부터 정상 진행 (처음 작성)
+### 3-B. 브랜치 폴더 없는 경우
+
+사용 가능한 기능 목록을 표시하고 사용자에게 선택 요청:
+
+```
+다음 중 수정할 기능을 선택하거나, 새 기능을 만드시겠습니까?
+
+사용 가능한 기능:
+- 001-user-auth
+- 002-payment-integration
+
+선택: [번호 또는 브랜치명]
+또는 "새 기능"을 입력하여 Step 0-A로 이동
+```
+
+선택한 브랜치로 체크아웃:
+
+```bash
+git checkout [선택한-브랜치]
+```
+
+→ **Step 3-A로 돌아가기**
 
 ---
 
@@ -254,13 +421,13 @@ cat .specify/memory/constitution.md
 
 ### 5.1 수집된 정보를 Draft 파일로 저장
 
-먼저 `.specify/temp/` 디렉토리가 있는지 확인하고 없으면 생성:
+먼저 현재 기능의 drafts 디렉토리 생성:
 
 ```bash
-mkdir -p .specify/temp
+mkdir -p "specs/$BRANCH_NAME/drafts"
 ```
 
-Write 도구를 사용하여 수집된 정보를 `.specify/temp/specification-draft.md` 파일로 저장합니다:
+Write 도구를 사용하여 수집된 정보를 `specs/$BRANCH_NAME/drafts/specification-draft.md` 파일로 저장합니다:
 
 ```markdown
 # Specification Draft
@@ -336,15 +503,15 @@ Write 도구를 사용하여 수집된 정보를 `.specify/temp/specification-dr
 
 ### 5.2 Spec-Kit 명령 실행
 
-Draft 파일 경로를 전달하여 SlashCommand 도구로 `/speckit.specify` 명령을 실행합니다:
+Draft 파일 경로와 **브랜치 정보**를 전달하여 SlashCommand 도구로 `/speckit.specify` 명령을 실행합니다:
 
 ```
-/speckit.specify .specify/temp/specification-draft.md
+/speckit.specify [기능 설명]
 
-INSTRUCTION: Read the draft file at the path above using the Read tool. This draft contains ALL the information needed with complete user stories, requirements, and acceptance criteria. You MUST skip all information collection steps and proceed directly to writing the specification file. Use ONLY the information from the draft file. Do NOT ask the user for any additional information. Process all content in the user's system language.
+INSTRUCTION: This command is being called from /spec-kit:specify plugin. The feature branch "$BRANCH_NAME" has been created and the draft file is at "specs/$BRANCH_NAME/drafts/specification-draft.md". Read the draft file using the Read tool. This draft contains ALL the information needed with complete user stories, requirements, and acceptance criteria. You MUST skip all information collection steps and proceed directly to writing the specification file to "specs/$BRANCH_NAME/spec.md". Use ONLY the information from the draft file. Do NOT ask the user for any additional information. Process all content in the user's system language.
 ```
 
-spec-kit 명령어는 draft 파일을 읽어서 `.specify/memory/specification.md` 파일을 생성/업데이트합니다.
+spec-kit 명령어는 draft 파일을 읽어서 `specs/$BRANCH_NAME/spec.md` 파일을 생성/업데이트합니다.
 
 **토큰 절약 효과:**
 - 긴 텍스트를 명령어 인자로 전달하지 않음
@@ -362,13 +529,57 @@ spec-kit 명령어는 draft 파일을 읽어서 `.specify/memory/specification.m
 ## Next Steps
 
 명세 생성 후:
-1. `.specify/memory/specification.md` 파일 검토
+1. `specs/$BRANCH_NAME/spec.md` 파일 검토
 2. `/spec-kit:clarify` - 모호한 부분 명확화
 3. `/spec-kit:plan` - 기술 구현 계획 작성
 4. `/spec-kit:tasks` - 실행 가능한 작업으로 분해
 
+## What's Next?
+
+AskUserQuestion 도구를 사용하여 사용자에게 다음 작업을 물어봅니다:
+
+```json
+{
+  "questions": [{
+    "question": "기능 명세 작성이 완료되었습니다. 다음 단계로 무엇을 진행하시겠습니까?",
+    "header": "다음 단계",
+    "multiSelect": false,
+    "options": [
+      {
+        "label": "모호한 부분 명확화 (/spec-kit:clarify)",
+        "description": "명세의 Open Questions를 해결하고 불명확한 부분을 명확히 합니다. (명세에 Open Questions가 있다면 권장)"
+      },
+      {
+        "label": "기술 구현 계획 작성 (/spec-kit:plan)",
+        "description": "WHAT을 HOW로 변환하여 기술 아키텍처와 구현 전략을 수립합니다. (권장 다음 단계)"
+      },
+      {
+        "label": "명세 파일 검토",
+        "description": "생성된 specs/[브랜치]/spec.md 파일을 먼저 검토하고 싶습니다."
+      },
+      {
+        "label": "다른 명령어 실행",
+        "description": "위 선택지에 없는 다른 spec-kit 명령어를 직접 입력하여 실행합니다."
+      },
+      {
+        "label": "작업 완료",
+        "description": "지금은 여기까지만 작업하겠습니다."
+      }
+    ]
+  }]
+}
+```
+
+**사용자 선택에 따라:**
+- **모호한 부분 명확화** 선택 시 → `/spec-kit:clarify` 명령 실행 안내
+- **기술 구현 계획 작성** 선택 시 → `/spec-kit:plan` 명령 실행 안내
+- **명세 파일 검토** 선택 시 → `cat specs/$BRANCH_NAME/spec.md` 실행 후 다시 선택지 제공
+- **다른 명령어 실행** 선택 시 → 사용자가 원하는 명령어 입력 요청
+- **작업 완료** 선택 시 → 세션 종료
+
 ---
 
 **참고**:
-- 우리 플러그인(/spec-kit:specify)은 정보 수집 역할
-- 실제 파일 생성은 spec-kit 명령어(/speckit.specify)가 담당
+- 우리 플러그인(/spec-kit:specify)은 정보 수집 및 브랜치 관리 역할
+- 실제 spec.md 파일 생성은 spec-kit 명령어(/speckit.specify)가 담당
+- 각 기능은 독립적인 Git 브랜치와 specs/[브랜치명]/ 디렉토리에서 관리됨
