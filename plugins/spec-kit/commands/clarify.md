@@ -1,9 +1,18 @@
 ---
 description: 명세나 계획의 모호한 부분을 명확히 하고 Open Questions 해결
 allowed-tools: [Read, Write, Edit]
+argument-hint: <question-or-topic | 질문 또는 주제>
 ---
 
 # Clarify Specification or Plan
+
+## User Input
+
+```text
+$ARGUMENTS
+```
+
+You **MUST** consider the user input before proceeding (if not empty).
 
 **🌐 언어 지시사항**: 이 명령어를 실행할 때는 **사용자의 시스템 언어를 자동으로 감지**하여 해당 언어로 모든 안내, 질문, 옵션 제시, 출력을 제공해야 합니다. 시스템 환경 변수(LANG, LC_ALL 등)나 사용자의 이전 대화 패턴을 분석하여 언어를 판단하세요.
 
