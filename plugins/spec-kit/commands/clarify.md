@@ -168,7 +168,7 @@ INSTRUCTION: Read the draft file at the path above using the Read tool. This dra
 - Remove resolved Open Technical Questions
 - Reflect technical decisions
 - Record changes in changelog
-Use ONLY the information from the draft file. Do NOT ask the user for any additional information. Process all content in the user's system language.
+Use ONLY the information from the draft file. Do NOT ask the user for any additional information. Process all content in the user's system language. If you need to ask the user any questions, use the AskUserQuestion tool.
 ```
 
 spec-kit 명령어는 draft 파일을 읽어서 spec.md와 plan.md를 업데이트합니다.

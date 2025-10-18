@@ -269,7 +269,7 @@ Draft 파일 경로와 **브랜치 정보**를 전달하여 SlashCommand 도구�
 ```
 /speckit.checklist
 
-INSTRUCTION: This command is being called from /spec-kit:checklist plugin. The current branch is "$CURRENT_BRANCH" and the draft file is at "specs/$CURRENT_BRANCH/drafts/checklist-draft.md". Read the draft file using the Read tool. This draft contains ALL the checklist results including automated check outputs and manual check statuses. You MUST skip all execution steps (Step 1-3) and proceed directly to Step 4 (Generate Report) using the results from the draft. Use ONLY the information from the draft file. Do NOT re-run any checks or ask the user for additional information. Process all content in the user's system language.
+INSTRUCTION: This command is being called from /spec-kit:checklist plugin. The current branch is "$CURRENT_BRANCH" and the draft file is at "specs/$CURRENT_BRANCH/drafts/checklist-draft.md". Read the draft file using the Read tool. This draft contains ALL the checklist results including automated check outputs and manual check statuses. You MUST skip all execution steps (Step 1-3) and proceed directly to Step 4 (Generate Report) using the results from the draft. Use ONLY the information from the draft file. Do NOT re-run any checks or ask the user for additional information. Process all content in the user's system language. If you need to ask the user any questions, use the AskUserQuestion tool.
 ```
 
 spec-kit 명령어는 draft 파일을 읽어서 사용자의 시스템 언어로 Step 4 (Generate Report)를 실행하고 결과 리포트를 생성합니다.

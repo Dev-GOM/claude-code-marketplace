@@ -215,7 +215,7 @@ Draft 파일 경로를 전달하여 SlashCommand 도구로 `/speckit.constitutio
 ```
 /speckit.constitution .specify/temp/constitution-draft.md
 
-INSTRUCTION: Read the draft file at the path above using the Read tool. This draft contains ALL the information needed with all placeholders filled. You MUST skip Step 2 (Collect/derive values for placeholders) entirely and proceed directly to Step 3 (Draft the updated constitution content). Use ONLY the information from the draft file. Do NOT ask the user for any additional information. Process all content in the user's system language.
+INSTRUCTION: Read the draft file at the path above using the Read tool. This draft contains ALL the information needed with all placeholders filled. You MUST skip Step 2 (Collect/derive values for placeholders) entirely and proceed directly to Step 3 (Draft the updated constitution content). Use ONLY the information from the draft file. Do NOT ask the user for any additional information. Process all content in the user's system language. If you need to ask the user any questions, use the AskUserQuestion tool.
 ```
 
 spec-kit 명령어는 draft 파일을 읽어서 `.specify/memory/constitution.md` 파일을 생성/업데이트합니다.

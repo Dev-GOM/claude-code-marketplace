@@ -1,6 +1,6 @@
 # Claude Code 플러그인
 
-> **버전**: 2.0.1 | **최종 업데이트**: 2025-10-19
+> **버전**: 2.0.2 | **최종 업데이트**: 2025-10-19
 >
 > **언어**: [English](README.md) | [한국어](README.ko.md)
 
@@ -8,6 +8,9 @@
 <summary><strong>📋 변경 이력</strong> (펼치기)</summary>
 
 ### Spec-Kit 통합
+
+#### v2.0.2 (2025-10-19)
+- 📝 **문서화**: 모든 커맨드 INSTRUCTION에 AskUserQuestion 도구 사용 지침 추가
 
 #### v2.0.1 (2025-10-19)
 - 🐛 **버그 수정**: clarify 명령어의 draft 파일 경로를 브랜치 기반 구조로 수정

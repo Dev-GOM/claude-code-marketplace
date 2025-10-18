@@ -508,7 +508,7 @@ Draft 파일 경로와 **브랜치 정보**를 전달하여 SlashCommand 도구�
 ```
 /speckit.specify [기능 설명]
 
-INSTRUCTION: This command is being called from /spec-kit:specify plugin. The feature branch "$BRANCH_NAME" has been created and the draft file is at "specs/$BRANCH_NAME/drafts/specification-draft.md". Read the draft file using the Read tool. This draft contains ALL the information needed with complete user stories, requirements, and acceptance criteria. You MUST skip all information collection steps and proceed directly to writing the specification file to "specs/$BRANCH_NAME/spec.md". Use ONLY the information from the draft file. Do NOT ask the user for any additional information. Process all content in the user's system language.
+INSTRUCTION: This command is being called from /spec-kit:specify plugin. The feature branch "$BRANCH_NAME" has been created and the draft file is at "specs/$BRANCH_NAME/drafts/specification-draft.md". Read the draft file using the Read tool. This draft contains ALL the information needed with complete user stories, requirements, and acceptance criteria. You MUST skip all information collection steps and proceed directly to writing the specification file to "specs/$BRANCH_NAME/spec.md". Use ONLY the information from the draft file. Do NOT ask the user for any additional information. Process all content in the user's system language. If you need to ask the user any questions, use the AskUserQuestion tool.
 ```
 
 spec-kit 명령어는 draft 파일을 읽어서 `specs/$BRANCH_NAME/spec.md` 파일을 생성/업데이트합니다.

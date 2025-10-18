@@ -268,7 +268,7 @@ Draft 파일 경로와 **브랜치 정보**를 전달하여 SlashCommand 도구�
 ```
 /speckit.implement
 
-INSTRUCTION: This command is being called from /spec-kit:implement plugin. The current branch is "$CURRENT_BRANCH" and the draft file is at "specs/$CURRENT_BRANCH/drafts/implement-draft.md". Read the draft file using the Read tool. This draft contains ALL the task details, implementation approach, and quality checks needed. You MUST skip all discussion and confirmation steps (Step 1-2) and proceed directly to Step 3 (Implement). Use ONLY the information from the draft file. Do NOT ask the user for any additional information. After completing the implementation, update "specs/$CURRENT_BRANCH/tasks.md". Process all content in the user's system language.
+INSTRUCTION: This command is being called from /spec-kit:implement plugin. The current branch is "$CURRENT_BRANCH" and the draft file is at "specs/$CURRENT_BRANCH/drafts/implement-draft.md". Read the draft file using the Read tool. This draft contains ALL the task details, implementation approach, and quality checks needed. You MUST skip all discussion and confirmation steps (Step 1-2) and proceed directly to Step 3 (Implement). Use ONLY the information from the draft file. Do NOT ask the user for any additional information. After completing the implementation, update "specs/$CURRENT_BRANCH/tasks.md". Process all content in the user's system language. If you need to ask the user any questions, use the AskUserQuestion tool.
 ```
 
 spec-kit 명령어는 draft 파일을 읽어서 구현을 진행하고 tasks.md를 업데이트합니다.

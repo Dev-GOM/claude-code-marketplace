@@ -478,11 +478,15 @@ MIT License - [LICENSE](LICENSE) 파일 참조.
 
 ---
 
-**버전**: 2.0.1
+**버전**: 2.0.2
 **최종 업데이트**: 2025-10-19
 **상태**: 베타
 
 ## 변경 이력
+
+### v2.0.2 (2025-10-19)
+- 📝 **문서화**: 모든 spec-kit 커맨드 INSTRUCTION에 AskUserQuestion 도구 사용 지침 추가
+- 🔧 **개선**: GitHub Spec-Kit CLI가 명확화가 필요할 때 AskUserQuestion 사용 가능
 
 ### v2.0.1 (2025-10-19)
 - 🐛 **버그 수정**: clarify 명령어의 draft 파일 경로를 브랜치 기반 구조로 수정 (`.specify/temp/` 대신 `specs/[브랜치]/drafts/` 사용)

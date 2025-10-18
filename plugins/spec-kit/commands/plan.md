@@ -486,7 +486,7 @@ Draft 파일 경로와 **브랜치 정보**를 전달하여 SlashCommand 도구�
 ```
 /speckit.plan
 
-INSTRUCTION: This command is being called from /spec-kit:plan plugin. The current branch is "$CURRENT_BRANCH" and the draft file is at "specs/$CURRENT_BRANCH/drafts/plan-draft.md". Read the draft file using the Read tool. This draft contains ALL the technical architecture, technology stack decisions, and implementation strategy. You MUST skip all information collection and discussion steps and proceed directly to writing the plan file to "specs/$CURRENT_BRANCH/plan.md". Use ONLY the information from the draft file. Do NOT ask the user for any additional information. Process all content in the user's system language.
+INSTRUCTION: This command is being called from /spec-kit:plan plugin. The current branch is "$CURRENT_BRANCH" and the draft file is at "specs/$CURRENT_BRANCH/drafts/plan-draft.md". Read the draft file using the Read tool. This draft contains ALL the technical architecture, technology stack decisions, and implementation strategy. You MUST skip all information collection and discussion steps and proceed directly to writing the plan file to "specs/$CURRENT_BRANCH/plan.md". Use ONLY the information from the draft file. Do NOT ask the user for any additional information. Process all content in the user's system language. If you need to ask the user any questions, use the AskUserQuestion tool.
 ```
 
 spec-kit 명령어는 draft 파일을 읽어서 `specs/$CURRENT_BRANCH/plan.md` 파일을 생성/업데이트합니다.

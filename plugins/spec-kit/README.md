@@ -478,11 +478,15 @@ MIT License - see [LICENSE](LICENSE) file.
 
 ---
 
-**Version**: 2.0.1
+**Version**: 2.0.2
 **Last Updated**: 2025-10-19
 **Status**: Beta
 
 ## Changelog
+
+### v2.0.2 (2025-10-19)
+- 📝 **Documentation**: Added AskUserQuestion tool instruction to all spec-kit command INSTRUCTIONS
+- 🔧 **Enhancement**: GitHub Spec-Kit CLI can now use AskUserQuestion when clarification is needed
 
 ### v2.0.1 (2025-10-19)
 - 🐛 **Bug Fix**: Fixed clarify command draft file paths to use branch-based structure (`specs/[branch]/drafts/` instead of `.specify/temp/`)

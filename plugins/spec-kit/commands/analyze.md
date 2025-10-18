@@ -190,7 +190,7 @@ Draft 파일 경로와 **브랜치 정보**를 전달하여 SlashCommand 도구�
 ```
 /speckit.analyze
 
-INSTRUCTION: This command is being called from /spec-kit:analyze plugin. The current branch is "$CURRENT_BRANCH" and the draft file is at "specs/$CURRENT_BRANCH/drafts/analyze-draft.md". Read the draft file using the Read tool. This draft contains ALL the analysis results including document status, alignment checks, and identified blockers. You MUST skip all data gathering and analysis steps (Step 1-4) and proceed directly to generating the comprehensive analysis report. Use ONLY the information from the draft file. Do NOT ask the user for any additional information or re-analyze the documents. Process all content in the user's system language.
+INSTRUCTION: This command is being called from /spec-kit:analyze plugin. The current branch is "$CURRENT_BRANCH" and the draft file is at "specs/$CURRENT_BRANCH/drafts/analyze-draft.md". Read the draft file using the Read tool. This draft contains ALL the analysis results including document status, alignment checks, and identified blockers. You MUST skip all data gathering and analysis steps (Step 1-4) and proceed directly to generating the comprehensive analysis report. Use ONLY the information from the draft file. Do NOT ask the user for any additional information or re-analyze the documents. Process all content in the user's system language. If you need to ask the user any questions, use the AskUserQuestion tool.
 ```
 
 spec-kit 명령어는 draft 파일을 읽어서 사용자의 시스템 언어로 다음과 같은 리포트를 생성합니다:
