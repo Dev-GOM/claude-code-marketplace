@@ -478,11 +478,18 @@ MIT License - see [LICENSE](LICENSE) file.
 
 ---
 
-**Version**: 2.0.3
+**Version**: 2.0.4
 **Last Updated**: 2025-10-19
 **Status**: Beta
 
 ## Changelog
+
+### v2.0.4 (2025-10-19)
+- 🐛 **Bug Fix**: Fixed SlashCommand format - merged command and INSTRUCTION into single line for all 8 command files
+- 📝 **Improved Clarity**: Removed ambiguous newlines between `/speckit.*` commands and INSTRUCTION parameters
+- 🔄 **Workflow Enhancement**: Added Git status check before `/spec-kit:specify` - prompts to commit existing changes first
+- 🚀 **Better Git Integration**: `/speckit.specify` now asks about branch publishing after spec creation (publish/local commit/decide later)
+- ♻️ **Role Separation**: Removed PowerShell execution from plugin command - now handled by CLI command for clearer workflow
 
 ### v2.0.3 (2025-10-19)
 - 🐛 **Bug Fix**: Removed duplicate `CURRENT_BRANCH=$(git branch --show-current)` declarations across all command files

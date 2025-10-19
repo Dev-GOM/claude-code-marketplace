@@ -37,7 +37,101 @@ cat "specs/$CURRENT_BRANCH/spec.md"
 
 없다면 먼저 `/spec-kit:constitution`, `/spec-kit:specify`를 실행하세요.
 
-## Step 0: Check Existing File and Choose Update Mode
+## Step 1: Git 변경사항 확인
+
+계획 작성 전에 현재 작업 디렉토리의 변경사항과 브랜치 퍼블리쉬 상태를 확인합니다:
+
+```bash
+# 변경사항 확인
+git status --short
+
+# Upstream 브랜치 확인 (퍼블리쉬 여부)
+git rev-parse --abbrev-ref @{upstream} 2>/dev/null
+```
+
+### 시나리오 A: 변경사항이 없는 경우
+
+즉시 Step 2로 이동
+
+### 시나리오 B: 변경사항 있음 + Upstream 브랜치 없음 (미퍼블리쉬)
+
+브랜치가 아직 원격에 퍼블리쉬되지 않은 상태에서 변경사항이 있는 경우:
+
+AskUserQuestion 도구를 사용하여 사용자에게 확인:
+
+```json
+{
+  "questions": [{
+    "question": "현재 작업 디렉토리에 변경되지 않은 파일이 있고, 브랜치가 아직 퍼블리쉬되지 않았습니다. 어떻게 처리하시겠습니까?",
+    "header": "Git 변경사항",
+    "multiSelect": false,
+    "options": [
+      {
+        "label": "퍼블리쉬 + 커밋",
+        "description": "현재 변경사항을 커밋하고 브랜치를 원격 저장소에 퍼블리쉬합니다. 팀과 공유하거나 백업이 필요한 경우 권장합니다."
+      },
+      {
+        "label": "로컬에만 커밋",
+        "description": "현재 변경사항을 커밋하지만 브랜치는 로컬에만 유지합니다. 아직 공유할 준비가 안 된 경우에 사용합니다."
+      },
+      {
+        "label": "나중에 결정",
+        "description": "계획 작성을 진행하고 나중에 모든 변경사항을 함께 처리합니다."
+      }
+    ]
+  }]
+}
+```
+
+**사용자 선택에 따라 진행:**
+- **"퍼블리쉬 + 커밋"** 선택 시:
+  1. 사용자에게 커밋 메시지 요청
+  2. `git add -A && git commit -m "[메시지]"`
+  3. `git push -u origin [브랜치명]`
+  4. Step 2로 이동
+- **"로컬에만 커밋"** 선택 시:
+  1. 사용자에게 커밋 메시지 요청
+  2. `git add -A && git commit -m "[메시지]"`
+  3. Step 2로 이동
+- **"나중에 결정"** 선택 시: 즉시 Step 2로 이동
+
+### 시나리오 C: 변경사항 있음 + Upstream 브랜치 있음 (이미 퍼블리쉬됨)
+
+브랜치가 이미 원격에 퍼블리쉬된 상태에서 변경사항이 있는 경우:
+
+AskUserQuestion 도구를 사용하여 사용자에게 확인:
+
+```json
+{
+  "questions": [{
+    "question": "현재 작업 디렉토리에 변경되지 않은 파일이 있습니다. 먼저 커밋하시겠습니까?",
+    "header": "Git 변경사항",
+    "multiSelect": false,
+    "options": [
+      {
+        "label": "커밋하기",
+        "description": "현재 변경사항을 커밋하고 원격 브랜치에 푸쉬합니다. 작업을 명확하게 분리할 수 있습니다."
+      },
+      {
+        "label": "나중에 결정",
+        "description": "계획 작성을 진행하고 나중에 모든 변경사항을 함께 커밋합니다."
+      }
+    ]
+  }]
+}
+```
+
+**사용자 선택에 따라 진행:**
+- **"커밋하기"** 선택 시:
+  1. 사용자에게 커밋 메시지 요청
+  2. `git add -A && git commit -m "[메시지]"`
+  3. `git push`
+  4. Step 2로 이동
+- **"나중에 결정"** 선택 시: 즉시 Step 2로 이동
+
+---
+
+## Step 2: Check Existing File and Choose Update Mode
 
 기존 계획 파일 확인:
 
@@ -71,16 +165,16 @@ AskUserQuestion 도구를 사용하여 사용자에게 확인:
 ```
 
 **사용자 선택에 따라 진행:**
-- **"완전 재생성"** 선택 시 → Step 1부터 정상 진행 (완전 재작성)
+- **"완전 재생성"** 선택 시 → Step 3부터 정상 진행 (완전 재작성)
 - **"부분 업데이트"** 선택 시 → 기존 계획 표시 + "어떤 부분을 업데이트하시겠습니까?" 질문 + 변경사항만 수집 후 merge
 
 ### If File Not Exists
 
-Step 1부터 정상 진행 (처음 작성)
+Step 3부터 정상 진행 (처음 작성)
 
 ---
 
-## Step 1: Review Specification and Check Prerequisites
+## Step 3: Review Specification and Check Prerequisites
 
 명세를 읽고 이해:
 - 어떤 기능을 구축해야 하는가?
@@ -114,7 +208,7 @@ cat "specs/$CURRENT_BRANCH/spec.md" | grep -A 10 "Open Questions"
 
 사용자가 "아니오"를 선택하면 `/spec-kit:clarify`를 먼저 실행하도록 안내하세요.
 
-## Step 2: Structure Technical Plan
+## Step 4: Structure Technical Plan
 
 사용자와 함께 다음 구조로 기술 계획을 정리합니다:
 
@@ -359,7 +453,7 @@ npm run build
 **Status**: Draft | In Review | Approved
 ```
 
-## Step 3: Validate Against Constitution
+## Step 5: Validate Against Constitution
 
 계획이 헌법의 기술 표준을 준수하는지 확인:
 
@@ -372,7 +466,7 @@ cat .specify/memory/constitution.md
 - 테스트 커버리지 계획됨?
 - 접근성 고려됨?
 
-## Step 4: Review & Approve
+## Step 6: Review & Approve
 
 계획의 완전성과 실행 가능성을 검토:
 1. 모든 명세 요구사항이 계획에 반영됨?
@@ -380,9 +474,9 @@ cat .specify/memory/constitution.md
 3. 단계별 구현 전략이 명확함?
 4. 테스트 전략이 구체적임?
 
-## Step 5: Save Draft and Execute Spec-Kit Command
+## Step 7: Save Draft and Execute Spec-Kit Command
 
-### 5.1 수집된 정보를 Draft 파일로 저장
+### 7.1 수집된 정보를 Draft 파일로 저장
 
 먼저 현재 기능의 drafts 디렉토리 생성:
 
@@ -397,7 +491,7 @@ Write 도구를 사용하여 수집된 정보를 `specs/$CURRENT_BRANCH/drafts/p
 # Plan Draft
 
 ## Architecture Overview
-[Step 2에서 작성한 아키텍처 개요...]
+[Step 4에서 작성한 아키텍처 개요...]
 
 ### System Components
 
@@ -407,79 +501,77 @@ Write 도구를 사용하여 수집된 정보를 `specs/$CURRENT_BRANCH/drafts/p
 - 스타일링: [선택한 스타일링]
 
 #### Data Layer
-[Step 2에서 작성한 데이터 레이어...]
+[Step 4에서 작성한 데이터 레이어...]
 
 #### Services
-[Step 2에서 작성한 서비스들...]
+[Step 4에서 작성한 서비스들...]
 
 ## Technology Stack
 
 ### Core Technologies
-[Step 2에서 선택한 핵심 기술들...]
+[Step 4에서 선택한 핵심 기술들...]
 
 ### Libraries
-[Step 2에서 선택한 라이브러리들과 선택 이유...]
+[Step 4에서 선택한 라이브러리들과 선택 이유...]
 
 ### Development Tools
-[Step 2에서 선택한 개발 도구들...]
+[Step 4에서 선택한 개발 도구들...]
 
 ## Data Models
-[Step 2에서 작성한 데이터 모델들...]
+[Step 4에서 작성한 데이터 모델들...]
 
 ## Database Schema
-[Step 2에서 작성한 데이터베이스 스키마...]
+[Step 4에서 작성한 데이터베이스 스키마...]
 
 ## Component Architecture
-[Step 2에서 작성한 컴포넌트 아키텍처...]
+[Step 4에서 작성한 컴포넌트 아키텍처...]
 
 ## Implementation Strategy
-[Step 2에서 작성한 구현 전략과 단계들...]
+[Step 4에서 작성한 구현 전략과 단계들...]
 
 ## State Management
-[Step 2에서 작성한 상태 관리 전략...]
+[Step 4에서 작성한 상태 관리 전략...]
 
 ## Performance Optimization
-[Step 2에서 작성한 성능 최적화 전략...]
+[Step 4에서 작성한 성능 최적화 전략...]
 
 ## Offline Support
-[Step 2에서 작성한 오프라인 지원 전략...]
+[Step 4에서 작성한 오프라인 지원 전략...]
 
 ## Security Considerations
-[Step 2에서 작성한 보안 고려사항...]
+[Step 4에서 작성한 보안 고려사항...]
 
 ## Error Handling
-[Step 2에서 작성한 에러 처리 전략...]
+[Step 4에서 작성한 에러 처리 전략...]
 
 ## Testing Strategy
-[Step 2에서 작성한 테스트 전략...]
+[Step 4에서 작성한 테스트 전략...]
 
 ## Accessibility Implementation
-[Step 2에서 작성한 접근성 구현 계획...]
+[Step 4에서 작성한 접근성 구현 계획...]
 
 ## Browser Compatibility
-[Step 2에서 작성한 브라우저 호환성...]
+[Step 4에서 작성한 브라우저 호환성...]
 
 ## Deployment Plan
-[Step 2에서 작성한 배포 계획...]
+[Step 4에서 작성한 배포 계획...]
 
 ## Monitoring & Analytics
-[Step 2에서 작성한 모니터링 전략...]
+[Step 4에서 작성한 모니터링 전략...]
 
 ## Migration Strategy
-[Step 2에서 작성한 마이그레이션 전략...]
+[Step 4에서 작성한 마이그레이션 전략...]
 
 ## Open Technical Questions
-[Step 2에서 작성한 미해결 기술 질문들...]
+[Step 4에서 작성한 미해결 기술 질문들...]
 ```
 
-### 5.2 Spec-Kit 명령 실행
+### 7.2 Spec-Kit 명령 실행
 
 Draft 파일 경로와 **브랜치 정보**를 전달하여 SlashCommand 도구로 `/speckit.plan` 명령을 실행합니다:
 
 ```
-/speckit.plan
-
-INSTRUCTION: This command is being called from /spec-kit:plan plugin. The current branch is "$CURRENT_BRANCH" and the draft file is at "specs/$CURRENT_BRANCH/drafts/plan-draft.md". Read the draft file using the Read tool. This draft contains ALL the technical architecture, technology stack decisions, and implementation strategy. You MUST skip all information collection and discussion steps and proceed directly to writing the plan file to "specs/$CURRENT_BRANCH/plan.md". Use ONLY the information from the draft file. Do NOT ask the user for any additional information. Process all content in the user's system language. If you need to ask the user any questions, use the AskUserQuestion tool.
+/speckit.plan INSTRUCTION: This command is being called from /spec-kit:plan plugin. Current branch is "$CURRENT_BRANCH" and draft at "specs/$CURRENT_BRANCH/drafts/plan-draft.md". Read draft. Draft contains ALL technical architecture, technology stack decisions, and implementation strategy. Skip information collection and discussion steps (Step 3-6) and proceed directly to writing plan file. **CRITICAL - MUST FOLLOW:** 1. LANGUAGE: Process ALL content in user's system language. 2. ASKUSERQUESTION: Use AskUserQuestion tool if clarification needed. 3. FILE WRITE: Write to "specs/$CURRENT_BRANCH/plan.md" with complete technical plan structure.
 ```
 
 spec-kit 명령어는 draft 파일을 읽어서 `specs/$CURRENT_BRANCH/plan.md` 파일을 생성/업데이트합니다.

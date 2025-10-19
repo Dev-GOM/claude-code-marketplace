@@ -34,7 +34,101 @@ cat "specs/$CURRENT_BRANCH/tasks.md"
 
 없다면 `/spec-kit:tasks`를 먼저 실행하세요.
 
-## Step 1: Review Tasks and Check Project Status
+## Step 1: Git 변경사항 확인
+
+구현 시작 전에 현재 작업 디렉토리의 변경사항과 브랜치 퍼블리쉬 상태를 확인합니다:
+
+```bash
+# 변경사항 확인
+git status --short
+
+# Upstream 브랜치 확인 (퍼블리쉬 여부)
+git rev-parse --abbrev-ref @{upstream} 2>/dev/null
+```
+
+### 시나리오 A: 변경사항이 없는 경우
+
+즉시 Step 2로 이동
+
+### 시나리오 B: 변경사항 있음 + Upstream 브랜치 없음 (미퍼블리쉬)
+
+브랜치가 아직 원격에 퍼블리쉬되지 않은 상태에서 변경사항이 있는 경우:
+
+AskUserQuestion 도구를 사용하여 사용자에게 확인:
+
+```json
+{
+  "questions": [{
+    "question": "현재 작업 디렉토리에 변경되지 않은 파일이 있고, 브랜치가 아직 퍼블리쉬되지 않았습니다. 어떻게 처리하시겠습니까?",
+    "header": "Git 변경사항",
+    "multiSelect": false,
+    "options": [
+      {
+        "label": "퍼블리쉬 + 커밋",
+        "description": "현재 변경사항을 커밋하고 브랜치를 원격 저장소에 퍼블리쉬합니다. 팀과 공유하거나 백업이 필요한 경우 권장합니다."
+      },
+      {
+        "label": "로컬에만 커밋",
+        "description": "현재 변경사항을 커밋하지만 브랜치는 로컬에만 유지합니다. 아직 공유할 준비가 안 된 경우에 사용합니다."
+      },
+      {
+        "label": "나중에 결정",
+        "description": "구현 작업을 진행하고 나중에 모든 변경사항을 함께 처리합니다."
+      }
+    ]
+  }]
+}
+```
+
+**사용자 선택에 따라 진행:**
+- **"퍼블리쉬 + 커밋"** 선택 시:
+  1. 사용자에게 커밋 메시지 요청
+  2. `git add -A && git commit -m "[메시지]"`
+  3. `git push -u origin [브랜치명]`
+  4. Step 2로 이동
+- **"로컬에만 커밋"** 선택 시:
+  1. 사용자에게 커밋 메시지 요청
+  2. `git add -A && git commit -m "[메시지]"`
+  3. Step 2로 이동
+- **"나중에 결정"** 선택 시: 즉시 Step 2로 이동
+
+### 시나리오 C: 변경사항 있음 + Upstream 브랜치 있음 (이미 퍼블리쉬됨)
+
+브랜치가 이미 원격에 퍼블리쉬된 상태에서 변경사항이 있는 경우:
+
+AskUserQuestion 도구를 사용하여 사용자에게 확인:
+
+```json
+{
+  "questions": [{
+    "question": "현재 작업 디렉토리에 변경되지 않은 파일이 있습니다. 먼저 커밋하시겠습니까?",
+    "header": "Git 변경사항",
+    "multiSelect": false,
+    "options": [
+      {
+        "label": "커밋하기",
+        "description": "현재 변경사항을 커밋하고 원격 브랜치에 푸쉬합니다. 작업을 명확하게 분리할 수 있습니다."
+      },
+      {
+        "label": "나중에 결정",
+        "description": "구현 작업을 진행하고 나중에 모든 변경사항을 함께 커밋합니다."
+      }
+    ]
+  }]
+}
+```
+
+**사용자 선택에 따라 진행:**
+- **"커밋하기"** 선택 시:
+  1. 사용자에게 커밋 메시지 요청
+  2. `git add -A && git commit -m "[메시지]"`
+  3. `git push`
+  4. Step 2로 이동
+- **"나중에 결정"** 선택 시: 즉시 Step 2로 이동
+
+---
+
+## Step 2: Review Tasks and Check Project Status
 
 작업 목록을 읽고:
 - 다음 작업 식별 (완료되지 않은 첫 번째 작업)
@@ -77,7 +171,7 @@ AskUserQuestion 도구를 사용하여 사용자에게 경고 및 확인:
 
 **사용자 선택에 따라 진행:**
 - **"먼저 명확화"** 선택 시 → `/spec-kit:clarify`를 먼저 실행하도록 안내
-- **"그래도 계속 진행"** 선택 시 → Step 2로 계속 진행 (위험 감수)
+- **"그래도 계속 진행"** 선택 시 → Step 3으로 계속 진행 (위험 감수)
 
 **💡 권장사항:**
 
@@ -86,7 +180,7 @@ AskUserQuestion 도구를 사용하여 사용자에게 경고 및 확인:
 - 차단 요소 식별
 - 다음 액션 파악
 
-## Step 2: Confirm Task
+## Step 3: Confirm Task
 
 사용자에게 확인:
 
@@ -106,7 +200,7 @@ Estimate: [시간]
 계속 진행하시겠습니까? (예/아니오)
 ```
 
-## Step 3: Implement
+## Step 4: Implement
 
 작업 수용 기준을 하나씩 달성:
 
@@ -137,7 +231,7 @@ Estimate: [시간]
    npm run type-check
    ```
 
-## Step 4: Update Progress
+## Step 5: Update Progress
 
 작업 완료 시 tasks.md 업데이트:
 
@@ -147,7 +241,7 @@ Estimate: [시간]
 # - [ ] Task X → - [x] Task X
 ```
 
-## Step 5: Review Acceptance Criteria
+## Step 6: Review Acceptance Criteria
 
 모든 수용 기준이 충족되었는지 확인:
 - [ ] 기능 동작 확인
@@ -155,7 +249,7 @@ Estimate: [시간]
 - [ ] 코드 품질 기준 충족
 - [ ] 문서 업데이트 (필요시)
 
-## Step 6: Commit (Optional)
+## Step 7: Commit (Optional)
 
 **⚠️ git commit 전 품질 체크:**
 
@@ -214,9 +308,9 @@ npm test
 
 - **선택 3**: git commit 건너뛰고 다음 단계로
 
-## Step 7: Save Draft and Execute Spec-Kit Command
+## Step 8: Save Draft and Execute Spec-Kit Command
 
-### 7.1 수집된 정보를 Draft 파일로 저장
+### 8.1 수집된 정보를 Draft 파일로 저장
 
 먼저 현재 기능의 drafts 디렉토리 생성:
 
@@ -234,7 +328,7 @@ Write 도구를 사용하여 수집된 정보를 `specs/$CURRENT_BRANCH/drafts/i
 
 ### Task [번호]: [작업명]
 
-**Description**: [Step 1-2에서 확인한 작업 설명]
+**Description**: [Step 2-3에서 확인한 작업 설명]
 
 **Acceptance Criteria**:
 - [기준 1]
@@ -245,7 +339,7 @@ Write 도구를 사용하여 수집된 정보를 `specs/$CURRENT_BRANCH/drafts/i
 **Dependencies**: [의존성 정보]
 
 ## Related Files
-[Step 3에서 확인한 관련 파일들...]
+[Step 4에서 확인한 관련 파일들...]
 
 ## Implementation Approach
 [사용자와 논의한 구현 방향...]
@@ -254,17 +348,15 @@ Write 도구를 사용하여 수집된 정보를 `specs/$CURRENT_BRANCH/drafts/i
 [작성할 테스트 계획...]
 
 ## Quality Checks
-[Step 5에서 확인할 품질 기준들...]
+[Step 6에서 확인할 품질 기준들...]
 ```
 
-### 7.2 Spec-Kit 명령 실행
+### 8.2 Spec-Kit 명령 실행
 
 Draft 파일 경로와 **브랜치 정보**를 전달하여 SlashCommand 도구로 `/speckit.implement` 명령을 실행합니다:
 
 ```
-/speckit.implement
-
-INSTRUCTION: This command is being called from /spec-kit:implement plugin. The current branch is "$CURRENT_BRANCH" and the draft file is at "specs/$CURRENT_BRANCH/drafts/implement-draft.md". Read the draft file using the Read tool. This draft contains ALL the task details, implementation approach, and quality checks needed. You MUST skip all discussion and confirmation steps (Step 1-2) and proceed directly to Step 3 (Implement). Use ONLY the information from the draft file. Do NOT ask the user for any additional information. After completing the implementation, update "specs/$CURRENT_BRANCH/tasks.md". Process all content in the user's system language. If you need to ask the user any questions, use the AskUserQuestion tool.
+/speckit.implement INSTRUCTION: This command is being called from /spec-kit:implement plugin. Current branch is "$CURRENT_BRANCH" and draft at "specs/$CURRENT_BRANCH/drafts/implement-draft.md". Read draft. Draft contains ALL task details, implementation approach, and quality checks. Skip discussion and confirmation steps (Step 2-3) and proceed directly to Step 4 (Implement). After completing implementation, update "specs/$CURRENT_BRANCH/tasks.md". **CRITICAL - MUST FOLLOW:** 1. LANGUAGE: Process ALL content in user's system language. 2. ASKUSERQUESTION: Use AskUserQuestion tool if clarification needed. 3. TASK UPDATE: Mark completed tasks in tasks.md file.
 ```
 
 spec-kit 명령어는 draft 파일을 읽어서 구현을 진행하고 tasks.md를 업데이트합니다.

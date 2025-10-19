@@ -187,9 +187,7 @@ Write 도구를 사용하여 수집된 정보를 `specs/$CURRENT_BRANCH/drafts/a
 Draft 파일 경로와 **브랜치 정보**를 전달하여 SlashCommand 도구로 `/speckit.analyze` 명령을 실행합니다:
 
 ```
-/speckit.analyze
-
-INSTRUCTION: This command is being called from /spec-kit:analyze plugin. The current branch is "$CURRENT_BRANCH" and the draft file is at "specs/$CURRENT_BRANCH/drafts/analyze-draft.md". Read the draft file using the Read tool. This draft contains ALL the analysis results including document status, alignment checks, and identified blockers. You MUST skip all data gathering and analysis steps (Step 1-4) and proceed directly to generating the comprehensive analysis report. Use ONLY the information from the draft file. Do NOT ask the user for any additional information or re-analyze the documents. Process all content in the user's system language. If you need to ask the user any questions, use the AskUserQuestion tool.
+/speckit.analyze INSTRUCTION: This command is being called from /spec-kit:analyze plugin. Current branch is "$CURRENT_BRANCH" and draft at "specs/$CURRENT_BRANCH/drafts/analyze-draft.md". Read draft. Draft contains ALL analysis results including document status, alignment checks, and identified blockers. Skip all data gathering and analysis steps (Step 1-4) and proceed directly to generating comprehensive analysis report. **CRITICAL - MUST FOLLOW:** 1. LANGUAGE: Process ALL content in user's system language. 2. ASKUSERQUESTION: Use AskUserQuestion tool if clarification needed. 3. REPORT GENERATION: Generate report from draft only, do NOT re-analyze documents.
 ```
 
 spec-kit 명령어는 draft 파일을 읽어서 사용자의 시스템 언어로 다음과 같은 리포트를 생성합니다:
