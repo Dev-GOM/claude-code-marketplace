@@ -1,6 +1,6 @@
 # Claude Code 플러그인
 
-> **버전**: 2.0.3 | **최종 업데이트**: 2025-10-19
+> **버전**: 2.0.4 | **최종 업데이트**: 2025-10-19
 >
 > **언어**: [English](README.md) | [한국어](README.ko.md)
 
@@ -8,6 +8,14 @@
 <summary><strong>📋 변경 이력</strong> (펼치기)</summary>
 
 ### Spec-Kit 통합
+
+#### v2.0.4 (2025-10-19)
+- 🐛 **버그 수정**: SlashCommand 형식 수정 - 8개 명령어 파일 모두에서 명령어와 INSTRUCTION을 한 줄로 통합
+- 📝 **명확성 개선**: `/speckit.*` 명령어와 INSTRUCTION 파라미터 사이의 모호한 줄바꿈 제거
+- 📝 **문서화**: INSTRUCTION 블록 명확화 - 모호한 "Use if clarification needed" 대신 "AskUserQuestion tool" 명시
+- 🔄 **워크플로우 개선**: `/spec-kit:specify` 실행 전 Git 변경사항 확인 및 커밋 프롬프트 추가
+- 🚀 **Git 통합 강화**: `/speckit.specify` 명세 작성 후 브랜치 퍼블리쉬 여부 선택 기능
+- ♻️ **역할 분리**: 플러그인 커맨드에서 PowerShell 실행 제거로 워크플로우 명확화
 
 #### v2.0.3 (2025-10-19)
 - 🐛 **버그 수정**: 모든 커맨드 파일에서 중복된 `CURRENT_BRANCH` 선언 제거
@@ -297,12 +305,26 @@ Claude Code 세션(Session)이 끝날 때마다 자동으로 git 커밋을 생�
 2. 플러그인 설치:
    ```bash
    /plugin install hook-git-auto-backup@dev-gom-plugins
+   ```
+   ```bash
    /plugin install hook-todo-collector@dev-gom-plugins
+   ```
+   ```bash
    /plugin install hook-complexity-monitor@dev-gom-plugins
+   ```
+   ```bash
    /plugin install hook-auto-docs@dev-gom-plugins
+   ```
+   ```bash
    /plugin install hook-session-summary@dev-gom-plugins
+   ```
+   ```bash
    /plugin install ai-pair-programming@dev-gom-plugins
+   ```
+   ```bash
    /plugin install spec-kit@dev-gom-plugins
+   ```
+   ```bash
    /plugin install unity-dev-toolkit@dev-gom-plugins
    ```
 

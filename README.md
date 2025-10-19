@@ -1,6 +1,6 @@
 # Claude Code Plugins
 
-> **Version**: 2.0.3 | **Last Updated**: 2025-10-19
+> **Version**: 2.0.4 | **Last Updated**: 2025-10-19
 >
 > **Language**: [English](README.md) | [한국어](README.ko.md)
 
@@ -8,6 +8,14 @@
 <summary><strong>📋 Changelog</strong> (Click to expand)</summary>
 
 ### Spec-Kit Integration
+
+#### v2.0.4 (2025-10-19)
+- 🐛 **Bug Fix**: Fixed SlashCommand format - merged command and INSTRUCTION into single line for all 8 command files
+- 📝 **Improved Clarity**: Removed ambiguous newlines between `/speckit.*` commands and INSTRUCTION parameters
+- 📝 **Documentation**: Clarified INSTRUCTION blocks - explicitly mention "AskUserQuestion tool" instead of ambiguous "Use if clarification needed"
+- 🔄 **Workflow Enhancement**: Added Git status check before `/spec-kit:specify` to prompt for committing existing changes
+- 🚀 **Better Git Integration**: `/speckit.specify` now asks about branch publishing (publish/local commit/decide later)
+- ♻️ **Role Separation**: Removed PowerShell execution from plugin command for clearer workflow
 
 #### v2.0.3 (2025-10-19)
 - 🐛 **Bug Fix**: Removed duplicate `CURRENT_BRANCH` declarations across all command files
@@ -297,12 +305,26 @@ Comprehensive Unity game development toolkit with intelligent scripting assistan
 2. Install plugins:
    ```bash
    /plugin install hook-git-auto-backup@dev-gom-plugins
+   ```
+   ```bash
    /plugin install hook-todo-collector@dev-gom-plugins
+   ```
+   ```bash
    /plugin install hook-complexity-monitor@dev-gom-plugins
+   ```
+   ```bash
    /plugin install hook-auto-docs@dev-gom-plugins
+   ```
+   ```bash
    /plugin install hook-session-summary@dev-gom-plugins
+   ```
+   ```bash
    /plugin install ai-pair-programming@dev-gom-plugins
+   ```
+   ```bash
    /plugin install spec-kit@dev-gom-plugins
+   ```
+   ```bash
    /plugin install unity-dev-toolkit@dev-gom-plugins
    ```
 

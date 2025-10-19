@@ -30,7 +30,101 @@ cat .specify/memory/constitution.md
 
 없다면 `/spec-kit:constitution`을 먼저 실행하세요.
 
-## Step -1: 워크플로우 선택
+## Step 1: Git 변경사항 확인
+
+명세 작성 전에 현재 작업 디렉토리의 변경사항과 브랜치 퍼블리쉬 상태를 확인합니다:
+
+```bash
+# 변경사항 확인
+git status --short
+
+# Upstream 브랜치 확인 (퍼블리쉬 여부)
+git rev-parse --abbrev-ref @{upstream} 2>/dev/null
+```
+
+### 시나리오 A: 변경사항이 없는 경우
+
+즉시 Step 2로 이동
+
+### 시나리오 B: 변경사항 있음 + Upstream 브랜치 없음 (미퍼블리쉬)
+
+브랜치가 아직 원격에 퍼블리쉬되지 않은 상태에서 변경사항이 있는 경우:
+
+AskUserQuestion 도구를 사용하여 사용자에게 확인:
+
+```json
+{
+  "questions": [{
+    "question": "현재 작업 디렉토리에 변경되지 않은 파일이 있고, 브랜치가 아직 퍼블리쉬되지 않았습니다. 어떻게 처리하시겠습니까?",
+    "header": "Git 변경사항",
+    "multiSelect": false,
+    "options": [
+      {
+        "label": "퍼블리쉬 + 커밋",
+        "description": "현재 변경사항을 커밋하고 브랜치를 원격 저장소에 퍼블리쉬합니다. 팀과 공유하거나 백업이 필요한 경우 권장합니다."
+      },
+      {
+        "label": "로컬에만 커밋",
+        "description": "현재 변경사항을 커밋하지만 브랜치는 로컬에만 유지합니다. 아직 공유할 준비가 안 된 경우에 사용합니다."
+      },
+      {
+        "label": "나중에 결정",
+        "description": "명세 작성을 진행하고 나중에 모든 변경사항을 함께 처리합니다."
+      }
+    ]
+  }]
+}
+```
+
+**사용자 선택에 따라 진행:**
+- **"퍼블리쉬 + 커밋"** 선택 시:
+  1. 사용자에게 커밋 메시지 요청
+  2. `git add -A && git commit -m "[메시지]"`
+  3. `git push -u origin [브랜치명]`
+  4. Step 2로 이동
+- **"로컬에만 커밋"** 선택 시:
+  1. 사용자에게 커밋 메시지 요청
+  2. `git add -A && git commit -m "[메시지]"`
+  3. Step 2로 이동
+- **"나중에 결정"** 선택 시: 즉시 Step 2로 이동
+
+### 시나리오 C: 변경사항 있음 + Upstream 브랜치 있음 (이미 퍼블리쉬됨)
+
+브랜치가 이미 원격에 퍼블리쉬된 상태에서 변경사항이 있는 경우:
+
+AskUserQuestion 도구를 사용하여 사용자에게 확인:
+
+```json
+{
+  "questions": [{
+    "question": "현재 작업 디렉토리에 변경되지 않은 파일이 있습니다. 먼저 커밋하시겠습니까?",
+    "header": "Git 변경사항",
+    "multiSelect": false,
+    "options": [
+      {
+        "label": "커밋하기",
+        "description": "현재 변경사항을 커밋하고 원격 브랜치에 푸쉬합니다. 작업을 명확하게 분리할 수 있습니다."
+      },
+      {
+        "label": "나중에 결정",
+        "description": "명세 작성을 진행하고 나중에 모든 변경사항을 함께 커밋합니다."
+      }
+    ]
+  }]
+}
+```
+
+**사용자 선택에 따라 진행:**
+- **"커밋하기"** 선택 시:
+  1. 사용자에게 커밋 메시지 요청
+  2. `git add -A && git commit -m "[메시지]"`
+  3. `git push`
+  4. Step 2로 이동
+- **"나중에 결정"** 선택 시: 즉시 Step 2로 이동
+
+---
+
+## Step 2: 워크플로우 선택
 
 먼저 새 기능 명세를 작성할 것인지, 기존 명세를 수정할 것인지 결정합니다.
 
@@ -74,15 +168,15 @@ AskUserQuestion 도구를 사용하여 사용자에게 확인:
 
 #### 선택 1: 새 기능 명세 작성
 
-→ **Step 0-A (새 기능)로 이동**
+→ **Step 3-A (새 기능)로 이동**
 
 #### 선택 2: 기존 명세 수정
 
-→ **Step 0-B (기존 수정)로 이동**
+→ **Step 3-B (기존 수정)로 이동**
 
 ---
 
-## Step 0-A: 새 기능 생성 워크플로우
+## Step 3-A: 새 기능 생성 워크플로우
 
 사용자가 "새 기능 명세 작성"을 선택한 경우:
 
@@ -112,48 +206,13 @@ AskUserQuestion 도구를 사용하여 사용자에게 확인:
 - "Implement OAuth2 integration for the API" → "oauth2-api-integration"
 - "Create a dashboard for analytics" → "analytics-dashboard"
 
-### 3. create-new-feature 스크립트 실행
+### 3. Step 4로 진행
 
-GitHub spec-kit CLI의 create-new-feature 스크립트를 실행하여 새 브랜치 생성:
-
-**Windows (Git Bash 권장):**
-```bash
-FEATURE_DESC="[기능 설명]"
-SHORT_NAME="[생성한 short-name]"
-
-# PowerShell 스크립트 실행 (JSON 출력)
-powershell -File ".specify/scripts/powershell/create-new-feature.ps1" -Json -ShortName "$SHORT_NAME" "$FEATURE_DESC"
-```
-
-**Windows (PowerShell):**
-```powershell
-.specify\scripts\powershell\create-new-feature.ps1 -Json -ShortName "[생성한 short-name]" "[기능 설명]"
-```
-
-스크립트는 다음을 반환합니다 (JSON):
-```json
-{
-  "BRANCH_NAME": "001-user-auth",
-  "SPEC_FILE": "/absolute/path/to/specs/001-user-auth/spec.md",
-  "FEATURE_NUM": "001",
-  "HAS_GIT": true
-}
-```
-
-### 4. 반환된 정보 파싱
-
-JSON 출력에서 다음 정보 추출:
-- `BRANCH_NAME`: 생성된 브랜치 이름 (예: "001-user-auth")
-- `SPEC_FILE`: spec.md 파일의 절대 경로
-- `FEATURE_NUM`: 기능 번호 (001, 002, ...)
-
-### 5. Step 1로 진행
-
-→ **Step 1 (정보 수집)로 이동**
+→ **Step 4 (정보 수집)로 이동**
 
 ---
 
-## Step 0-B: 기존 명세 수정 워크플로우
+## Step 3-B: 기존 명세 수정 워크플로우
 
 사용자가 "기존 명세 수정"을 선택한 경우:
 
@@ -239,7 +298,7 @@ git checkout [선택한-브랜치]
 
 ---
 
-## Step 1: Gather Requirements
+## Step 4: Gather Requirements
 
 사용자와 대화하며 다음을 파악:
 
@@ -264,7 +323,7 @@ git checkout [선택한-브랜치]
    - 비즈니스 요구사항
    - 일정/예산
 
-## Step 2: Structure Specification
+## Step 5: Structure Specification
 
 사용자와 함께 다음 구조로 명세 내용을 정리합니다:
 
@@ -397,7 +456,7 @@ So that [이점/가치].
 **Status**: Draft | In Review | Approved
 ```
 
-## Step 3: Validate Against Constitution
+## Step 6: Validate Against Constitution
 
 명세가 헌법과 부합하는지 검증:
 
@@ -412,108 +471,114 @@ cat .specify/memory/constitution.md
 - 선택적 기능으로 변경
 - 헌법 업데이트 (우선순위 변경 시)
 
-## Step 4: Review & Approve
+## Step 7: Review & Approve
 
 1. 완전성 검토 (모든 요구사항 캡처됨?)
 2. 수용 기준 명확성 검토
 3. 엣지 케이스 식별 확인
 4. 상태를 "Approved"로 업데이트
 
-## Step 5: Save Draft and Execute Spec-Kit Command
+## Step 8: Save Draft and Execute Spec-Kit Command
 
-### 5.1 수집된 정보를 Draft 파일로 저장
+### 8.1 수집된 정보를 Draft 파일로 저장
 
-먼저 현재 기능의 drafts 디렉토리 생성:
+먼저 임시 drafts 디렉토리 생성:
 
 ```bash
-mkdir -p "specs/$BRANCH_NAME/drafts"
+mkdir -p "specs/.temp/drafts"
 ```
 
-Write 도구를 사용하여 수집된 정보를 `specs/$BRANCH_NAME/drafts/specification-draft.md` 파일로 저장합니다:
+Write 도구를 사용하여 수집된 정보를 `specs/.temp/drafts/specification-draft.md` 파일로 저장합니다:
 
 ```markdown
 # Specification Draft
 
+## Workflow Information
+
+### Feature Description
+[사용자가 제공한 기능 설명 - $ARGUMENTS 또는 Step 3-A의 1번에서 수집]
+
+### Short Name
+[Step 3-A의 2번에서 생성한 short-name (예: "user-auth", "oauth2-api-integration")]
+
 ## Collected Information
 
 ### 기능명
-[Step 1에서 수집한 답변]
+[Step 4에서 수집한 답변]
 
 ### 대상 사용자
-[Step 1에서 수집한 답변]
+[Step 4에서 수집한 답변]
 
 ### 해결하려는 문제
-[Step 1에서 수집한 답변]
+[Step 4에서 수집한 답변]
 
 ### 성공 기준
-[Step 1에서 수집한 답변]
+[Step 4에서 수집한 답변]
 
 ### 제약사항
-[Step 1에서 수집한 답변]
+[Step 4에서 수집한 답변]
 
 ## User Stories
 
 ### Primary Stories
-[Step 2에서 작성한 주요 스토리들...]
+[Step 5에서 작성한 주요 스토리들...]
 
 ### Secondary Stories
-[Step 2에서 작성한 부가 스토리들...]
+[Step 5에서 작성한 부가 스토리들...]
 
 ## Requirements
 
 ### Functional Requirements
 
 #### Must Have (P0)
-[Step 2에서 작성한 필수 요구사항들...]
+[Step 5에서 작성한 필수 요구사항들...]
 
 #### Should Have (P1)
-[Step 2에서 작성한 권장 요구사항들...]
+[Step 5에서 작성한 권장 요구사항들...]
 
 #### Could Have (P2)
-[Step 2에서 작성한 선택 요구사항들...]
+[Step 5에서 작성한 선택 요구사항들...]
 
 ### Non-Functional Requirements
-[Step 2에서 작성한 비기능 요구사항들...]
+[Step 5에서 작성한 비기능 요구사항들...]
 
 ## User Interface
-[Step 2에서 작성한 UI 설명...]
+[Step 5에서 작성한 UI 설명...]
 
 ## User Flows
-[Step 2에서 작성한 사용자 흐름들...]
+[Step 5에서 작성한 사용자 흐름들...]
 
 ## Acceptance Criteria
-[Step 2에서 작성한 수용 기준들...]
+[Step 5에서 작성한 수용 기준들...]
 
 ## Edge Cases & Constraints
-[Step 2에서 작성한 엣지 케이스와 제약사항들...]
+[Step 5에서 작성한 엣지 케이스와 제약사항들...]
 
 ## Dependencies
-[Step 2에서 작성한 의존성들...]
+[Step 5에서 작성한 의존성들...]
 
 ## Out of Scope (V1)
-[Step 2에서 작성한 제외 항목들...]
+[Step 5에서 작성한 제외 항목들...]
 
 ## Success Metrics
-[Step 2에서 작성한 성공 지표들...]
+[Step 5에서 작성한 성공 지표들...]
 
 ## Risks & Mitigations
-[Step 2에서 작성한 위험과 완화 전략들...]
+[Step 5에서 작성한 위험과 완화 전략들...]
 
 ## Open Questions
-[Step 2에서 작성한 미해결 질문들...]
+[Step 5에서 작성한 미해결 질문들...]
 ```
 
-### 5.2 Spec-Kit 명령 실행
+### 8.2 Spec-Kit 명령 실행
 
-Draft 파일 경로와 **브랜치 정보**를 전달하여 SlashCommand 도구로 `/speckit.specify` 명령을 실행합니다:
+Draft 파일 경로를 전달하여 SlashCommand 도구로 `/speckit.specify` 명령을 실행합니다:
 
 ```
-/speckit.specify [기능 설명]
-
-INSTRUCTION: This command is being called from /spec-kit:specify plugin. The feature branch "$BRANCH_NAME" has been created and the draft file is at "specs/$BRANCH_NAME/drafts/specification-draft.md". Read the draft file using the Read tool. This draft contains ALL the information needed with complete user stories, requirements, and acceptance criteria. You MUST skip all information collection steps and proceed directly to writing the specification file to "specs/$BRANCH_NAME/spec.md". Use ONLY the information from the draft file. Do NOT ask the user for any additional information. Process all content in the user's system language. If you need to ask the user any questions, use the AskUserQuestion tool.
+/speckit.specify INSTRUCTION: This command is being called from /spec-kit:specify plugin. Read draft at "specs/.temp/drafts/specification-draft.md". Draft contains: Feature Description, Short Name, ALL spec info. Execute PowerShell script with Short Name to create branch. Write spec to new branch. **CRITICAL - MUST FOLLOW:** 1. LANGUAGE: Process ALL content in user's system language. 2. DRAFT MANAGEMENT: After branch creation, MOVE draft from "specs/.temp/drafts/specification-draft.md" to "specs/[NEW_BRANCH]/drafts/specification-draft.md" (MANDATORY). 3. ASKUSERQUESTION: Use AskUserQuestion tool if clarification needed.
 ```
 
-spec-kit 명령어는 draft 파일을 읽어서 `specs/$BRANCH_NAME/spec.md` 파일을 생성/업데이트합니다.
+spec-kit 명령어는 draft 파일을 읽어서 새 브랜치를 생성하고 spec 파일을 작성합니다.
 
 **토큰 절약 효과:**
 - 긴 텍스트를 명령어 인자로 전달하지 않음

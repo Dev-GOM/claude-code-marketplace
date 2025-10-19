@@ -28,7 +28,101 @@ Spec-Kit 문서에서 찾을 수 있는 것들:
 - **누락된 세부사항**: 명시되지 않은 중요 사항
 - **상충되는 요구사항**: 서로 충돌하는 조건
 
-## Step 1: Identify Ambiguities
+## Step 1: Git 변경사항 확인
+
+명확화 작업 전에 현재 작업 디렉토리의 변경사항과 브랜치 퍼블리쉬 상태를 확인합니다:
+
+```bash
+# 변경사항 확인
+git status --short
+
+# Upstream 브랜치 확인 (퍼블리쉬 여부)
+git rev-parse --abbrev-ref @{upstream} 2>/dev/null
+```
+
+### 시나리오 A: 변경사항이 없는 경우
+
+즉시 Step 2로 이동
+
+### 시나리오 B: 변경사항 있음 + Upstream 브랜치 없음 (미퍼블리쉬)
+
+브랜치가 아직 원격에 퍼블리쉬되지 않은 상태에서 변경사항이 있는 경우:
+
+AskUserQuestion 도구를 사용하여 사용자에게 확인:
+
+```json
+{
+  "questions": [{
+    "question": "현재 작업 디렉토리에 변경되지 않은 파일이 있고, 브랜치가 아직 퍼블리쉬되지 않았습니다. 어떻게 처리하시겠습니까?",
+    "header": "Git 변경사항",
+    "multiSelect": false,
+    "options": [
+      {
+        "label": "퍼블리쉬 + 커밋",
+        "description": "현재 변경사항을 커밋하고 브랜치를 원격 저장소에 퍼블리쉬합니다. 팀과 공유하거나 백업이 필요한 경우 권장합니다."
+      },
+      {
+        "label": "로컬에만 커밋",
+        "description": "현재 변경사항을 커밋하지만 브랜치는 로컬에만 유지합니다. 아직 공유할 준비가 안 된 경우에 사용합니다."
+      },
+      {
+        "label": "나중에 결정",
+        "description": "명확화 작업을 진행하고 나중에 모든 변경사항을 함께 처리합니다."
+      }
+    ]
+  }]
+}
+```
+
+**사용자 선택에 따라 진행:**
+- **"퍼블리쉬 + 커밋"** 선택 시:
+  1. 사용자에게 커밋 메시지 요청
+  2. `git add -A && git commit -m "[메시지]"`
+  3. `git push -u origin [브랜치명]`
+  4. Step 2로 이동
+- **"로컬에만 커밋"** 선택 시:
+  1. 사용자에게 커밋 메시지 요청
+  2. `git add -A && git commit -m "[메시지]"`
+  3. Step 2로 이동
+- **"나중에 결정"** 선택 시: 즉시 Step 2로 이동
+
+### 시나리오 C: 변경사항 있음 + Upstream 브랜치 있음 (이미 퍼블리쉬됨)
+
+브랜치가 이미 원격에 퍼블리쉬된 상태에서 변경사항이 있는 경우:
+
+AskUserQuestion 도구를 사용하여 사용자에게 확인:
+
+```json
+{
+  "questions": [{
+    "question": "현재 작업 디렉토리에 변경되지 않은 파일이 있습니다. 먼저 커밋하시겠습니까?",
+    "header": "Git 변경사항",
+    "multiSelect": false,
+    "options": [
+      {
+        "label": "커밋하기",
+        "description": "현재 변경사항을 커밋하고 원격 브랜치에 푸쉬합니다. 작업을 명확하게 분리할 수 있습니다."
+      },
+      {
+        "label": "나중에 결정",
+        "description": "명확화 작업을 진행하고 나중에 모든 변경사항을 함께 커밋합니다."
+      }
+    ]
+  }]
+}
+```
+
+**사용자 선택에 따라 진행:**
+- **"커밋하기"** 선택 시:
+  1. 사용자에게 커밋 메시지 요청
+  2. `git add -A && git commit -m "[메시지]"`
+  3. `git push`
+  4. Step 2로 이동
+- **"나중에 결정"** 선택 시: 즉시 Step 2로 이동
+
+---
+
+## Step 2: Identify Ambiguities
 
 명세와 계획을 읽고 불명확한 부분 식별:
 
@@ -47,7 +141,7 @@ cat "specs/$CURRENT_BRANCH/plan.md"
 - "Option A/B" 같은 미결정 사항
 - 모호한 표현 ("적절한", "충분한", "빠른" 등)
 
-## Step 2: List Issues and Select
+## Step 3: List Issues and Select
 
 발견한 모호한 사항을 리스트로 정리한 후, AskUserQuestion 도구를 사용하여 사용자에게 선택하도록 합니다:
 
@@ -97,7 +191,7 @@ cat "specs/$CURRENT_BRANCH/plan.md"
 
 **참고:** 실제로는 발견된 이슈에 맞춰 options를 동적으로 생성해야 합니다.
 
-## Step 3: Discuss and Resolve
+## Step 4: Discuss and Resolve
 
 각 이슈에 대해:
 
@@ -107,9 +201,9 @@ cat "specs/$CURRENT_BRANCH/plan.md"
 4. **결정**: 사용자 의사결정
 5. **영향 분석**: 다른 부분에 미치는 영향
 
-## Step 4: Save Draft and Execute Spec-Kit Command
+## Step 5: Save Draft and Execute Spec-Kit Command
 
-### 4.1 수집된 정보를 Draft 파일로 저장
+### 5.1 수집된 정보를 Draft 파일로 저장
 
 먼저 현재 브랜치의 drafts 디렉토리가 있는지 확인하고 없으면 생성:
 
@@ -128,14 +222,14 @@ Write 도구를 사용하여 수집된 정보를 `specs/$CURRENT_BRANCH/drafts/c
 
 **Original (모호함)**: [원래 모호했던 내용]
 
-**Resolution (명확함)**: [Step 3에서 명확해진 내용]
+**Resolution (명확함)**: [Step 4에서 명확해진 내용]
 
 **Rationale**: [이렇게 결정한 이유]
 
 **Impact**: [다른 부분에 미치는 영향]
 
 ### Issue 2: [명세/계획] - [섹션명]
-[Step 1-3에서 해결한 다른 이슈들...]
+[Step 2-4에서 해결한 다른 이슈들...]
 
 ## Affected Sections
 
@@ -146,30 +240,21 @@ Write 도구를 사용하여 수집된 정보를 `specs/$CURRENT_BRANCH/drafts/c
 - [섹션명]: [변경 내용]
 
 ## Open Questions to Remove
-[Step 3에서 해결된 Open Questions 목록...]
+[Step 4에서 해결된 Open Questions 목록...]
 
 ## New Acceptance Criteria
-[Step 3에서 추가된 명확한 수용 기준들...]
+[Step 4에서 추가된 명확한 수용 기준들...]
 
 ## Technical Decisions
-[Step 3에서 결정된 기술적 선택사항들...]
+[Step 4에서 결정된 기술적 선택사항들...]
 ```
 
-### 4.2 Spec-Kit 명령 실행
+### 5.2 Spec-Kit 명령 실행
 
 Draft 파일 경로를 전달하여 SlashCommand 도구로 `/speckit.clarify` 명령을 실행합니다:
 
 ```
-/speckit.clarify specs/$CURRENT_BRANCH/drafts/clarify-draft.md
-
-INSTRUCTION: Read the draft file at the path above using the Read tool. This draft contains ALL the resolved issues with clear resolutions and rationales. You MUST skip all identification and discussion steps (Step 1-3) and proceed directly to updating the spec.md and plan.md files in the current branch:
-- Remove resolved Open Questions
-- Add clear requirements
-- Add specific acceptance criteria
-- Remove resolved Open Technical Questions
-- Reflect technical decisions
-- Record changes in changelog
-Use ONLY the information from the draft file. Do NOT ask the user for any additional information. Process all content in the user's system language. If you need to ask the user any questions, use the AskUserQuestion tool.
+/speckit.clarify specs/$CURRENT_BRANCH/drafts/clarify-draft.md INSTRUCTION: Read draft at path above. Draft contains ALL resolved issues with clear resolutions and rationales. Skip identification and discussion steps (Step 2-4) and proceed directly to updating spec.md and plan.md files. **CRITICAL - MUST FOLLOW:** 1. LANGUAGE: Process ALL content in user's system language. 2. ASKUSERQUESTION: Use AskUserQuestion tool if clarification needed. 3. FILE UPDATE: Remove resolved Open Questions, Add clear requirements, Add specific acceptance criteria, Remove resolved Open Technical Questions, Reflect technical decisions, Record changes in changelog.
 ```
 
 spec-kit 명령어는 draft 파일을 읽어서 spec.md와 plan.md를 업데이트합니다.

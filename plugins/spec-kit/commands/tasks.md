@@ -34,7 +34,101 @@ cat "specs/$CURRENT_BRANCH/plan.md"
 
 없다면 `/spec-kit:plan`을 먼저 실행하세요.
 
-## Step 0: Check Existing File and Choose Update Mode
+## Step 1: Git 변경사항 확인
+
+작업 분해 전에 현재 작업 디렉토리의 변경사항과 브랜치 퍼블리쉬 상태를 확인합니다:
+
+```bash
+# 변경사항 확인
+git status --short
+
+# Upstream 브랜치 확인 (퍼블리쉬 여부)
+git rev-parse --abbrev-ref @{upstream} 2>/dev/null
+```
+
+### 시나리오 A: 변경사항이 없는 경우
+
+즉시 Step 2로 이동
+
+### 시나리오 B: 변경사항 있음 + Upstream 브랜치 없음 (미퍼블리쉬)
+
+브랜치가 아직 원격에 퍼블리쉬되지 않은 상태에서 변경사항이 있는 경우:
+
+AskUserQuestion 도구를 사용하여 사용자에게 확인:
+
+```json
+{
+  "questions": [{
+    "question": "현재 작업 디렉토리에 변경되지 않은 파일이 있고, 브랜치가 아직 퍼블리쉬되지 않았습니다. 어떻게 처리하시겠습니까?",
+    "header": "Git 변경사항",
+    "multiSelect": false,
+    "options": [
+      {
+        "label": "퍼블리쉬 + 커밋",
+        "description": "현재 변경사항을 커밋하고 브랜치를 원격 저장소에 퍼블리쉬합니다. 팀과 공유하거나 백업이 필요한 경우 권장합니다."
+      },
+      {
+        "label": "로컬에만 커밋",
+        "description": "현재 변경사항을 커밋하지만 브랜치는 로컬에만 유지합니다. 아직 공유할 준비가 안 된 경우에 사용합니다."
+      },
+      {
+        "label": "나중에 결정",
+        "description": "작업 분해를 진행하고 나중에 모든 변경사항을 함께 처리합니다."
+      }
+    ]
+  }]
+}
+```
+
+**사용자 선택에 따라 진행:**
+- **"퍼블리쉬 + 커밋"** 선택 시:
+  1. 사용자에게 커밋 메시지 요청
+  2. `git add -A && git commit -m "[메시지]"`
+  3. `git push -u origin [브랜치명]`
+  4. Step 2로 이동
+- **"로컬에만 커밋"** 선택 시:
+  1. 사용자에게 커밋 메시지 요청
+  2. `git add -A && git commit -m "[메시지]"`
+  3. Step 2로 이동
+- **"나중에 결정"** 선택 시: 즉시 Step 2로 이동
+
+### 시나리오 C: 변경사항 있음 + Upstream 브랜치 있음 (이미 퍼블리쉬됨)
+
+브랜치가 이미 원격에 퍼블리쉬된 상태에서 변경사항이 있는 경우:
+
+AskUserQuestion 도구를 사용하여 사용자에게 확인:
+
+```json
+{
+  "questions": [{
+    "question": "현재 작업 디렉토리에 변경되지 않은 파일이 있습니다. 먼저 커밋하시겠습니까?",
+    "header": "Git 변경사항",
+    "multiSelect": false,
+    "options": [
+      {
+        "label": "커밋하기",
+        "description": "현재 변경사항을 커밋하고 원격 브랜치에 푸쉬합니다. 작업을 명확하게 분리할 수 있습니다."
+      },
+      {
+        "label": "나중에 결정",
+        "description": "작업 분해를 진행하고 나중에 모든 변경사항을 함께 커밋합니다."
+      }
+    ]
+  }]
+}
+```
+
+**사용자 선택에 따라 진행:**
+- **"커밋하기"** 선택 시:
+  1. 사용자에게 커밋 메시지 요청
+  2. `git add -A && git commit -m "[메시지]"`
+  3. `git push`
+  4. Step 2로 이동
+- **"나중에 결정"** 선택 시: 즉시 Step 2로 이동
+
+---
+
+## Step 2: Check Existing File and Choose Update Mode
 
 기존 작업 목록 파일 확인:
 
@@ -68,16 +162,16 @@ AskUserQuestion 도구를 사용하여 사용자에게 확인:
 ```
 
 **사용자 선택에 따라 진행:**
-- **"완전 재생성"** 선택 시 → Step 1부터 정상 진행 (완전 재작성)
+- **"완전 재생성"** 선택 시 → Step 3부터 정상 진행 (완전 재작성)
 - **"부분 업데이트"** 선택 시 → 기존 작업 목록 표시 + "어떤 부분을 업데이트하시겠습니까?" 질문 + 변경사항만 수집 후 merge
 
 ### If File Not Exists
 
-Step 1부터 정상 진행 (처음 작성)
+Step 3부터 정상 진행 (처음 작성)
 
 ---
 
-## Step 1: Review Plan and Check Prerequisites
+## Step 3: Review Plan and Check Prerequisites
 
 계획의 구현 전략(Implementation Strategy)을 집중적으로 검토:
 - 각 단계(Phase)의 작업들
@@ -112,7 +206,7 @@ cat "specs/$CURRENT_BRANCH/plan.md" | grep -A 10 "Open Technical Questions"
 
 사용자가 "아니오"를 선택하면 `/spec-kit:clarify`를 먼저 실행하도록 안내하세요.
 
-## Step 2: Identify Tasks
+## Step 4: Identify Tasks
 
 각 Phase를 개별 작업으로 분해. 좋은 작업의 특징:
 - **작음**: 1-4시간 내 완료 가능
@@ -120,7 +214,7 @@ cat "specs/$CURRENT_BRANCH/plan.md" | grep -A 10 "Open Technical Questions"
 - **테스트 가능**: 완료 여부를 검증 가능
 - **독립적**: 또는 명확한 의존성
 
-## Step 3: Structure Task List
+## Step 5: Structure Task List
 
 사용자와 함께 다음 구조로 작업 목록을 정리합니다:
 
@@ -186,7 +280,7 @@ graph TD
 **Last Updated**: [Date]
 ```
 
-## Step 4: Prioritize
+## Step 6: Prioritize
 
 작업 우선순위 지정:
 1. **Critical Path**: 차단 작업 먼저
@@ -194,16 +288,16 @@ graph TD
 3. **Value**: 높은 가치 작업 우선
 4. **Risk**: 높은 리스크 작업 조기 해결
 
-## Step 5: Estimate
+## Step 7: Estimate
 
 각 작업에 예상 시간 할당:
 - Small: 1-2 hours
 - Medium: 2-4 hours
 - Large: 4-8 hours (더 크면 분해 필요)
 
-## Step 6: Save Draft and Execute Spec-Kit Command
+## Step 8: Save Draft and Execute Spec-Kit Command
 
-### 6.1 수집된 정보를 Draft 파일로 저장
+### 8.1 수집된 정보를 Draft 파일로 저장
 
 먼저 현재 기능의 drafts 디렉토리 생성:
 
@@ -220,7 +314,7 @@ Write 도구를 사용하여 수집된 정보를 `specs/$CURRENT_BRANCH/drafts/t
 ## Phase 1: [Phase Name]
 
 ### Task 1.1: [작업명]
-- Description: [Step 2-3에서 작성한 작업 설명]
+- Description: [Step 4-5에서 작성한 작업 설명]
 - Acceptance:
   - [완료 기준 1]
   - [완료 기준 2]
@@ -228,29 +322,27 @@ Write 도구를 사용하여 수집된 정보를 `specs/$CURRENT_BRANCH/drafts/t
 - Estimate: 2h
 
 ### Task 1.2: [작업명]
-[Step 2-3에서 작성한 작업 내용...]
+[Step 4-5에서 작성한 작업 내용...]
 
 ## Phase 2: [Phase Name]
-[Step 2-3에서 작성한 2단계 작업들...]
+[Step 4-5에서 작성한 2단계 작업들...]
 
 ## Task Dependencies
-[Step 4에서 정리한 의존성 관계...]
+[Step 6에서 정리한 의존성 관계...]
 
 ## Task Priorities
-[Step 4에서 정한 우선순위...]
+[Step 6에서 정한 우선순위...]
 
 ## Time Estimates
-[Step 5에서 할당한 예상 시간들...]
+[Step 7에서 할당한 예상 시간들...]
 ```
 
-### 6.2 Spec-Kit 명령 실행
+### 8.2 Spec-Kit 명령 실행
 
 Draft 파일 경로와 **브랜치 정보**를 전달하여 SlashCommand 도구로 `/speckit.tasks` 명령을 실행합니다:
 
 ```
-/speckit.tasks
-
-INSTRUCTION: This command is being called from /spec-kit:tasks plugin. The current branch is "$CURRENT_BRANCH" and the draft file is at "specs/$CURRENT_BRANCH/drafts/tasks-draft.md". Read the draft file using the Read tool. This draft contains ALL the tasks broken down by phase with descriptions, acceptance criteria, dependencies, and estimates. You MUST skip all information collection and breakdown steps and proceed directly to writing the tasks file to "specs/$CURRENT_BRANCH/tasks.md". Use ONLY the information from the draft file. Do NOT ask the user for any additional information. Process all content in the user's system language. If you need to ask the user any questions, use the AskUserQuestion tool.
+/speckit.tasks INSTRUCTION: This command is being called from /spec-kit:tasks plugin. Current branch is "$CURRENT_BRANCH" and draft at "specs/$CURRENT_BRANCH/drafts/tasks-draft.md". Read draft. Draft contains ALL tasks broken down by phase with descriptions, acceptance criteria, dependencies, and estimates. Skip information collection and breakdown steps (Step 3-7) and proceed directly to writing tasks file. **CRITICAL - MUST FOLLOW:** 1. LANGUAGE: Process ALL content in user's system language. 2. ASKUSERQUESTION: Use AskUserQuestion tool if clarification needed. 3. FILE WRITE: Write to "specs/$CURRENT_BRANCH/tasks.md" with complete task breakdown structure.
 ```
 
 spec-kit 명령어는 draft 파일을 읽어서 `specs/$CURRENT_BRANCH/tasks.md` 파일을 생성/업데이트합니다.
