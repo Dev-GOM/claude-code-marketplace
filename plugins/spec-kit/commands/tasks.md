@@ -206,155 +206,167 @@ cat "specs/$CURRENT_BRANCH/plan.md" | grep -A 10 "Open Technical Questions"
 
 사용자가 "아니오"를 선택하면 `/spec-kit:clarify`를 먼저 실행하도록 안내하세요.
 
-## Step 4: Identify Tasks
+## Step 4: 추가 컨텍스트 수집
 
-각 Phase를 개별 작업으로 분해. 좋은 작업의 특징:
-- **작음**: 1-4시간 내 완료 가능
-- **명확함**: 무엇을 할지 정확히 알 수 있음
-- **테스트 가능**: 완료 여부를 검증 가능
-- **독립적**: 또는 명확한 의존성
+**GitHub Spec-Kit CLI는 spec.md와 plan.md를 자동으로 파싱하여 작업을 생성합니다.**
 
-## Step 5: Structure Task List
+이 단계에서는 자동 생성 시 추가로 고려할 사항만 수집합니다.
 
-사용자와 함께 다음 구조로 작업 목록을 정리합니다:
+### 4.1 사용자 언어 감지
 
-### Tasks Template
-
-```markdown
-# Implementation Tasks: [Feature Name]
-
-## Phase 1: [Phase Name]
-
-### Task 1.1: [작업명]
-
-**Description**: [작업 설명]
-
-**Acceptance**:
-- [ ] [기준 1]
-- [ ] [기준 2]
-
-**Depends on**: None
-
-**Estimate**: 2h
-
----
-
-### Task 1.2: [작업명]
-
-**Description**: [작업 설명]
-
-**Acceptance**:
-- [ ] [기준]
-
-**Depends on**: Task 1.1
-
-**Estimate**: 3h
-
----
-
-## Phase 2: [Phase Name]
-
-[2단계 작업들...]
-
-## Task Dependencies
-
-```mermaid
-graph TD
-    1.1 --> 1.2
-    1.2 --> 2.1
-    2.1 --> 2.2
-```
-
-## Progress Tracking
-
-- [ ] Phase 1 (0/3 tasks)
-  - [ ] Task 1.1
-  - [ ] Task 1.2
-  - [ ] Task 1.3
-- [ ] Phase 2 (0/2 tasks)
-  - [ ] Task 2.1
-  - [ ] Task 2.2
-
----
-**Created**: [Date]
-**Last Updated**: [Date]
-```
-
-## Step 6: Prioritize
-
-작업 우선순위 지정:
-1. **Critical Path**: 차단 작업 먼저
-2. **Dependencies**: 의존성 순서대로
-3. **Value**: 높은 가치 작업 우선
-4. **Risk**: 높은 리스크 작업 조기 해결
-
-## Step 7: Estimate
-
-각 작업에 예상 시간 할당:
-- Small: 1-2 hours
-- Medium: 2-4 hours
-- Large: 4-8 hours (더 크면 분해 필요)
-
-## Step 8: Save Draft and Execute Spec-Kit Command
-
-### 8.1 수집된 정보를 Draft 파일로 저장
-
-먼저 현재 기능의 drafts 디렉토리 생성:
+먼저 사용자의 언어를 감지하여 변수에 저장:
 
 ```bash
-# drafts 디렉토리 생성
-mkdir -p "specs/$CURRENT_BRANCH/drafts"
+# 시스템 언어 감지
+if [[ "$LANG" == ko* ]] || [[ "$LC_ALL" == ko* ]]; then
+  LANGUAGE="ko"
+elif [[ "$LANG" == ja* ]] || [[ "$LC_ALL" == ja* ]]; then
+  LANGUAGE="ja"
+else
+  LANGUAGE="en"
+fi
+
+# 또는 사용자의 최근 대화 언어 패턴 분석
+# 한글이 포함되어 있으면 "ko", 일본어면 "ja", 그 외 "en"
 ```
 
-Write 도구를 사용하여 수집된 정보를 `specs/$CURRENT_BRANCH/drafts/tasks-draft.md` 파일로 저장합니다:
+### 4.2 추가 컨텍스트 질문
 
-```markdown
-# Tasks Draft
+AskUserQuestion 도구를 사용하여 사용자에게 확인:
 
-## Phase 1: [Phase Name]
-
-### Task 1.1: [작업명]
-- Description: [Step 4-5에서 작성한 작업 설명]
-- Acceptance:
-  - [완료 기준 1]
-  - [완료 기준 2]
-- Depends on: None
-- Estimate: 2h
-
-### Task 1.2: [작업명]
-[Step 4-5에서 작성한 작업 내용...]
-
-## Phase 2: [Phase Name]
-[Step 4-5에서 작성한 2단계 작업들...]
-
-## Task Dependencies
-[Step 6에서 정리한 의존성 관계...]
-
-## Task Priorities
-[Step 6에서 정한 우선순위...]
-
-## Time Estimates
-[Step 7에서 할당한 예상 시간들...]
+```json
+{
+  "questions": [{
+    "question": "spec.md와 plan.md를 기반으로 작업을 자동 생성합니다. 추가로 고려할 사항이 있나요?",
+    "header": "추가 컨텍스트",
+    "multiSelect": true,
+    "options": [
+      {
+        "label": "특정 작업 포함",
+        "description": "자동 생성 외에 반드시 포함해야 할 작업이나 단계를 명시합니다."
+      },
+      {
+        "label": "특정 작업 제외",
+        "description": "생성 시 건너뛰어야 할 작업이나 단계를 명시합니다."
+      },
+      {
+        "label": "우선순위 조정",
+        "description": "특정 Phase나 작업의 우선순위를 변경합니다."
+      },
+      {
+        "label": "시간 제약",
+        "description": "각 작업의 예상 시간에 특별한 제약이 있습니다."
+      },
+      {
+        "label": "테스트 전략",
+        "description": "TDD를 원하거나 테스트 작성 방식에 선호가 있습니다."
+      },
+      {
+        "label": "없음 - 자동 생성",
+        "description": "spec과 plan만으로 충분합니다. 추가 입력 없이 진행합니다. (권장)"
+      }
+    ]
+  }]
+}
 ```
 
-### 8.2 Spec-Kit 명령 실행
+**사용자 선택에 따라:**
+
+### "특정 작업 포함" 선택 시:
+```
+어떤 작업을 추가로 포함하시겠습니까?
+예: "데이터베이스 마이그레이션 스크립트 작성", "CI/CD 파이프라인 설정"
+```
+
+사용자 입력을 ADDITIONAL_TASKS 변수에 저장
+
+### "특정 작업 제외" 선택 시:
+```
+어떤 작업을 제외하시겠습니까?
+예: "Docker 설정", "문서화 작업"
+```
+
+사용자 입력을 EXCLUDED_TASKS 변수에 저장
+
+### "우선순위 조정" 선택 시:
+```
+우선순위를 어떻게 조정하시겠습니까?
+예: "Phase 2를 Phase 1보다 먼저", "User Story 3를 가장 먼저"
+```
+
+사용자 입력을 PRIORITY_CHANGES 변수에 저장
+
+### "시간 제약" 선택 시:
+```
+시간 제약 사항을 알려주세요.
+예: "각 작업은 2시간 이내", "전체 구현은 1주일 이내"
+```
+
+사용자 입력을 TIME_CONSTRAINTS 변수에 저장
+
+### "테스트 전략" 선택 시:
+```
+테스트 전략 선호를 알려주세요.
+예: "TDD 방식으로 테스트 먼저 작성", "각 Phase별 통합 테스트 포함"
+```
+
+사용자 입력을 TEST_STRATEGY 변수에 저장
+
+### "없음 - 자동 생성" 선택 시:
+
+즉시 Step 5로 진행 (추가 컨텍스트 없음)
+
+## Step 5: CLI 호출 및 자동 작업 생성
+
+### 5.1 컨텍스트 준비
+
+Step 4에서 수집한 정보를 준비:
+
+**언어 변수** (Step 4.1에서 설정):
+- `$LANGUAGE`: "ko", "en", "ja" 등
+
+**추가 컨텍스트 변수**:
+
+```
+CONTEXT=""
+
+if ADDITIONAL_TASKS exists:
+    CONTEXT += "Include these additional tasks: $ADDITIONAL_TASKS\n"
+
+if EXCLUDED_TASKS exists:
+    CONTEXT += "Exclude these tasks: $EXCLUDED_TASKS\n"
+
+if PRIORITY_CHANGES exists:
+    CONTEXT += "Priority adjustments: $PRIORITY_CHANGES\n"
+
+if TIME_CONSTRAINTS exists:
+    CONTEXT += "Time constraints: $TIME_CONSTRAINTS\n"
+
+if TEST_STRATEGY exists:
+    CONTEXT += "Test strategy: $TEST_STRATEGY\n"
+
+if CONTEXT is empty:
+    CONTEXT = "Auto-generate from spec.md and plan.md without additional context."
+```
+
+### 5.2 Spec-Kit CLI 명령 실행
 
 **⚠️ CRITICAL - MUST USE SLASHCOMMAND TOOL**:
 
 You **MUST** now use the **SlashCommand tool** to execute the `/speckit.tasks` command. This is a required step - do not skip it!
 
-Call the SlashCommand tool with the following command parameter (replace $CURRENT_BRANCH with the actual branch name):
+Call the SlashCommand tool with the following command parameter (replace $LANGUAGE and $CONTEXT with actual values):
 
 ```
-/speckit.tasks INSTRUCTION: This command is being called from /spec-kit:tasks plugin. Current branch is "$CURRENT_BRANCH" and draft at "specs/$CURRENT_BRANCH/drafts/tasks-draft.md". Read draft. Draft contains ALL tasks broken down by phase with descriptions, acceptance criteria, dependencies, and estimates. Skip information collection and breakdown steps (Step 3-7) and proceed directly to writing tasks file. **CRITICAL - MUST FOLLOW:** 1. LANGUAGE: Process ALL content in user's system language. 2. ASKUSERQUESTION: Use AskUserQuestion tool if clarification needed. 3. FILE WRITE: Write to "specs/$CURRENT_BRANCH/tasks.md" with complete task breakdown structure.
+/speckit.tasks INSTRUCTION: This command is being called from /spec-kit:tasks plugin. Execute task generation with provided context. LANGUAGE: Process ALL content in $LANGUAGE. ASKUSERQUESTION: Use AskUserQuestion tool if clarification needed. $CONTEXT
 ```
 
-The spec-kit command will read the draft file and create/update the `specs/$CURRENT_BRANCH/tasks.md` file.
+**Example:**
+```
+/speckit.tasks INSTRUCTION: This command is being called from /spec-kit:tasks plugin. Execute task generation with provided context. LANGUAGE: Process ALL content in ko. ASKUSERQUESTION: Use AskUserQuestion tool if clarification needed. 테스트 우선 개발 적용
+```
 
-**토큰 절약 효과:**
-- 긴 텍스트를 명령어 인자로 전달하지 않음
-- 파일 경로만 전달하여 효율적
-- Draft 파일로 디버깅 및 재사용 가능
+The spec-kit CLI command will automatically read spec.md and plan.md, parse them, and generate tasks.md.
 
 ## Next Steps
 
@@ -410,5 +422,7 @@ AskUserQuestion 도구를 사용하여 사용자에게 다음 작업을 물어�
 
 **참고**:
 - 작업 분해로 모호한 계획이 명확한 실행 단계가 됩니다
-- 우리 플러그인(/spec-kit:tasks)은 정보 수집 역할
-- 실제 파일 생성은 spec-kit 명령어(/speckit.tasks)가 담당
+- 우리 플러그인(/spec-kit:tasks)은 **사전 검증 및 추가 컨텍스트 수집** 역할
+- 실제 파일 생성 및 자동 파싱은 spec-kit 명령어(/speckit.tasks)가 담당
+- CLI가 spec.md와 plan.md를 직접 읽고 파싱하여 작업 자동 생성
+- 토큰 효율성 극대화: 중복 질문 제거, draft 파일 불필요

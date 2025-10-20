@@ -92,7 +92,7 @@ process.stdin.on('end', () => {
       }
     }
     const config = loadPluginConfig(projectDir);
-    const reportPath = path.join(projectDir, `.${PROJECT_NAME}-pair-programming-session.md`);
+    const reportPath = path.join(projectDir, `.pair-programming-session.md`);
 
     const now = new Date();
     const timestamp = now.toISOString().replace('T', ' ').substring(0, 19);
