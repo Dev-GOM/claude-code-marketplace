@@ -104,7 +104,7 @@ function hasChanges() {
 function backup() {
   // Check if requireGitRepo is enabled
   if (config.requireGitRepo !== false && !isGitRepo()) {
-    if (config.showLogs !== false) {
+    if (config.showLogs === true) {
       console.log(JSON.stringify({
         systemMessage: 'ℹ️ Git Auto-Backup: Not a git repository, skipping backup',
         continue: true
@@ -115,7 +115,7 @@ function backup() {
 
   // Check if commitOnlyIfChanges is enabled
   if (config.commitOnlyIfChanges !== false && !hasChanges()) {
-    if (config.showLogs !== false) {
+    if (config.showLogs === true) {
       console.log(JSON.stringify({
         systemMessage: '✓ Git Auto-Backup: No changes to commit',
         continue: true
@@ -150,7 +150,7 @@ function backup() {
     }).trim();
 
     // Output success (only if showLogs is true)
-    if (config.showLogs !== false) {
+    if (config.showLogs === true) {
       console.log(JSON.stringify({
         systemMessage: `✓ Git Auto-Backup: Changes committed successfully (${commitHash})`,
         continue: true
@@ -159,7 +159,7 @@ function backup() {
 
   } catch (error) {
     // Output error (only if showLogs is true)
-    if (config.showLogs !== false) {
+    if (config.showLogs === true) {
       console.log(JSON.stringify({
         systemMessage: `⚠️ Git Auto-Backup failed: ${error.message}`,
         continue: true

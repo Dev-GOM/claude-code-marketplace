@@ -147,7 +147,7 @@ process.stdin.on('end', () => {
     fs.writeFileSync(stateFile, JSON.stringify(resetState, null, 2));
 
     // Output summary message only if showLogs is true
-    if (config.showLogs !== false) {
+    if (config.showLogs === true) {
       const output = {
         systemMessage: [
           '',

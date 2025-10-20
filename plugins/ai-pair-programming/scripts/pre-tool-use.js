@@ -71,7 +71,7 @@ process.stdin.on('end', () => {
 
     // Warn if significant changes haven't been reviewed (only if showLogs is true)
     if (state.fileChanges >= 3 || timeSinceLastReview >= tenMinutes) {
-      if (config.showLogs !== false) {
+      if (config.showLogs === true) {
         const output = {
           systemMessage: [
             '',

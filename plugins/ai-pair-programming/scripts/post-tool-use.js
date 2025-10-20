@@ -98,7 +98,7 @@ process.stdin.on('end', () => {
       fs.writeFileSync(stateFile, JSON.stringify(state, null, 2));
 
       // Output suggestion to trigger review (only if showLogs is true)
-      if (config.showLogs !== false) {
+      if (config.showLogs === true) {
         const output = {
           systemMessage: [
             '',

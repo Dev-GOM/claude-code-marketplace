@@ -2,7 +2,7 @@
   "description": "Tracks all file operations during a Claude Code session and generates a summary report",
   "version": "1.1.1",
   "author": "Dev GOM",
-  "lastUpdated": "2025-10-14",
+  "lastUpdated": "2025-10-20",
   "hooks": {
     "SessionStart": [
       {

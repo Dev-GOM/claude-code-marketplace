@@ -2,7 +2,7 @@
   "description": "AI Pair Programming Suite - Intelligent code review, bug hunting, and real-time programming assistance with slash commands, expert agents, and intelligent hooks",
   "version": "1.1.1",
   "author": "Dev GOM",
-  "lastUpdated": "2025-10-16",
+  "lastUpdated": "2025-10-20",
   "hooks": {
     "SessionStart": [
       {

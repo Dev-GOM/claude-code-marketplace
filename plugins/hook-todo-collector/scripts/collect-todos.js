@@ -309,7 +309,7 @@ function performFullScan(reportPath) {
   saveTodoState(newState);
 
   // Output message (if showLogs is enabled)
-  if (config.showLogs !== false) {
+  if (config.showLogs === true) {
     const message = `📋 TODO Collector: Full project scan completed. Found ${allTodos.length} TODO(s).`;
     console.log(JSON.stringify({
       systemMessage: message,
@@ -656,7 +656,7 @@ function main() {
   }
 
   // Generate message for user (only when there are changes and showLogs is true)
-  if (config.showLogs !== false) {
+  if (config.showLogs === true) {
     const parts = [];
     if (changes.added.length > 0) parts.push(`${changes.added.length} added ✅`);
     if (changes.removed.length > 0) parts.push(`${changes.removed.length} removed ❌`);
