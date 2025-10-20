@@ -478,11 +478,23 @@ MIT License - [LICENSE](LICENSE) 파일 참조.
 
 ---
 
-**버전**: 2.0.4
-**최종 업데이트**: 2025-10-19
+**버전**: 2.2.0
+**최종 업데이트**: 2025-10-20
 **상태**: 베타
 
 ## 변경 이력
+
+### v2.2.0 (2025-10-20)
+- ✨ **SlashCommand 도구 통합**: 8개 커맨드 파일 모두에서 SlashCommand 도구를 명시적으로 사용하도록 개선 (중요 경고 추가)
+- 🚀 **Git 설정 워크플로우**: init 커맨드에 포괄적인 Git 설치 및 GitHub 설정 추가
+  - OS에 따라 Git 자동 감지 및 설치 (Windows/macOS/Linux)
+  - Git 사용자 정보 대화식 설정
+  - GitHub CLI 설치 및 인증
+  - `gh repo create --private`로 Private 리포지토리 생성
+- 📝 **Phase 기반 Draft 파일명**: implement 커맨드가 phase와 task ID를 포함한 draft 파일 생성
+  - 형식: `[phase]-[task-id]-[slug]-draft.md` (예: `p2-t010-currency-draft.md`)
+  - 크로스 플랫폼 호환성을 위한 영문 전용 slug 생성
+  - 더 나은 파일 구성 및 작업 추적
 
 ### v2.0.4 (2025-10-19)
 - 🐛 **버그 수정**: SlashCommand 형식 수정 - 8개 명령어 파일 모두에서 명령어와 INSTRUCTION을 한 줄로 통합

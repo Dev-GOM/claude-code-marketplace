@@ -478,11 +478,23 @@ MIT License - see [LICENSE](LICENSE) file.
 
 ---
 
-**Version**: 2.0.4
-**Last Updated**: 2025-10-19
+**Version**: 2.2.0
+**Last Updated**: 2025-10-20
 **Status**: Beta
 
 ## Changelog
+
+### v2.2.0 (2025-10-20)
+- ✨ **SlashCommand Tool Integration**: Enhanced all 8 command files to explicitly use SlashCommand tool with critical warnings
+- 🚀 **Git Setup Workflow**: Added comprehensive Git installation and GitHub setup to init command
+  - Auto-detects and installs Git based on OS (Windows/macOS/Linux)
+  - Configures Git user information interactively
+  - GitHub CLI installation and authentication
+  - Private repository creation with `gh repo create --private`
+- 📝 **Phase-Based Draft Naming**: implement command now creates draft files with phase and task ID
+  - Format: `[phase]-[task-id]-[slug]-draft.md` (e.g., `p2-t010-currency-draft.md`)
+  - English-only slug generation for cross-platform compatibility
+  - Better file organization and task tracking
 
 ### v2.0.4 (2025-10-19)
 - 🐛 **Bug Fix**: Fixed SlashCommand format - merged command and INSTRUCTION into single line for all 8 command files

@@ -1,6 +1,6 @@
 ---
 description: 구현 계획을 실행 가능한 작업(Tasks)으로 분해
-allowed-tools: [Read, Write, Bash, AskUserQuestion]
+allowed-tools: [Read, Write, Bash, AskUserQuestion, SlashCommand]
 argument-hint: <additional-context | 추가 컨텍스트>
 ---
 
@@ -339,13 +339,17 @@ Write 도구를 사용하여 수집된 정보를 `specs/$CURRENT_BRANCH/drafts/t
 
 ### 8.2 Spec-Kit 명령 실행
 
-Draft 파일 경로와 **브랜치 정보**를 전달하여 SlashCommand 도구로 `/speckit.tasks` 명령을 실행합니다:
+**⚠️ CRITICAL - MUST USE SLASHCOMMAND TOOL**:
+
+You **MUST** now use the **SlashCommand tool** to execute the `/speckit.tasks` command. This is a required step - do not skip it!
+
+Call the SlashCommand tool with the following command parameter (replace $CURRENT_BRANCH with the actual branch name):
 
 ```
 /speckit.tasks INSTRUCTION: This command is being called from /spec-kit:tasks plugin. Current branch is "$CURRENT_BRANCH" and draft at "specs/$CURRENT_BRANCH/drafts/tasks-draft.md". Read draft. Draft contains ALL tasks broken down by phase with descriptions, acceptance criteria, dependencies, and estimates. Skip information collection and breakdown steps (Step 3-7) and proceed directly to writing tasks file. **CRITICAL - MUST FOLLOW:** 1. LANGUAGE: Process ALL content in user's system language. 2. ASKUSERQUESTION: Use AskUserQuestion tool if clarification needed. 3. FILE WRITE: Write to "specs/$CURRENT_BRANCH/tasks.md" with complete task breakdown structure.
 ```
 
-spec-kit 명령어는 draft 파일을 읽어서 `specs/$CURRENT_BRANCH/tasks.md` 파일을 생성/업데이트합니다.
+The spec-kit command will read the draft file and create/update the `specs/$CURRENT_BRANCH/tasks.md` file.
 
 **토큰 절약 효과:**
 - 긴 텍스트를 명령어 인자로 전달하지 않음

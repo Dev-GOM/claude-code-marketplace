@@ -1,6 +1,6 @@
 ---
 description: 기능 명세(Specification) 작성 - WHAT을 정의
-allowed-tools: [Read, Write, Bash, AskUserQuestion]
+allowed-tools: [Read, Write, Bash, AskUserQuestion, SlashCommand]
 argument-hint: <feature-description | 기능 설명>
 ---
 
@@ -572,13 +572,17 @@ Write 도구를 사용하여 수집된 정보를 `specs/.temp/drafts/specificati
 
 ### 8.2 Spec-Kit 명령 실행
 
-Draft 파일 경로를 전달하여 SlashCommand 도구로 `/speckit.specify` 명령을 실행합니다:
+**⚠️ CRITICAL - MUST USE SLASHCOMMAND TOOL**:
+
+You **MUST** now use the **SlashCommand tool** to execute the `/speckit.specify` command. This is a required step - do not skip it!
+
+Call the SlashCommand tool with the following command parameter:
 
 ```
 /speckit.specify INSTRUCTION: This command is being called from /spec-kit:specify plugin. Read draft at "specs/.temp/drafts/specification-draft.md". Draft contains: Feature Description, Short Name, ALL spec info. Execute PowerShell script with Short Name to create branch. Write spec to new branch. **CRITICAL - MUST FOLLOW:** 1. LANGUAGE: Process ALL content in user's system language. 2. DRAFT MANAGEMENT: After branch creation, MOVE draft from "specs/.temp/drafts/specification-draft.md" to "specs/[NEW_BRANCH]/drafts/specification-draft.md" (MANDATORY). 3. ASKUSERQUESTION: Use AskUserQuestion tool if clarification needed.
 ```
 
-spec-kit 명령어는 draft 파일을 읽어서 새 브랜치를 생성하고 spec 파일을 작성합니다.
+The spec-kit command will read the draft file, create a new branch, and write the spec file.
 
 **토큰 절약 효과:**
 - 긴 텍스트를 명령어 인자로 전달하지 않음
