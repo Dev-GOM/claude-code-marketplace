@@ -1,6 +1,6 @@
 # Claude Code Plugins
 
-> **Version**: 2.2.0 | **Last Updated**: 2025-10-20
+> **Version**: 2.3.0 | **Last Updated**: 2025-10-21
 >
 > **Language**: [English](README.md) | [한국어](README.ko.md)
 
@@ -8,6 +8,27 @@
 <summary><strong>📋 Changelog</strong> (Click to expand)</summary>
 
 ### Spec-Kit Integration
+
+#### v2.3.0 (2025-10-21)
+- 🚀 **Token Efficiency Optimization**: Completely redesigned `/spec-kit:tasks` command workflow
+  - Removed redundant information collection (Step 4-7) - CLI now auto-parses spec.md and plan.md directly
+  - Eliminated draft file requirement - CLI reads source documents directly
+  - Reduced code from 415 lines to ~270 lines (35% reduction)
+  - Plugin now focuses only on pre-validation and collecting additional context
+  - **Token savings**: ~50% reduction by eliminating duplicate questions
+  - **User experience**: Minimal questions (only additional context if needed)
+- 🎯 **CLI Auto-Generation**: Full utilization of GitHub Spec-Kit CLI's automatic parsing capabilities
+  - CLI automatically extracts user stories, priorities, and acceptance criteria from spec.md
+  - CLI automatically extracts tech stack, libraries, and implementation strategy from plan.md
+  - Automatic task generation organized by user story phases (P1, P2, P3...)
+  - Automatic dependency mapping and parallel execution identification
+- ✨ **Optional Context Collection**: Users can now choose to:
+  - Include specific additional tasks
+  - Exclude certain tasks
+  - Adjust priorities
+  - Specify time constraints
+  - Define test strategy preferences
+  - Or simply auto-generate without additional input (recommended)
 
 #### v2.2.0 (2025-10-20)
 - ✨ **SlashCommand Tool Integration**: Enhanced all 8 command files to explicitly use SlashCommand tool with critical warnings
