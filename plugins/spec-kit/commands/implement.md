@@ -413,7 +413,8 @@ mkdir -p "specs/$CURRENT_BRANCH/drafts"
 Write 도구를 사용하여 수집된 정보를 **생성한 파일명**으로 저장합니다:
 
 ```
-파일 경로: specs/$CURRENT_BRANCH/drafts/task-[번호]-[slug]-draft.md
+파일 경로: specs/$CURRENT_BRANCH/drafts/[phase]-[task-id]-[slug]-draft.md
+예시: specs/$CURRENT_BRANCH/drafts/p2-t010-currency-draft.md
 ```
 
 ```markdown
