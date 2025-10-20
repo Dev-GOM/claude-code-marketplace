@@ -5,41 +5,52 @@ const path = require('path');
 
 const projectRoot = process.cwd();
 
-// Load configuration from hooks.json
-function loadConfiguration() {
+/**
+ * Validate and fix config values
+ */
+function validateConfig(config) {
+  // Ensure trackedTools is an array
+  if (config.trackedTools && !Array.isArray(config.trackedTools)) {
+    config.trackedTools = [config.trackedTools];
+  }
+
+  return config;
+}
+
+// Load configuration from .plugin-config (project root)
+// init-config.js (SessionStart hook) should have created this file
+function loadPluginConfig() {
+  const configPath = path.join(projectRoot, '.plugin-config', 'hook-session-summary.json');
+
+  let config;
   try {
-    const hooksConfigPath = path.join(__dirname, '../hooks/hooks.json');
-    const hooksConfig = JSON.parse(fs.readFileSync(hooksConfigPath, 'utf8'));
-    return hooksConfig.configuration || {};
-  } catch (error) {
-    return {};
-  }
-}
-
-const config = loadConfiguration();
-
-// Output directory (priority: config > plugin env > global env > default)
-const OUTPUT_DIR = config.outputDirectory
-  || process.env.SESSION_SUMMARY_DIR
-  || process.env.CLAUDE_PLUGIN_OUTPUT_DIR
-  || '';
-
-// Helper to get full path with output directory
-function getOutputPath(filename) {
-  if (OUTPUT_DIR) {
-    const fullDir = path.isAbsolute(OUTPUT_DIR)
-      ? OUTPUT_DIR
-      : path.join(projectRoot, OUTPUT_DIR);
-
-    // Create directory if it doesn't exist
-    if (!fs.existsSync(fullDir)) {
-      fs.mkdirSync(fullDir, { recursive: true });
+    if (fs.existsSync(configPath)) {
+      config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+      return validateConfig(config);
     }
-
-    return path.join(fullDir, filename);
+  } catch (error) {
+    // Fall through to return minimal defaults
   }
-  return path.join(projectRoot, filename);
+
+  // Full fallback config - init-config.js should have created this,
+  // but provide complete defaults to ensure plugin works properly
+  return {
+    showLogs: false,
+    outputDirectory: '',
+    outputFile: '.session-summary.md',
+    includeTimestamp: true,
+    trackedTools: ['Write', 'Edit', 'Read', 'NotebookEdit'],
+    operationPriority: ['Created', 'Updated', 'Modified', 'Read'],
+    treeVisualization: true,
+    statistics: {
+      totalFiles: true,
+      byOperationType: true,
+      byFileExtension: false
+    }
+  };
 }
+
+const config = loadPluginConfig();
 
 // Project name for file naming (current directory name)
 const PROJECT_NAME = path.basename(projectRoot);
@@ -108,6 +119,14 @@ function extractFileOperation(hookInput, existingOperations) {
 
   const toolName = hookInput.tool_name;
   const params = hookInput.tool_input;
+
+  // Check if this tool should be tracked
+  const trackedTools = config.trackedTools || ['Write', 'Edit', 'Read', 'NotebookEdit'];
+  const normalizedToolName = toolName.charAt(0).toUpperCase() + toolName.slice(1).toLowerCase();
+
+  if (!trackedTools.includes(normalizedToolName)) {
+    return null; // Tool not in tracked list
+  }
 
   let filePath = null;
   let operation = null;

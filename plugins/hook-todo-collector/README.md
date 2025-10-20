@@ -6,30 +6,47 @@ Tracks TODO comments in modified files and detects changes during your Claude Co
 
 ## Features
 
-- 🔍 Tracks TODO-style comments in files you modify
-- 📊 Supports multiple comment types: TODO, FIXME, HACK, BUG, XXX, NOTE
-- 🌐 Works with multiple programming languages (JS, TS, Python, Java, Go, C++, etc.)
-- 📝 Generates detailed markdown report: `.todos-report.md` with clickable file links
-- 📂 Groups by comment type and file
-- 🔄 Detects added and removed TODOs automatically
-- ⚡ Only scans files you've modified (performance optimized)
-- 🚫 Automatically excludes `node_modules`, `dist`, `build`, and other common directories
+- 🔍 **Full Project Scan**: Automatically scans entire project on first run
+- 📊 **Multiple Comment Types**: Supports TODO, FIXME, HACK, BUG, XXX, NOTE
+- 🌐 **Multi-Language Support**: Works with JS, TS, Python, Java, Go, C++, Rust, and more
+- 📝 **Detailed Reports**: Generates markdown reports with clickable file links
+- 📂 **Smart Grouping**: Groups by comment type and file
+- 🔄 **Change Detection**: Tracks added and removed TODOs automatically
+- ⚡ **Performance Optimized**: Only scans modified files after initial scan
+- 🎯 **Customizable Filtering**: Configure included directories and file extensions
+- 🚫 **Smart Exclusions**: Automatically excludes node_modules, dist, build, etc.
 
 ## How it Works
 
-This plugin uses **two hooks** for intelligent TODO tracking:
+This plugin uses **three hooks** for intelligent TODO tracking:
+
+### SessionStart Hook (`init-config.js`)
+Runs at session start:
+1. Reads plugin version from `plugin.json`
+2. Checks if configuration file exists at `.plugin-config/hook-todo-collector.json`
+3. If config exists, compares `_pluginVersion` with current plugin version
+4. If versions match, exits immediately (fast!)
+5. If versions differ, performs automatic migration:
+   - Merges existing user settings with new default fields
+   - Preserves all custom user configurations
+   - Updates `_pluginVersion` to current version
+6. If config doesn't exist, creates it with default settings
 
 ### PostToolUse Hook (`track-todos.js`)
 Runs after Write, Edit, or NotebookEdit operations:
 1. Captures the file path that was modified
-2. Records it in a tracking file (`.state/todo-changed-files.json`)
-3. Only tracks files with valid extensions for TODO scanning
+2. Checks if file is in included directories (if specified)
+3. Checks if file has valid extension for TODO scanning
+4. Records it in a tracking file (`.state/todo-changed-files.json`)
 
 ### Stop Hook (`collect-todos.js`)
 Runs when your Claude Code session ends:
 1. Loads the list of files modified during the session
-2. If no files were modified, exits silently (no scan needed)
-3. Scans only the modified files for TODO-style comments
+2. If no files were modified:
+   - Checks if report file exists
+   - If report doesn't exist: performs **full project scan**
+   - If report exists: exits silently
+3. If files were modified: scans only those files
 4. Compares with previous TODO state to detect changes
 5. Identifies which TODOs were added or removed
 6. Updates the TODO state and generates report
@@ -118,65 +135,84 @@ FIXME (src/handlers.js:67): Memory leak in event handler
 
 ## Configuration
 
-You can configure the plugin's behavior in the `configuration` section of `hooks/hooks.json`.
+The plugin automatically creates a configuration file at `.plugin-config/hook-todo-collector.json` on first run.
+
+### Automatic Configuration Migration
+
+When you update the plugin, your settings are automatically migrated:
+- ✅ **Preserves your custom settings**
+- ✅ **Adds new configuration fields** with default values
+- ✅ **Version tracked** via `_pluginVersion` field
+- ✅ **Zero manual intervention** required
 
 ### Available Configuration Options
+
+#### `showLogs`
+- **Description**: Show TODO collector messages in console
+- **Default**: `true`
+- **Example**: `false` (silent mode)
 
 #### `outputDirectory`
 - **Description**: Directory path to save report files
 - **Default**: `""` (project root)
 - **Example**: `"docs"`, `".claude-output"`
 
+#### `outputFile`
+- **Description**: Output filename for TODO report
+- **Default**: `""` (uses `.{project-name}-todos-report.md`)
+- **Example**: `"todo-report.md"`, `"todos.md"`
+
+#### `includeDirs`
+- **Description**: List of directories to scan (empty = scan all)
+- **Default**: `[]` (scan entire project)
+- **Example**: `["src", "lib", "components"]` (scan only these directories)
+
+#### `excludeDirs`
+- **Description**: List of directories to exclude from scanning
+- **Default**: `["node_modules", "dist", "build", ".git", "coverage", ".next", ".nuxt", "out", "vendor", ".snapshots", ".claude-plugin"]`
+- **Example**: Add more directories to exclude
+
+#### `includeExtensions`
+- **Description**: List of file extensions to scan
+- **Default**: `[".js", ".jsx", ".ts", ".tsx", ".py", ".java", ".go", ".rb", ".php", ".c", ".cpp", ".h", ".hpp", ".cs", ".kt", ".kts", ".swift", ".rs", ".scala", ".dart", ".m", ".mm", ".css", ".scss", ".sass", ".less", ".html", ".vue", ".svelte", ".r", ".R", ".jl", ".coffee", ".sh", ".bash", ".ps1", ".toml", ".ini", ".yaml", ".yml"]`
+- **Example**: `[".js", ".ts", ".py"]` (scan only these file types)
+
+#### `excludeExtensions`
+- **Description**: List of file extensions to exclude from scanning
+- **Default**: `[]` (no exclusions)
+- **Example**: `[".min.js", ".bundle.js", ".map"]` (exclude minified and map files)
+
 #### `commentTypes`
 - **Description**: List of comment types to search for
 - **Default**: `["TODO", "FIXME", "HACK", "BUG", "XXX", "NOTE"]`
 - **Example**: `["TODO", "FIXME", "IMPORTANT", "REVIEW"]`
 
-#### `outputFormats`
-- **Description**: List of report files to generate
-- **Default**: `[".todos-report.md", ".todos.txt"]`
-- **Example**: `[".todos-report.md"]` (markdown only)
-
-#### `supportedExtensions`
-- **Description**: List of file extensions to scan
-- **Default**: `[".js", ".jsx", ".ts", ".tsx", ".py", ".java", ".go", ".c", ".cpp", ".rs", ".rb", ".php", ".swift"]`
-- **Example**: Add/remove extensions from the array
-
-#### `excludeDirs`
-- **Description**: List of directories to exclude from scanning
-- **Default**: `["node_modules", "dist", "build", ".git", "coverage", ".next"]`
-- **Example**: Add directories to the array
-
 ### How to Change Settings
 
-Edit the `plugins/hook-todo-collector/hooks/hooks.json` file:
+Edit `.plugin-config/hook-todo-collector.json` in your project root:
 
 ```json
 {
-  "hooks": { ... },
-  "configuration": {
-    "outputDirectory": "",
-    "commentTypes": ["TODO", "FIXME", "HACK", "BUG", "XXX", "NOTE", "IMPORTANT"],
-    "outputFormats": [".todos-report.md", ".todos.txt"],
-    "supportedExtensions": [
-      ".js", ".jsx", ".ts", ".tsx",
-      ".py", ".java", ".go", ".c", ".cpp",
-      ".rs", ".rb", ".php", ".swift",
-      ".kt", ".scala"
-    ],
-    "excludeDirs": [
-      "node_modules", "dist", "build",
-      ".git", "coverage", ".next",
-      "vendor", "target"
-    ]
-  }
+  "showLogs": true,
+  "outputDirectory": "",
+  "includeDirs": ["src", "lib"],
+  "excludeDirs": [
+    "node_modules", "dist", "build", ".git",
+    "coverage", ".next", "vendor", "target"
+  ],
+  "includeExtensions": [
+    ".js", ".jsx", ".ts", ".tsx",
+    ".py", ".java", ".go", ".rs"
+  ],
+  "excludeExtensions": [".min.js", ".bundle.js", ".map"],
+  "commentTypes": ["TODO", "FIXME", "HACK", "BUG", "XXX", "NOTE"]
 }
 ```
 
 ### Configuration Priority
 
 The `outputDirectory` is determined in this order:
-1. `configuration.outputDirectory` in `hooks.json`
+1. `outputDirectory` in `.plugin-config/hook-todo-collector.json`
 2. Environment variable `TODO_COLLECTOR_DIR`
 3. Environment variable `CLAUDE_PLUGIN_OUTPUT_DIR`
 4. Default (project root)
@@ -267,8 +303,10 @@ Use consistent TODO patterns:
 - **Stop** - Scans tracked files and generates report
 
 ### State Files
-- `.state/todo-changed-files.json` - Tracks files modified during session
-- `.state/todo-state.json` - Stores previous TODO state for change detection
+- `.state/${PROJECT_NAME}-todo-changed-files.json` - Tracks files modified during session
+- `.state/${PROJECT_NAME}-todo-state.json` - Stores previous TODO state for change detection
+
+**Note**: State files are project-scoped using the project directory name to prevent conflicts across multiple projects.
 
 ### Dependencies
 - Node.js
@@ -287,9 +325,21 @@ Contributions welcome! Ideas:
 
 ## Version
 
-**Current Version**: 1.1.1
+**Current Version**: 1.2.0
 
 ## Changelog
+
+### v1.2.0 (2025-10-20)
+- 🐛 **Bug Fix**: Improved full scan logic - immediately scan when report file is missing
+- 🔄 **Auto Migration**: Plugin version-based configuration migration
+- 📦 **Smart Updates**: Preserves user settings while adding new fields
+- 🏷️ **Project Scoping**: State files now use project name to prevent conflicts
+- ⚡ **Performance**: SessionStart hook exits immediately if config is up-to-date
+- 🌍 **Cross-Platform**: Enhanced path handling for Windows/macOS/Linux compatibility
+- 🎯 **SessionStart Hook**: Auto-creates configuration file on session start
+- ⚙️ **Custom Filtering**: Added `includeDirs` and `includeExtensions` settings
+- 🔍 **Full Project Scan**: Automatically scans entire project on first run
+- 🔧 **Configuration Refactor**: Moved settings to `.plugin-config/hook-todo-collector.json`
 
 ### v1.1.1 (2025-10-18)
 - Fixed empty array handling for `outputFormats` configuration

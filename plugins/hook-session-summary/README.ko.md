@@ -15,7 +15,14 @@
 
 ## How it Works
 
-이 플러그인은 **2단계 추적 방식**을 사용하여 최대 안정성을 보장합니다:
+이 플러그인은 **3단계 추적 방식**을 사용하여 최대 안정성을 보장합니다:
+
+### 0단계: 설정 초기화 (SessionStart Hook)
+- 세션 시작 시 실행
+- `plugin.json`에서 플러그인 버전 읽기
+- `.plugin-config/hook-session-summary.json`에 설정 파일이 있는지 확인
+- 버전이 다른 경우 자동 마이그레이션 수행
+- 설정 파일이 없으면 기본 설정으로 생성
 
 ### 1단계: 실시간 추적 (PostToolUse Hook)
 - `Write`, `Edit`, `Read`, `NotebookEdit` 작업 후마다 실행
@@ -81,9 +88,22 @@ claude-code-marketplace/
 
 ## 환경 설정
 
-플러그인의 동작은 `hooks/hooks.json` 파일의 `configuration` 섹션에서 설정할 수 있습니다.
+플러그인은 첫 실행 시 `.plugin-config/hook-session-summary.json`에 설정 파일을 자동으로 생성합니다.
+
+### 자동 설정 마이그레이션
+
+플러그인을 업데이트하면 설정이 자동으로 마이그레이션됩니다:
+- ✅ **사용자 설정 보존**
+- ✅ **새 설정 필드 자동 추가** (기본값 사용)
+- ✅ **버전 추적** (`_pluginVersion` 필드)
+- ✅ **수동 작업 불필요**
 
 ### 사용 가능한 설정 옵션
+
+#### `showLogs`
+- **설명**: 콘솔에 세션 요약 메시지 표시
+- **기본값**: `false`
+- **예시**: `true` (파일 추적 확인 메시지 표시)
 
 #### `outputDirectory`
 - **설명**: 요약 파일을 저장할 디렉토리 경로
@@ -126,45 +146,21 @@ claude-code-marketplace/
 
 ### 설정 변경 방법
 
-`plugins/hook-session-summary/hooks/hooks.json` 파일을 편집하세요:
+`.plugin-config/hook-session-summary.json` 파일을 편집하세요:
 
 ```json
 {
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Write|Edit|Read|NotebookEdit",
-        "hooks": [
-          {
-            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/track-operation.js",
-            "timeout": 5000
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/session-summary.js",
-            "timeout": 10000
-          }
-        ]
-      }
-    ]
-  },
-  "configuration": {
-    "outputDirectory": ".claude-sessions",
-    "outputFile": ".session-summary.md",
-    "trackedTools": ["Write", "Edit", "Read", "NotebookEdit"],
-    "operationPriority": ["Write", "Edit", "Read"],
-    "includeTimestamp": true,
-    "treeVisualization": true,
-    "statistics": {
-      "totalFiles": true,
-      "byOperationType": true,
-      "byFileExtension": false
-    }
+  "showLogs": false,
+  "outputDirectory": ".claude-sessions",
+  "outputFile": ".session-summary.md",
+  "trackedTools": ["Write", "Edit", "Read", "NotebookEdit"],
+  "operationPriority": ["Write", "Edit", "Read"],
+  "includeTimestamp": true,
+  "treeVisualization": true,
+  "statistics": {
+    "totalFiles": true,
+    "byOperationType": true,
+    "byFileExtension": false
   }
 }
 ```
@@ -172,7 +168,7 @@ claude-code-marketplace/
 ### 설정 우선순위
 
 `outputDirectory`는 다음 순서로 결정됩니다:
-1. `hooks.json`의 `configuration.outputDirectory`
+1. `.plugin-config/hook-session-summary.json`의 `outputDirectory`
 2. 환경 변수 `SESSION_SUMMARY_DIR`
 3. 환경 변수 `CLAUDE_PLUGIN_OUTPUT_DIR`
 4. 기본값 (프로젝트 루트)
@@ -229,12 +225,14 @@ claude-code-marketplace/
 - `NotebookEdit` - Jupyter notebook 셀 수정
 
 ### 스크립트 위치
-- `plugins/hook-session-summary/scripts/track-operation.js` - 실시간 추적
-- `plugins/hook-session-summary/scripts/session-summary.js` - 요약 생성
+- `~/.claude/plugins/marketplaces/dev-gom-plugins/plugins/hook-session-summary/scripts/init-config.js` - 설정 초기화
+- `~/.claude/plugins/marketplaces/dev-gom-plugins/plugins/hook-session-summary/scripts/track-operation.js` - 실시간 추적
+- `~/.claude/plugins/marketplaces/dev-gom-plugins/plugins/hook-session-summary/scripts/session-summary.js` - 요약 생성
 
 ### Hook 타입
-- `PostToolUse` - 파일 작업을 실시간으로 추적
-- `Stop` - 세션 종료 시 요약 생성
+- **SessionStart** - 세션 시작 시 설정 초기화
+- **PostToolUse** - 파일 작업을 실시간으로 추적
+- **Stop** - 세션 종료 시 요약 생성
 
 ### 의존성
 - Node.js
@@ -343,6 +341,23 @@ cat .session-operations.json
 - 여러 세션에 걸친 추세 분석
 - HTML 리포트 생성
 - 자동 커밋 메시지 제안
+
+## 버전
+
+**현재 버전**: 1.1.1
+
+## 변경 이력
+
+### v1.1.1 (2025-10-20)
+- 🔄 **자동 마이그레이션**: 플러그인 버전 기반 설정 마이그레이션
+- 📦 **스마트 업데이트**: 사용자 설정 보존하면서 새 필드 추가
+- 🏷️ **프로젝트 스코핑**: 출력 파일이 프로젝트 이름을 사용하여 충돌 방지
+- 🎯 **SessionStart Hook**: 세션 시작 시 설정 파일 자동 생성
+- ⚡ **성능**: 설정이 최신 상태면 SessionStart 훅이 즉시 종료
+- 🌍 **크로스 플랫폼**: Windows/macOS/Linux 호환성을 위한 경로 처리 개선
+
+### v1.0.0
+- 최초 릴리스
 
 ## Contributing
 

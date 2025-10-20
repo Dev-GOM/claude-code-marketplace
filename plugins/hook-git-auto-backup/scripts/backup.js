@@ -53,7 +53,10 @@ function loadPluginConfig() {
 
   // Create default config if it doesn't exist
   const defaultConfig = {
-    showLogs: false
+    showLogs: false,  
+    requireGitRepo: true,
+    commitOnlyIfChanges: true,
+    includeTimestamp: true
   };
 
   try {
@@ -99,7 +102,8 @@ function hasChanges() {
 
 // Main backup function
 function backup() {
-  if (!isGitRepo()) {
+  // Check if requireGitRepo is enabled
+  if (config.requireGitRepo !== false && !isGitRepo()) {
     if (config.showLogs !== false) {
       console.log(JSON.stringify({
         systemMessage: 'ℹ️ Git Auto-Backup: Not a git repository, skipping backup',
@@ -109,7 +113,8 @@ function backup() {
     return;
   }
 
-  if (!hasChanges()) {
+  // Check if commitOnlyIfChanges is enabled
+  if (config.commitOnlyIfChanges !== false && !hasChanges()) {
     if (config.showLogs !== false) {
       console.log(JSON.stringify({
         systemMessage: '✓ Git Auto-Backup: No changes to commit',
@@ -120,16 +125,18 @@ function backup() {
   }
 
   try {
-    // Get current timestamp
-    const timestamp = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
+    // Get current timestamp (only if includeTimestamp is enabled)
+    const timestamp = config.includeTimestamp !== false
+      ? new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
+      : '';
 
     // Add all changes
     execSync('git add -A', { cwd: projectRoot, stdio: 'pipe' });
 
-    // Create commit
-    const commitMessage = `Auto-backup: ${timestamp}
-
-🤖 Generated with Claude Code Auto-Backup Plugin`;
+    // Create commit message
+    const commitMessage = timestamp
+      ? `Auto-backup: ${timestamp}\n\n🤖 Generated with Claude Code Auto-Backup Plugin`
+      : `Auto-backup\n\n🤖 Generated with Claude Code Auto-Backup Plugin`;
 
     execSync(`git commit -m "${commitMessage}"`, {
       cwd: projectRoot,

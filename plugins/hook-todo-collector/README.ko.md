@@ -17,7 +17,19 @@
 
 ## 동작 원리
 
-이 플러그인은 **두 개의 hook**을 사용하여 지능적으로 TODO를 추적합니다:
+이 플러그인은 **세 개의 hook**을 사용하여 지능적으로 TODO를 추적합니다:
+
+### SessionStart Hook (`init-config.js`)
+세션 시작 시 실행:
+1. `plugin.json`에서 플러그인 버전 읽기
+2. `.plugin-config/hook-todo-collector.json` 설정 파일 존재 확인
+3. 설정 파일이 있으면 `_pluginVersion`과 현재 플러그인 버전 비교
+4. 버전이 일치하면 즉시 종료 (빠름!)
+5. 버전이 다르면 자동 마이그레이션 수행:
+   - 기존 사용자 설정과 새 기본 필드 병합
+   - 모든 사용자 커스텀 설정 보존
+   - `_pluginVersion`을 현재 버전으로 업데이트
+6. 설정 파일이 없으면 기본 설정으로 생성
 
 ### PostToolUse Hook (`track-todos.js`)
 Write, Edit, NotebookEdit 작업 후 실행:
@@ -117,58 +129,84 @@ FIXME (src/handlers.js:67): 이벤트 핸들러의 메모리 누수
 
 ## 환경 설정
 
-플러그인의 동작은 `hooks/hooks.json` 파일의 `configuration` 섹션에서 설정할 수 있습니다.
+플러그인은 첫 실행 시 `.plugin-config/hook-todo-collector.json`에 설정 파일을 자동으로 생성합니다.
+
+### 자동 설정 마이그레이션
+
+플러그인을 업데이트하면 설정이 자동으로 마이그레이션됩니다:
+- ✅ **사용자 설정 보존**
+- ✅ **새 설정 필드 자동 추가** (기본값 사용)
+- ✅ **버전 추적** (`_pluginVersion` 필드)
+- ✅ **수동 작업 불필요**
 
 ### 사용 가능한 설정 옵션
+
+#### `showLogs`
+- **설명**: 콘솔에 TODO 수집 메시지 표시
+- **기본값**: `true`
+- **예시**: `false` (무음 모드)
 
 #### `outputDirectory`
 - **설명**: 리포트 파일을 저장할 디렉토리 경로
 - **기본값**: `""` (프로젝트 루트)
 - **예시**: `"docs"`, `".claude-output"`
 
+#### `outputFile`
+- **설명**: TODO 리포트 출력 파일명
+- **기본값**: `""` (`.{프로젝트명}-todos-report.md` 사용)
+- **예시**: `"todo-report.md"`, `"todos.md"`
+
+#### `includeDirs`
+- **설명**: 스캔할 디렉토리 목록 (비어있으면 전체 스캔)
+- **기본값**: `[]` (전체 프로젝트 스캔)
+- **예시**: `["src", "lib", "components"]` (이 디렉토리들만 스캔)
+
+#### `excludeDirs`
+- **설명**: 스캔에서 제외할 디렉토리 목록
+- **기본값**: `["node_modules", "dist", "build", ".git", "coverage", ".next", ".nuxt", "out", "vendor", ".snapshots", ".claude-plugin"]`
+- **예시**: 제외할 디렉토리 추가
+
+#### `includeExtensions`
+- **설명**: 스캔할 파일 확장자 목록
+- **기본값**: `[".js", ".jsx", ".ts", ".tsx", ".py", ".java", ".go", ".rb", ".php", ".c", ".cpp", ".h", ".hpp", ".cs", ".kt", ".kts", ".swift", ".rs", ".scala", ".dart", ".m", ".mm", ".css", ".scss", ".sass", ".less", ".html", ".vue", ".svelte", ".r", ".R", ".jl", ".coffee", ".sh", ".bash", ".ps1", ".toml", ".ini", ".yaml", ".yml"]`
+- **예시**: `[".js", ".ts", ".py"]` (이 파일 타입만 스캔)
+
+#### `excludeExtensions`
+- **설명**: 스캔에서 제외할 파일 확장자 목록
+- **기본값**: `[]` (제외 없음)
+- **예시**: `[".min.js", ".bundle.js", ".map"]` (압축 파일 및 맵 파일 제외)
+
 #### `commentTypes`
 - **설명**: 검색할 코멘트 타입 목록
 - **기본값**: `["TODO", "FIXME", "HACK", "BUG", "XXX", "NOTE"]`
 - **예시**: `["TODO", "FIXME", "IMPORTANT", "REVIEW"]`
 
-#### `outputFormats`
-- **설명**: 생성할 리포트 파일 목록
-- **기본값**: `[".todos-report.md", ".todos.txt"]`
-- **예시**: `[".todos-report.md"]` (마크다운만)
-
-#### `supportedExtensions`
-- **설명**: 스캔할 파일 확장자 목록
-- **기본값**: `[".js", ".jsx", ".ts", ".tsx", ".py", ".java", ".go", ".c", ".cpp", ".rs", ".rb", ".php", ".swift"]`
-- **예시**: 배열에 확장자 추가/제거
-
-#### `excludeDirs`
-- **설명**: 스캔에서 제외할 디렉토리 목록
-- **기본값**: `["node_modules", "dist", "build", ".git", "coverage", ".next"]`
-- **예시**: 배열에 디렉토리 추가
-
 ### 설정 변경 방법
 
-`plugins/hook-todo-collector/hooks/hooks.json` 파일을 편집하세요:
+`.plugin-config/hook-todo-collector.json` 파일을 프로젝트 루트에서 편집하세요:
 
 ```json
 {
-  "hooks": { ... },
-  "configuration": {
-    "outputDirectory": "",
-    "commentTypes": ["TODO", "FIXME", "HACK", "BUG", "XXX", "NOTE", "IMPORTANT"],
-    "outputFormats": [".todos-report.md", ".todos.txt"],
-    "supportedExtensions": [
-      ".js", ".jsx", ".ts", ".tsx",
-      ".py", ".java", ".go", ".c", ".cpp",
-      ".rs", ".rb", ".php", ".swift",
-      ".kt", ".scala"
-    ],
-    "excludeDirs": [
-      "node_modules", "dist", "build",
-      ".git", "coverage", ".next",
-      "vendor", "target"
-    ]
-  }
+  "showLogs": false,
+  "outputDirectory": "docs",
+  "outputFile": "todos.md",
+  "includeDirs": ["src", "lib"],
+  "excludeDirs": [
+    "node_modules",
+    ".git",
+    "dist",
+    "build",
+    "coverage",
+    ".next",
+    ".nuxt",
+    "out",
+    "vendor",
+    ".snapshots",
+    ".claude-plugin"
+  ],
+  "includeExtensions": [".js", ".ts", ".py"],
+  "excludeExtensions": [".min.js", ".bundle.js"],
+  "commentTypes": ["TODO", "FIXME", "HACK", "BUG", "XXX", "NOTE"]
 }
 ```
 
@@ -286,9 +324,21 @@ TODO를 검토하고 처리할 시간을 정기적으로 가지세요:
 
 ## 버전
 
-**현재 버전**: 1.1.1
+**현재 버전**: 1.2.0
 
 ## 변경 이력
+
+### v1.2.0 (2025-10-20)
+- 🐛 **버그 수정**: 전체 스캔 로직 개선 - 리포트 파일이 없을 때 즉시 스캔
+- 🔄 **자동 마이그레이션**: 플러그인 버전 기반 설정 자동 마이그레이션
+- 📦 **스마트 업데이트**: 새 필드 추가 시 사용자 설정 보존
+- 🏷️ **프로젝트 스코핑**: 프로젝트명 기반 state 파일로 충돌 방지
+- ⚡ **성능**: 설정이 최신이면 SessionStart 훅 즉시 종료
+- 🌍 **크로스 플랫폼**: Windows/macOS/Linux 경로 처리 개선
+- 🎯 **SessionStart Hook**: 세션 시작 시 설정 파일 자동 생성
+- ⚙️ **커스텀 필터링**: `includeDirs`와 `includeExtensions` 설정 추가
+- 🔍 **전체 프로젝트 스캔**: 첫 실행 시 자동으로 전체 프로젝트 스캔
+- 🔧 **설정 리팩토링**: `.plugin-config/hook-todo-collector.json`으로 설정 이동
 
 ### v1.1.1 (2025-10-18)
 - `outputFormats` 설정의 빈 배열 처리 버그 수정

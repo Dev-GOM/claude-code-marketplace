@@ -15,7 +15,14 @@
 
 ## 동작 원리
 
-이 플러그인은 **2단계 추적 방식**을 사용합니다:
+이 플러그인은 **3단계 추적 방식**을 사용합니다:
+
+### 0단계: 설정 초기화 (SessionStart Hook)
+- 세션 시작 시 실행
+- `plugin.json`에서 플러그인 버전 읽기
+- `.plugin-config/hook-auto-docs.json`에 설정 파일이 있는지 확인
+- 버전이 다른 경우 자동 마이그레이션 수행
+- 설정 파일이 없으면 기본 설정으로 생성
 
 ### 1단계: 실시간 파일 변경 추적 (PostToolUse Hook)
 - `Write` 작업 후마다 실행
@@ -103,14 +110,32 @@ claude-code-marketplace/
 
 ## 환경 설정
 
-플러그인의 동작은 `hooks/hooks.json` 파일의 `configuration` 섹션에서 설정할 수 있습니다.
+플러그인은 첫 실행 시 `.plugin-config/hook-auto-docs.json`에 설정 파일을 자동으로 생성합니다.
+
+### 자동 설정 마이그레이션
+
+플러그인을 업데이트하면 설정이 자동으로 마이그레이션됩니다:
+- ✅ **사용자 설정 보존**
+- ✅ **새 설정 필드 자동 추가** (기본값 사용)
+- ✅ **버전 추적** (`_pluginVersion` 필드)
+- ✅ **수동 작업 불필요**
 
 ### 사용 가능한 설정 옵션
+
+#### `showLogs`
+- **설명**: 콘솔에 문서 생성 메시지 표시
+- **기본값**: `false`
+- **예시**: `true` (파일 추적 확인 메시지 표시)
 
 #### `outputDirectory`
 - **설명**: 생성된 문서를 저장할 디렉토리 경로
 - **기본값**: `""` (프로젝트 루트)
 - **예시**: `"docs"`, `".claude-output"`
+
+#### `outputFile`
+- **설명**: 프로젝트 구조 문서 출력 파일명
+- **기본값**: `""` (`.{프로젝트명}-project-structure.md` 사용)
+- **예시**: `"project-structure.md"`, `"structure.md"`
 
 #### `includeDirs`
 - **설명**: 스캔할 특정 디렉토리 목록 (비어있으면 전체 프로젝트 스캔)
@@ -139,32 +164,32 @@ claude-code-marketplace/
 
 ### 설정 변경 방법
 
-`plugins/hook-auto-docs/hooks/hooks.json` 파일을 편집하세요:
+`.plugin-config/hook-auto-docs.json` 파일을 편집하세요:
 
 ```json
 {
-  "hooks": { ... },
-  "configuration": {
-    "outputDirectory": "docs",
-    "includeDirs": ["src", "lib"],
-    "excludeDirs": [
-      "node_modules",
-      ".git",
-      "dist",
-      "build",
-      "coverage",
-      ".next",
-      "out",
-      ".nuxt",
-      "vendor",
-      ".vscode",
-      ".idea",
-      "tmp",
-      "cache"
-    ],
-    "includeExtensions": [],
-    "excludeExtensions": [".meta", ".log", ".tmp"]
-  }
+  "showLogs": false,
+  "outputDirectory": "docs",
+  "outputFile": "project-structure.md",
+  "includeDirs": ["src", "lib"],
+  "excludeDirs": [
+    "node_modules",
+    ".git",
+    "dist",
+    "build",
+    "coverage",
+    ".next",
+    "out",
+    ".nuxt",
+    "vendor",
+    ".vscode",
+    ".idea",
+    "tmp",
+    "cache"
+  ],
+  "includeExtensions": [],
+  "excludeExtensions": [".meta", ".log", ".tmp"],
+  "includeEmptyDirs": true
 }
 ```
 
@@ -176,7 +201,7 @@ claude-code-marketplace/
 ### 설정 우선순위
 
 `outputDirectory`는 다음 순서로 결정됩니다:
-1. `hooks.json`의 `configuration.outputDirectory`
+1. `.plugin-config/hook-auto-docs.json`의 `outputDirectory`
 2. 환경 변수 `AUTO_DOCS_DIR`
 3. 환경 변수 `CLAUDE_PLUGIN_OUTPUT_DIR`
 4. 기본값 (프로젝트 루트)
@@ -239,12 +264,14 @@ claude-code-marketplace/
 ## 기술 세부사항
 
 ### 스크립트 위치
-- `plugins/hook-auto-docs/scripts/track-structure-changes.js` - 파일 변경 추적
-- `plugins/hook-auto-docs/scripts/update-structure-docs.js` - 구조 문서 생성
+- `~/.claude/plugins/marketplaces/dev-gom-plugins/plugins/hook-auto-docs/scripts/init-config.js` - 설정 초기화
+- `~/.claude/plugins/marketplaces/dev-gom-plugins/plugins/hook-auto-docs/scripts/track-structure-changes.js` - 파일 변경 추적
+- `~/.claude/plugins/marketplaces/dev-gom-plugins/plugins/hook-auto-docs/scripts/update-structure-docs.js` - 구조 문서 생성
 
 ### Hook 타입
-- `PostToolUse` - Write 작업 후 파일 변경 추적
-- `Stop` - 세션 종료 시 구조 문서 생성
+- **SessionStart** - 세션 시작 시 설정 초기화
+- **PostToolUse** - Write 작업 후 파일 변경 추적
+- **Stop** - 세션 종료 시 구조 문서 생성
 
 ### 의존성
 - Node.js
@@ -256,9 +283,18 @@ claude-code-marketplace/
 
 ## 버전
 
-**현재 버전**: 1.4.0
+**현재 버전**: 1.4.1
 
 ## 변경 이력
+
+### v1.4.1 (2025-10-20)
+- ✨ **개선**: 여러 디렉토리 포함 시 통합된 트리 구조로 표시
+- 🐛 **버그 수정**: 출력 파일 삭제 시 문서 재생성
+- 🔄 **자동 마이그레이션**: 플러그인 버전 기반 설정 마이그레이션
+- 📦 **스마트 업데이트**: 사용자 설정 보존하면서 새 필드 추가
+- 🎯 **SessionStart Hook**: 세션 시작 시 설정 파일 자동 생성
+- ⚡ **성능**: 설정이 최신 상태면 SessionStart 훅이 즉시 종료
+- 🌍 **크로스 플랫폼**: Windows/macOS/Linux 호환성을 위한 경로 처리 개선
 
 ### v1.4.0 (2025-10-18)
 - 빈 디렉토리 포함 여부를 제어하는 `includeEmptyDirs` 설정 옵션 추가

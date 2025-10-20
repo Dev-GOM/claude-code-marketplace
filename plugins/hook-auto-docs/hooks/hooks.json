@@ -1,13 +1,30 @@
 {
   "description": "Automatically updates project documentation based on code changes",
-  "version": "1.0.0",
+  "version": "1.4.1",
   "author": "Dev GOM",
   "lastUpdated": "2025-10-14",
   "hooks": {
+    "SessionStart": [
+      {
+        "description": "Initialize plugin configuration at session start",
+        "priority": 100,
+        "enabled": true,
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/init-config.js",
+            "description": "Creates default configuration file if it doesn't exist",
+            "timeout": 5000,
+            "continueOnError": true,
+            "suppressOutput": true
+          }
+        ]
+      }
+    ],
     "PostToolUse": [
       {
         "description": "Track file changes for structure documentation",
-        "matcher": "Write",
+        "matcher": "Write|Edit",
         "priority": 50,
         "enabled": true,
         "hooks": [
@@ -37,23 +54,6 @@
           }
         ]
       }
-    ]
-  },
-  "configuration": {
-    "outputDirectory": "",
-    "includeDirs": [],
-    "excludeDirs": [
-      "node_modules",
-      ".git",
-      "dist",
-      "build",
-      "coverage",
-      ".next",
-      "out",
-      ".nuxt",
-      "vendor",
-      ".vscode",
-      ".idea"
     ]
   }
 }

@@ -1,9 +1,26 @@
 {
   "description": "AI Pair Programming Suite - Intelligent code review, bug hunting, and real-time programming assistance with slash commands, expert agents, and intelligent hooks",
-  "version": "1.0.0",
+  "version": "1.1.1",
   "author": "Dev GOM",
   "lastUpdated": "2025-10-16",
   "hooks": {
+    "SessionStart": [
+      {
+        "description": "Initialize plugin configuration at session start",
+        "priority": 100,
+        "enabled": true,
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/init-config.js",
+            "description": "Creates default configuration file if it doesn't exist",
+            "timeout": 5000,
+            "continueOnError": true,
+            "suppressOutput": true
+          }
+        ]
+      }
+    ],
     "PostToolUse": [
       {
         "description": "Track code changes and suggest review after significant modifications",

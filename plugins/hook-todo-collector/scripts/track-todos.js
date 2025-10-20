@@ -5,41 +5,51 @@ const path = require('path');
 
 const projectRoot = process.cwd();
 
-// Load configuration from hooks.json
-function loadConfiguration() {
+// Load configuration from .plugin-config (project root)
+function loadPluginConfig() {
+  const configPath = path.join(projectRoot, '.plugin-config', 'hook-todo-collector.json');
+
   try {
-    const hooksConfigPath = path.join(__dirname, '../hooks/hooks.json');
-    const hooksConfig = JSON.parse(fs.readFileSync(hooksConfigPath, 'utf8'));
-    return hooksConfig.configuration || {};
-  } catch (error) {
-    return {};
-  }
-}
-
-const config = loadConfiguration();
-
-// Output directory (priority: config > plugin env > global env > default)
-const OUTPUT_DIR = config.outputDirectory
-  || process.env.TODO_COLLECTOR_DIR
-  || process.env.CLAUDE_PLUGIN_OUTPUT_DIR
-  || '';
-
-// Helper to get full path with output directory
-function getOutputPath(filename) {
-  if (OUTPUT_DIR) {
-    const fullDir = path.isAbsolute(OUTPUT_DIR)
-      ? OUTPUT_DIR
-      : path.join(projectRoot, OUTPUT_DIR);
-
-    // Create directory if it doesn't exist
-    if (!fs.existsSync(fullDir)) {
-      fs.mkdirSync(fullDir, { recursive: true });
+    if (fs.existsSync(configPath)) {
+      return JSON.parse(fs.readFileSync(configPath, 'utf8'));
     }
-
-    return path.join(fullDir, filename);
+  } catch (error) {
+    // Fall through to return default config
   }
-  return path.join(projectRoot, filename);
+
+  // Return default config if file doesn't exist (init-config.js should create it)
+  return {
+    showLogs: false,
+    outputDirectory: '',
+    outputFile: '',
+    includeDirs: [],
+    excludeDirs: [
+      'node_modules', '.git', 'dist', 'build', 'coverage',
+      '.next', '.nuxt', 'out', 'vendor', '.snapshots', '.claude-plugin'
+    ],
+    includeExtensions: [
+      '.js', '.jsx', '.ts', '.tsx',
+      '.py', '.java', '.go', '.rb', '.php',
+      '.c', '.cpp', '.h', '.hpp',
+      '.cs',
+      '.kt', '.kts',
+      '.swift',
+      '.rs',
+      '.scala',
+      '.dart',
+      '.m', '.mm',
+      '.css', '.scss', '.sass', '.less',
+      '.html', '.vue', '.svelte',
+      '.r', '.R', '.jl', '.coffee',
+      '.sh', '.bash', '.ps1',
+      '.toml', '.ini', '.yaml', '.yml'
+    ],
+    excludeExtensions: [],
+    commentTypes: ['TODO', 'FIXME', 'HACK', 'BUG', 'XXX', 'NOTE']
+  };
 }
+
+const config = loadPluginConfig();
 
 // Project name for file naming (current directory name)
 const PROJECT_NAME = path.basename(projectRoot);
@@ -53,19 +63,24 @@ if (!fs.existsSync(PLUGIN_STATE_DIR)) {
   fs.mkdirSync(PLUGIN_STATE_DIR, { recursive: true });
 }
 
-// File extensions to track (from config or defaults)
-const EXTENSIONS = config.supportedExtensions || [
-  '.js', '.jsx', '.ts', '.tsx',
-  '.py', '.java', '.go', '.rb', '.php',
-  '.c', '.cpp', '.h', '.hpp',
-  '.cs', '.kt', '.kts', '.swift', '.rs',
-  '.scala', '.dart', '.m', '.mm',
-  '.css', '.scss', '.sass', '.less',
-  '.html', '.vue', '.svelte',
-  '.r', '.R', '.jl', '.coffee',
-  '.sh', '.bash', '.ps1',
-  '.toml', '.ini', '.yaml', '.yml'
-];
+// Directories to include (empty array = include all)
+const INCLUDED_DIRS = config.includeDirs || [];
+
+// File extensions to include (if specified, only these will be included)
+const INCLUDE_EXTENSIONS = config.includeExtensions && config.includeExtensions.length > 0
+  ? config.includeExtensions
+  : [
+      '.js', '.jsx', '.ts', '.tsx',
+      '.py', '.java', '.go', '.rb', '.php',
+      '.c', '.cpp', '.h', '.hpp', '.cs',
+      '.kt', '.kts', '.swift', '.rs', '.scala', '.dart',
+      '.m', '.mm', '.css', '.scss', '.sass', '.less',
+      '.html', '.vue', '.svelte', '.r', '.R', '.jl', '.coffee',
+      '.sh', '.bash', '.ps1', '.toml', '.ini', '.yaml', '.yml'
+    ];
+
+// File extensions to exclude from scanning
+const EXCLUDE_EXTENSIONS = config.excludeExtensions || [];
 
 /**
  * Read Hook Input from stdin
@@ -132,7 +147,19 @@ function hasValidExtension(filePath) {
     return true;
   }
 
-  return EXTENSIONS.includes(ext);
+  // First, check if file is in include list (same as auto-docs logic)
+  if (INCLUDE_EXTENSIONS && INCLUDE_EXTENSIONS.length > 0) {
+    if (!INCLUDE_EXTENSIONS.includes(ext)) {
+      return false; // Not in include list - exclude
+    }
+  }
+
+  // Then, check if file is in exclude list
+  if (EXCLUDE_EXTENSIONS.includes(ext)) {
+    return false; // In exclude list - exclude
+  }
+
+  return true; // Include the file
 }
 
 /**
@@ -179,6 +206,20 @@ async function main() {
   // Check if file has valid extension for TODO scanning
   if (!hasValidExtension(filePath)) {
     return;
+  }
+
+  // Check if file is in includeDirs (if specified)
+  if (INCLUDED_DIRS.length > 0) {
+    const relPath = path.relative(projectRoot, filePath);
+    const isInIncludedDir = INCLUDED_DIRS.some(dir => {
+      const normalizedDir = dir.replace(/\\/g, '/');
+      const normalizedRelPath = relPath.replace(/\\/g, '/');
+      return normalizedRelPath.startsWith(normalizedDir);
+    });
+
+    if (!isInIncludedDir) {
+      return;
+    }
   }
 
   // Load existing changed files

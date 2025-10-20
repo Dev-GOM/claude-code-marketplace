@@ -1,6 +1,6 @@
 # Claude Code Plugins
 
-> **Version**: 2.0.4 | **Last Updated**: 2025-10-19
+> **Version**: 2.1.0 | **Last Updated**: 2025-10-20
 >
 > **Language**: [English](README.md) | [한국어](README.ko.md)
 
@@ -93,6 +93,14 @@
 
 ### AI Pair Programming Suite
 
+#### v1.1.1 (2025-10-20)
+- 🔄 **Auto Migration**: Plugin version-based configuration migration
+- 📦 **Smart Updates**: Preserves user settings while adding new fields
+- 🏷️ **Project Scoping**: State and output files now use project name to prevent conflicts
+- 🎯 **SessionStart Hook**: Auto-creates configuration file on session start
+- ⚡ **Performance**: SessionStart hook exits immediately if config is up-to-date
+- 🌍 **Cross-Platform**: Enhanced path handling for Windows/macOS/Linux compatibility
+
 #### v1.0.0 (2025-10-15)
 - 🎉 Initial release
 - 💬 5 slash commands: `/pair`, `/review`, `/suggest`, `/fix`, `/explain`
@@ -103,6 +111,19 @@
 ---
 
 ### TODO Collector
+
+#### v1.2.0 (2025-10-20)
+- 🔄 **Auto Migration**: Plugin version-based configuration migration
+- 📦 **Smart Updates**: Preserves user settings while adding new fields
+- 🏷️ **Project Scoping**: State files now use project name to prevent conflicts
+- ⚡ **Performance**: SessionStart hook exits immediately if config is up-to-date
+- 🌍 **Cross-Platform**: Enhanced path handling for Windows/macOS/Linux compatibility
+- 🎯 **SessionStart Hook**: Auto-creates configuration file on session start
+- ⚙️ **Custom Filtering**: Added includeDirs and includeExtensions settings
+- 🔍 **Full Project Scan**: Automatically scans entire project on first run
+- 🔧 **Configuration Refactor**: Moved settings to `.plugin-config/hook-todo-collector.json`
+- 📝 **Bug Fix**: Fixed issue where report wasn't generated when no files were modified
+- 🐛 **Bug Fix**: Improved full scan logic - immediately scan when report file is missing
 
 #### v1.1.1 (2025-10-18)
 - 🐛 **Bug Fix**: Fixed empty array handling for `outputFormats` configuration
@@ -120,7 +141,17 @@
 
 ---
 
-### Hook Plugins (Git Auto-Backup, Complexity Monitor, Auto-Docs, Session Summary)
+### Hook Plugins (Git Auto-Backup, Complexity Monitor, Session Summary)
+
+#### v1.1.1 (2025-10-20) - All Hook Plugins
+- 🔄 **Auto Migration**: Plugin version-based configuration migration
+- 📦 **Smart Updates**: Preserves user settings while adding new fields
+- 🏷️ **Project Scoping**: State and output files now use project name to prevent conflicts
+- 🎯 **SessionStart Hook**: Auto-creates configuration file on session start
+- ⚡ **Performance**: SessionStart hook exits immediately if config is up-to-date
+- 🌍 **Cross-Platform**: Enhanced path handling for Windows/macOS/Linux compatibility
+- 🔍 **Complexity Monitor**: Added includeDirs, excludeDirs, includeExtensions, excludeExtensions settings for selective scanning
+- 🐛 **Bug Fix - Complexity Monitor v1.1.1**: Full project scan when complexity log file doesn't exist
 
 #### v1.1.0 (2025-10-18) - Complexity Monitor, Session Summary, TODO Collector
 - 📛 **Project-Named Output Files**: All generated files now include project name to prevent conflicts across multiple projects
@@ -140,6 +171,17 @@
 ---
 
 ### Auto-Docs
+
+#### v1.1.0 (2025-10-20)
+- ✨ **Improvement**: Unified tree structure when multiple directories are included
+- 🐛 **Bug Fix**: Regenerate documentation when output file is deleted
+
+#### v1.4.1 (2025-10-20)
+- 🔄 **Auto Migration**: Plugin version-based configuration migration
+- 📦 **Smart Updates**: Preserves user settings while adding new fields
+- 🎯 **SessionStart Hook**: Auto-creates configuration file on session start
+- ⚡ **Performance**: SessionStart hook exits immediately if config is up-to-date
+- 🌍 **Cross-Platform**: Enhanced path handling for Windows/macOS/Linux compatibility
 
 #### v1.4.0 (2025-10-18)
 - 📁 **Empty Directory Control**: Added `includeEmptyDirs` configuration option to control empty directory inclusion
@@ -198,7 +240,7 @@
 
 </details>
 
-> **⚠️ Important Notice (v2.0.17)**
+> **⚠️ Important Notice (>= v2.0.17)**
 > There is a known issue where hook logs stack in the chat window. Until this is resolved, PostToolUse hook outputs are hidden using `suppressOutput: true` in hooks.json. Stop hook messages can be controlled via `.plugin-config/[plugin-name].json` with `"showLogs": false` (default). Set to `true` to enable. See [Configuration](#configuration) for details.
 
 A collection of powerful productivity plugins for Claude Code to automate common development workflows.

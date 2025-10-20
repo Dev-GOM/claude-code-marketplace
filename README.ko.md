@@ -1,6 +1,6 @@
 # Claude Code 플러그인
 
-> **버전**: 2.0.4 | **최종 업데이트**: 2025-10-19
+> **버전**: 2.1.0 | **최종 업데이트**: 2025-10-20
 >
 > **언어**: [English](README.md) | [한국어](README.ko.md)
 
@@ -104,6 +104,19 @@
 
 ### TODO Collector
 
+#### v1.2.0 (2025-10-20)
+- 🔄 **자동 마이그레이션**: 플러그인 버전 기반 설정 마이그레이션
+- 📦 **스마트 업데이트**: 새 필드 추가 시 사용자 설정 보존
+- 🏷️ **프로젝트 범위**: 상태 파일에 프로젝트 이름 사용으로 충돌 방지
+- ⚡ **성능**: 설정이 최신 상태면 SessionStart hook 즉시 종료
+- 🌍 **크로스 플랫폼**: Windows/macOS/Linux 향상된 경로 처리
+- 🎯 **SessionStart Hook**: 세션 시작 시 설정 파일 자동 생성
+- ⚙️ **커스텀 필터링**: includeDirs 및 includeExtensions 설정 추가
+- 🔍 **전체 프로젝트 스캔**: 첫 실행 시 전체 프로젝트 자동 스캔
+- 🔧 **설정 리팩토링**: 설정을 `.plugin-config/hook-todo-collector.json`으로 이동
+- 📝 **버그 수정**: 파일 수정이 없을 때 리포트가 생성되지 않는 문제 수정
+- 🐛 **버그 수정**: 전체 스캔 로직 개선 - 리포트 파일이 없을 때 즉시 스캔
+
 #### v1.1.1 (2025-10-18)
 - 🐛 **버그 수정**: `outputFormats` 설정의 빈 배열 처리 수정
 
@@ -121,6 +134,16 @@
 ---
 
 ### 훅 플러그인들 (Git Auto-Backup, Complexity Monitor, Auto-Docs, Session Summary)
+
+#### v1.1.1 (2025-10-20) - 모든 훅 플러그인
+- 🔄 **자동 마이그레이션**: 플러그인 버전 기반 설정 마이그레이션
+- 📦 **스마트 업데이트**: 새 필드 추가 시 사용자 설정 보존
+- 🏷️ **프로젝트 범위**: 상태 및 출력 파일에 프로젝트 이름 사용으로 충돌 방지
+- 🎯 **SessionStart Hook**: 세션 시작 시 설정 파일 자동 생성
+- ⚡ **성능**: 설정이 최신 상태면 SessionStart hook 즉시 종료
+- 🌍 **크로스 플랫폼**: Windows/macOS/Linux 향상된 경로 처리
+- 🔍 **Complexity Monitor**: 선택적 스캔을 위한 includeDirs, excludeDirs, includeExtensions, excludeExtensions 설정 추가
+- 🐛 **버그 수정 - Complexity Monitor v1.1.1**: 복잡도 로그 파일이 없을 때 전체 프로젝트 스캔 수행
 
 #### v1.1.0 (2025-10-18) - Complexity Monitor, Session Summary, TODO Collector
 - 📛 **프로젝트명이 포함된 출력 파일**: 모든 생성 파일에 프로젝트 이름을 포함하여 여러 프로젝트 간 충돌 방지
@@ -140,6 +163,17 @@
 ---
 
 ### Auto-Docs
+
+#### v1.1.0 (2025-10-20)
+- ✨ **개선**: 여러 디렉토리 포함 시 통합된 트리 구조로 표시
+- 🐛 **버그 수정**: 출력 파일 삭제 시 문서 재생성
+
+#### v1.4.1 (2025-10-20)
+- 🔄 **자동 마이그레이션**: 플러그인 버전 기반 설정 마이그레이션
+- 📦 **스마트 업데이트**: 새 필드 추가 시 사용자 설정 보존
+- 🎯 **SessionStart Hook**: 세션 시작 시 설정 파일 자동 생성
+- ⚡ **성능**: 설정이 최신 상태면 SessionStart hook 즉시 종료
+- 🌍 **크로스 플랫폼**: Windows/macOS/Linux 향상된 경로 처리
 
 #### v1.4.0 (2025-10-18)
 - 📁 **빈 디렉토리 제어**: 빈 디렉토리 포함 여부를 제어하는 `includeEmptyDirs` 설정 옵션 추가
@@ -198,7 +232,7 @@
 
 </details>
 
-> **⚠️ 중요 공지 (v2.0.17)**
+> **⚠️ 중요 공지 (>= v2.0.17)**
 > 채팅창에 훅 로그가 계속 쌓이는 이슈가 있습니다. 이 문제가 해결될 때까지 hooks.json에서 `suppressOutput: true`를 사용하여 PostToolUse 훅 출력을 숨겼습니다. Stop 훅 메시지는 `.plugin-config/[plugin-name].json`의 `"showLogs": false`(기본값)로 제어됩니다. `true`로 설정하면 활성화됩니다. 자세한 내용은 [설정](#설정)을 참조하세요.
 
 일반적인 개발 워크플로우(Workflow)를 자동화하는 강력한 Claude Code 생산성 플러그인(Plugin) 모음입니다.
