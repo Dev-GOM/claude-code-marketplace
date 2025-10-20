@@ -8,6 +8,14 @@ All notable changes to the Dev GOM Plugins marketplace will be documented in thi
 
 ## Spec-Kit Integration
 
+### [2.3.1] - 2025-10-21
+
+#### Changed
+- Removed rigid AskUserQuestion JSON structures from tasks command
+- Claude now autonomously decides what questions to ask based on context
+- Improved user experience with more flexible conversation flow
+- Enhanced flexibility in Step 1 (Git changes), Step 2 (Update mode), and What's Next sections
+
 ### v2.3.0 (2025-10-21)
 - 🚀 **Token Efficiency Optimization**: Completely redesigned `/spec-kit:tasks` command workflow
   - Removed redundant information collection (Step 4-7) - CLI now auto-parses spec.md and plan.md directly
