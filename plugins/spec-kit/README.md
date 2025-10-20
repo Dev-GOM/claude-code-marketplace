@@ -478,11 +478,16 @@ MIT License - see [LICENSE](LICENSE) file.
 
 ---
 
-**Version**: 2.3.0
+**Version**: 2.3.1
 **Last Updated**: 2025-10-21
 **Status**: Beta
 
 ## Changelog
+
+### v2.3.1 (2025-10-21)
+- **Improved**: Removed rigid AskUserQuestion JSON structures from tasks command
+- **Enhanced**: Claude autonomously decides contextual questions
+- **Better UX**: More flexible and natural conversation flow
 
 ### v2.3.0 (2025-10-21)
 - 🚀 **Token Efficiency Optimization**: Completely redesigned `/spec-kit:tasks` command workflow

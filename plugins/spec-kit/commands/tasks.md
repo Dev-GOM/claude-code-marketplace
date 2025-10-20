@@ -52,79 +52,44 @@ git rev-parse --abbrev-ref @{upstream} 2>/dev/null
 
 ### 시나리오 B: 변경사항 있음 + Upstream 브랜치 없음 (미퍼블리쉬)
 
-브랜치가 아직 원격에 퍼블리쉬되지 않은 상태에서 변경사항이 있는 경우:
+브랜치가 아직 원격에 퍼블리쉬되지 않은 상태에서 변경사항이 있는 경우, AskUserQuestion 도구를 사용하여 사용자에게 Git 변경사항 처리 방법을 확인합니다.
 
-AskUserQuestion 도구를 사용하여 사용자에게 확인:
+**질문 가이드라인:**
+"현재 작업 디렉토리에 변경되지 않은 파일이 있고, 브랜치가 아직 퍼블리쉬되지 않았습니다. 어떻게 처리하시겠습니까?"
 
-```json
-{
-  "questions": [{
-    "question": "현재 작업 디렉토리에 변경되지 않은 파일이 있고, 브랜치가 아직 퍼블리쉬되지 않았습니다. 어떻게 처리하시겠습니까?",
-    "header": "Git 변경사항",
-    "multiSelect": false,
-    "options": [
-      {
-        "label": "퍼블리쉬 + 커밋",
-        "description": "현재 변경사항을 커밋하고 브랜치를 원격 저장소에 퍼블리쉬합니다. 팀과 공유하거나 백업이 필요한 경우 권장합니다."
-      },
-      {
-        "label": "로컬에만 커밋",
-        "description": "현재 변경사항을 커밋하지만 브랜치는 로컬에만 유지합니다. 아직 공유할 준비가 안 된 경우에 사용합니다."
-      },
-      {
-        "label": "나중에 결정",
-        "description": "작업 분해를 진행하고 나중에 모든 변경사항을 함께 처리합니다."
-      }
-    ]
-  }]
-}
-```
+**선택 가능한 옵션:**
 
-**사용자 선택에 따라 진행:**
-- **"퍼블리쉬 + 커밋"** 선택 시:
-  1. 사용자에게 커밋 메시지 요청
-  2. `git add -A && git commit -m "[메시지]"`
-  3. `git push -u origin [브랜치명]`
-  4. Step 2로 이동
-- **"로컬에만 커밋"** 선택 시:
-  1. 사용자에게 커밋 메시지 요청
-  2. `git add -A && git commit -m "[메시지]"`
-  3. Step 2로 이동
-- **"나중에 결정"** 선택 시: 즉시 Step 2로 이동
+1. **퍼블리쉬 + 커밋**
+   - 현재 변경사항을 커밋하고 브랜치를 원격 저장소에 퍼블리쉬
+   - 팀과 공유하거나 백업이 필요한 경우 권장
+   - 진행: 커밋 메시지 요청 → `git add -A && git commit -m "[메시지]"` → `git push -u origin [브랜치명]` → Step 2
+
+2. **로컬에만 커밋**
+   - 변경사항을 커밋하지만 브랜치는 로컬에만 유지
+   - 아직 공유할 준비가 안 된 경우 사용
+   - 진행: 커밋 메시지 요청 → `git add -A && git commit -m "[메시지]"` → Step 2
+
+3. **나중에 결정**
+   - 작업 분해를 진행하고 나중에 모든 변경사항을 함께 처리
+   - 진행: 즉시 Step 2로 이동
 
 ### 시나리오 C: 변경사항 있음 + Upstream 브랜치 있음 (이미 퍼블리쉬됨)
 
-브랜치가 이미 원격에 퍼블리쉬된 상태에서 변경사항이 있는 경우:
+브랜치가 이미 원격에 퍼블리쉬된 상태에서 변경사항이 있는 경우, AskUserQuestion 도구를 사용하여 사용자에게 Git 변경사항 처리 방법을 확인합니다.
 
-AskUserQuestion 도구를 사용하여 사용자에게 확인:
+**질문 가이드라인:**
+"현재 작업 디렉토리에 변경되지 않은 파일이 있습니다. 먼저 커밋하시겠습니까?"
 
-```json
-{
-  "questions": [{
-    "question": "현재 작업 디렉토리에 변경되지 않은 파일이 있습니다. 먼저 커밋하시겠습니까?",
-    "header": "Git 변경사항",
-    "multiSelect": false,
-    "options": [
-      {
-        "label": "커밋하기",
-        "description": "현재 변경사항을 커밋하고 원격 브랜치에 푸쉬합니다. 작업을 명확하게 분리할 수 있습니다."
-      },
-      {
-        "label": "나중에 결정",
-        "description": "작업 분해를 진행하고 나중에 모든 변경사항을 함께 커밋합니다."
-      }
-    ]
-  }]
-}
-```
+**선택 가능한 옵션:**
 
-**사용자 선택에 따라 진행:**
-- **"커밋하기"** 선택 시:
-  1. 사용자에게 커밋 메시지 요청
-  2. `git add -A && git commit -m "[메시지]"`
-  3. `git push`
-  4. Step 2로 이동
-- **"나중에 결정"** 선택 시: 즉시 Step 2로 이동
+1. **커밋하기**
+   - 현재 변경사항을 커밋하고 원격 브랜치에 푸쉬
+   - 작업을 명확하게 분리 가능
+   - 진행: 커밋 메시지 요청 → `git add -A && git commit -m "[메시지]"` → `git push` → Step 2
+
+2. **나중에 결정**
+   - 작업 분해를 진행하고 나중에 모든 변경사항을 함께 커밋
+   - 진행: 즉시 Step 2로 이동
 
 ---
 
@@ -139,31 +104,22 @@ cat "specs/$CURRENT_BRANCH/tasks.md"
 
 ### If File Exists - Choose Update Mode
 
-AskUserQuestion 도구를 사용하여 사용자에게 확인:
+기존 작업 목록 파일이 존재하는 경우, AskUserQuestion 도구를 사용하여 사용자에게 업데이트 방법을 확인합니다.
 
-```json
-{
-  "questions": [{
-    "question": "기존 작업 목록 파일이 존재합니다. 어떻게 업데이트하시겠습니까?",
-    "header": "업데이트 모드",
-    "multiSelect": false,
-    "options": [
-      {
-        "label": "완전 재생성 (Full Regeneration)",
-        "description": "처음부터 모든 정보를 다시 수집하여 새로 작성합니다. 계획이 크게 변경되어 작업 구조가 완전히 바뀌었을 때 추천합니다."
-      },
-      {
-        "label": "부분 업데이트 (Incremental Update)",
-        "description": "기존 작업 목록을 유지하고 변경/추가할 부분만 질문합니다. 특정 Phase에 새 작업 추가, 일부 작업의 수용 기준 변경 등 일부 내용만 업데이트할 때 추천합니다."
-      }
-    ]
-  }]
-}
-```
+**질문 가이드라인:**
+"기존 작업 목록 파일이 존재합니다. 어떻게 업데이트하시겠습니까?"
 
-**사용자 선택에 따라 진행:**
-- **"완전 재생성"** 선택 시 → Step 3부터 정상 진행 (완전 재작성)
-- **"부분 업데이트"** 선택 시 → 기존 작업 목록 표시 + "어떤 부분을 업데이트하시겠습니까?" 질문 + 변경사항만 수집 후 merge
+**선택 가능한 옵션:**
+
+1. **완전 재생성 (Full Regeneration)**
+   - 처음부터 모든 정보를 다시 수집하여 새로 작성
+   - 계획이 크게 변경되어 작업 구조가 완전히 바뀌었을 때 추천
+   - 진행: Step 3부터 정상 진행 (완전 재작성)
+
+2. **부분 업데이트 (Incremental Update)**
+   - 기존 작업 목록을 유지하고 변경/추가할 부분만 질문
+   - 특정 Phase에 새 작업 추가, 일부 작업의 수용 기준 변경 등 일부 내용만 업데이트할 때 추천
+   - 진행: 기존 작업 목록 표시 + "어떤 부분을 업데이트하시겠습니까?" 질문 + 변경사항만 수집 후 merge
 
 ### If File Not Exists
 
@@ -230,124 +186,45 @@ fi
 # 한글이 포함되어 있으면 "ko", 일본어면 "ja", 그 외 "en"
 ```
 
-### 4.2 추가 컨텍스트 질문
+### 4.2 추가 컨텍스트 수집 (선택적)
 
-AskUserQuestion 도구를 사용하여 사용자에게 확인:
+사용자에게 다음을 확인:
 
-```json
-{
-  "questions": [{
-    "question": "spec.md와 plan.md를 기반으로 작업을 자동 생성합니다. 추가로 고려할 사항이 있나요?",
-    "header": "추가 컨텍스트",
-    "multiSelect": true,
-    "options": [
-      {
-        "label": "특정 작업 포함",
-        "description": "자동 생성 외에 반드시 포함해야 할 작업이나 단계를 명시합니다."
-      },
-      {
-        "label": "특정 작업 제외",
-        "description": "생성 시 건너뛰어야 할 작업이나 단계를 명시합니다."
-      },
-      {
-        "label": "우선순위 조정",
-        "description": "특정 Phase나 작업의 우선순위를 변경합니다."
-      },
-      {
-        "label": "시간 제약",
-        "description": "각 작업의 예상 시간에 특별한 제약이 있습니다."
-      },
-      {
-        "label": "테스트 전략",
-        "description": "TDD를 원하거나 테스트 작성 방식에 선호가 있습니다."
-      },
-      {
-        "label": "없음 - 자동 생성",
-        "description": "spec과 plan만으로 충분합니다. 추가 입력 없이 진행합니다. (권장)"
-      }
-    ]
-  }]
-}
-```
+**"spec.md와 plan.md를 기반으로 작업을 자동 생성합니다. 추가로 고려할 사항이 있나요?"**
 
-**사용자 선택에 따라:**
+필요시 AskUserQuestion 도구를 사용하여 다음 항목들을 질문할 수 있습니다:
 
-### "특정 작업 포함" 선택 시:
-```
-어떤 작업을 추가로 포함하시겠습니까?
-예: "데이터베이스 마이그레이션 스크립트 작성", "CI/CD 파이프라인 설정"
-```
+- **특정 작업 포함**: 자동 생성 외에 반드시 포함해야 할 작업이나 단계
+  - 예: "데이터베이스 마이그레이션 스크립트", "CI/CD 파이프라인 설정"
 
-사용자 입력을 ADDITIONAL_TASKS 변수에 저장
+- **특정 작업 제외**: 생성 시 건너뛰어야 할 작업이나 단계
+  - 예: "Docker 설정", "문서화 작업"
 
-### "특정 작업 제외" 선택 시:
-```
-어떤 작업을 제외하시겠습니까?
-예: "Docker 설정", "문서화 작업"
-```
+- **우선순위 조정**: 특정 Phase나 작업의 우선순위 변경
+  - 예: "Phase 2를 Phase 1보다 먼저", "User Story 3를 가장 먼저"
 
-사용자 입력을 EXCLUDED_TASKS 변수에 저장
+- **시간 제약**: 각 작업의 예상 시간 제약
+  - 예: "각 작업은 2시간 이내", "전체 구현은 1주일 이내"
 
-### "우선순위 조정" 선택 시:
-```
-우선순위를 어떻게 조정하시겠습니까?
-예: "Phase 2를 Phase 1보다 먼저", "User Story 3를 가장 먼저"
-```
+- **테스트 전략**: TDD 또는 테스트 작성 방식 선호
+  - 예: "TDD 방식으로 테스트 먼저 작성", "각 Phase별 통합 테스트 포함"
 
-사용자 입력을 PRIORITY_CHANGES 변수에 저장
+- **없음 - 자동 생성** (권장): spec과 plan만으로 충분, 추가 입력 없이 진행
 
-### "시간 제약" 선택 시:
-```
-시간 제약 사항을 알려주세요.
-예: "각 작업은 2시간 이내", "전체 구현은 1주일 이내"
-```
-
-사용자 입력을 TIME_CONSTRAINTS 변수에 저장
-
-### "테스트 전략" 선택 시:
-```
-테스트 전략 선호를 알려주세요.
-예: "TDD 방식으로 테스트 먼저 작성", "각 Phase별 통합 테스트 포함"
-```
-
-사용자 입력을 TEST_STRATEGY 변수에 저장
-
-### "없음 - 자동 생성" 선택 시:
-
-즉시 Step 5로 진행 (추가 컨텍스트 없음)
+**사용자 응답을 수집하고 관련 정보를 CONTEXT 변수에 저장합니다.**
 
 ## Step 5: CLI 호출 및 자동 작업 생성
 
 ### 5.1 컨텍스트 준비
 
-Step 4에서 수집한 정보를 준비:
+Step 4에서 수집한 정보를 정리:
 
-**언어 변수** (Step 4.1에서 설정):
-- `$LANGUAGE`: "ko", "en", "ja" 등
+- **언어** (Step 4.1): 사용자 언어 코드 (예: "ko", "en", "ja")
+- **추가 컨텍스트** (Step 4.2): 사용자가 제공한 추가 요구사항이나 선호사항
 
-**추가 컨텍스트 변수**:
+수집한 정보를 자연스러운 문장으로 정리하여 CLI에 전달할 준비를 합니다.
 
-```
-CONTEXT=""
-
-if ADDITIONAL_TASKS exists:
-    CONTEXT += "Include these additional tasks: $ADDITIONAL_TASKS\n"
-
-if EXCLUDED_TASKS exists:
-    CONTEXT += "Exclude these tasks: $EXCLUDED_TASKS\n"
-
-if PRIORITY_CHANGES exists:
-    CONTEXT += "Priority adjustments: $PRIORITY_CHANGES\n"
-
-if TIME_CONSTRAINTS exists:
-    CONTEXT += "Time constraints: $TIME_CONSTRAINTS\n"
-
-if TEST_STRATEGY exists:
-    CONTEXT += "Test strategy: $TEST_STRATEGY\n"
-
-if CONTEXT is empty:
-    CONTEXT = "Auto-generate from spec.md and plan.md without additional context."
-```
+추가 컨텍스트가 없는 경우: "Auto-generate from spec.md and plan.md without additional context."
 
 ### 5.2 Spec-Kit CLI 명령 실행
 
@@ -377,46 +254,32 @@ The spec-kit CLI command will automatically read spec.md and plan.md, parse them
 
 ## What's Next?
 
-AskUserQuestion 도구를 사용하여 사용자에게 다음 작업을 물어봅니다:
+작업 분해가 완료되면, AskUserQuestion 도구를 사용하여 사용자에게 다음 작업을 확인합니다.
 
-```json
-{
-  "questions": [{
-    "question": "작업 분해가 완료되었습니다. 다음 단계로 무엇을 진행하시겠습니까?",
-    "header": "다음 단계",
-    "multiSelect": false,
-    "options": [
-      {
-        "label": "구현 시작 (/spec-kit:implement)",
-        "description": "작업 목록에 따라 실제 구현을 시작합니다. (권장 다음 단계)"
-      },
-      {
-        "label": "작업 목록 분석 (/spec-kit:analyze)",
-        "description": "구현 전에 작업 목록을 먼저 분석하고 검증합니다."
-      },
-      {
-        "label": "작업 목록 파일 검토",
-        "description": "생성된 specs/[브랜치]/tasks.md 파일을 먼저 검토하고 싶습니다."
-      },
-      {
-        "label": "다른 명령어 실행",
-        "description": "위 선택지에 없는 다른 spec-kit 명령어를 직접 입력하여 실행합니다."
-      },
-      {
-        "label": "작업 완료",
-        "description": "지금은 여기까지만 작업하겠습니다."
-      }
-    ]
-  }]
-}
-```
+**질문 가이드라인:**
+"작업 분해가 완료되었습니다. 다음 단계로 무엇을 진행하시겠습니까?"
 
-**사용자 선택에 따라:**
-- **구현 시작** 선택 시 → `/spec-kit:implement` 명령 실행 안내
-- **작업 목록 분석** 선택 시 → `/spec-kit:analyze` 명령 실행 안내
-- **작업 목록 파일 검토** 선택 시 → `cat "specs/$CURRENT_BRANCH/tasks.md"` 실행 후 다시 선택지 제공
-- **다른 명령어 실행** 선택 시 → 사용자가 원하는 명령어 입력 요청
-- **작업 완료** 선택 시 → 세션 종료
+**선택 가능한 옵션:**
+
+1. **구현 시작 (/spec-kit:implement)**
+   - 작업 목록에 따라 실제 구현을 시작 (권장 다음 단계)
+   - 진행: `/spec-kit:implement` 명령 실행 안내
+
+2. **작업 목록 분석 (/spec-kit:analyze)**
+   - 구현 전에 작업 목록을 먼저 분석하고 검증
+   - 진행: `/spec-kit:analyze` 명령 실행 안내
+
+3. **작업 목록 파일 검토**
+   - 생성된 specs/[브랜치]/tasks.md 파일을 먼저 검토
+   - 진행: `cat "specs/$CURRENT_BRANCH/tasks.md"` 실행 후 다시 선택지 제공
+
+4. **다른 명령어 실행**
+   - 위 선택지에 없는 다른 spec-kit 명령어를 직접 입력하여 실행
+   - 진행: 사용자가 원하는 명령어 입력 요청
+
+5. **작업 완료**
+   - 지금은 여기까지만 작업
+   - 진행: 세션 종료
 
 ---
 
