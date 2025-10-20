@@ -545,12 +545,12 @@ sudo apt install gh -y
 
 **Linux (Fedora):**
 ```bash
-sudo dnf install gh
+sudo dnf install gh -y
 ```
 
 **Linux (Arch):**
 ```bash
-sudo pacman -S github-cli
+sudo pacman -S github-cli --noconfirm
 ```
 
 설치 완료:
