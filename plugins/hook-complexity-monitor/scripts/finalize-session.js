@@ -510,7 +510,7 @@ function main() {
   const totalIssues = Object.values(mergedIssues).reduce((sum, issues) => sum + issues.length, 0);
 
   // Show logs only if showLogs is true
-  if (config.showLogs !== false) {
+  if (config.showLogs === true) {
     if (totalFiles > 0) {
       console.log(JSON.stringify({
         systemMessage: `📝 Complexity Monitor: ${totalFiles} file(s) with ${totalIssues} issue(s) tracked in ${LOG_FILE}`

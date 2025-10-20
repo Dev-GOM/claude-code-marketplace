@@ -429,7 +429,7 @@ function main() {
   }
 
   // Show logs only if showLogs is true
-  if (config.showLogs !== false) {
+  if (config.showLogs === true) {
     console.log(JSON.stringify({
       systemMessage: message,
       continue: true

@@ -141,7 +141,7 @@
 
 ---
 
-### Hook Plugins (Git Auto-Backup, Complexity Monitor, Session Summary)
+### Hook Plugins (All Hook Plugins)
 
 #### v1.1.1 (2025-10-20) - All Hook Plugins
 - 🔄 **Auto Migration**: Plugin version-based configuration migration
@@ -172,11 +172,9 @@
 
 ### Auto-Docs
 
-#### v1.1.0 (2025-10-20)
+#### v1.4.1 (2025-10-20)
 - ✨ **Improvement**: Unified tree structure when multiple directories are included
 - 🐛 **Bug Fix**: Regenerate documentation when output file is deleted
-
-#### v1.4.1 (2025-10-20)
 - 🔄 **Auto Migration**: Plugin version-based configuration migration
 - 📦 **Smart Updates**: Preserves user settings while adding new fields
 - 🎯 **SessionStart Hook**: Auto-creates configuration file on session start
