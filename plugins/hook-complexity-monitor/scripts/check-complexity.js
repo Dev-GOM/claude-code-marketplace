@@ -6,20 +6,54 @@ const analyzerRegistry = require('./analyzers/registry');
 
 const projectRoot = process.cwd();
 
-// Load configuration from hooks.json
-function loadConfiguration() {
+// Load configuration from .plugin-config (project root)
+function loadPluginConfig() {
+  const configPath = path.join(projectRoot, '.plugin-config', 'hook-complexity-monitor.json');
+
   try {
-    const hooksConfigPath = path.join(__dirname, '../hooks/hooks.json');
-    const hooksConfig = JSON.parse(fs.readFileSync(hooksConfigPath, 'utf8'));
-    return hooksConfig.configuration || {};
+    if (fs.existsSync(configPath)) {
+      return JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    }
   } catch (error) {
-    return {};
+    // Fall through to return default config
   }
+
+  // Return default config if file doesn't exist (init-config.js should create it)
+  return {
+    showLogs: false,
+    outputDirectory: '',
+    logFile: '.complexity-log.md',
+    thresholds: {
+      cyclomaticComplexity: 10,
+      functionLength: 50,
+      fileLength: 500,
+      nesting: 4
+    },
+    severityLevels: {
+      complexity: 'warning',
+      nesting: 'warning',
+      fileLength: 'warning',
+      functionLength: 'info'
+    },
+    includeDirs: [],
+    excludeDirs: [
+      'node_modules', '.git', 'dist', 'build', 'coverage',
+      '.next', '.nuxt', 'out', 'vendor', '.snapshots', '.claude-plugin'
+    ],
+    includeExtensions: [
+      '.js', '.jsx', '.ts', '.tsx',
+      '.py', '.java', '.go', '.rb', '.php',
+      '.c', '.cpp', '.h', '.hpp', '.cs',
+      '.kt', '.kts', '.swift', '.rs', '.scala', '.dart',
+      '.m', '.mm'
+    ],
+    excludeExtensions: []
+  };
 }
 
-const config = loadConfiguration();
+const config = loadPluginConfig();
 
-// Complexity thresholds
+// Complexity thresholds (from .plugin-config)
 const THRESHOLDS = config.thresholds || {
   cyclomaticComplexity: 10,
   functionLength: 50,
@@ -27,8 +61,30 @@ const THRESHOLDS = config.thresholds || {
   nesting: 4
 };
 
-// Get supported extensions from analyzer registry
-const CODE_EXTENSIONS = analyzerRegistry.getAllSupportedExtensions();
+// Severity levels (from .plugin-config)
+const SEVERITY_LEVELS = config.severityLevels || {
+  complexity: 'warning',
+  nesting: 'warning',
+  fileLength: 'warning',
+  functionLength: 'info'
+};
+
+// Directories to include (empty array = include all)
+const INCLUDED_DIRS = config.includeDirs || [];
+
+// Directories to exclude from search
+const EXCLUDED_DIRS = config.excludeDirs || [
+  'node_modules', '.git', 'dist', 'build', 'coverage',
+  '.next', '.nuxt', 'out', 'vendor', '.snapshots', '.claude-plugin'
+];
+
+// File extensions to include (if specified, only these will be included)
+const INCLUDE_EXTENSIONS = config.includeExtensions && config.includeExtensions.length > 0
+  ? config.includeExtensions
+  : analyzerRegistry.getAllSupportedExtensions();
+
+// File extensions to exclude from scanning
+const EXCLUDE_EXTENSIONS = config.excludeExtensions || [];
 
 // Output configuration
 const OUTPUT_DIR = config.outputDirectory
@@ -48,6 +104,61 @@ const SESSION_FILE = path.join(PLUGIN_STATE_DIR, `${PROJECT_NAME}-complexity-ses
 // Ensure plugin state directory exists
 if (!fs.existsSync(PLUGIN_STATE_DIR)) {
   fs.mkdirSync(PLUGIN_STATE_DIR, { recursive: true });
+}
+
+/**
+ * Check if directory should be excluded
+ */
+function shouldExcludeDir(dirPath) {
+  const dirName = path.basename(dirPath);
+  return EXCLUDED_DIRS.includes(dirName) || dirName.startsWith('.');
+}
+
+/**
+ * Check if file is in an included directory
+ */
+function isInIncludedDir(filePath) {
+  if (INCLUDED_DIRS.length === 0) {
+    return true; // No includeDirs specified - include all
+  }
+
+  const relativePath = path.relative(projectRoot, filePath);
+  return INCLUDED_DIRS.some(includedDir => {
+    return relativePath.startsWith(includedDir + path.sep) || relativePath.startsWith(includedDir);
+  });
+}
+
+/**
+ * Check if file should be excluded based on its directory
+ */
+function isInExcludedDir(filePath) {
+  const relativePath = path.relative(projectRoot, filePath);
+  const pathParts = relativePath.split(path.sep);
+
+  return pathParts.some(part => {
+    return EXCLUDED_DIRS.includes(part) || part.startsWith('.');
+  });
+}
+
+/**
+ * Check if file has valid extension
+ */
+function hasValidExtension(filePath) {
+  const ext = path.extname(filePath);
+
+  // First, check if file is in include list
+  if (INCLUDE_EXTENSIONS && INCLUDE_EXTENSIONS.length > 0) {
+    if (!INCLUDE_EXTENSIONS.includes(ext)) {
+      return false; // Not in include list - exclude
+    }
+  }
+
+  // Then, check if file is in exclude list
+  if (EXCLUDE_EXTENSIONS.includes(ext)) {
+    return false; // In exclude list - exclude
+  }
+
+  return true; // Include the file
 }
 
 /**
@@ -98,8 +209,18 @@ function getFileFromHookInput(hookInput) {
     filePath = path.join(projectRoot, filePath);
   }
 
-  // Check if it's a supported code file
-  if (!CODE_EXTENSIONS.includes(path.extname(filePath))) {
+  // Check if file has valid extension
+  if (!hasValidExtension(filePath)) {
+    return null;
+  }
+
+  // Check if file is in an excluded directory
+  if (isInExcludedDir(filePath)) {
+    return null;
+  }
+
+  // Check if file is in an included directory
+  if (!isInIncludedDir(filePath)) {
     return null;
   }
 
@@ -134,7 +255,7 @@ function analyzeFile(filePath) {
     if (fileLength > THRESHOLDS.fileLength) {
       issues.push({
         type: 'FILE_LENGTH',
-        severity: 'warning',
+        severity: SEVERITY_LEVELS.fileLength || 'warning',
         message: `File has ${fileLength} lines (threshold: ${THRESHOLDS.fileLength})`,
         file: path.relative(projectRoot, filePath),
         line: 1
@@ -145,7 +266,7 @@ function analyzeFile(filePath) {
     if (maxNesting > THRESHOLDS.nesting) {
       issues.push({
         type: 'NESTING',
-        severity: 'warning',
+        severity: SEVERITY_LEVELS.nesting || 'warning',
         message: `Max nesting depth is ${maxNesting} (threshold: ${THRESHOLDS.nesting})`,
         file: path.relative(projectRoot, filePath),
         line: maxNestingLine
@@ -157,7 +278,7 @@ function analyzeFile(filePath) {
       if (func.complexity > THRESHOLDS.cyclomaticComplexity) {
         issues.push({
           type: 'COMPLEXITY',
-          severity: 'warning',
+          severity: SEVERITY_LEVELS.complexity || 'warning',
           message: `Function '${func.name}' has complexity ${func.complexity} (threshold: ${THRESHOLDS.cyclomaticComplexity})`,
           file: path.relative(projectRoot, filePath),
           line: func.startLine
@@ -167,7 +288,7 @@ function analyzeFile(filePath) {
       if (func.length > THRESHOLDS.functionLength) {
         issues.push({
           type: 'FUNCTION_LENGTH',
-          severity: 'info',
+          severity: SEVERITY_LEVELS.functionLength || 'info',
           message: `Function '${func.name}' has ${func.length} lines (threshold: ${THRESHOLDS.functionLength})`,
           file: path.relative(projectRoot, filePath),
           line: func.startLine

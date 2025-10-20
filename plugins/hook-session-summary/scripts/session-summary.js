@@ -37,54 +37,74 @@ try {
   // If lock file handling fails, continue anyway
 }
 
+/**
+ * Validate and fix config values
+ */
+function validateConfig(config) {
+  // Ensure trackedTools is an array
+  if (config.trackedTools && !Array.isArray(config.trackedTools)) {
+    config.trackedTools = [config.trackedTools];
+  }
+
+  // Ensure operationPriority is an array
+  if (config.operationPriority && !Array.isArray(config.operationPriority)) {
+    config.operationPriority = ['Created', 'Updated', 'Modified', 'Read'];
+  }
+
+  // Ensure statistics is an object
+  if (config.statistics && typeof config.statistics !== 'object') {
+    config.statistics = {
+      totalFiles: true,
+      byOperationType: true,
+      byFileExtension: false
+    };
+  }
+
+  // Ensure booleans are actual booleans
+  if (typeof config.treeVisualization !== 'boolean') {
+    config.treeVisualization = true;
+  }
+  if (typeof config.includeTimestamp !== 'boolean') {
+    config.includeTimestamp = true;
+  }
+
+  return config;
+}
+
 // Load configuration from .plugin-config (project root)
+// init-config.js (SessionStart hook) should have created this file
 function loadPluginConfig() {
   const configPath = path.join(projectRoot, '.plugin-config', 'hook-session-summary.json');
 
+  let config;
   try {
     if (fs.existsSync(configPath)) {
-      return JSON.parse(fs.readFileSync(configPath, 'utf8'));
+      config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+      return validateConfig(config);
     }
   } catch (error) {
-    // Fall through to create default config
+    // Fall through to return minimal defaults
   }
 
-  // Create default config if it doesn't exist
-  const defaultConfig = {
+  // Full fallback config - init-config.js should have created this,
+  // but provide complete defaults to ensure plugin works properly
+  return {
     showLogs: false,
     outputDirectory: '',
-    outputFile: '.session-summary.md'
-  };
-
-  try {
-    const configDir = path.join(projectRoot, '.plugin-config');
-    if (!fs.existsSync(configDir)) {
-      fs.mkdirSync(configDir, { recursive: true });
+    outputFile: '.session-summary.md',
+    includeTimestamp: true,
+    trackedTools: ['Write', 'Edit', 'Read', 'NotebookEdit'],
+    operationPriority: ['Created', 'Updated', 'Modified', 'Read'],
+    treeVisualization: true,
+    statistics: {
+      totalFiles: true,
+      byOperationType: true,
+      byFileExtension: false
     }
-    fs.writeFileSync(configPath, JSON.stringify(defaultConfig, null, 2), 'utf8');
-  } catch (error) {
-    // Fail silently if we can't create the file
-  }
-
-  return defaultConfig;
+  };
 }
 
-// Load configuration from hooks.json
-function loadHooksConfiguration() {
-  try {
-    const hooksConfigPath = path.join(__dirname, '../hooks/hooks.json');
-    const hooksConfig = JSON.parse(fs.readFileSync(hooksConfigPath, 'utf8'));
-    return hooksConfig.configuration || {};
-  } catch (error) {
-    // Fallback to defaults if config can't be loaded
-    return {};
-  }
-}
-
-// Merge plugin config with hooks config (plugin config takes priority)
-const pluginConfig = loadPluginConfig();
-const hooksConfig = loadHooksConfiguration();
-const config = { ...hooksConfig, ...pluginConfig };
+const config = loadPluginConfig();
 
 // Output directory (priority: config > plugin env > global env > default)
 const OUTPUT_DIR = config.outputDirectory
@@ -116,8 +136,30 @@ const PROJECT_NAME = path.basename(projectRoot);
 const PLUGIN_STATE_DIR = path.join(__dirname, '..', '.state');
 const OPERATIONS_FILE = path.join(PLUGIN_STATE_DIR, `${PROJECT_NAME}-session-operations.json`);
 
-// Output file path (from config or default)
-const OUTPUT_FILE = config.outputFile || `.${PROJECT_NAME}-session-summary.md`;
+/**
+ * Sanitize filename to prevent path traversal and absolute paths
+ */
+function sanitizeFilename(filename) {
+  if (!filename) return '';
+
+  // If absolute path, extract basename only
+  if (path.isAbsolute(filename)) {
+    return path.basename(filename);
+  }
+
+  // Normalize and check for path traversal
+  const normalized = path.normalize(filename);
+  if (normalized.includes('..')) {
+    return path.basename(filename);
+  }
+
+  // Return just the filename (no directories)
+  return path.basename(filename);
+}
+
+// Output file path (from config or default, sanitized to prevent path traversal)
+const rawOutputFile = config.outputFile || `.${PROJECT_NAME}-session-summary.md`;
+const OUTPUT_FILE = sanitizeFilename(rawOutputFile);
 
 /**
  * Load file operations from accumulated tracking file
@@ -151,8 +193,8 @@ function loadFileOperations() {
 function classifyOperation(operations) {
   const opsArray = Array.from(operations);
 
-  // Priority order for display
-  const priority = ['Created', 'Updated', 'Modified', 'Read'];
+  // Priority order for display (from config or default)
+  const priority = config.operationPriority || ['Created', 'Updated', 'Modified', 'Read'];
 
   // Sort operations by priority
   const sortedOps = opsArray.sort((a, b) => {
@@ -279,16 +321,58 @@ function generateSummary(fileOperations) {
   });
 
   let summary = '# Session Summary\n\n';
-  summary += `**Total Files**: ${fileOperations.size}\n`;
-  summary += `- Created: ${stats['Created'] || 0}\n`;
-  summary += `- Updated: ${stats['Updated'] || 0}\n`;
-  summary += `- Modified: ${stats['Modified'] || 0}\n`;
-  summary += `- Read: ${stats['Read'] || 0}\n\n`;
-  summary += '## Files Modified\n\n';
-  summary += `${path.basename(projectRoot)}/\n`;
-  summary += generateTreeString(tree);
+
+  // Statistics configuration
+  const statisticsConfig = config.statistics || {
+    totalFiles: true,
+    byOperationType: true,
+    byFileExtension: false
+  };
+
+  // Show total files if configured
+  if (statisticsConfig.totalFiles !== false) {
+    summary += `**Total Files**: ${fileOperations.size}\n`;
+  }
+
+  // Show statistics by operation type if configured
+  if (statisticsConfig.byOperationType !== false) {
+    summary += `- Created: ${stats['Created'] || 0}\n`;
+    summary += `- Updated: ${stats['Updated'] || 0}\n`;
+    summary += `- Modified: ${stats['Modified'] || 0}\n`;
+    summary += `- Read: ${stats['Read'] || 0}\n`;
+  }
+
+  // Show statistics by file extension if configured
+  if (statisticsConfig.byFileExtension === true) {
+    const extStats = {};
+    fileOperations.forEach((operations, filePath) => {
+      const ext = path.extname(filePath) || '(no extension)';
+      extStats[ext] = (extStats[ext] || 0) + 1;
+    });
+
+    summary += '\n**By File Extension**:\n';
+    Object.entries(extStats)
+      .sort(([, a], [, b]) => b - a)
+      .forEach(([ext, count]) => {
+        summary += `- ${ext}: ${count}\n`;
+      });
+  }
+
   summary += '\n';
-  summary += `*Generated: ${new Date().toISOString().replace('T', ' ').slice(0, 19)}*\n`;
+
+  // Show tree visualization if configured
+  const showTree = config.treeVisualization !== false;
+  if (showTree) {
+    summary += '## Files Modified\n\n';
+    summary += `${path.basename(projectRoot)}/\n`;
+    summary += generateTreeString(tree);
+    summary += '\n';
+  }
+
+  // Add timestamp if configured
+  if (config.includeTimestamp !== false) {
+    summary += `*Generated: ${new Date().toISOString().replace('T', ' ').slice(0, 19)}*\n`;
+  }
 
   return summary;
 }

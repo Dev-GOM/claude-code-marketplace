@@ -14,8 +14,22 @@ Claude Code 세션이 끝날 때마다 자동으로 git 커밋을 생성하여 �
 
 ## 동작 원리
 
-이 플러그인은 **Stop hook**을 사용하여 Claude Code 세션이 끝날 때 자동으로 실행됩니다.
+이 플러그인은 **두 개의 hook**을 사용하여 자동 백업을 수행합니다:
 
+### SessionStart Hook (`init-config.js`)
+세션 시작 시 실행:
+1. `plugin.json`에서 플러그인 버전 읽기
+2. `.plugin-config/hook-git-auto-backup.json` 설정 파일 존재 확인
+3. 설정 파일이 있으면 `_pluginVersion`과 현재 플러그인 버전 비교
+4. 버전이 일치하면 즉시 종료 (빠름!)
+5. 버전이 다르면 자동 마이그레이션 수행:
+   - 기존 사용자 설정과 새 기본 필드 병합
+   - 모든 사용자 커스텀 설정 보존
+   - `_pluginVersion`을 현재 버전으로 업데이트
+6. 설정 파일이 없으면 기본 설정으로 생성
+
+### Stop Hook (`backup.js`)
+Claude Code 세션이 끝날 때 실행:
 1. 현재 디렉토리가 git 저장소인지 확인
 2. 커밋되지 않은 변경사항이 있는지 확인 (`git status --porcelain`)
 3. 변경사항이 있으면:
@@ -49,9 +63,22 @@ Auto-backup: 2025-10-14 12:34:56
 
 ## 환경 설정
 
-플러그인의 동작은 `hooks/hooks.json` 파일의 `configuration` 섹션에서 설정할 수 있습니다.
+플러그인은 첫 실행 시 `.plugin-config/hook-git-auto-backup.json` 설정 파일을 자동으로 생성합니다.
+
+### 자동 설정 마이그레이션
+
+플러그인 업데이트 시 설정이 자동으로 마이그레이션됩니다:
+- ✅ **사용자 설정 보존**
+- ✅ **새 설정 필드 자동 추가** (기본값 적용)
+- ✅ **버전 추적** (`_pluginVersion` 필드 사용)
+- ✅ **수동 작업 불필요**
 
 ### 사용 가능한 설정 옵션
+
+#### `showLogs`
+- **설명**: 자동 백업 메시지를 콘솔에 표시
+- **기본값**: `false`
+- **예시**: `true` (백업 확인 메시지 표시)
 
 #### `requireGitRepo`
 - **설명**: Git 저장소가 아닐 경우 실행하지 않음
@@ -70,28 +97,14 @@ Auto-backup: 2025-10-14 12:34:56
 
 ### 설정 변경 방법
 
-`plugins/hook-git-auto-backup/hooks/hooks.json` 파일을 편집하세요:
+프로젝트 루트의 `.plugin-config/hook-git-auto-backup.json` 파일을 편집하세요:
 
 ```json
 {
-  "hooks": {
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/backup.js",
-            "timeout": 10000
-          }
-        ]
-      }
-    ]
-  },
-  "configuration": {
-    "requireGitRepo": true,
-    "commitOnlyIfChanges": true,
-    "includeTimestamp": true
-  }
+  "showLogs": false,
+  "requireGitRepo": true,
+  "commitOnlyIfChanges": true,
+  "includeTimestamp": true
 }
 ```
 
@@ -190,10 +203,12 @@ git reset --soft HEAD~1
 ## 기술 세부사항
 
 ### 스크립트 위치
-`plugins/hook-git-auto-backup/scripts/backup.js`
+- `~/.claude/plugins/marketplaces/dev-gom-plugins/plugins/hook-git-auto-backup/scripts/init-config.js` - 설정 초기화
+- `~/.claude/plugins/marketplaces/dev-gom-plugins/plugins/hook-git-auto-backup/scripts/backup.js` - Git 백업 실행
 
 ### Hook 타입
-`Stop` - 세션 종료 시 실행
+- **SessionStart** - 세션 시작 시 설정 초기화
+- **Stop** - 세션 종료 시 Git 백업 생성
 
 ### 의존성
 - Node.js
@@ -201,6 +216,22 @@ git reset --soft HEAD~1
 
 ### 타임아웃
 15초
+
+## 버전
+
+**현재 버전**: 1.1.1
+
+## 변경 이력
+
+### v1.1.1 (2025-10-20)
+- 🔄 **자동 마이그레이션**: 플러그인 버전 기반 설정 자동 마이그레이션
+- 📦 **스마트 업데이트**: 새 필드 추가 시 사용자 설정 보존
+- 🎯 **SessionStart Hook**: 세션 시작 시 설정 파일 자동 생성
+- ⚡ **성능**: 설정이 최신이면 SessionStart 훅 즉시 종료
+- 🌍 **크로스 플랫폼**: Windows/macOS/Linux 경로 처리 개선
+
+### v1.0.0
+- 최초 릴리스
 
 ## 기여하기
 

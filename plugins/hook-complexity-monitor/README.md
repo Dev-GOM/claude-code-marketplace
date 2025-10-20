@@ -18,7 +18,19 @@ Monitors code complexity metrics and warns when thresholds are exceeded.
 
 ## How it Works
 
-This plugin uses **two hooks** for comprehensive complexity tracking:
+This plugin uses **three hooks** for comprehensive complexity tracking:
+
+### SessionStart Hook (`init-config.js`)
+Runs at session start:
+1. Reads plugin version from `plugin.json`
+2. Checks if configuration file exists at `.plugin-config/hook-complexity-monitor.json`
+3. If config exists, compares `_pluginVersion` with current plugin version
+4. If versions match, exits immediately (fast!)
+5. If versions differ, performs automatic migration:
+   - Merges existing user settings with new default fields
+   - Preserves all custom user configurations
+   - Updates `_pluginVersion` to current version
+6. If config doesn't exist, creates it with default settings
 
 ### PostToolUse Hook (`check-complexity.js`)
 Runs immediately after Write or Edit operations:
@@ -150,9 +162,22 @@ function deeplyNested() {
 
 ## Configuration
 
-You can configure the plugin's behavior in the `configuration` section of `hooks/hooks.json`.
+The plugin automatically creates a configuration file at `.plugin-config/hook-complexity-monitor.json` on first run.
+
+### Automatic Configuration Migration
+
+When you update the plugin, your settings are automatically migrated:
+- ✅ **Preserves your custom settings**
+- ✅ **Adds new configuration fields** with default values
+- ✅ **Version tracked** via `_pluginVersion` field
+- ✅ **Zero manual intervention** required
 
 ### Available Configuration Options
+
+#### `showLogs`
+- **Description**: Show complexity monitor messages in console
+- **Default**: `false`
+- **Example**: `true` (show complexity analysis results)
 
 #### `thresholds`
 - **Description**: Code complexity threshold settings
@@ -166,9 +191,25 @@ You can configure the plugin's behavior in the `configuration` section of `hooks
   }
   ```
 
-#### `supportedExtensions`
+#### `includeDirs`
+- **Description**: List of directories to scan (empty = scan all)
+- **Default**: `[]` (scan entire project)
+- **Example**: `["src", "lib", "app"]` (scan only these directories)
+
+#### `excludeDirs`
+- **Description**: List of directories to exclude from scanning
+- **Default**: `["node_modules", ".git", "dist", "build", "coverage", ".next", ".nuxt", "out", "vendor", ".snapshots", ".claude-plugin"]`
+- **Example**: Add more directories to exclude
+
+#### `includeExtensions`
 - **Description**: List of file extensions to analyze
-- **Default**: `[".js", ".jsx", ".ts", ".tsx", ".py", ".java", ".go", ".c", ".cpp", ".cs", ".rb", ".php", ".rs", ".swift", ".kt", ".kts"]`
+- **Default**: `[".js", ".jsx", ".ts", ".tsx", ".py", ".java", ".go", ".rb", ".php", ".c", ".cpp", ".h", ".hpp", ".cs", ".kt", ".kts", ".swift", ".rs", ".scala", ".dart", ".m", ".mm"]`
+- **Example**: `[".js", ".ts", ".py"]` (analyze only these file types)
+
+#### `excludeExtensions`
+- **Description**: List of file extensions to exclude from analysis
+- **Default**: `[]` (no exclusions)
+- **Example**: `[".min.js", ".bundle.js", ".map"]` (exclude minified and map files)
 
 #### `outputDirectory`
 - **Description**: Directory path to save log files
@@ -192,31 +233,34 @@ You can configure the plugin's behavior in the `configuration` section of `hooks
 
 ### How to Change Settings
 
-Edit the `plugins/hook-complexity-monitor/hooks/hooks.json` file:
+Edit `.plugin-config/hook-complexity-monitor.json` in your project root:
 
 ```json
 {
-  "hooks": { ... },
-  "configuration": {
-    "outputDirectory": ".claude-logs",
-    "thresholds": {
-      "cyclomaticComplexity": 15,
-      "functionLength": 100,
-      "fileLength": 1000,
-      "nesting": 5
-    },
-    "supportedExtensions": [
-      ".js", ".jsx", ".ts", ".tsx",
-      ".py", ".java", ".go", ".c", ".cpp",
-      ".rs", ".rb"
-    ],
-    "logFile": ".complexity-log.md",
-    "severityLevels": {
-      "complexity": "warning",
-      "nesting": "warning",
-      "fileLength": "info",
-      "functionLength": "info"
-    }
+  "showLogs": false,
+  "outputDirectory": "",
+  "logFile": ".complexity-log.md",
+  "includeDirs": ["src", "lib"],
+  "excludeDirs": [
+    "node_modules", "dist", "build", ".git",
+    "coverage", ".next", "vendor", "target"
+  ],
+  "includeExtensions": [
+    ".js", ".jsx", ".ts", ".tsx",
+    ".py", ".java", ".go", ".rs"
+  ],
+  "excludeExtensions": [".min.js", ".bundle.js", ".map"],
+  "thresholds": {
+    "cyclomaticComplexity": 15,
+    "functionLength": 100,
+    "fileLength": 1000,
+    "nesting": 5
+  },
+  "severityLevels": {
+    "complexity": "warning",
+    "nesting": "warning",
+    "fileLength": "info",
+    "functionLength": "info"
   }
 }
 ```
@@ -224,7 +268,7 @@ Edit the `plugins/hook-complexity-monitor/hooks/hooks.json` file:
 ### Configuration Priority
 
 The `outputDirectory` is determined in this order:
-1. `configuration.outputDirectory` in `hooks.json`
+1. `outputDirectory` in `.plugin-config/hook-complexity-monitor.json`
 2. Environment variable `COMPLEXITY_LOG_DIR`
 3. Environment variable `CLAUDE_PLUGIN_OUTPUT_DIR`
 4. Default (project root)
@@ -309,9 +353,10 @@ Some legitimate reasons to exceed thresholds:
 ## Technical Details
 
 ### Script Locations
-- `plugins/hook-complexity-monitor/scripts/check-complexity.js` - Analyzes modified files
-- `plugins/hook-complexity-monitor/scripts/finalize-session.js` - Generates final log
-- `plugins/hook-complexity-monitor/scripts/analyzers/` - Language-specific analyzers
+- `~/.claude/plugins/marketplaces/dev-gom-plugins/plugins/hook-complexity-monitor/scripts/init-config.js` - Configuration initialization
+- `~/.claude/plugins/marketplaces/dev-gom-plugins/plugins/hook-complexity-monitor/scripts/check-complexity.js` - Analyzes modified files
+- `~/.claude/plugins/marketplaces/dev-gom-plugins/plugins/hook-complexity-monitor/scripts/finalize-session.js` - Generates final log
+- `~/.claude/plugins/marketplaces/dev-gom-plugins/plugins/hook-complexity-monitor/scripts/analyzers/` - Language-specific analyzers
 
 ### Analyzer Architecture
 - **Base Analyzer**: Abstract class defining the analyzer interface
@@ -319,12 +364,15 @@ Some legitimate reasons to exceed thresholds:
 - **Language Analyzers**: JavaScript, Python, Java, Go, C/C++, C#, Rust, Swift, Kotlin, Ruby, PHP
 
 ### Hook Types
+- **SessionStart** - Initializes configuration on session start
 - **PostToolUse** (Write|Edit) - Analyzes files in real-time
 - **Stop** - Consolidates and updates the complexity log
 
 ### State Files
-- `.state/complexity-session.json` - Tracks issues during session
+- `.state/${PROJECT_NAME}-complexity-session.json` - Tracks issues during session
 - Automatically cleaned up at session end
+
+**Note**: State files are project-scoped using the project directory name to prevent conflicts across multiple projects.
 
 ### Dependencies
 - Node.js
@@ -364,6 +412,26 @@ Ideas for contributions:
 - Integration with linters (ESLint, Pylint)
 - Trend tracking over time
 - HTML reports with charts
+
+## Version
+
+**Current Version**: 1.1.1
+
+## Changelog
+
+### v1.1.1 (2025-10-20)
+- 🐛 **Bug Fix**: Full project scan when complexity log file doesn't exist
+- 🔄 **Auto Migration**: Plugin version-based configuration migration
+- 📦 **Smart Updates**: Preserves user settings while adding new fields
+- 🏷️ **Project Scoping**: State files now use project name to prevent conflicts
+- 🎯 **SessionStart Hook**: Auto-creates configuration file on session start
+- ⚡ **Performance**: SessionStart hook exits immediately if config is up-to-date
+- 🌍 **Cross-Platform**: Enhanced path handling for Windows/macOS/Linux compatibility
+- 🔍 **Smart Filtering**: Added includeDirs, excludeDirs, includeExtensions, excludeExtensions settings
+- 📁 **Selective Scanning**: Customize which directories and file types to analyze
+
+### v1.0.0
+- Initial release
 
 ## Contributing
 

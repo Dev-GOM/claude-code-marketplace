@@ -5,7 +5,7 @@
   },
   "metadata": {
     "description": "Productivity plugins for Claude Code to automate development workflows",
-    "version": "2.0.0",
+    "version": "2.1.0",
     "homepage": "https://github.com/Dev-GOM/claude-code-marketplace"
   },
   "plugins": [
@@ -29,7 +29,7 @@
       "name": "hook-todo-collector",
       "source": "./plugins/hook-todo-collector",
       "description": "Collect all TODO and FIXME comments from your project",
-      "version": "1.1.1",
+      "version": "1.2.0",
       "author": {
         "name": "Dev GOM"
       },
@@ -46,7 +46,7 @@
       "name": "hook-complexity-monitor",
       "source": "./plugins/hook-complexity-monitor",
       "description": "Monitor code complexity and maintain code quality",
-      "version": "1.1.0",
+      "version": "1.1.1",
       "author": {
         "name": "Dev GOM"
       },
@@ -63,7 +63,7 @@
       "name": "hook-auto-docs",
       "source": "./plugins/hook-auto-docs",
       "description": "Automatically track project structure changes and update documentation (README, CHANGELOG)",
-      "version": "1.4.0",
+      "version": "1.4.1",
       "author": {
         "name": "Dev GOM"
       },
@@ -81,7 +81,7 @@
       "name": "hook-session-summary",
       "source": "./plugins/hook-session-summary",
       "description": "Track and summarize all files used during a Claude Code session",
-      "version": "1.1.0",
+      "version": "1.1.1",
       "author": {
         "name": "Dev GOM"
       },
@@ -99,7 +99,7 @@
       "name": "ai-pair-programming",
       "source": "./plugins/ai-pair-programming",
       "description": "Complete AI pair programming suite with slash commands, expert agents, and intelligent hooks",
-      "version": "1.0.0",
+      "version": "1.1.1",
       "author": {
         "name": "Dev GOM"
       },

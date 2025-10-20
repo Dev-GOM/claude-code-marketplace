@@ -1,9 +1,26 @@
 {
   "description": "Monitors code complexity metrics and warns when thresholds are exceeded",
-  "version": "1.0.0",
+  "version": "1.1.1",
   "author": "Dev GOM",
   "lastUpdated": "2025-10-14",
   "hooks": {
+    "SessionStart": [
+      {
+        "description": "Initialize plugin configuration at session start",
+        "priority": 100,
+        "enabled": true,
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/init-config.js",
+            "description": "Creates default configuration file if it doesn't exist",
+            "timeout": 5000,
+            "continueOnError": true,
+            "suppressOutput": true
+          }
+        ]
+      }
+    ],
     "PostToolUse": [
       {
         "description": "Check code complexity after Write or Edit operations",
@@ -38,27 +55,5 @@
         ]
       }
     ]
-  },
-  "configuration": {
-    "outputDirectory": "",
-    "thresholds": {
-      "cyclomaticComplexity": 10,
-      "functionLength": 50,
-      "fileLength": 500,
-      "nesting": 4
-    },
-    "supportedExtensions": [
-      ".js", ".jsx", ".ts", ".tsx",
-      ".py", ".java", ".go", ".c",
-      ".cpp", ".cs", ".rb", ".php",
-      ".rs", ".swift", ".kt", ".kts"
-    ],
-    "logFile": ".complexity-log.md",
-    "severityLevels": {
-      "complexity": "warning",
-      "nesting": "warning",
-      "fileLength": "warning",
-      "functionLength": "info"
-    }
   }
 }

@@ -15,7 +15,14 @@ Automatically scans and documents your project structure.
 
 ## How it Works
 
-This plugin uses a **two-stage tracking approach**:
+This plugin uses a **three-stage tracking approach**:
+
+### Stage 0: Configuration Initialization (SessionStart Hook)
+- Runs at session start
+- Reads plugin version from `plugin.json`
+- Checks if configuration file exists at `.plugin-config/hook-auto-docs.json`
+- Performs automatic migration if versions differ
+- Creates configuration with default settings if doesn't exist
 
 ### Stage 1: Real-time File Change Tracking (PostToolUse Hook)
 - Runs after every `Write` operation
@@ -103,14 +110,32 @@ claude-code-marketplace/
 
 ## Configuration
 
-You can configure the plugin's behavior in the `configuration` section of `hooks/hooks.json`.
+The plugin automatically creates a configuration file at `.plugin-config/hook-auto-docs.json` on first run.
+
+### Automatic Configuration Migration
+
+When you update the plugin, your settings are automatically migrated:
+- ✅ **Preserves your custom settings**
+- ✅ **Adds new configuration fields** with default values
+- ✅ **Version tracked** via `_pluginVersion` field
+- ✅ **Zero manual intervention** required
 
 ### Available Configuration Options
+
+#### `showLogs`
+- **Description**: Show documentation generation messages in console
+- **Default**: `false`
+- **Example**: `true` (show file tracking confirmations)
 
 #### `outputDirectory`
 - **Description**: Directory path to save generated documentation
 - **Default**: `""` (project root)
 - **Example**: `"docs"`, `".claude-output"`
+
+#### `outputFile`
+- **Description**: Output filename for project structure documentation
+- **Default**: `""` (uses `.{project-name}-project-structure.md`)
+- **Example**: `"project-structure.md"`, `"structure.md"`
 
 #### `includeDirs`
 - **Description**: List of specific directories to scan (if empty, scans entire project)
@@ -139,32 +164,32 @@ You can configure the plugin's behavior in the `configuration` section of `hooks
 
 ### How to Change Settings
 
-Edit the `plugins/hook-auto-docs/hooks/hooks.json` file:
+Edit the `.plugin-config/hook-auto-docs.json` file:
 
 ```json
 {
-  "hooks": { ... },
-  "configuration": {
-    "outputDirectory": "docs",
-    "includeDirs": ["src", "lib"],
-    "excludeDirs": [
-      "node_modules",
-      ".git",
-      "dist",
-      "build",
-      "coverage",
-      ".next",
-      "out",
-      ".nuxt",
-      "vendor",
-      ".vscode",
-      ".idea",
-      "tmp",
-      "cache"
-    ],
-    "includeExtensions": [],
-    "excludeExtensions": [".meta", ".log", ".tmp"]
-  }
+  "showLogs": false,
+  "outputDirectory": "docs",
+  "outputFile": "project-structure.md",
+  "includeDirs": ["src", "lib"],
+  "excludeDirs": [
+    "node_modules",
+    ".git",
+    "dist",
+    "build",
+    "coverage",
+    ".next",
+    "out",
+    ".nuxt",
+    "vendor",
+    ".vscode",
+    ".idea",
+    "tmp",
+    "cache"
+  ],
+  "includeExtensions": [],
+  "excludeExtensions": [".meta", ".log", ".tmp"],
+  "includeEmptyDirs": true
 }
 ```
 
@@ -176,7 +201,7 @@ Edit the `plugins/hook-auto-docs/hooks/hooks.json` file:
 ### Configuration Priority
 
 The `outputDirectory` is determined in this order:
-1. `configuration.outputDirectory` in `hooks.json`
+1. `.plugin-config/hook-auto-docs.json`'s `outputDirectory`
 2. Environment variable `AUTO_DOCS_DIR`
 3. Environment variable `CLAUDE_PLUGIN_OUTPUT_DIR`
 4. Default (project root)
@@ -239,12 +264,14 @@ Use the generated project structure documentation to:
 ## Technical Details
 
 ### Script Locations
-- `plugins/hook-auto-docs/scripts/track-structure-changes.js` - File change tracking
-- `plugins/hook-auto-docs/scripts/update-structure-docs.js` - Structure documentation generation
+- `~/.claude/plugins/marketplaces/dev-gom-plugins/plugins/hook-auto-docs/scripts/init-config.js` - Configuration initialization
+- `~/.claude/plugins/marketplaces/dev-gom-plugins/plugins/hook-auto-docs/scripts/track-structure-changes.js` - File change tracking
+- `~/.claude/plugins/marketplaces/dev-gom-plugins/plugins/hook-auto-docs/scripts/update-structure-docs.js` - Structure documentation generation
 
 ### Hook Types
-- `PostToolUse` - Tracks file changes after Write operations
-- `Stop` - Generates structure documentation at session end
+- **SessionStart** - Initializes configuration on session start
+- **PostToolUse** - Tracks file changes after Write operations
+- **Stop** - Generates structure documentation at session end
 
 ### Dependencies
 - Node.js
@@ -256,9 +283,18 @@ Use the generated project structure documentation to:
 
 ## Version
 
-**Current Version**: 1.4.0
+**Current Version**: 1.4.1
 
 ## Changelog
+
+### v1.4.1 (2025-10-20)
+- ✨ **Improvement**: Unified tree structure when multiple directories are included
+- 🐛 **Bug Fix**: Regenerate documentation when output file is deleted
+- 🔄 **Auto Migration**: Plugin version-based configuration migration
+- 📦 **Smart Updates**: Preserves user settings while adding new fields
+- 🎯 **SessionStart Hook**: Auto-creates configuration file on session start
+- ⚡ **Performance**: SessionStart hook exits immediately if config is up-to-date
+- 🌍 **Cross-Platform**: Enhanced path handling for Windows/macOS/Linux compatibility
 
 ### v1.4.0 (2025-10-18)
 - Added `includeEmptyDirs` configuration option to control empty directory inclusion

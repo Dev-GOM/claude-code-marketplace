@@ -5,41 +5,50 @@ const path = require('path');
 
 const projectRoot = process.cwd();
 
-// Load configuration from hooks.json
-function loadConfiguration() {
+// Load configuration from .plugin-config (project root)
+function loadPluginConfig() {
+  const configPath = path.join(projectRoot, '.plugin-config', 'hook-auto-docs.json');
+
   try {
-    const hooksConfigPath = path.join(__dirname, '../hooks/hooks.json');
-    const hooksConfig = JSON.parse(fs.readFileSync(hooksConfigPath, 'utf8'));
-    return hooksConfig.configuration || {};
-  } catch (error) {
-    return {};
-  }
-}
-
-const config = loadConfiguration();
-
-// Output directory (priority: config > plugin env > global env > default)
-const OUTPUT_DIR = config.outputDirectory
-  || process.env.AUTO_DOCS_DIR
-  || process.env.CLAUDE_PLUGIN_OUTPUT_DIR
-  || '';
-
-// Helper to get full path with output directory
-function getOutputPath(filename) {
-  if (OUTPUT_DIR) {
-    const fullDir = path.isAbsolute(OUTPUT_DIR)
-      ? OUTPUT_DIR
-      : path.join(projectRoot, OUTPUT_DIR);
-
-    // Create directory if it doesn't exist
-    if (!fs.existsSync(fullDir)) {
-      fs.mkdirSync(fullDir, { recursive: true });
+    if (fs.existsSync(configPath)) {
+      return JSON.parse(fs.readFileSync(configPath, 'utf8'));
     }
-
-    return path.join(fullDir, filename);
+  } catch (error) {
+    // Fall through to return default config
   }
-  return path.join(projectRoot, filename);
+
+  // Return default config if file doesn't exist (init-config.js should create it)
+  return {
+    showLogs: false,
+    outputDirectory: '',
+    outputFile: '.project-structure.md',
+    includeDirs: [],
+    excludeDirs: [
+      'node_modules', '.git', 'dist', 'build', 'coverage',
+      '.next', 'out', '.nuxt', 'vendor', '.vscode', '.idea'
+    ],
+    includeExtensions: [],
+    excludeExtensions: [],
+    includeEmptyDirs: true
+  };
 }
+
+const config = loadPluginConfig();
+
+// Directories to include (empty array = include all)
+const INCLUDED_DIRS = config.includeDirs || [];
+
+// Directories to exclude from tracking
+const EXCLUDED_DIRS = config.excludeDirs || [
+  'node_modules', '.git', 'dist', 'build', 'coverage',
+  '.next', 'out', '.nuxt', 'vendor', '.vscode', '.idea'
+];
+
+// File extensions to include (if specified, only these will be included)
+const INCLUDE_EXTENSIONS = config.includeExtensions || [];
+
+// File extensions to exclude from tracking
+const EXCLUDE_EXTENSIONS = config.excludeExtensions || [];
 
 // Project name for file naming (current directory name)
 const PROJECT_NAME = path.basename(projectRoot);
@@ -51,6 +60,55 @@ const CHANGES_FILE = path.join(PLUGIN_STATE_DIR, `${PROJECT_NAME}-structure-chan
 // Ensure plugin state directory exists
 if (!fs.existsSync(PLUGIN_STATE_DIR)) {
   fs.mkdirSync(PLUGIN_STATE_DIR, { recursive: true });
+}
+
+/**
+ * Check if file is in an included directory
+ */
+function isInIncludedDir(filePath) {
+  if (INCLUDED_DIRS.length === 0) {
+    return true; // No includeDirs specified - include all
+  }
+
+  const relativePath = path.relative(projectRoot, filePath);
+  return INCLUDED_DIRS.some(includedDir => {
+    const normalizedDir = includedDir.replace(/\\/g, '/');
+    const normalizedRelPath = relativePath.replace(/\\/g, '/');
+    return normalizedRelPath.startsWith(normalizedDir + '/') || normalizedRelPath.startsWith(normalizedDir);
+  });
+}
+
+/**
+ * Check if file is in an excluded directory
+ */
+function isInExcludedDir(filePath) {
+  const relativePath = path.relative(projectRoot, filePath);
+  const pathParts = relativePath.split(path.sep);
+
+  return pathParts.some(part => {
+    return EXCLUDED_DIRS.includes(part) || part.startsWith('.');
+  });
+}
+
+/**
+ * Check if file has valid extension
+ */
+function hasValidExtension(filePath) {
+  const ext = path.extname(filePath);
+
+  // First, check if file is in include list
+  if (INCLUDE_EXTENSIONS && INCLUDE_EXTENSIONS.length > 0) {
+    if (!INCLUDE_EXTENSIONS.includes(ext)) {
+      return false; // Not in include list - exclude
+    }
+  }
+
+  // Then, check if file is in exclude list
+  if (EXCLUDE_EXTENSIONS.includes(ext)) {
+    return false; // In exclude list - exclude
+  }
+
+  return true; // Include the file
 }
 
 /**
@@ -145,6 +203,19 @@ async function main() {
   if (!fileOp) {
     // Not a file operation we track
     return;
+  }
+
+  // Apply filtering rules
+  if (!hasValidExtension(fileOp.filePath)) {
+    return; // File extension not tracked
+  }
+
+  if (isInExcludedDir(fileOp.filePath)) {
+    return; // File in excluded directory
+  }
+
+  if (!isInIncludedDir(fileOp.filePath)) {
+    return; // File not in included directory
   }
 
   // Load existing changes

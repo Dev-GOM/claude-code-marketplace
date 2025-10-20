@@ -37,53 +37,104 @@ try {
   // If lock file handling fails, continue anyway
 }
 
+/**
+ * Validate and fix config values
+ */
+function validateConfig(config) {
+  // Ensure thresholds is an object with numeric values
+  if (!config.thresholds || typeof config.thresholds !== 'object') {
+    config.thresholds = {
+      cyclomaticComplexity: 10,
+      functionLength: 50,
+      fileLength: 500,
+      nesting: 4
+    };
+  } else {
+    if (typeof config.thresholds.cyclomaticComplexity !== 'number') {
+      config.thresholds.cyclomaticComplexity = 10;
+    }
+    if (typeof config.thresholds.functionLength !== 'number') {
+      config.thresholds.functionLength = 50;
+    }
+    if (typeof config.thresholds.fileLength !== 'number') {
+      config.thresholds.fileLength = 500;
+    }
+    if (typeof config.thresholds.nesting !== 'number') {
+      config.thresholds.nesting = 4;
+    }
+  }
+
+  // Ensure severityLevels is an object
+  if (!config.severityLevels || typeof config.severityLevels !== 'object') {
+    config.severityLevels = {
+      complexity: 'warning',
+      nesting: 'warning',
+      fileLength: 'warning',
+      functionLength: 'info'
+    };
+  }
+
+  // Ensure includeDirs and excludeDirs are arrays
+  if (!Array.isArray(config.includeDirs)) {
+    config.includeDirs = [];
+  }
+  if (!Array.isArray(config.excludeDirs)) {
+    config.excludeDirs = ['node_modules', '.git'];
+  }
+
+  return config;
+}
+
 // Load configuration from .plugin-config (project root)
+// init-config.js (SessionStart hook) should have created this file
 function loadPluginConfig() {
   const configPath = path.join(projectRoot, '.plugin-config', 'hook-complexity-monitor.json');
 
+  let config;
   try {
     if (fs.existsSync(configPath)) {
-      return JSON.parse(fs.readFileSync(configPath, 'utf8'));
+      config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+      return validateConfig(config);
     }
   } catch (error) {
-    // Fall through to create default config
+    // Fall through to return minimal defaults
   }
 
-  // Create default config if it doesn't exist
-  const defaultConfig = {
+  // Full fallback config - init-config.js should have created this,
+  // but provide complete defaults to ensure plugin works properly
+  return {
     showLogs: false,
     outputDirectory: '',
-    logFile: '.complexity-log.md'
+    logFile: '.complexity-log.md',
+    thresholds: {
+      cyclomaticComplexity: 10,
+      functionLength: 50,
+      fileLength: 500,
+      nesting: 4
+    },
+    severityLevels: {
+      complexity: 'warning',
+      nesting: 'warning',
+      fileLength: 'warning',
+      functionLength: 'info'
+    },
+    includeDirs: [],
+    excludeDirs: [
+      'node_modules', '.git', 'dist', 'build', 'coverage',
+      '.next', '.nuxt', 'out', 'vendor', '.snapshots', '.claude-plugin'
+    ],
+    includeExtensions: [
+      '.js', '.jsx', '.ts', '.tsx',
+      '.py', '.java', '.go', '.rb', '.php',
+      '.c', '.cpp', '.h', '.hpp', '.cs',
+      '.kt', '.kts', '.swift', '.rs', '.scala', '.dart',
+      '.m', '.mm'
+    ],
+    excludeExtensions: []
   };
-
-  try {
-    const configDir = path.join(projectRoot, '.plugin-config');
-    if (!fs.existsSync(configDir)) {
-      fs.mkdirSync(configDir, { recursive: true });
-    }
-    fs.writeFileSync(configPath, JSON.stringify(defaultConfig, null, 2), 'utf8');
-  } catch (error) {
-    // Fail silently if we can't create the file
-  }
-
-  return defaultConfig;
 }
 
-// Load configuration from hooks.json
-function loadHooksConfiguration() {
-  try {
-    const hooksConfigPath = path.join(__dirname, '../hooks/hooks.json');
-    const hooksConfig = JSON.parse(fs.readFileSync(hooksConfigPath, 'utf8'));
-    return hooksConfig.configuration || {};
-  } catch (error) {
-    return {};
-  }
-}
-
-// Merge plugin config with hooks config (plugin config takes priority)
-const pluginConfig = loadPluginConfig();
-const hooksConfig = loadHooksConfiguration();
-const config = { ...hooksConfig, ...pluginConfig };
+const config = loadPluginConfig();
 
 // Output directory (priority: config > plugin env > global env > default)
 const OUTPUT_DIR = config.outputDirectory
@@ -94,7 +145,30 @@ const OUTPUT_DIR = config.outputDirectory
 // Project name for file naming (current directory name)
 const PROJECT_NAME = path.basename(projectRoot);
 
-const LOG_FILE = config.logFile || `.${PROJECT_NAME}-complexity-log.md`;
+/**
+ * Sanitize filename to prevent path traversal and absolute paths
+ */
+function sanitizeFilename(filename) {
+  if (!filename) return '';
+
+  // If absolute path, extract basename only
+  if (path.isAbsolute(filename)) {
+    return path.basename(filename);
+  }
+
+  // Normalize and check for path traversal
+  const normalized = path.normalize(filename);
+  if (normalized.includes('..')) {
+    return path.basename(filename);
+  }
+
+  // Return just the filename (no directories)
+  return path.basename(filename);
+}
+
+// Sanitize log file name to prevent path traversal
+const rawLogFile = config.logFile || `.${PROJECT_NAME}-complexity-log.md`;
+const LOG_FILE = sanitizeFilename(rawLogFile);
 
 // Session file stored in plugin directory (not in project root)
 const PLUGIN_STATE_DIR = path.join(__dirname, '..', '.state');
@@ -115,6 +189,130 @@ function getOutputPath(filename) {
     return path.join(fullDir, filename);
   }
   return path.join(projectRoot, filename);
+}
+
+/**
+ * Check if directory should be excluded
+ */
+function shouldExcludeDir(dirPath) {
+  const dirName = path.basename(dirPath);
+  return config.excludeDirs.includes(dirName) || dirName.startsWith('.');
+}
+
+/**
+ * Check if file has valid extension
+ */
+function hasValidExtension(filePath) {
+  const ext = path.extname(filePath);
+
+  // First, check if file is in include list
+  if (config.includeExtensions && config.includeExtensions.length > 0) {
+    if (!config.includeExtensions.includes(ext)) {
+      return false;
+    }
+  }
+
+  // Then, check if file is in exclude list
+  if (config.excludeExtensions && config.excludeExtensions.includes(ext)) {
+    return false;
+  }
+
+  return true;
+}
+
+/**
+ * Simple complexity analysis (without full AST parsing)
+ */
+function analyzeFileSimple(filePath) {
+  try {
+    const code = fs.readFileSync(filePath, 'utf8');
+    const lines = code.split('\n');
+    const fileLength = lines.length;
+    const issues = [];
+
+    // Check file length
+    if (fileLength > config.thresholds.fileLength) {
+      issues.push({
+        message: `File has ${fileLength} lines (threshold: ${config.thresholds.fileLength})`,
+        line: 1
+      });
+    }
+
+    // Simple nesting check (count max indentation)
+    let maxNesting = 0;
+    let maxNestingLine = 1;
+    lines.forEach((line, idx) => {
+      const indent = line.search(/\S/);
+      if (indent > -1) {
+        const nestLevel = Math.floor(indent / 2);
+        if (nestLevel > maxNesting) {
+          maxNesting = nestLevel;
+          maxNestingLine = idx + 1;
+        }
+      }
+    });
+
+    if (maxNesting > config.thresholds.nesting) {
+      issues.push({
+        message: `Max nesting depth is ${maxNesting} (threshold: ${config.thresholds.nesting})`,
+        line: maxNestingLine
+      });
+    }
+
+    return issues;
+  } catch (error) {
+    return [];
+  }
+}
+
+/**
+ * Walk directory and analyze files
+ */
+function walkDirectory(dir, results = {}) {
+  try {
+    const entries = fs.readdirSync(dir, { withFileTypes: true });
+
+    for (const entry of entries) {
+      const fullPath = path.join(dir, entry.name);
+
+      if (entry.isDirectory()) {
+        if (!shouldExcludeDir(fullPath)) {
+          walkDirectory(fullPath, results);
+        }
+      } else if (entry.isFile() && hasValidExtension(fullPath)) {
+        const issues = analyzeFileSimple(fullPath);
+        if (issues.length > 0) {
+          const relativePath = path.relative(projectRoot, fullPath);
+          results[relativePath] = issues;
+        }
+      }
+    }
+  } catch (error) {
+    // Skip directories we can't read
+  }
+
+  return results;
+}
+
+/**
+ * Perform full project scan
+ */
+function performFullScan() {
+  const allIssues = {};
+
+  // Determine which directories to scan
+  const dirsToScan = config.includeDirs && config.includeDirs.length > 0
+    ? config.includeDirs.map(dir => path.join(projectRoot, dir))
+    : [projectRoot];
+
+  // Scan each directory
+  dirsToScan.forEach(dir => {
+    if (fs.existsSync(dir)) {
+      walkDirectory(dir, allIssues);
+    }
+  });
+
+  return { files: allIssues };
 }
 
 /**
@@ -280,6 +478,13 @@ function main() {
     } catch (error) {
       // Continue with empty session data
     }
+  }
+
+  // If log file doesn't exist, perform full scan (regardless of session data)
+  if (!fs.existsSync(logPath)) {
+    const fullScanData = performFullScan();
+    // Merge full scan with session data (session data takes priority for more accurate analysis)
+    sessionData.files = { ...fullScanData.files, ...(sessionData.files || {}) };
   }
 
   // Merge with session data (session files override log files)

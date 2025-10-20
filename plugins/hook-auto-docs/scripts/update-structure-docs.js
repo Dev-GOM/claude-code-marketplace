@@ -38,6 +38,7 @@ try {
 }
 
 // Load configuration from .plugin-config (project root)
+// init-config.js (SessionStart hook) should have created this file
 function loadPluginConfig() {
   const configPath = path.join(projectRoot, '.plugin-config', 'hook-auto-docs.json');
 
@@ -46,48 +47,27 @@ function loadPluginConfig() {
       return JSON.parse(fs.readFileSync(configPath, 'utf8'));
     }
   } catch (error) {
-    // Fall through to create default config
+    // Fall through to return minimal defaults
   }
 
-  // Create default config if it doesn't exist
-  const defaultConfig = {
+  // Full fallback config - init-config.js should have created this,
+  // but provide complete defaults to ensure plugin works properly
+  return {
     showLogs: false,
     outputDirectory: '',
-    includeDirs: null,
-    excludeDirs: null,
-    includeExtensions: null,
-    excludeExtensions: null,
+    outputFile: '',
+    includeDirs: [],
+    excludeDirs: [
+      'node_modules', '.git', 'dist', 'build', 'coverage',
+      '.next', 'out', '.nuxt', 'vendor', '.vscode', '.idea'
+    ],
+    includeExtensions: [],
+    excludeExtensions: [],
     includeEmptyDirs: true
   };
-
-  try {
-    const configDir = path.join(projectRoot, '.plugin-config');
-    if (!fs.existsSync(configDir)) {
-      fs.mkdirSync(configDir, { recursive: true });
-    }
-    fs.writeFileSync(configPath, JSON.stringify(defaultConfig, null, 2), 'utf8');
-  } catch (error) {
-    // Fail silently if we can't create the file
-  }
-
-  return defaultConfig;
 }
 
-// Load configuration from hooks.json
-function loadHooksConfiguration() {
-  try {
-    const hooksConfigPath = path.join(__dirname, '../hooks/hooks.json');
-    const hooksConfig = JSON.parse(fs.readFileSync(hooksConfigPath, 'utf8'));
-    return hooksConfig.configuration || {};
-  } catch (error) {
-    return {};
-  }
-}
-
-// Merge plugin config with hooks config (plugin config takes priority)
-const pluginConfig = loadPluginConfig();
-const hooksConfig = loadHooksConfiguration();
-const config = { ...hooksConfig, ...pluginConfig };
+const config = loadPluginConfig();
 
 // Output directory (priority: config > plugin env > global env > default)
 const OUTPUT_DIR = config.outputDirectory
@@ -125,8 +105,30 @@ if (!fs.existsSync(PLUGIN_STATE_DIR)) {
   fs.mkdirSync(PLUGIN_STATE_DIR, { recursive: true });
 }
 
-// Output file goes to configured output directory
-const OUTPUT_FILE = getOutputPath(`.${PROJECT_NAME}-project-structure.md`);
+/**
+ * Sanitize filename to prevent path traversal and absolute paths
+ */
+function sanitizeFilename(filename) {
+  if (!filename) return '';
+
+  // If absolute path, extract basename only
+  if (path.isAbsolute(filename)) {
+    return path.basename(filename);
+  }
+
+  // Normalize and check for path traversal
+  const normalized = path.normalize(filename);
+  if (normalized.includes('..')) {
+    return path.basename(filename);
+  }
+
+  // Return just the filename (no directories)
+  return path.basename(filename);
+}
+
+// Output file goes to configured output directory (sanitize to prevent path traversal)
+const rawOutputFile = config.outputFile || `.${PROJECT_NAME}-project-structure.md`;
+const OUTPUT_FILE = getOutputPath(sanitizeFilename(rawOutputFile));
 
 // Directories to include (if specified, only these will be scanned)
 const INCLUDED_DIRS = config.includeDirs && config.includeDirs.length > 0
@@ -326,11 +328,6 @@ function generateDocumentation(structure, packageInfo, includedDirs = null) {
   let doc = `# Project Structure\n\n`;
   doc += `**Generated**: ${timestamp}\n\n`;
 
-  // Show which directories are included if filtering is active
-  if (includedDirs && includedDirs.length > 0) {
-    doc += `**Scanned Directories**: ${includedDirs.map(d => `\`${d}\``).join(', ')}\n\n`;
-  }
-
   // Show file extension filters if active
   if (INCLUDED_EXTENSIONS && INCLUDED_EXTENSIONS.length > 0) {
     doc += `**Included Extensions**: ${INCLUDED_EXTENSIONS.map(e => `\`${e}\``).join(', ')}\n\n`;
@@ -388,25 +385,41 @@ function generateDocumentation(structure, packageInfo, includedDirs = null) {
   doc += `## Directory Structure\n\n`;
 
   if (includedDirs && includedDirs.length > 0) {
-    // Show each included directory separately
-    includedDirs.forEach((dirPath, index) => {
-      const dirName = path.basename(dirPath);
-      if (index > 0) doc += `\n`;
-      doc += `### ${dirPath}\n\n`;
-      doc += `${dirName}/\n`;
+    doc += `**Included**: ${includedDirs.join(', ')}\n\n`;
+  }
 
-      // Filter entries for this directory
-      const dirEntries = structure.filter(entry => {
-        return entry.basePath === dirPath;
-      });
+  // Show unified tree from project root
+  doc += `${path.basename(projectRoot)}/\n`;
 
+  if (includedDirs && includedDirs.length > 0) {
+    // Group entries by top-level directory
+    const groupedEntries = {};
+
+    structure.forEach(entry => {
+      const topLevel = entry.basePath || 'root';
+      if (!groupedEntries[topLevel]) {
+        groupedEntries[topLevel] = [];
+      }
+      groupedEntries[topLevel].push(entry);
+    });
+
+    // Output each directory group
+    includedDirs.forEach((dirPath, dirIndex) => {
+      const isLastDir = dirIndex === includedDirs.length - 1;
+      const dirConnector = isLastDir ? '└── ' : '├── ';
+      const dirExtension = isLastDir ? '    ' : '│   ';
+
+      doc += `${dirConnector}${dirPath}/\n`;
+
+      const dirEntries = groupedEntries[dirPath] || [];
       dirEntries.forEach(entry => {
-        doc += `${entry.line}\n`;
+        // Adjust indentation for unified tree
+        const adjustedLine = entry.line.replace(/^/, dirExtension);
+        doc += `${adjustedLine}\n`;
       });
     });
   } else {
     // Show full project structure
-    doc += `${path.basename(projectRoot)}/\n`;
     structure.forEach(entry => {
       doc += `${entry.line}\n`;
     });
@@ -425,8 +438,12 @@ function main() {
 
   // Check if we need to regenerate
   if (!isFirstRun && changes.files.length === 0) {
-    // No changes, exit silently
-    return;
+    // Check if output file exists
+    if (fs.existsSync(OUTPUT_FILE)) {
+      // File exists and no changes - exit
+      return;
+    }
+    // File missing - continue to regenerate
   }
 
   // Scan directory structure

@@ -1,6 +1,6 @@
 {
   "name": "hook-git-auto-backup",
-  "version": "1.0.0",
+  "version": "1.1.1",
   "description": "Automatically backup your work with git commits after each Claude session",
   "author": {
     "name": "Dev GOM",

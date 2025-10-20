@@ -1,9 +1,26 @@
 {
   "description": "Automatically creates git commits after each Claude Code session to prevent work loss",
-  "version": "1.0.0",
+  "version": "1.1.1",
   "author": "Dev GOM",
   "lastUpdated": "2025-10-14",
   "hooks": {
+    "SessionStart": [
+      {
+        "description": "Initialize plugin configuration at session start",
+        "priority": 100,
+        "enabled": true,
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/init-config.js",
+            "description": "Creates default configuration file if it doesn't exist",
+            "timeout": 5000,
+            "continueOnError": true,
+            "suppressOutput": true
+          }
+        ]
+      }
+    ],
     "Stop": [
       {
         "description": "Auto-commit changes when session ends",
@@ -20,10 +37,5 @@
         ]
       }
     ]
-  },
-  "configuration": {
-    "requireGitRepo": true,
-    "commitOnlyIfChanges": true,
-    "includeTimestamp": true
   }
 }

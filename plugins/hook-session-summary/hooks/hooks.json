@@ -1,9 +1,26 @@
 {
   "description": "Tracks all file operations during a Claude Code session and generates a summary report",
-  "version": "1.0.0",
+  "version": "1.1.1",
   "author": "Dev GOM",
   "lastUpdated": "2025-10-14",
   "hooks": {
+    "SessionStart": [
+      {
+        "description": "Initialize plugin configuration at session start",
+        "priority": 100,
+        "enabled": true,
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/init-config.js",
+            "description": "Creates default configuration file if it doesn't exist",
+            "timeout": 5000,
+            "continueOnError": true,
+            "suppressOutput": true
+          }
+        ]
+      }
+    ],
     "PostToolUse": [
       {
         "description": "Track file operations in real-time as they happen",
@@ -38,18 +55,5 @@
         ]
       }
     ]
-  },
-  "configuration": {
-    "outputDirectory": "",
-    "outputFile": ".session-summary.md",
-    "trackedTools": ["Write", "Edit", "Read", "NotebookEdit"],
-    "operationPriority": ["Write", "Edit", "Read"],
-    "includeTimestamp": true,
-    "treeVisualization": true,
-    "statistics": {
-      "totalFiles": true,
-      "byOperationType": true,
-      "byFileExtension": false
-    }
   }
 }

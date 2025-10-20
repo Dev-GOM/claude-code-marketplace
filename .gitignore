@@ -3,6 +3,7 @@
 .complexity-log.md
 .project-structure.md
 .session-summary.md
+.pair-programming-session.md
 
 # Plugin state directories (internal data - do not delete!)
 plugins/*/.state/
@@ -20,7 +21,4 @@ Thumbs.db
 /.claude
 /test
 /.plugin-config
-reddit-post-spec-kit-ko.md
-reddit-post-spec-kit.md
 /.specify
-.claude-code-marketplace-project-structure.md

@@ -18,7 +18,19 @@
 
 ## 동작 원리
 
-이 플러그인은 포괄적인 복잡도 추적을 위해 **두 개의 hook**을 사용합니다:
+이 플러그인은 포괄적인 복잡도 추적을 위해 **세 개의 hook**을 사용합니다:
+
+### SessionStart Hook (`init-config.js`)
+세션 시작 시 실행:
+1. `plugin.json`에서 플러그인 버전 읽기
+2. `.plugin-config/hook-complexity-monitor.json` 설정 파일 존재 확인
+3. 설정 파일이 있으면 `_pluginVersion`과 현재 플러그인 버전 비교
+4. 버전이 일치하면 즉시 종료 (빠름!)
+5. 버전이 다르면 자동 마이그레이션 수행:
+   - 기존 사용자 설정과 새 기본 필드 병합
+   - 모든 사용자 커스텀 설정 보존
+   - `_pluginVersion`을 현재 버전으로 업데이트
+6. 설정 파일이 없으면 기본 설정으로 생성
 
 ### PostToolUse Hook (`check-complexity.js`)
 Write 또는 Edit 작업 직후 실행:
@@ -150,9 +162,22 @@ function deeplyNested() {
 
 ## 환경 설정
 
-플러그인의 동작은 `hooks/hooks.json` 파일의 `configuration` 섹션에서 설정할 수 있습니다.
+플러그인은 첫 실행 시 `.plugin-config/hook-complexity-monitor.json` 설정 파일을 자동으로 생성합니다.
+
+### 자동 설정 마이그레이션
+
+플러그인 업데이트 시 설정이 자동으로 마이그레이션됩니다:
+- ✅ **사용자 설정 보존**
+- ✅ **새 설정 필드 자동 추가** (기본값 적용)
+- ✅ **버전 추적** (`_pluginVersion` 필드 사용)
+- ✅ **수동 작업 불필요**
 
 ### 사용 가능한 설정 옵션
+
+#### `showLogs`
+- **설명**: 복잡도 모니터 메시지를 콘솔에 표시
+- **기본값**: `false`
+- **예시**: `true` (복잡도 분석 결과 표시)
 
 #### `thresholds`
 - **설명**: 코드 복잡도 임계값 설정
@@ -312,9 +337,10 @@ function deeplyNested() {
 ## 기술 세부사항
 
 ### 스크립트 위치
-- `plugins/hook-complexity-monitor/scripts/check-complexity.js` - 수정된 파일 분석
-- `plugins/hook-complexity-monitor/scripts/finalize-session.js` - 최종 로그 생성
-- `plugins/hook-complexity-monitor/scripts/analyzers/` - 언어별 analyzer
+- `~/.claude/plugins/marketplaces/dev-gom-plugins/plugins/hook-complexity-monitor/scripts/init-config.js` - 설정 초기화
+- `~/.claude/plugins/marketplaces/dev-gom-plugins/plugins/hook-complexity-monitor/scripts/check-complexity.js` - 수정된 파일 분석
+- `~/.claude/plugins/marketplaces/dev-gom-plugins/plugins/hook-complexity-monitor/scripts/finalize-session.js` - 최종 로그 생성
+- `~/.claude/plugins/marketplaces/dev-gom-plugins/plugins/hook-complexity-monitor/scripts/analyzers/` - 언어별 analyzer
 
 ### Analyzer 아키텍처
 - **Base Analyzer**: analyzer 인터페이스를 정의하는 추상 클래스
@@ -322,12 +348,15 @@ function deeplyNested() {
 - **Language Analyzers**: JavaScript, Python, Java, Go, C/C++, C#, Rust, Swift, Kotlin, Ruby, PHP
 
 ### Hook 타입
+- **SessionStart** - 세션 시작 시 설정 초기화
 - **PostToolUse** (Write|Edit) - 실시간으로 파일 분석
 - **Stop** - 복잡도 로그를 통합 및 업데이트
 
 ### 상태 파일
-- `.state/complexity-session.json` - 세션 중 문제 추적
+- `.state/${PROJECT_NAME}-complexity-session.json` - 세션 중 문제 추적
 - 세션 종료 시 자동으로 정리됨
+
+**참고**: 상태 파일은 프로젝트 디렉토리 이름을 사용하여 프로젝트별로 격리되어 여러 프로젝트 간 충돌을 방지합니다.
 
 ### 의존성
 - Node.js
@@ -335,6 +364,26 @@ function deeplyNested() {
 ### 타임아웃
 - PostToolUse: 15초
 - Stop: 10초
+
+## 버전
+
+**현재 버전**: 1.1.1
+
+## 변경 이력
+
+### v1.1.1 (2025-10-20)
+- 🐛 **버그 수정**: 복잡도 로그 파일이 없을 때 전체 프로젝트 스캔 수행
+- 🔄 **자동 마이그레이션**: 플러그인 버전 기반 설정 자동 마이그레이션
+- 📦 **스마트 업데이트**: 새 필드 추가 시 사용자 설정 보존
+- 🏷️ **프로젝트 스코핑**: 프로젝트명 기반 state 파일로 충돌 방지
+- 🎯 **SessionStart Hook**: 세션 시작 시 설정 파일 자동 생성
+- ⚡ **성능**: 설정이 최신이면 SessionStart 훅 즉시 종료
+- 🌍 **크로스 플랫폼**: Windows/macOS/Linux 경로 처리 개선
+- 🔍 **스마트 필터링**: includeDirs, excludeDirs, includeExtensions, excludeExtensions 설정 추가
+- 📁 **선택적 스캔**: 분석할 디렉토리와 파일 타입 커스터마이즈
+
+### v1.0.0
+- 최초 릴리스
 
 ## 라이선스
 

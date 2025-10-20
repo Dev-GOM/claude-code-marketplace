@@ -15,7 +15,14 @@ Tracks all file operations during a Claude Code session and generates a summary 
 
 ## How it Works
 
-This plugin uses a **two-stage tracking approach** for maximum reliability:
+This plugin uses a **three-stage tracking approach** for maximum reliability:
+
+### Stage 0: Configuration Initialization (SessionStart Hook)
+- Runs at session start
+- Reads plugin version from `plugin.json`
+- Checks if configuration file exists at `.plugin-config/hook-session-summary.json`
+- Performs automatic migration if versions differ
+- Creates configuration with default settings if doesn't exist
 
 ### Stage 1: Real-time Tracking (PostToolUse Hook)
 - Runs after every `Write`, `Edit`, `Read`, `NotebookEdit` operation
@@ -119,9 +126,22 @@ The `session-summary.js` script:
 
 ## Configuration
 
-You can configure the plugin's behavior in the `configuration` section of `hooks/hooks.json`.
+The plugin automatically creates a configuration file at `.plugin-config/hook-session-summary.json` on first run.
+
+### Automatic Configuration Migration
+
+When you update the plugin, your settings are automatically migrated:
+- ✅ **Preserves your custom settings**
+- ✅ **Adds new configuration fields** with default values
+- ✅ **Version tracked** via `_pluginVersion` field
+- ✅ **Zero manual intervention** required
 
 ### Available Configuration Options
+
+#### `showLogs`
+- **Description**: Show session summary messages in console
+- **Default**: `false`
+- **Example**: `true` (show file tracking confirmations)
 
 #### `outputDirectory`
 - **Description**: Directory path to save summary file
@@ -318,12 +338,14 @@ This file accumulates operations in real-time and should contain entries like:
 ## Technical Details
 
 ### Script Locations
-- `plugins/hook-session-summary/scripts/track-operation.js` - Real-time tracking
-- `plugins/hook-session-summary/scripts/session-summary.js` - Summary generation
+- `~/.claude/plugins/marketplaces/dev-gom-plugins/plugins/hook-session-summary/scripts/init-config.js` - Configuration initialization
+- `~/.claude/plugins/marketplaces/dev-gom-plugins/plugins/hook-session-summary/scripts/track-operation.js` - Real-time tracking
+- `~/.claude/plugins/marketplaces/dev-gom-plugins/plugins/hook-session-summary/scripts/session-summary.js` - Summary generation
 
 ### Hook Types
-- `PostToolUse` - Tracks file operations in real-time
-- `Stop` - Generates summary when session ends
+- **SessionStart** - Initializes configuration on session start
+- **PostToolUse** - Tracks file operations in real-time
+- **Stop** - Generates summary when session ends
 
 ### Dependencies
 - Node.js
@@ -343,6 +365,23 @@ Ideas for contributions:
 - Trend analysis across multiple sessions
 - HTML report generation
 - Automatic commit message suggestions
+
+## Version
+
+**Current Version**: 1.1.1
+
+## Changelog
+
+### v1.1.1 (2025-10-20)
+- 🔄 **Auto Migration**: Plugin version-based configuration migration
+- 📦 **Smart Updates**: Preserves user settings while adding new fields
+- 🏷️ **Project Scoping**: Output files now use project name to prevent conflicts
+- 🎯 **SessionStart Hook**: Auto-creates configuration file on session start
+- ⚡ **Performance**: SessionStart hook exits immediately if config is up-to-date
+- 🌍 **Cross-Platform**: Enhanced path handling for Windows/macOS/Linux compatibility
+
+### v1.0.0
+- Initial release
 
 ## Contributing
 

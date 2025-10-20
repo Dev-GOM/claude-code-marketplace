@@ -14,8 +14,22 @@ Automatically creates git commits after each Claude Code session to prevent work
 
 ## How it Works
 
-This plugin uses the **Stop hook** to automatically run when your Claude Code session ends.
+This plugin uses **two hooks** for automatic backup:
 
+### SessionStart Hook (`init-config.js`)
+Runs at session start:
+1. Reads plugin version from `plugin.json`
+2. Checks if configuration file exists at `.plugin-config/hook-git-auto-backup.json`
+3. If config exists, compares `_pluginVersion` with current plugin version
+4. If versions match, exits immediately (fast!)
+5. If versions differ, performs automatic migration:
+   - Merges existing user settings with new default fields
+   - Preserves all custom user configurations
+   - Updates `_pluginVersion` to current version
+6. If config doesn't exist, creates it with default settings
+
+### Stop Hook (`backup.js`)
+Runs when your Claude Code session ends:
 1. Check if the directory is a git repository
 2. Check if there are uncommitted changes (`git status --porcelain`)
 3. If changes exist:
@@ -49,9 +63,22 @@ Auto-backup: 2025-10-14 12:34:56
 
 ## Configuration
 
-You can configure the plugin's behavior in the `configuration` section of `hooks/hooks.json`.
+The plugin automatically creates a configuration file at `.plugin-config/hook-git-auto-backup.json` on first run.
+
+### Automatic Configuration Migration
+
+When you update the plugin, your settings are automatically migrated:
+- ✅ **Preserves your custom settings**
+- ✅ **Adds new configuration fields** with default values
+- ✅ **Version tracked** via `_pluginVersion` field
+- ✅ **Zero manual intervention** required
 
 ### Available Configuration Options
+
+#### `showLogs`
+- **Description**: Show auto-backup messages in console
+- **Default**: `false`
+- **Example**: `true` (show backup confirmations)
 
 #### `requireGitRepo`
 - **Description**: Only run if it's a Git repository
@@ -70,28 +97,14 @@ You can configure the plugin's behavior in the `configuration` section of `hooks
 
 ### How to Change Settings
 
-Edit the `plugins/hook-git-auto-backup/hooks/hooks.json` file:
+Edit `.plugin-config/hook-git-auto-backup.json` in your project root:
 
 ```json
 {
-  "hooks": {
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/backup.js",
-            "timeout": 10000
-          }
-        ]
-      }
-    ]
-  },
-  "configuration": {
-    "requireGitRepo": true,
-    "commitOnlyIfChanges": true,
-    "includeTimestamp": true
-  }
+  "showLogs": false,
+  "requireGitRepo": true,
+  "commitOnlyIfChanges": true,
+  "includeTimestamp": true
 }
 ```
 
@@ -189,11 +202,13 @@ This plugin only commits once per session (when you exit). If you want more cont
 
 ## Technical Details
 
-### Script Location
-`plugins/hook-git-auto-backup/scripts/backup.js`
+### Script Locations
+- `~/.claude/plugins/marketplaces/dev-gom-plugins/plugins/hook-git-auto-backup/scripts/init-config.js` - Configuration initialization
+- `~/.claude/plugins/marketplaces/dev-gom-plugins/plugins/hook-git-auto-backup/scripts/backup.js` - Git backup execution
 
-### Hook Type
-`Stop` - Runs when session ends
+### Hook Types
+- **SessionStart** - Initializes configuration on session start
+- **Stop** - Creates git backup when session ends
 
 ### Dependencies
 - Node.js
@@ -201,6 +216,22 @@ This plugin only commits once per session (when you exit). If you want more cont
 
 ### Timeout
 15 seconds
+
+## Version
+
+**Current Version**: 1.1.1
+
+## Changelog
+
+### v1.1.1 (2025-10-20)
+- 🔄 **Auto Migration**: Plugin version-based configuration migration
+- 📦 **Smart Updates**: Preserves user settings while adding new fields
+- 🎯 **SessionStart Hook**: Auto-creates configuration file on session start
+- ⚡ **Performance**: SessionStart hook exits immediately if config is up-to-date
+- 🌍 **Cross-Platform**: Enhanced path handling for Windows/macOS/Linux compatibility
+
+### v1.0.0
+- Initial release
 
 ## Contributing
 

@@ -3,6 +3,27 @@
 const fs = require('fs');
 const path = require('path');
 
+// Load configuration from .plugin-config (project root)
+function loadPluginConfig() {
+  const projectRoot = process.cwd();
+  const configPath = path.join(projectRoot, '.plugin-config', 'ai-pair-programming.json');
+
+  try {
+    if (fs.existsSync(configPath)) {
+      return JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    }
+  } catch (error) {
+    // Fall through to default config
+  }
+
+  // Default config
+  return {
+    showLogs: false
+  };
+}
+
+const config = loadPluginConfig();
+
 // Parse JSON input from stdin
 let inputData = '';
 
@@ -40,8 +61,10 @@ process.stdin.on('end', () => {
     }
 
     // Read state file to track review frequency
+    const projectRoot = process.cwd();
+    const PROJECT_NAME = path.basename(projectRoot);
     const stateDir = path.join(__dirname, '..', '.state');
-    const stateFile = path.join(stateDir, 'review-state.json');
+    const stateFile = path.join(stateDir, `${PROJECT_NAME}-review-state.json`);
 
     let state = { fileChanges: 0, lastReviewTime: 0 };
 
@@ -74,21 +97,23 @@ process.stdin.on('end', () => {
       state.lastReviewTime = now;
       fs.writeFileSync(stateFile, JSON.stringify(state, null, 2));
 
-      // Output suggestion to trigger review
-      const output = {
-        systemMessage: [
-          '',
-          '💡 **AI Pair Programming Tip:**',
-          '',
-          `You've made significant changes to your code. Consider running \`/review\` to get`,
-          `feedback from the @code-reviewer agent on your recent work.`,
-          '',
-          'This helps catch potential issues early! 🚀',
-          ''
-        ].join('\n')
-      };
+      // Output suggestion to trigger review (only if showLogs is true)
+      if (config.showLogs !== false) {
+        const output = {
+          systemMessage: [
+            '',
+            '💡 **AI Pair Programming Tip:**',
+            '',
+            `You've made significant changes to your code. Consider running \`/review\` to get`,
+            `feedback from the @code-reviewer agent on your recent work.`,
+            '',
+            'This helps catch potential issues early! 🚀',
+            ''
+          ].join('\n')
+        };
 
-      console.log(JSON.stringify(output));
+        console.log(JSON.stringify(output));
+      }
     } else {
       // Just update the counter
       fs.writeFileSync(stateFile, JSON.stringify(state, null, 2));

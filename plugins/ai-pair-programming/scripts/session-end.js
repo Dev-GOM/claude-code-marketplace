@@ -77,8 +77,10 @@ process.stdin.on('end', () => {
     const input = JSON.parse(inputData);
 
     // Read state to generate session summary
+    const projectDir = input.working_directory || process.cwd();
+    const PROJECT_NAME = path.basename(projectDir);
     const stateDir = path.join(__dirname, '..', '.state');
-    const stateFile = path.join(stateDir, 'review-state.json');
+    const stateFile = path.join(stateDir, `${PROJECT_NAME}-review-state.json`);
 
     let state = { fileChanges: 0, lastReviewTime: 0 };
 
@@ -89,10 +91,8 @@ process.stdin.on('end', () => {
         // Ignore
       }
     }
-
-    const projectDir = input.working_directory || process.cwd();
     const config = loadPluginConfig(projectDir);
-    const reportPath = path.join(projectDir, '.pair-programming-session.md');
+    const reportPath = path.join(projectDir, `.${PROJECT_NAME}-pair-programming-session.md`);
 
     const now = new Date();
     const timestamp = now.toISOString().replace('T', ' ').substring(0, 19);

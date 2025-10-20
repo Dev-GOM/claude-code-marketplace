@@ -2,7 +2,6 @@
 
 const fs = require('fs');
 const path = require('path');
-const { execSync } = require('child_process');
 
 const projectRoot = process.cwd();
 
@@ -47,48 +46,35 @@ function loadPluginConfig() {
       return JSON.parse(fs.readFileSync(configPath, 'utf8'));
     }
   } catch (error) {
-    // Fall through to create default config
+    // Fall through to return default config
   }
 
-  // Create default config if it doesn't exist
-  const defaultConfig = {
+  // Full fallback config - init-config.js should have created this,
+  // but provide complete defaults to ensure plugin works properly
+  return {
     showLogs: false,
-    outputDirectory: '',
-    supportedExtensions: null,
-    excludeDirs: null,
-    commentTypes: null,
-    outputFormats: null
+    outputDirectory: '.todos-report.md',
+    outputFile: '',
+    includeDirs: [],
+    excludeDirs: [
+      'node_modules', '.git', 'dist', 'build', 'coverage',
+      '.next', '.nuxt', 'out', 'vendor', '.snapshots', '.claude-plugin'
+    ],
+    includeExtensions: [
+      '.js', '.jsx', '.ts', '.tsx',
+      '.py', '.java', '.go', '.rb', '.php',
+      '.c', '.cpp', '.h', '.hpp', '.cs',
+      '.kt', '.kts', '.swift', '.rs', '.scala', '.dart',
+      '.m', '.mm', '.css', '.scss', '.sass', '.less',
+      '.html', '.vue', '.svelte', '.r', '.R', '.jl', '.coffee',
+      '.sh', '.bash', '.ps1', '.toml', '.ini', '.yaml', '.yml'
+    ],
+    excludeExtensions: [],
+    commentTypes: ['TODO', 'FIXME', 'HACK', 'BUG', 'XXX', 'NOTE']
   };
-
-  try {
-    const configDir = path.join(projectRoot, '.plugin-config');
-    if (!fs.existsSync(configDir)) {
-      fs.mkdirSync(configDir, { recursive: true });
-    }
-    fs.writeFileSync(configPath, JSON.stringify(defaultConfig, null, 2), 'utf8');
-  } catch (error) {
-    // Fail silently if we can't create the file
-  }
-
-  return defaultConfig;
 }
 
-// Load configuration from hooks.json
-function loadHooksConfiguration() {
-  try {
-    const hooksConfigPath = path.join(__dirname, '../hooks/hooks.json');
-    const hooksConfig = JSON.parse(fs.readFileSync(hooksConfigPath, 'utf8'));
-    return hooksConfig.configuration || {};
-  } catch (error) {
-    // Fallback to defaults if config can't be loaded
-    return {};
-  }
-}
-
-// Merge plugin config with hooks config (plugin config takes priority)
-const pluginConfig = loadPluginConfig();
-const hooksConfig = loadHooksConfiguration();
-const config = { ...hooksConfig, ...pluginConfig };
+const config = loadPluginConfig();
 
 // Output directory (priority: config > plugin env > global env > default)
 const OUTPUT_DIR = config.outputDirectory
@@ -126,41 +112,32 @@ if (!fs.existsSync(PLUGIN_STATE_DIR)) {
   fs.mkdirSync(PLUGIN_STATE_DIR, { recursive: true });
 }
 
-// Directories to exclude from search (from config or defaults)
+// Directories to include (empty array = include all)
+const INCLUDED_DIRS = config.includeDirs || [];
+
+// Directories to exclude from search
 const EXCLUDED_DIRS = config.excludeDirs || [
-  'node_modules',
-  '.git',
-  'dist',
-  'build',
-  'coverage',
-  '.next',
-  '.nuxt',
-  'out',
-  'vendor',
-  '.snapshots',
-  '.claude-plugin'
+  'node_modules', '.git', 'dist', 'build', 'coverage',
+  '.next', '.nuxt', 'out', 'vendor', '.snapshots', '.claude-plugin'
 ];
 
-// File extensions to search (from config or defaults)
-const EXTENSIONS = config.supportedExtensions || [
-  '.js', '.jsx', '.ts', '.tsx',
-  '.py', '.java', '.go', '.rb', '.php',
-  '.c', '.cpp', '.h', '.hpp',
-  '.cs',                              // C#
-  '.kt', '.kts',                      // Kotlin
-  '.swift',                           // Swift
-  '.rs',                              // Rust
-  '.scala',                           // Scala
-  '.dart',                            // Dart
-  '.m', '.mm',                        // Objective-C
-  '.css', '.scss', '.sass', '.less',
-  '.html', '.vue', '.svelte',
-  '.r', '.R', '.jl', '.coffee',
-  '.sh', '.bash', '.ps1',
-  '.toml', '.ini', '.yaml', '.yml'
-];
+// File extensions to include (if specified, only these will be included)
+const INCLUDE_EXTENSIONS = config.includeExtensions && config.includeExtensions.length > 0
+  ? config.includeExtensions
+  : [
+      '.js', '.jsx', '.ts', '.tsx',
+      '.py', '.java', '.go', '.rb', '.php',
+      '.c', '.cpp', '.h', '.hpp', '.cs',
+      '.kt', '.kts', '.swift', '.rs', '.scala', '.dart',
+      '.m', '.mm', '.css', '.scss', '.sass', '.less',
+      '.html', '.vue', '.svelte', '.r', '.R', '.jl', '.coffee',
+      '.sh', '.bash', '.ps1', '.toml', '.ini', '.yaml', '.yml'
+    ];
 
-// Comment types to search for (from config or defaults)
+// File extensions to exclude from scanning
+const EXCLUDE_EXTENSIONS = config.excludeExtensions || [];
+
+// Comment types to search for
 const COMMENT_TYPES = config.commentTypes || ['TODO', 'FIXME', 'HACK', 'XXX', 'NOTE', 'BUG'];
 const commentTypesPattern = COMMENT_TYPES.join('|');
 
@@ -189,7 +166,19 @@ function hasValidExtension(filePath) {
     return true;
   }
 
-  return EXTENSIONS.includes(ext);
+  // First, check if file is in include list (same as auto-docs logic)
+  if (INCLUDE_EXTENSIONS && INCLUDE_EXTENSIONS.length > 0) {
+    if (!INCLUDE_EXTENSIONS.includes(ext)) {
+      return false; // Not in include list - exclude
+    }
+  }
+
+  // Then, check if file is in exclude list
+  if (EXCLUDE_EXTENSIONS.includes(ext)) {
+    return false; // In exclude list - exclude
+  }
+
+  return true; // Include the file
 }
 
 function findTodosInFile(filePath) {
@@ -278,6 +267,55 @@ function walkDirectory(dir, todos = []) {
   }
 
   return todos;
+}
+
+/**
+ * Perform full project scan
+ */
+function performFullScan(reportPath) {
+  const allTodos = [];
+
+  // Determine which directories to scan
+  const dirsToScan = INCLUDED_DIRS.length > 0
+    ? INCLUDED_DIRS.map(dir => path.join(projectRoot, dir))
+    : [projectRoot];
+
+  // Scan each directory
+  dirsToScan.forEach(dir => {
+    if (fs.existsSync(dir)) {
+      walkDirectory(dir, allTodos);
+    }
+  });
+
+  // Generate report
+  const report = generateReport(allTodos);
+
+  // Save to file
+  fs.writeFileSync(reportPath, report, 'utf8');
+
+  // Save TODO state
+  const newState = {};
+  allTodos.forEach(todo => {
+    if (!newState[todo.file]) {
+      newState[todo.file] = [];
+    }
+    newState[todo.file].push({
+      type: todo.type,
+      line: todo.line,
+      message: todo.message,
+      fullLine: todo.fullLine || ''
+    });
+  });
+  saveTodoState(newState);
+
+  // Output message (if showLogs is enabled)
+  if (config.showLogs !== false) {
+    const message = `📋 TODO Collector: Full project scan completed. Found ${allTodos.length} TODO(s).`;
+    console.log(JSON.stringify({
+      systemMessage: message,
+      continue: true
+    }));
+  }
 }
 
 function generateReport(todos) {
@@ -478,12 +516,44 @@ Total Items: ${allTodos.length}
   return report;
 }
 
+/**
+ * Sanitize filename to prevent path traversal and absolute paths
+ */
+function sanitizeFilename(filename) {
+  if (!filename) return '';
+
+  // If absolute path, extract basename only
+  if (path.isAbsolute(filename)) {
+    return path.basename(filename);
+  }
+
+  // Normalize and check for path traversal
+  const normalized = path.normalize(filename);
+  if (normalized.includes('..')) {
+    return path.basename(filename);
+  }
+
+  // Return just the filename (no directories)
+  return path.basename(filename);
+}
+
 function main() {
+  // Determine output file path (sanitize to prevent path traversal)
+  const rawOutputFile = config.outputFile || `.${PROJECT_NAME}-todos-report.md`;
+  const OUTPUT_FILE = sanitizeFilename(rawOutputFile);
+  const reportPath = getOutputPath(OUTPUT_FILE);
+
   // Load changed files from tracking
   const changedFiles = loadChangedFiles();
 
+  // If report doesn't exist, perform full scan (regardless of changed files)
+  if (!fs.existsSync(reportPath)) {
+    performFullScan(reportPath);
+    return;
+  }
+
+  // If no changes, exit
   if (changedFiles.length === 0) {
-    // No file changes - exit silently
     return;
   }
 
@@ -570,12 +640,8 @@ function main() {
   // Generate report with change tracking
   const report = generateReportWithChanges(allTodos, changes, changedFilesRelative);
 
-  // Save to file
-  const outputFormats = (config.outputFormats && config.outputFormats.length > 0)
-    ? config.outputFormats
-    : [`.${PROJECT_NAME}-todos-report.md`];
-  const outputPath = getOutputPath(outputFormats[0]);
-  fs.writeFileSync(outputPath, report, 'utf8');
+  // Save to file (use reportPath from function start)
+  fs.writeFileSync(reportPath, report, 'utf8');
 
   // Save updated TODO state
   saveTodoState(newState);

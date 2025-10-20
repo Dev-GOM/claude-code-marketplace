@@ -363,6 +363,23 @@ Add to `.gitignore` if desired:
 3. Ensure agents directory is properly configured
 4. Confirm agent files use `.md` extension, not `.json`
 
+## 📦 Version
+
+**Current Version**: 1.1.1
+
+## 📋 Changelog
+
+### v1.1.1 (2025-10-20)
+- 🔄 **Auto Migration**: Plugin version-based configuration migration
+- 📦 **Smart Updates**: Preserves user settings while adding new fields
+- 🏷️ **Project Scoping**: State and output files now use project name to prevent conflicts
+- 🎯 **SessionStart Hook**: Auto-creates configuration file on session start
+- ⚡ **Performance**: SessionStart hook exits immediately if config is up-to-date
+- 🌍 **Cross-Platform**: Enhanced path handling for Windows/macOS/Linux compatibility
+
+### v1.0.0
+- Initial release
+
 ## 🤝 Contributing
 
 Feel free to customize this plugin:

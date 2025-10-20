@@ -1,9 +1,26 @@
 {
   "description": "Scans your entire project and collects all TODO, FIXME, HACK, XXX, NOTE, and BUG comments",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "author": "Dev GOM",
-  "lastUpdated": "2025-10-14",
+  "lastUpdated": "2025-10-20",
   "hooks": {
+    "SessionStart": [
+      {
+        "description": "Initialize TODO Collector configuration",
+        "priority": 10,
+        "enabled": true,
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/init-config.js",
+            "description": "Creates user configuration file if it doesn't exist",
+            "timeout": 5000,
+            "continueOnError": true,
+            "suppressOutput": false
+          }
+        ]
+      }
+    ],
     "PostToolUse": [
       {
         "description": "Track modified files for TODO scanning",
@@ -37,20 +54,6 @@
           }
         ]
       }
-    ]
-  },
-  "configuration": {
-    "outputDirectory": "",
-    "commentTypes": ["TODO", "FIXME", "HACK", "BUG", "XXX", "NOTE"],
-    "outputFormats": [".todos-report.md", ".todos.txt"],
-    "supportedExtensions": [
-      ".js", ".jsx", ".ts", ".tsx",
-      ".py", ".java", ".go", ".c", ".cpp",
-      ".rs", ".rb", ".php", ".swift"
-    ],
-    "excludeDirs": [
-      "node_modules", "dist", "build",
-      ".git", "coverage", ".next"
     ]
   }
 }
