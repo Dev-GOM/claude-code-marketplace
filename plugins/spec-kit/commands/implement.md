@@ -1,6 +1,6 @@
 ---
 description: 작업 목록에 따라 실제 구현 시작
-allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, AskUserQuestion]
+allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, AskUserQuestion, SlashCommand]
 argument-hint: <task-focus | 작업 초점>
 ---
 
@@ -312,14 +312,109 @@ npm test
 
 ### 8.1 수집된 정보를 Draft 파일로 저장
 
-먼저 현재 기능의 drafts 디렉토리 생성:
+먼저 Task 정보를 기반으로 draft 파일명을 생성합니다:
+
+**Draft 파일명 생성 규칙:**
+
+tasks.md 파일의 Phase, Task 번호, 작업명을 사용하여 고유한 파일명 생성:
+
+```
+Format: [phase]-[task-id]-[작업명-slug]-draft.md
+
+실제 tasks.md 예시:
+## Phase 1: Setup
+- [ ] T001 [US1] Assets/App/Core/ 폴더 구조 생성
+  → p1-t001-assets-app-core-draft.md
+
+## Phase 2: Implementation
+- [ ] T010 [US2] Currency 모듈 분석
+  → p2-t010-currency-draft.md
+
+## Phase 3: Testing
+- [ ] T015 [US2] Currency 보안 검증 (Cheat Engine 테스트)
+  → p3-t015-currency-cheat-engine-draft.md
+```
+
+**파일명 생성 단계:**
+
+1. **Phase 번호 추출**:
+   - tasks.md에서 `## Phase X:` 헤더 찾기
+   - Phase 번호를 "p" + 숫자로 변환 (Phase 1 → p1, Phase 2 → p2)
+   - Phase 정보가 없으면 "p0" 사용
+
+2. **Task ID 추출** (예: "T001", "T010"):
+   - tasks.md에서 `- [ ] T001 [태그] 작업명` 형식 파싱
+   - Task ID를 소문자로 변환 (T001 → t001)
+
+3. **태그 제거**:
+   - 대괄호 안의 태그들 제거 (예: [US1], [P], [US2])
+   - 남은 작업명만 사용
+
+4. **작업명을 slug로 변환** (영문으로만):
+   - 소문자로 변환 (영문만)
+   - 공백을 하이픈(`-`)으로 변경
+   - 특수문자 제거 (괄호, 슬래시, 콜론 등)
+   - **영문, 숫자, 하이픈만 유지 (한글 제거)**
+   - 연속된 하이픈을 하나로 축약
+   - 최대 60자로 제한
+
+5. **최종 파일명 조합**:
+   - `[phase]-[task-id-소문자]-[slug]-draft.md`
+
+**예시 코드 (참고용):**
+```javascript
+// tasks.md 내용 예시:
+// ## Phase 2: Implementation
+// - [ ] T010 [US2] Currency 모듈 분석
+
+const taskLine = "- [ ] T010 [US2] Currency 모듈 분석";
+const phaseHeader = "## Phase 2: Implementation";
+
+// 1. Phase 번호 추출
+const phaseMatch = phaseHeader.match(/Phase\s+(\d+)/i);
+const phaseNum = phaseMatch ? phaseMatch[1] : '0';
+const phase = `p${phaseNum}`;
+// 결과: "p2"
+
+// 2. Task ID 추출
+const taskIdMatch = taskLine.match(/T\d+/);
+const taskId = taskIdMatch ? taskIdMatch[0].toLowerCase() : 'task';
+// 결과: "t010"
+
+// 3. 태그 제거 및 작업명 추출
+const taskNameMatch = taskLine.match(/\]\s*(.+)$/);
+let taskName = taskNameMatch ? taskNameMatch[1] : '';
+// 대괄호 안의 태그들 모두 제거
+taskName = taskName.replace(/\[.*?\]\s*/g, '').trim();
+// 결과: "Currency 모듈 분석"
+
+// 4. Slug 생성 (영문으로만)
+const slug = taskName
+  .toLowerCase()                          // 영문만 소문자로
+  .replace(/[/()\[\]<>:;,'"]/g, '')      // 특수문자 제거
+  .replace(/\s+/g, '-')                   // 공백을 하이픈으로
+  .replace(/[^a-z0-9-]/g, '')             // 영문, 숫자, 하이픈만 유지 (한글 제거)
+  .replace(/-+/g, '-')                    // 연속 하이픈 축약
+  .replace(/^-|-$/g, '')                  // 시작/끝 하이픈 제거
+  .substring(0, 60);                      // 최대 60자
+// 결과: "currency"
+
+const draftFileName = `${phase}-${taskId}-${slug}-draft.md`;
+// 최종 결과: "p2-t010-currency-draft.md"
+```
+
+**Draft 디렉토리 생성:**
 
 ```bash
 # drafts 디렉토리 생성
 mkdir -p "specs/$CURRENT_BRANCH/drafts"
 ```
 
-Write 도구를 사용하여 수집된 정보를 `specs/$CURRENT_BRANCH/drafts/implement-draft.md` 파일로 저장합니다:
+Write 도구를 사용하여 수집된 정보를 **생성한 파일명**으로 저장합니다:
+
+```
+파일 경로: specs/$CURRENT_BRANCH/drafts/task-[번호]-[slug]-draft.md
+```
 
 ```markdown
 # Implement Draft
@@ -353,18 +448,42 @@ Write 도구를 사용하여 수집된 정보를 `specs/$CURRENT_BRANCH/drafts/i
 
 ### 8.2 Spec-Kit 명령 실행
 
-Draft 파일 경로와 **브랜치 정보**를 전달하여 SlashCommand 도구로 `/speckit.implement` 명령을 실행합니다:
+**⚠️ CRITICAL - MUST USE SLASHCOMMAND TOOL**:
+
+You **MUST** now use the **SlashCommand tool** to execute the `/speckit.implement` command. This is a required step - do not skip it!
+
+Call the SlashCommand tool with the following command parameter:
+- Replace `$CURRENT_BRANCH` with the actual branch name
+- Replace `$DRAFT_FILE_NAME` with the generated draft file name from Step 8.1 (예: `p1-t001-setup-database-draft.md`)
 
 ```
-/speckit.implement INSTRUCTION: This command is being called from /spec-kit:implement plugin. Current branch is "$CURRENT_BRANCH" and draft at "specs/$CURRENT_BRANCH/drafts/implement-draft.md". Read draft. Draft contains ALL task details, implementation approach, and quality checks. Skip discussion and confirmation steps (Step 2-3) and proceed directly to Step 4 (Implement). After completing implementation, update "specs/$CURRENT_BRANCH/tasks.md". **CRITICAL - MUST FOLLOW:** 1. LANGUAGE: Process ALL content in user's system language. 2. ASKUSERQUESTION: Use AskUserQuestion tool if clarification needed. 3. TASK UPDATE: Mark completed tasks in tasks.md file.
+/speckit.implement INSTRUCTION: This command is being called from /spec-kit:implement plugin. Current branch is "$CURRENT_BRANCH" and draft at "specs/$CURRENT_BRANCH/drafts/$DRAFT_FILE_NAME". Read draft. Draft contains ALL task details, implementation approach, and quality checks. Skip discussion and confirmation steps (Step 2-3) and proceed directly to Step 4 (Implement). After completing implementation, update "specs/$CURRENT_BRANCH/tasks.md". **CRITICAL - MUST FOLLOW:** 1. LANGUAGE: Process ALL content in user's system language. 2. ASKUSERQUESTION: Use AskUserQuestion tool if clarification needed. 3. TASK UPDATE: Mark completed tasks in tasks.md file.
 ```
 
-spec-kit 명령어는 draft 파일을 읽어서 구현을 진행하고 tasks.md를 업데이트합니다.
+**명령어 예시:**
+```
+Phase 1, T001 작업 시:
+/speckit.implement INSTRUCTION: This command is being called from /spec-kit:implement plugin. Current branch is "002-core-security" and draft at "specs/002-core-security/drafts/p1-t001-assets-app-core-draft.md". Read draft...
+
+Phase 2, T010 작업 시:
+/speckit.implement INSTRUCTION: This command is being called from /spec-kit:implement plugin. Current branch is "002-core-security" and draft at "specs/002-core-security/drafts/p2-t010-currency-draft.md". Read draft...
+
+Phase 3, T015 작업 시:
+/speckit.implement INSTRUCTION: This command is being called from /spec-kit:implement plugin. Current branch is "002-core-security" and draft at "specs/002-core-security/drafts/p3-t015-currency-cheat-engine-draft.md". Read draft...
+```
+
+The spec-kit command will read the draft file, execute the implementation, and update tasks.md.
 
 **토큰 절약 효과:**
 - 긴 텍스트를 명령어 인자로 전달하지 않음
 - 파일 경로만 전달하여 효율적
 - Draft 파일로 디버깅 및 재사용 가능
+
+**Draft 파일 관리 이점:**
+- 각 task별로 독립적인 draft 파일 보존
+- 이전 작업 내용 참조 가능
+- 디버깅 및 재실행 시 유용
+- 작업 이력 추적 용이
 
 작업 완료 후 다음 작업으로 진행하려면 `/spec-kit:implement`를 재실행하세요.
 

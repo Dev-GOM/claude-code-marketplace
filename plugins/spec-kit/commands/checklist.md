@@ -1,6 +1,6 @@
 ---
 description: 헌법의 품질 게이트(Quality Gates) 체크리스트 실행
-allowed-tools: [Read, Bash]
+allowed-tools: [Read, Bash, Write, SlashCommand]
 argument-hint: <specific-gate | 특정 게이트>
 ---
 
@@ -266,13 +266,17 @@ Write 도구를 사용하여 수집된 정보를 `specs/$CURRENT_BRANCH/drafts/c
 
 ### 5.2 Spec-Kit 명령 실행
 
-Draft 파일 경로와 **브랜치 정보**를 전달하여 SlashCommand 도구로 `/speckit.checklist` 명령을 실행합니다:
+**⚠️ CRITICAL - MUST USE SLASHCOMMAND TOOL**:
+
+You **MUST** now use the **SlashCommand tool** to execute the `/speckit.checklist` command. This is a required step - do not skip it!
+
+Call the SlashCommand tool with the following command parameter (replace $CURRENT_BRANCH with the actual branch name):
 
 ```
 /speckit.checklist INSTRUCTION: This command is being called from /spec-kit:checklist plugin. Current branch is "$CURRENT_BRANCH" and draft at "specs/$CURRENT_BRANCH/drafts/checklist-draft.md". Read draft. Draft contains ALL checklist results including automated check outputs and manual check statuses. Skip all execution steps (Step 1-3) and proceed directly to Step 4 (Generate Report). **CRITICAL - MUST FOLLOW:** 1. LANGUAGE: Process ALL content in user's system language. 2. ASKUSERQUESTION: Use AskUserQuestion tool if clarification needed. 3. REPORT GENERATION: Generate report from draft only, do NOT re-run checks.
 ```
 
-spec-kit 명령어는 draft 파일을 읽어서 사용자의 시스템 언어로 Step 4 (Generate Report)를 실행하고 결과 리포트를 생성합니다.
+The spec-kit command will read the draft file and execute Step 4 (Generate Report) to create the results report in the user's system language.
 
 **토큰 절약 효과:**
 - 긴 텍스트를 명령어 인자로 전달하지 않음

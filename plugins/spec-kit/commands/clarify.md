@@ -1,6 +1,6 @@
 ---
 description: 명세나 계획의 모호한 부분을 명확히 하고 Open Questions 해결
-allowed-tools: [Read, Write, Edit, AskUserQuestion]
+allowed-tools: [Read, Write, Edit, AskUserQuestion, SlashCommand]
 argument-hint: <question-or-topic | 질문 또는 주제>
 ---
 
@@ -251,13 +251,17 @@ Write 도구를 사용하여 수집된 정보를 `specs/$CURRENT_BRANCH/drafts/c
 
 ### 5.2 Spec-Kit 명령 실행
 
-Draft 파일 경로를 전달하여 SlashCommand 도구로 `/speckit.clarify` 명령을 실행합니다:
+**⚠️ CRITICAL - MUST USE SLASHCOMMAND TOOL**:
+
+You **MUST** now use the **SlashCommand tool** to execute the `/speckit.clarify` command. This is a required step - do not skip it!
+
+Call the SlashCommand tool with the following command parameter (replace $CURRENT_BRANCH with the actual branch name):
 
 ```
 /speckit.clarify specs/$CURRENT_BRANCH/drafts/clarify-draft.md INSTRUCTION: Read draft at path above. Draft contains ALL resolved issues with clear resolutions and rationales. Skip identification and discussion steps (Step 2-4) and proceed directly to updating spec.md and plan.md files. **CRITICAL - MUST FOLLOW:** 1. LANGUAGE: Process ALL content in user's system language. 2. ASKUSERQUESTION: Use AskUserQuestion tool if clarification needed. 3. FILE UPDATE: Remove resolved Open Questions, Add clear requirements, Add specific acceptance criteria, Remove resolved Open Technical Questions, Reflect technical decisions, Record changes in changelog.
 ```
 
-spec-kit 명령어는 draft 파일을 읽어서 spec.md와 plan.md를 업데이트합니다.
+The spec-kit command will read the draft file and update spec.md and plan.md files.
 
 **토큰 절약 효과:**
 - 긴 텍스트를 명령어 인자로 전달하지 않음
