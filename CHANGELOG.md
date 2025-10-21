@@ -2,7 +2,22 @@
 
 All notable changes to the Dev GOM Plugins marketplace will be documented in this file.
 
-> **Version**: 2.4.3 | **Last Updated**: 2025-10-22
+> **Version**: 2.4.4 | **Last Updated**: 2025-10-22
+
+---
+
+## [2.4.4] - 2025-10-22
+
+### Added
+- 🧪 **Unity Dev Toolkit v1.4.0**: New test automation skill
+  - Added `unity-test-runner` skill for automated Unity Test Framework execution and analysis
+  - Cross-platform Unity Editor detection (Windows/macOS/Linux)
+  - EditMode and PlayMode test execution via Unity CLI
+  - NUnit XML results parsing with detailed failure analysis
+  - Smart test pattern matching against 6 common failure categories
+  - File:line references in failure reports for quick navigation
+  - Node.js scripts for editor detection and test result parsing
+  - Comprehensive test patterns database with NUnit assertions and Unity-specific patterns
 
 ---
 

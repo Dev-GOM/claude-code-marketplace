@@ -133,9 +133,9 @@ Complete AI pair programming experience with slash commands, expert agents, and 
 <details>
 <summary><strong>📖 Plugin Details</strong> (Click to expand)</summary>
 
-Comprehensive Unity game development toolkit with intelligent scripting assistance, code refactoring, performance optimization, UI Toolkit support, and compile error resolution.
+Comprehensive Unity game development toolkit with intelligent scripting assistance, code refactoring, performance optimization, UI Toolkit support, compile error resolution, and test automation.
 
-**Quick Info:** 4 expert agents + 6 Agent Skills + 3 slash commands + 10 production templates | **Commands:** `/unity:new-script`, `/unity:optimize-scene`, `/unity:setup-test` | **Agents:** `@unity-scripter`, `@unity-refactor`, `@unity-performance`, `@unity-architect` | **Features:** UI Toolkit templates (Editor + Runtime), automated code validation, compile error detection & fixing, scene optimization
+**Quick Info:** 4 expert agents + 7 Agent Skills + 3 slash commands + 10 production templates | **Commands:** `/unity:new-script`, `/unity:optimize-scene`, `/unity:setup-test` | **Agents:** `@unity-scripter`, `@unity-refactor`, `@unity-performance`, `@unity-architect` | **Features:** UI Toolkit templates (Editor + Runtime), automated code validation, compile error detection & fixing, test automation, scene optimization
 
 **[Read Full Documentation →](plugins/unity-dev-toolkit/README.md)**
 
