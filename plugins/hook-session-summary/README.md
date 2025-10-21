@@ -2,7 +2,7 @@
 
 > **Language**: [English](README.md) | [한국어](README.ko.md)
 
-Tracks all file operations during a Claude Code session and generates a summary report.
+> Tracks all file operations during a Claude Code session and generates a summary report.
 
 ## Features
 

@@ -2,7 +2,7 @@
 
 > **Language**: [English](README.md) | [한국어](README.ko.md)
 
-Automatically creates git commits after each Claude Code session to prevent work loss.
+> Automatically creates git commits after each Claude Code session to prevent work loss.
 
 ## Features
 

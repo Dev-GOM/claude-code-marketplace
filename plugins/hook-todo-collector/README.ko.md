@@ -2,7 +2,7 @@
 
 > **언어**: [English](README.md) | [한국어](README.ko.md)
 
-수정한 파일에서 TODO 코멘트를 추적하고 Claude Code 세션 중 변경사항을 감지합니다.
+> 수정한 파일에서 TODO 코멘트를 추적하고 Claude Code 세션 중 변경사항을 감지합니다.
 
 ## 주요 기능
 

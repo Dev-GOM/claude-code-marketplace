@@ -12,7 +12,7 @@
 > - UI system selection (UGUI vs UI Toolkit) should be determined based on project requirements
 > - Skills are model-invoked and may not activate in all contexts
 
-A comprehensive Claude Code plugin that brings expert Unity development assistance through specialized agents for scripting, refactoring, and optimization, plus intelligent automation and production-ready script templates.
+> A comprehensive Claude Code plugin that brings expert Unity development assistance through specialized agents for scripting, refactoring, and optimization, plus intelligent automation and production-ready script templates.
 
 ## 🌟 Features
 
@@ -38,6 +38,7 @@ Model-invoked capabilities that Claude automatically uses when relevant:
 - **unity-template-generator** - Assists with script template generation
 - **unity-ui-selector** - Guides UGUI vs UI Toolkit selection based on project needs
 - **unity-uitoolkit** - Assists with UI Toolkit development (UXML, USS, VisualElement API)
+- **unity-compile-fixer** - Detects and resolves Unity C# compilation errors using VSCode diagnostics
 
 ## 🚀 Installation
 
@@ -313,6 +314,36 @@ When starting UI development, the `unity-ui-selector` skill guides you through c
 - Platform requirements
 - Team experience
 
+**4. Compile Error Resolver Skill**
+When Unity projects have compilation errors, the `unity-compile-fixer` skill automatically:
+- 🔍 Collects errors from VSCode diagnostics (OmniSharp C# language server)
+- 📊 Analyzes error patterns against common Unity issues database
+- 💡 Proposes context-aware solutions for user approval
+- 🔧 Applies fixes while preserving code structure
+- ✅ Verifies version control status for Unity .meta files
+
+**Example Usage:**
+```
+You: My Unity project has compiler errors, can you fix them?
+
+Claude activates unity-compile-fixer and provides:
+🔍 Found 3 C# Compilation Errors
+
+❌ CS0246 at PlayerController.cs:45
+   The type or namespace name 'Rigidbody' could not be found
+
+💡 Proposed Fix:
+   Add 'using UnityEngine;' at the top of PlayerController.cs
+
+❌ CS1061 at GameManager.cs:23
+   'GameObject' does not contain a definition for 'position'
+
+💡 Proposed Fix:
+   Use 'transform.position' instead of 'gameObject.position'
+
+✅ Apply all fixes? [Yes/No]
+```
+
 ### Script Templates
 
 The plugin includes production-ready templates:
@@ -579,6 +610,14 @@ This plugin works with:
 
 ## 📋 Changelog
 
+### v1.3.0 (2025-10-22)
+- 🔧 **New Skill**: Added `unity-compile-fixer` skill for automated C# compilation error detection and resolution
+- 🔍 **VSCode Integration**: Leverages VSCode diagnostics (OmniSharp) for real-time error detection
+- 📊 **Error Pattern Database**: Includes comprehensive Unity C# error patterns (CS0246, CS0029, CS1061, etc.)
+- 💡 **Smart Solutions**: Proposes context-aware fixes based on error analysis
+- ✅ **VCS Support**: Handles Unity .meta file conflicts and version control integration
+- 📝 **Analysis Scripts**: Includes Node.js script for processing VSCode diagnostics
+
 ### v1.2.0 (2025-10-18)
 - 🎨 **UI Toolkit Templates**: Added complete UI Toolkit templates for both Editor and Runtime (6 files total)
 - 📝 **Editor Templates**: EditorWindow with UXML/USS (C#, UXML, USS)
@@ -603,7 +642,7 @@ This plugin works with:
 - 🎉 Initial release
 - 📝 3 slash commands: `/unity:new-script`, `/unity:optimize-scene`, `/unity:setup-test`
 - 🤖 3 expert agents: `@unity-scripter`, `@unity-performance`, `@unity-architect`
-- ⚡ 4 Agent Skills: `unity-script-validator`, `unity-scene-optimizer`, `unity-template-generator`, `unity-ui-selector`
+- ⚡ 6 Agent Skills: `unity-script-validator`, `unity-scene-optimizer`, `unity-template-generator`, `unity-ui-selector`, `unity-uitoolkit`, `unity-compile-fixer`
 - 📄 Production-ready templates for MonoBehaviour, ScriptableObject, Editor, and Test scripts
 
 ## 🙏 Credits

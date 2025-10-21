@@ -1,6 +1,6 @@
 # Claude Code Plugins
 
-> **Version**: 2.4.2 | **Last Updated**: 2025-10-21
+> **Version**: 2.4.3 | **Last Updated**: 2025-10-22
 >
 > **Language**: [English](README.md) | [한국어](README.ko.md)
 >
@@ -133,9 +133,9 @@ Complete AI pair programming experience with slash commands, expert agents, and 
 <details>
 <summary><strong>📖 Plugin Details</strong> (Click to expand)</summary>
 
-Comprehensive Unity game development toolkit with intelligent scripting assistance, code refactoring, performance optimization, and UI Toolkit support.
+Comprehensive Unity game development toolkit with intelligent scripting assistance, code refactoring, performance optimization, UI Toolkit support, and compile error resolution.
 
-**Quick Info:** 4 expert agents + 5 Agent Skills + 3 slash commands + 10 production templates | **Commands:** `/unity:new-script`, `/unity:optimize-scene`, `/unity:setup-test` | **Agents:** `@unity-scripter`, `@unity-refactor`, `@unity-performance`, `@unity-architect` | **Features:** UI Toolkit templates (Editor + Runtime), automated code validation, scene optimization
+**Quick Info:** 4 expert agents + 6 Agent Skills + 3 slash commands + 10 production templates | **Commands:** `/unity:new-script`, `/unity:optimize-scene`, `/unity:setup-test` | **Agents:** `@unity-scripter`, `@unity-refactor`, `@unity-performance`, `@unity-architect` | **Features:** UI Toolkit templates (Editor + Runtime), automated code validation, compile error detection & fixing, scene optimization
 
 **[Read Full Documentation →](plugins/unity-dev-toolkit/README.md)**
 
