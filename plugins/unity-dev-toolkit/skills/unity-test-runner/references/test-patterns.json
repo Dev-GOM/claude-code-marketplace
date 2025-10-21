@@ -1,0 +1,384 @@
+{
+  "nunitAssertions": {
+    "equality": {
+      "assertions": [
+        {
+          "method": "Assert.AreEqual(expected, actual)",
+          "description": "Verifies that two values are equal",
+          "example": "Assert.AreEqual(100, player.Health);"
+        },
+        {
+          "method": "Assert.AreNotEqual(expected, actual)",
+          "description": "Verifies that two values are not equal",
+          "example": "Assert.AreNotEqual(0, enemy.Speed);"
+        }
+      ]
+    },
+    "identity": {
+      "assertions": [
+        {
+          "method": "Assert.AreSame(expected, actual)",
+          "description": "Verifies that two objects refer to the same object instance",
+          "example": "Assert.AreSame(playerInstance, savedPlayer);"
+        },
+        {
+          "method": "Assert.AreNotSame(expected, actual)",
+          "description": "Verifies that two objects do not refer to the same object instance",
+          "example": "Assert.AreNotSame(player1, player2);"
+        }
+      ]
+    },
+    "nullity": {
+      "assertions": [
+        {
+          "method": "Assert.IsNull(object)",
+          "description": "Verifies that an object is null",
+          "example": "Assert.IsNull(destroyedEnemy);"
+        },
+        {
+          "method": "Assert.IsNotNull(object)",
+          "description": "Verifies that an object is not null",
+          "example": "Assert.IsNotNull(spawnedPlayer);"
+        }
+      ]
+    },
+    "boolean": {
+      "assertions": [
+        {
+          "method": "Assert.IsTrue(condition)",
+          "description": "Verifies that a condition is true",
+          "example": "Assert.IsTrue(player.IsAlive);"
+        },
+        {
+          "method": "Assert.IsFalse(condition)",
+          "description": "Verifies that a condition is false",
+          "example": "Assert.IsFalse(enemy.IsInvincible);"
+        }
+      ]
+    },
+    "collections": {
+      "assertions": [
+        {
+          "method": "Assert.Contains(item, collection)",
+          "description": "Verifies that a collection contains a specific item",
+          "example": "Assert.Contains(weapon, inventory.Items);"
+        },
+        {
+          "method": "CollectionAssert.AreEqual(expected, actual)",
+          "description": "Verifies that two collections are equal",
+          "example": "CollectionAssert.AreEqual(expectedItems, actualItems);"
+        },
+        {
+          "method": "CollectionAssert.IsEmpty(collection)",
+          "description": "Verifies that a collection is empty",
+          "example": "CollectionAssert.IsEmpty(emptyInventory);"
+        },
+        {
+          "method": "CollectionAssert.IsNotEmpty(collection)",
+          "description": "Verifies that a collection is not empty",
+          "example": "CollectionAssert.IsNotEmpty(player.Skills);"
+        }
+      ]
+    },
+    "exceptions": {
+      "assertions": [
+        {
+          "method": "Assert.Throws<TException>(() => { code })",
+          "description": "Verifies that a specific exception type is thrown",
+          "example": "Assert.Throws<ArgumentNullException>(() => player.Attack(null));"
+        },
+        {
+          "method": "Assert.DoesNotThrow(() => { code })",
+          "description": "Verifies that no exception is thrown",
+          "example": "Assert.DoesNotThrow(() => player.Move(Vector3.zero));"
+        }
+      ]
+    },
+    "unity": {
+      "assertions": [
+        {
+          "method": "LogAssert.Expect(LogType, message)",
+          "description": "Expects a specific Unity log message",
+          "example": "LogAssert.Expect(LogType.Warning, \"Player health low\");"
+        },
+        {
+          "method": "LogAssert.NoUnexpectedReceived()",
+          "description": "Verifies no unexpected log messages were received",
+          "example": "LogAssert.NoUnexpectedReceived();"
+        }
+      ]
+    }
+  },
+  "commonFailurePatterns": [
+    {
+      "pattern": "Expected: <(.+)>.*But was: <(.+)>",
+      "type": "AssertionFailure",
+      "category": "ValueMismatch",
+      "description": "Value assertion failed - expected value doesn't match actual value",
+      "commonCauses": [
+        "Incorrect expected value in test",
+        "Logic error in tested code",
+        "Timing issue (value not yet updated)",
+        "Floating-point precision error"
+      ],
+      "solutions": [
+        {
+          "condition": "Floating-point comparison",
+          "fix": "Use Assert.AreEqual(expected, actual, delta) with tolerance",
+          "example": "Assert.AreEqual(1.0f, result, 0.001f);"
+        },
+        {
+          "condition": "Async operation",
+          "fix": "Add yield return to wait for operation completion",
+          "example": "yield return new WaitForSeconds(0.1f);"
+        },
+        {
+          "condition": "Frame-dependent value",
+          "fix": "Use yield return null to wait for next frame",
+          "example": "yield return null; // Wait one frame"
+        }
+      ]
+    },
+    {
+      "pattern": "Expected: not null.*But was: <null>",
+      "type": "NullReferenceFailure",
+      "category": "NullValue",
+      "description": "Expected non-null value but received null",
+      "commonCauses": [
+        "Object not instantiated",
+        "Component not attached",
+        "Resource not loaded",
+        "Missing dependency injection"
+      ],
+      "solutions": [
+        {
+          "condition": "GameObject component",
+          "fix": "Ensure GameObject has required component",
+          "example": "var component = gameObject.AddComponent<PlayerController>();"
+        },
+        {
+          "condition": "Resource loading",
+          "fix": "Use Resources.Load or proper asset loading",
+          "example": "var prefab = Resources.Load<GameObject>(\"Prefabs/Player\");"
+        },
+        {
+          "condition": "Scene object reference",
+          "fix": "Use GameObject.Find or proper scene setup",
+          "example": "var player = GameObject.FindGameObjectWithTag(\"Player\");"
+        }
+      ]
+    },
+    {
+      "pattern": "TimeoutException|Test exceeded time limit",
+      "type": "TimeoutFailure",
+      "category": "Performance",
+      "description": "Test execution exceeded time limit",
+      "commonCauses": [
+        "Infinite loop in test or code",
+        "Deadlock in async operations",
+        "Slow operation without proper timeout",
+        "Missing yield in coroutine test"
+      ],
+      "solutions": [
+        {
+          "condition": "Coroutine test",
+          "fix": "Add [UnityTest] attribute and use yield return",
+          "example": "[UnityTest] public IEnumerator TestCoroutine() { yield return null; }"
+        },
+        {
+          "condition": "Async operation",
+          "fix": "Add timeout and proper await/yield",
+          "example": "yield return new WaitForSecondsRealtime(5f);"
+        },
+        {
+          "condition": "Infinite loop detection",
+          "fix": "Add loop counter or timeout check",
+          "example": "int maxIterations = 100; while(condition && maxIterations-- > 0) { }"
+        }
+      ]
+    },
+    {
+      "pattern": "SetUp.*TearDown.*failed",
+      "type": "FixtureFailure",
+      "category": "TestSetup",
+      "description": "Test setup or teardown method failed",
+      "commonCauses": [
+        "Scene loading failure",
+        "Resource initialization error",
+        "Missing test dependencies",
+        "Cleanup error in previous test"
+      ],
+      "solutions": [
+        {
+          "condition": "Scene loading",
+          "fix": "Use SceneManager.LoadScene in UnitySetUp",
+          "example": "[UnitySetUp] public IEnumerator SetUp() { yield return SceneManager.LoadSceneAsync(\"TestScene\"); }"
+        },
+        {
+          "condition": "GameObject cleanup",
+          "fix": "Use Object.DestroyImmediate in TearDown",
+          "example": "[TearDown] public void TearDown() { Object.DestroyImmediate(testObject); }"
+        }
+      ]
+    },
+    {
+      "pattern": "MissingReferenceException|The object of type.*has been destroyed",
+      "type": "DestroyedObjectReference",
+      "category": "ObjectLifetime",
+      "description": "Attempted to access a destroyed Unity object",
+      "commonCauses": [
+        "Object destroyed before test completes",
+        "Accessing object after scene unload",
+        "Component removed during test",
+        "Improper test cleanup order"
+      ],
+      "solutions": [
+        {
+          "condition": "Test cleanup",
+          "fix": "Check if object exists before accessing",
+          "example": "if (testObject != null && testObject) { /* access */ }"
+        },
+        {
+          "condition": "DontDestroyOnLoad objects",
+          "fix": "Manually destroy objects in TearDown",
+          "example": "[TearDown] public void TearDown() { Object.DestroyImmediate(GameObject.Find(\"Persistent\")); }"
+        }
+      ]
+    },
+    {
+      "pattern": "Can't be called from.*main thread",
+      "type": "ThreadingError",
+      "category": "Threading",
+      "description": "Unity API called from wrong thread",
+      "commonCauses": [
+        "Async/await without proper context",
+        "Threading operation accessing Unity API",
+        "Task.Run accessing GameObject",
+        "Background thread creating Unity objects"
+      ],
+      "solutions": [
+        {
+          "condition": "Async operations",
+          "fix": "Use UnityMainThreadDispatcher or yield return",
+          "example": "yield return new WaitForSeconds(1f); // Keeps on main thread"
+        },
+        {
+          "condition": "Thread synchronization",
+          "fix": "Queue operations for main thread execution",
+          "example": "UnityMainThreadDispatcher.Instance().Enqueue(() => { /* Unity API calls */ });"
+        }
+      ]
+    }
+  ],
+  "testModes": {
+    "EditMode": {
+      "description": "Tests that run in the Unity Editor without entering Play Mode",
+      "useCases": [
+        "Editor scripts and tools testing",
+        "Non-MonoBehaviour class testing",
+        "Fast unit tests without scene loading",
+        "Utility and helper function testing"
+      ],
+      "limitations": [
+        "Cannot test MonoBehaviour lifecycle methods (Start, Update, etc.)",
+        "Cannot test physics or coroutines",
+        "No scene loading or GameObject instantiation"
+      ],
+      "attributes": [
+        "[Test] - Standard NUnit test",
+        "[TestFixture] - Marks test class",
+        "[SetUp] - Runs before each test",
+        "[TearDown] - Runs after each test"
+      ]
+    },
+    "PlayMode": {
+      "description": "Tests that run in Play Mode with full Unity engine functionality",
+      "useCases": [
+        "MonoBehaviour lifecycle testing",
+        "Scene and GameObject testing",
+        "Physics and collision testing",
+        "Coroutine and async operation testing"
+      ],
+      "features": [
+        "Full Unity engine available",
+        "Scene loading supported",
+        "Physics simulation active",
+        "Coroutines can be used"
+      ],
+      "attributes": [
+        "[UnityTest] - Coroutine-based test (returns IEnumerator)",
+        "[UnitySetUp] - Async setup method",
+        "[UnityTearDown] - Async teardown method",
+        "[Test] - Standard synchronous test (also works in PlayMode)"
+      ]
+    }
+  },
+  "bestPractices": [
+    {
+      "category": "Test Independence",
+      "practice": "Each test should be independent and not rely on other tests",
+      "rationale": "Tests may run in any order and should not affect each other",
+      "example": "Use [SetUp] to initialize test state, [TearDown] to clean up"
+    },
+    {
+      "category": "Test Naming",
+      "practice": "Use descriptive test names that explain what is being tested",
+      "rationale": "Clear names make test failures easier to diagnose",
+      "example": "TestPlayerTakesDamageWhenHitByEnemy() instead of TestDamage()"
+    },
+    {
+      "category": "Arrange-Act-Assert",
+      "practice": "Structure tests with clear Arrange, Act, Assert sections",
+      "rationale": "Makes test logic clear and maintainable",
+      "example": "// Arrange\nvar player = CreatePlayer();\n// Act\nplayer.TakeDamage(10);\n// Assert\nAssert.AreEqual(90, player.Health);"
+    },
+    {
+      "category": "PlayMode Performance",
+      "practice": "Use EditMode tests when possible for faster execution",
+      "rationale": "PlayMode tests are slower due to Unity engine initialization",
+      "example": "Test pure C# logic in EditMode, reserve PlayMode for Unity-specific features"
+    },
+    {
+      "category": "Async Testing",
+      "practice": "Use [UnityTest] with IEnumerator for async operations",
+      "rationale": "Properly handles Unity's frame-based execution",
+      "example": "[UnityTest] public IEnumerator TestAsync() { yield return new WaitForSeconds(1f); }"
+    },
+    {
+      "category": "Scene Management",
+      "practice": "Load minimal test scenes for PlayMode tests",
+      "rationale": "Reduces test execution time and potential side effects",
+      "example": "Create dedicated empty test scenes with only required objects"
+    },
+    {
+      "category": "Test Categorization",
+      "practice": "Use [Category] attribute to group related tests",
+      "rationale": "Enables selective test execution",
+      "example": "[Test, Category(\"Combat\")] public void TestPlayerAttack() { }"
+    },
+    {
+      "category": "Floating-Point Comparison",
+      "practice": "Use tolerance when comparing floating-point values",
+      "rationale": "Floating-point arithmetic is imprecise",
+      "example": "Assert.AreEqual(expected, actual, 0.001f);"
+    }
+  ],
+  "unitySpecificPatterns": {
+    "coroutineTesting": {
+      "description": "Testing coroutines requires [UnityTest] attribute",
+      "example": "[UnityTest]\npublic IEnumerator TestCoroutine()\n{\n    var go = new GameObject();\n    var component = go.AddComponent<MyComponent>();\n    component.StartCoroutine(component.MyCoroutine());\n    yield return new WaitForSeconds(1f);\n    Assert.IsTrue(component.IsComplete);\n}"
+    },
+    "sceneTesting": {
+      "description": "Loading scenes in tests requires async operations",
+      "example": "[UnitySetUp]\npublic IEnumerator SetUp()\n{\n    yield return SceneManager.LoadSceneAsync(\"TestScene\", LoadSceneMode.Single);\n}"
+    },
+    "prefabTesting": {
+      "description": "Testing prefabs requires instantiation",
+      "example": "[Test]\npublic void TestPrefab()\n{\n    var prefab = Resources.Load<GameObject>(\"Prefabs/Player\");\n    var instance = Object.Instantiate(prefab);\n    Assert.IsNotNull(instance.GetComponent<PlayerController>());\n    Object.DestroyImmediate(instance);\n}"
+    },
+    "physicsTesting": {
+      "description": "Physics tests need time for simulation",
+      "example": "[UnityTest]\npublic IEnumerator TestPhysics()\n{\n    var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);\n    var rb = go.AddComponent<Rigidbody>();\n    rb.AddForce(Vector3.up * 10f);\n    yield return new WaitForFixedUpdate();\n    Assert.Greater(rb.velocity.y, 0f);\n}"
+    }
+  }
+}

@@ -133,9 +133,9 @@ Claude Code 세션(Session)이 끝날 때마다 자동으로 git 커밋을 생�
 <details>
 <summary><strong>📖 플러그인 상세</strong> (펼치기)</summary>
 
-지능형 스크립팅 지원, 코드 리팩토링, 성능 최적화, UI Toolkit 지원, 컴파일 에러 해결을 갖춘 종합 Unity 게임 개발 도구.
+지능형 스크립팅 지원, 코드 리팩토링, 성능 최적화, UI Toolkit 지원, 컴파일 에러 해결, 테스트 자동화를 갖춘 종합 Unity 게임 개발 도구.
 
-**요약:** 4개 전문 에이전트 + 6개 Agent Skills + 3개 슬래시 커맨드 + 10개 프로덕션 템플릿 | **커맨드:** `/unity:new-script`, `/unity:optimize-scene`, `/unity:setup-test` | **에이전트:** `@unity-scripter`, `@unity-refactor`, `@unity-performance`, `@unity-architect` | **기능:** UI Toolkit 템플릿 (Editor + Runtime), 자동 코드 검증, 컴파일 에러 감지 및 수정, 씬 최적화
+**요약:** 4개 전문 에이전트 + 7개 Agent Skills + 3개 슬래시 커맨드 + 10개 프로덕션 템플릿 | **커맨드:** `/unity:new-script`, `/unity:optimize-scene`, `/unity:setup-test` | **에이전트:** `@unity-scripter`, `@unity-refactor`, `@unity-performance`, `@unity-architect` | **기능:** UI Toolkit 템플릿 (Editor + Runtime), 자동 코드 검증, 컴파일 에러 감지 및 수정, 테스트 자동화, 씬 최적화
 
 **[전체 문서 보기 →](plugins/unity-dev-toolkit/README.ko.md)**
 

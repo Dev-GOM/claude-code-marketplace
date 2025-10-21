@@ -39,6 +39,7 @@ Model-invoked capabilities that Claude automatically uses when relevant:
 - **unity-ui-selector** - Guides UGUI vs UI Toolkit selection based on project needs
 - **unity-uitoolkit** - Assists with UI Toolkit development (UXML, USS, VisualElement API)
 - **unity-compile-fixer** - Detects and resolves Unity C# compilation errors using VSCode diagnostics
+- **unity-test-runner** - Executes and analyzes Unity Test Framework tests with detailed failure reports
 
 ## 🚀 Installation
 
@@ -342,6 +343,62 @@ Claude activates unity-compile-fixer and provides:
    Use 'transform.position' instead of 'gameObject.position'
 
 ✅ Apply all fixes? [Yes/No]
+```
+
+**5. Test Runner Skill**
+When running Unity tests, the `unity-test-runner` skill automatically:
+- 🔍 Detects Unity Editor installation across platforms (Windows/macOS/Linux)
+- ⚙️ Configures test parameters (EditMode/PlayMode, categories, filters)
+- 🚀 Executes tests via Unity CLI with proper timeouts
+- 📊 Parses NUnit XML results and extracts failure details
+- 💡 Analyzes failures against common test patterns
+- 📝 Generates detailed reports with file:line references and fix suggestions
+
+**Example Usage:**
+```
+You: Run all Unity tests in my project
+
+Claude activates unity-test-runner and provides:
+🧪 Unity Test Results
+
+📊 Summary:
+- Total Tests: 10
+- ✓ Passed: 7 (70%)
+- ✗ Failed: 2 (20%)
+- ⊘ Skipped: 1 (10%)
+- Duration: 12.35s
+
+❌ Failed Tests:
+
+1. Tests.Combat.PlayerTests.TestPlayerTakeDamage
+   Location: Assets/Tests/Combat/PlayerTests.cs:42
+   Failure: Expected: 90, But was: 100
+
+   💡 Analysis: Player health not decreasing after TakeDamage() call
+
+   Suggested Fix:
+   Verify TakeDamage() implementation:
+   ```csharp
+   public void TakeDamage(int damage) {
+       health -= damage; // Ensure this line exists
+   }
+   ```
+
+2. Tests.AI.EnemyTests.TestEnemyChasePlayer
+   Location: Assets/Tests/AI/EnemyTests.cs:67
+   Failure: TimeoutException - Test exceeded time limit (5s)
+
+   💡 Analysis: Infinite loop or missing yield in coroutine test
+
+   Suggested Fix:
+   Add [UnityTest] attribute and use yield return:
+   ```csharp
+   [UnityTest]
+   public IEnumerator TestEnemyChasePlayer() {
+       // ... test code ...
+       yield return null; // Wait for frame
+   }
+   ```
 ```
 
 ### Script Templates

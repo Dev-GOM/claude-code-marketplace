@@ -39,6 +39,7 @@ Claude가 관련 상황에서 자동으로 사용하는 모델 호출 기능:
 - **unity-ui-selector** - 프로젝트 요구사항에 따른 UGUI vs UI Toolkit 선택 가이드
 - **unity-uitoolkit** - UI Toolkit 개발 지원 (UXML, USS, VisualElement API)
 - **unity-compile-fixer** - VSCode diagnostics를 사용한 Unity C# 컴파일 에러 감지 및 해결
+- **unity-test-runner** - Unity Test Framework 테스트 실행 및 상세한 실패 리포트 분석
 
 ## 🚀 설치
 
@@ -342,6 +343,62 @@ Claude가 unity-compile-fixer를 활성화하여 다음을 제공:
    'gameObject.position' 대신 'transform.position' 사용
 
 ✅ 모든 수정을 적용하시겠습니까? [예/아니오]
+```
+
+**5. 테스트 러너 Skill**
+Unity 테스트를 실행할 때 `unity-test-runner` Skill이 자동으로:
+- 🔍 여러 플랫폼(Windows/macOS/Linux)에서 Unity 에디터 설치 감지
+- ⚙️ 테스트 매개변수 구성 (EditMode/PlayMode, 카테고리, 필터)
+- 🚀 적절한 타임아웃으로 Unity CLI를 통해 테스트 실행
+- 📊 NUnit XML 결과 파싱 및 실패 세부 정보 추출
+- 💡 일반적인 테스트 패턴과 실패 원인 분석
+- 📝 파일:라인 참조 및 수정 제안이 포함된 상세 리포트 생성
+
+**사용 예시:**
+```
+사용자: 내 프로젝트의 모든 Unity 테스트를 실행해줘
+
+Claude가 unity-test-runner를 활성화하여 다음을 제공:
+🧪 Unity 테스트 결과
+
+📊 요약:
+- 총 테스트: 10
+- ✓ 성공: 7 (70%)
+- ✗ 실패: 2 (20%)
+- ⊘ 스킵: 1 (10%)
+- 소요 시간: 12.35초
+
+❌ 실패한 테스트:
+
+1. Tests.Combat.PlayerTests.TestPlayerTakeDamage
+   위치: Assets/Tests/Combat/PlayerTests.cs:42
+   실패 원인: Expected: 90, But was: 100
+
+   💡 분석: TakeDamage() 호출 후 플레이어 체력이 감소하지 않음
+
+   제안된 수정:
+   TakeDamage() 구현 확인:
+   ```csharp
+   public void TakeDamage(int damage) {
+       health -= damage; // 이 라인이 있는지 확인
+   }
+   ```
+
+2. Tests.AI.EnemyTests.TestEnemyChasePlayer
+   위치: Assets/Tests/AI/EnemyTests.cs:67
+   실패 원인: TimeoutException - 제한 시간 초과 (5초)
+
+   💡 분석: 무한 루프 또는 코루틴 테스트에서 yield 누락
+
+   제안된 수정:
+   [UnityTest] 속성 추가 및 yield return 사용:
+   ```csharp
+   [UnityTest]
+   public IEnumerator TestEnemyChasePlayer() {
+       // ... 테스트 코드 ...
+       yield return null; // 프레임 대기
+   }
+   ```
 ```
 
 ### 스크립트 템플릿
