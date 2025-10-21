@@ -74,7 +74,7 @@ Simply ask Claude to handle your release:
 
 ```
 "Bump patch version and create release"
-"Update to v1.0.1"
+"Update to v1.0.2"
 "Create Unity release with version 1.5.0"
 ```
 
@@ -180,7 +180,7 @@ python -X utf8 scripts/changelog_generator.py 1.3.0 v1.2.0
 
 ## Requirements
 
-- Python 3.8+ (scripts use only stdlib, no external dependencies)
+- Python 3.11+ (scripts use only stdlib, no external dependencies)
 - Git (for git operations)
 - GitHub CLI (optional, for GitHub releases)
 

@@ -5,7 +5,7 @@
   },
   "metadata": {
     "description": "Productivity plugins for Claude Code to automate development workflows",
-    "version": "2.3.0",
+    "version": "2.4.1",
     "homepage": "https://github.com/Dev-GOM/claude-code-marketplace"
   },
   "plugins": [
@@ -142,7 +142,7 @@
       "name": "auto-release-manager",
       "source": "./plugins/auto-release-manager",
       "description": "Automate version updates and releases for any project type (Node.js, Python, Rust, Unity, Unreal, etc.) with intelligent project detection and cross-platform support",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "author": {
         "name": "Dev GOM"
       },
