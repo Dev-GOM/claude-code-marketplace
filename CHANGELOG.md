@@ -2,7 +2,21 @@
 
 All notable changes to the Dev GOM Plugins marketplace will be documented in this file.
 
-> **Version**: 2.3.0 | **Last Updated**: 2025-10-21
+> **Version**: 2.4.0 | **Last Updated**: 2025-10-21
+
+---
+
+## [2.4.0] - 2025-10-21
+
+### Added
+- 🎉 **New Plugin**: Auto Release Manager - Automate version updates and releases for any project type
+  - Universal project type detection (Node.js, Python, Rust, Go, Unity, Unreal, etc.)
+  - Cross-platform version update scripts
+  - Unity dual-file sync (version.json ← → ProjectSettings.asset)
+  - Unreal Engine .uproject support
+  - CHANGELOG auto-generation from Conventional Commits
+  - Git workflow automation
+  - Python 3.11+ with zero external dependencies
 
 ---
 
@@ -291,3 +305,39 @@ All notable changes to the Dev GOM Plugins marketplace will be documented in thi
 - 🤖 3 expert agents: `@unity-scripter`, `@unity-performance`, `@unity-architect` (expanded to 4 in v1.1.0)
 - ⚡ 4 Agent Skills: `unity-script-validator`, `unity-scene-optimizer`, `unity-template-generator`, `unity-ui-selector` (expanded to 5 in v1.2.0)
 - 📄 Production-ready templates for MonoBehaviour, ScriptableObject, Editor, and Test scripts
+
+---
+
+## Auto Release Manager
+
+### v1.0.1 (2025-10-21)
+
+#### Changed
+- 📦 **Python 3.11+ Requirement**: Removed tomli dependency by requiring Python 3.11+
+  - Now uses built-in `tomllib` for TOML parsing
+  - Added Python version check with clear error message
+  - Zero external dependencies for all scripts
+
+#### Fixed
+- 🔧 **Type Hints**: Fixed all type annotations across 5 Python scripts
+  - Added type parameters to all Dict, List, Optional types
+  - Fixed `subprocess.CompletedProcess[str]` type hints
+  - Resolved all Pylance and mypy warnings
+- 📏 **Code Quality**: Fixed all PEP 8 linter errors
+  - Fixed E501 line length violations (79 character limit)
+  - Improved code formatting consistency
+  - Added type hints to all variables
+
+#### Documentation
+- 📝 **Requirements**: Added Python 3.11+ requirement to README.md and README.ko.md
+- 📚 **Clarity**: Updated installation instructions with clear version requirements
+
+### v1.0.0 (2025-01-20)
+- 🎉 Initial release
+- 🔍 Universal project type detection (Node.js, Python, Rust, Go, Unity, Unreal, etc.)
+- 📝 Cross-platform version update scripts
+- 🔄 Unity dual-file sync (version.json ← → ProjectSettings.asset)
+- 🎮 Unreal Engine .uproject support
+- 📋 CHANGELOG auto-generation from Conventional Commits
+- 🚀 Git workflow automation
+- 📚 Comprehensive documentation and guides

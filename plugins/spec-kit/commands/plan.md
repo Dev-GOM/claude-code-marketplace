@@ -1,6 +1,6 @@
 ---
 description: 기술 구현 계획(Plan) 작성 - HOW를 정의
-allowed-tools: [Read, Write, Bash, AskUserQuestion, SlashCommand]
+allowed-tools: [Read, Write, Bash, SlashCommand]
 argument-hint: <additional-context | 추가 컨텍스트>
 ---
 

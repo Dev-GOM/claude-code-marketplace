@@ -1,6 +1,6 @@
 ---
 description: 기능 명세(Specification) 작성 - WHAT을 정의
-allowed-tools: [Read, Write, Bash, AskUserQuestion, SlashCommand]
+allowed-tools: [Read, Write, Bash, SlashCommand]
 argument-hint: <feature-description | 기능 설명>
 ---
 

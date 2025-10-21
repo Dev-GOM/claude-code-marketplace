@@ -1,6 +1,6 @@
 ---
 description: 작업 목록에 따라 실제 구현 시작
-allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, AskUserQuestion, SlashCommand]
+allowed-tools: [Read, Write, Edit, Bash, Grep, Glob, SlashCommand]
 argument-hint: <task-focus | 작업 초점>
 ---
 
