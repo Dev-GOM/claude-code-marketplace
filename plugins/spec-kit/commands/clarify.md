@@ -1,6 +1,6 @@
 ---
 description: 명세나 계획의 모호한 부분을 명확히 하고 Open Questions 해결
-allowed-tools: [Read, Write, Edit, AskUserQuestion, SlashCommand]
+allowed-tools: [Read, Write, Edit, SlashCommand]
 argument-hint: <question-or-topic | 질문 또는 주제>
 ---
 

@@ -139,6 +139,31 @@
       ]
     },
     {
+      "name": "auto-release-manager",
+      "source": "./plugins/auto-release-manager",
+      "description": "Automate version updates and releases for any project type (Node.js, Python, Rust, Unity, Unreal, etc.) with intelligent project detection and cross-platform support",
+      "version": "1.0.1",
+      "author": {
+        "name": "Dev GOM"
+      },
+      "category": "productivity",
+      "homepage": "https://github.com/Dev-GOM/claude-code-marketplace",
+      "keywords": [
+        "version",
+        "release",
+        "automation",
+        "git",
+        "changelog",
+        "semver",
+        "unity",
+        "unreal",
+        "nodejs",
+        "python",
+        "rust",
+        "cross-platform"
+      ]
+    },
+    {
       "name": "unity-dev-toolkit",
       "source": "./plugins/unity-dev-toolkit",
       "description": "Unity development toolkit with intelligent scripting, code refactoring, performance optimization, UI Toolkit support, and testing automation",

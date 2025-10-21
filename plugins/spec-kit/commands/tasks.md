@@ -1,6 +1,6 @@
 ---
 description: 구현 계획을 실행 가능한 작업(Tasks)으로 분해
-allowed-tools: [Read, Write, Bash, AskUserQuestion, SlashCommand]
+allowed-tools: [Read, Write, Bash, SlashCommand]
 argument-hint: <additional-context | 추가 컨텍스트>
 ---
 
@@ -98,11 +98,11 @@ Ask the user:
    - Description: "현재 변경사항을 커밋하고 브랜치를 원격 저장소에 퍼블리쉬합니다. 팀과 공유하거나 백업이 필요한 경우 권장합니다."
    - 진행: 커밋 메시지 요청 → `git add -A && git commit -m "[메시지]"` → `git push -u origin [브랜치명]` → Step 2
 
-2. **"로컬에만 커밋"** (label: 4 words ✅)
+2. **"로컬에만 커밋"** (label: 2 words ✅)
    - Description: "현재 변경사항을 커밋하지만 브랜치는 로컬에만 유지합니다. 아직 공유할 준비가 안 된 경우에 사용합니다."
    - 진행: 커밋 메시지 요청 → `git add -A && git commit -m "[메시지]"` → Step 2
 
-3. **"나중에 결정"** (label: 3 words ✅)
+3. **"나중에 결정"** (label: 2 words ✅)
    - Description: "작업 분해를 진행하고 나중에 모든 변경사항을 함께 처리합니다."
    - 진행: 즉시 Step 2로 이동
 
@@ -124,11 +124,11 @@ Ask the user:
 
 **Options to present:**
 
-1. **"커밋하기"** (label: 2 words ✅)
+1. **"커밋하기"** (label: 1 words ✅)
    - Description: "현재 변경사항을 커밋하고 원격 브랜치에 푸쉬합니다. 작업을 명확하게 분리할 수 있습니다."
    - 진행: 커밋 메시지 요청 → `git add -A && git commit -m "[메시지]"` → `git push` → Step 2
 
-2. **"나중에 결정"** (label: 3 words ✅)
+2. **"나중에 결정"** (label: 2 words ✅)
    - Description: "작업 분해를 진행하고 나중에 모든 변경사항을 함께 커밋합니다."
    - 진행: 즉시 Step 2로 이동
 
@@ -161,11 +161,11 @@ Ask the user:
 
 **Options to present:**
 
-1. **"완전 재생성"** (label: 3 words ✅)
+1. **"완전 재생성"** (label: 2 words ✅)
    - Description: "처음부터 모든 정보를 다시 수집하여 새로 작성합니다. 계획이 크게 변경되어 작업 구조가 완전히 바뀌었을 때 추천합니다."
    - 진행: Step 3부터 정상 진행 (완전 재작성)
 
-2. **"부분 업데이트"** (label: 3 words ✅)
+2. **"부분 업데이트"** (label: 2 words ✅)
    - Description: "기존 작업 목록을 유지하고 변경/추가할 부분만 질문합니다. 특정 Phase에 새 작업 추가, 일부 작업의 수용 기준 변경 등 일부 내용만 업데이트할 때 추천합니다."
    - 진행: 기존 작업 목록 표시 + "어떤 부분을 업데이트하시겠습니까?" 질문 + 변경사항만 수집 후 merge
 
@@ -253,7 +253,7 @@ Ask the user:
 1. **"자동 생성"** (label: 2 words ✅)
    - Description: "spec과 plan만으로 충분합니다. 추가 입력 없이 진행합니다. (권장)"
 
-2. **"요구사항 추가"** (label: 3 words ✅)
+2. **"요구사항 추가"** (label: 2 words ✅)
    - Description: "특정 작업 포함/제외, 우선순위 조정, 시간 제약, 테스트 전략 등을 지정하고 싶습니다."
 
 (System will automatically add "Other" option)
@@ -316,7 +316,7 @@ Ask the user:
 "작업 분해가 완료되었습니다. 다음 단계로 무엇을 진행하시겠습니까?"
 
 **Tool constraints:**
-- Header: "다음 단계" (4 characters ✅)
+- Header: "다음 단계" (5 characters ✅)
 - Options: 4 options (within 2-4 range ✅)
 - multiSelect: false
 

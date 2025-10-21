@@ -2,7 +2,21 @@
 
 Dev GOM Plugins 마켓플레이스의 모든 주요 변경사항이 이 파일에 문서화됩니다.
 
-> **버전**: 2.3.0 | **최종 업데이트**: 2025-10-21
+> **버전**: 2.4.0 | **최종 업데이트**: 2025-10-21
+
+---
+
+## [2.4.0] - 2025-10-21
+
+### 추가됨
+- 🎉 **새 플러그인**: Auto Release Manager - 모든 프로젝트 타입의 버전 업데이트 및 릴리즈 자동화
+  - 범용 프로젝트 타입 감지 (Node.js, Python, Rust, Go, Unity, Unreal 등)
+  - 크로스 플랫폼 버전 업데이트 스크립트
+  - Unity 이중 파일 동기화 (version.json ← → ProjectSettings.asset)
+  - Unreal Engine .uproject 지원
+  - Conventional Commits에서 CHANGELOG 자동 생성
+  - Git 워크플로우 자동화
+  - Python 3.11+ 외부 의존성 제로
 
 ---
 
@@ -291,3 +305,39 @@ Dev GOM Plugins 마켓플레이스의 모든 주요 변경사항이 이 파일�
 - 🤖 3개 전문 에이전트: `@unity-scripter`, `@unity-performance`, `@unity-architect` (v1.1.0에서 4개로 확장)
 - ⚡ 4개 Agent Skills: `unity-script-validator`, `unity-scene-optimizer`, `unity-template-generator`, `unity-ui-selector` (v1.2.0에서 5개로 확장)
 - 📄 MonoBehaviour, ScriptableObject, Editor, Test 스크립트를 위한 프로덕션 수준 템플릿
+
+---
+
+## Auto Release Manager
+
+### v1.0.1 (2025-10-21)
+
+#### 변경됨
+- 📦 **Python 3.11+ 요구사항**: Python 3.11+ 요구로 tomli 의존성 제거
+  - TOML 파싱을 위해 내장 `tomllib` 사용
+  - 명확한 오류 메시지와 함께 Python 버전 체크 추가
+  - 모든 스크립트에 대한 외부 의존성 제로
+
+#### 수정됨
+- 🔧 **타입 힌트**: 5개 Python 스크립트의 모든 타입 어노테이션 수정
+  - 모든 Dict, List, Optional 타입에 타입 매개변수 추가
+  - `subprocess.CompletedProcess[str]` 타입 힌트 수정
+  - 모든 Pylance 및 mypy 경고 해결
+- 📏 **코드 품질**: 모든 PEP 8 린터 오류 수정
+  - E501 라인 길이 위반 수정 (79자 제한)
+  - 코드 포맷팅 일관성 개선
+  - 모든 변수에 타입 힌트 추가
+
+#### 문서화
+- 📝 **요구사항**: README.md 및 README.ko.md에 Python 3.11+ 요구사항 추가
+- 📚 **명확성**: 명확한 버전 요구사항과 함께 설치 지침 업데이트
+
+### v1.0.0 (2025-01-20)
+- 🎉 최초 릴리스
+- 🔍 범용 프로젝트 타입 감지 (Node.js, Python, Rust, Go, Unity, Unreal 등)
+- 📝 크로스 플랫폼 버전 업데이트 스크립트
+- 🔄 Unity 이중 파일 동기화 (version.json ← → ProjectSettings.asset)
+- 🎮 Unreal Engine .uproject 지원
+- 📋 Conventional Commits에서 CHANGELOG 자동 생성
+- 🚀 Git 워크플로우 자동화
+- 📚 포괄적인 문서 및 가이드

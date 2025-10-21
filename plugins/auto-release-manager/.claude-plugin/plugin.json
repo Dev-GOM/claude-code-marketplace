@@ -1,0 +1,30 @@
+{
+  "name": "auto-release-manager",
+  "version": "1.0.1",
+  "description": "Automate version updates and releases for any project type (Node.js, Python, Rust, Unity, Unreal, etc.) with intelligent project detection and cross-platform support.",
+  "author": {
+    "name": "Dev GOM",
+    "url": "https://github.com/Dev-GOM/claude-code-marketplace"
+  },
+  "homepage": "https://github.com/Dev-GOM/claude-code-marketplace",
+  "repository": "https://github.com/Dev-GOM/claude-code-marketplace.git",
+  "license": "MIT",
+  "keywords": [
+    "productivity",
+    "version",
+    "release",
+    "automation",
+    "git",
+    "changelog",
+    "semver",
+    "unity",
+    "unreal",
+    "nodejs",
+    "python",
+    "rust",
+    "cross-platform"
+  ],
+  "skills": [
+    "skills"
+  ]
+}

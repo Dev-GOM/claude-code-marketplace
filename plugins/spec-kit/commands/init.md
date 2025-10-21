@@ -1,6 +1,6 @@
 ---
 description: spec-kit 프로젝트 초기화 및 CLI 설치 확인
-allowed-tools: [Bash, AskUserQuestion]
+allowed-tools: [Bash]
 argument-hint: <project-name | 프로젝트명>
 ---
 
