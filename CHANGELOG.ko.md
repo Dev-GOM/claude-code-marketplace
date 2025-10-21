@@ -2,7 +2,20 @@
 
 Dev GOM Plugins 마켓플레이스의 모든 주요 변경사항이 이 파일에 문서화됩니다.
 
-> **버전**: 2.4.2 | **최종 업데이트**: 2025-10-21
+> **버전**: 2.4.3 | **최종 업데이트**: 2025-10-22
+
+---
+
+## [2.4.3] - 2025-10-22
+
+### 추가됨
+- 🔧 **Unity Dev Toolkit v1.3.0**: 새로운 컴파일 에러 해결 스킬
+  - C# 컴파일 에러 자동 감지 및 해결을 위한 `unity-compile-fixer` 스킬 추가
+  - 실시간 에러 감지를 위한 VSCode diagnostics 통합 (OmniSharp)
+  - Unity C# 에러 패턴 종합 데이터베이스 포함 (CS0246, CS0029, CS1061 등)
+  - 에러 분석 기반 스마트 컨텍스트 인식 수정 제안
+  - Unity .meta 파일 충돌 감지 및 버전 관리 통합
+  - VSCode diagnostics 처리를 위한 Node.js 분석 스크립트 포함
 
 ---
 
@@ -298,6 +311,14 @@ Dev GOM Plugins 마켓플레이스의 모든 주요 변경사항이 이 파일�
 ---
 
 ## Unity Dev Toolkit
+
+### v1.3.0 (2025-10-22)
+- 🔧 **새 Skill 추가**: C# 컴파일 에러 자동 감지 및 해결을 위한 `unity-compile-fixer` Skill 추가
+- 🔍 **VSCode 통합**: 실시간 에러 감지를 위해 VSCode diagnostics (OmniSharp) 활용
+- 📊 **에러 패턴 데이터베이스**: Unity C# 에러 패턴 종합 데이터베이스 포함 (CS0246, CS0029, CS1061 등)
+- 💡 **스마트 솔루션**: 에러 분석 기반 컨텍스트 인식 수정 제안
+- ✅ **VCS 지원**: Unity .meta 파일 충돌 및 버전 관리 통합 처리
+- 📝 **분석 스크립트**: VSCode diagnostics 처리를 위한 Node.js 스크립트 포함
 
 ### v1.2.0 (2025-10-18)
 - 🎨 **UI Toolkit 템플릿**: Editor와 Runtime 모두를 위한 완전한 UI Toolkit 템플릿 추가 (총 6개 파일)

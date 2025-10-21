@@ -2,7 +2,7 @@
 
 > **Language**: [English](README.md) | [한국어](README.ko.md)
 
-Monitors code complexity metrics and warns when thresholds are exceeded.
+> Monitors code complexity metrics and warns when thresholds are exceeded.
 
 ## Features
 

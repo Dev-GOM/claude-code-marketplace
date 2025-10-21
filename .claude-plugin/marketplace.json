@@ -5,7 +5,7 @@
   },
   "metadata": {
     "description": "Productivity plugins for Claude Code to automate development workflows",
-    "version": "2.4.2",
+    "version": "2.4.3",
     "homepage": "https://github.com/Dev-GOM/claude-code-marketplace"
   },
   "plugins": [
@@ -166,8 +166,8 @@
     {
       "name": "unity-dev-toolkit",
       "source": "./plugins/unity-dev-toolkit",
-      "description": "Unity development toolkit with intelligent scripting, code refactoring, performance optimization, UI Toolkit support, and testing automation",
-      "version": "1.2.0",
+      "description": "Unity development toolkit with intelligent scripting, code refactoring, performance optimization, UI Toolkit support, compile error resolution, and testing automation",
+      "version": "1.3.0",
       "author": {
         "name": "Dev GOM"
       },

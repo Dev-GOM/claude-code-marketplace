@@ -12,7 +12,7 @@
 > - UI 시스템 선택(UGUI vs UI Toolkit)은 프로젝트 요구사항에 따라 결정되어야 함
 > - Skills는 모델이 자동 호출하며 모든 상황에서 활성화되지 않을 수 있음
 
-스크립팅, 리팩토링, 최적화를 위한 전문 에이전트, 지능형 자동화, 프로덕션 수준의 스크립트 템플릿을 통해 전문적인 Unity 개발 지원을 제공하는 종합 Claude Code 플러그인입니다.
+> 스크립팅, 리팩토링, 최적화를 위한 전문 에이전트, 지능형 자동화, 프로덕션 수준의 스크립트 템플릿을 통해 전문적인 Unity 개발 지원을 제공하는 종합 Claude Code 플러그인입니다.
 
 ## 🌟 기능
 
@@ -38,6 +38,7 @@ Claude가 관련 상황에서 자동으로 사용하는 모델 호출 기능:
 - **unity-template-generator** - 스크립트 템플릿 생성 지원
 - **unity-ui-selector** - 프로젝트 요구사항에 따른 UGUI vs UI Toolkit 선택 가이드
 - **unity-uitoolkit** - UI Toolkit 개발 지원 (UXML, USS, VisualElement API)
+- **unity-compile-fixer** - VSCode diagnostics를 사용한 Unity C# 컴파일 에러 감지 및 해결
 
 ## 🚀 설치
 
@@ -313,6 +314,36 @@ UI 개발을 시작할 때 `unity-ui-selector` Skill이 다음을 기반으로 U
 - 플랫폼 요구사항
 - 팀 경험
 
+**4. 컴파일 에러 해결 Skill**
+Unity 프로젝트에 컴파일 에러가 있을 때 `unity-compile-fixer` Skill이 자동으로:
+- 🔍 VSCode diagnostics(OmniSharp C# language server)에서 에러 수집
+- 📊 일반적인 Unity 문제 데이터베이스와 에러 패턴 분석
+- 💡 사용자 승인을 위한 컨텍스트 인식 솔루션 제안
+- 🔧 코드 구조를 유지하면서 수정 적용
+- ✅ Unity .meta 파일에 대한 버전 관리 상태 확인
+
+**사용 예시:**
+```
+사용자: Unity 프로젝트에 컴파일 에러가 있는데 고쳐줄 수 있나요?
+
+Claude가 unity-compile-fixer를 활성화하여 다음을 제공:
+🔍 3개의 C# 컴파일 에러 발견
+
+❌ CS0246 at PlayerController.cs:45
+   타입 또는 네임스페이스 이름 'Rigidbody'를 찾을 수 없습니다
+
+💡 제안된 수정:
+   PlayerController.cs 상단에 'using UnityEngine;' 추가
+
+❌ CS1061 at GameManager.cs:23
+   'GameObject'에 'position' 정의가 포함되어 있지 않습니다
+
+💡 제안된 수정:
+   'gameObject.position' 대신 'transform.position' 사용
+
+✅ 모든 수정을 적용하시겠습니까? [예/아니오]
+```
+
 ### 스크립트 템플릿
 
 플러그인은 프로덕션 수준의 템플릿을 포함합니다:
@@ -578,6 +609,14 @@ MIT 라이선스 - 프로젝트에서 자유롭게 사용하고 수정할 수 �
 - ✅ Unity 6 (2023+)
 
 ## 📋 변경 이력
+
+### v1.3.0 (2025-10-22)
+- 🔧 **새 Skill 추가**: C# 컴파일 에러 자동 감지 및 해결을 위한 `unity-compile-fixer` Skill 추가
+- 🔍 **VSCode 통합**: 실시간 에러 감지를 위해 VSCode diagnostics (OmniSharp) 활용
+- 📊 **에러 패턴 데이터베이스**: Unity C# 에러 패턴 종합 데이터베이스 포함 (CS0246, CS0029, CS1061 등)
+- 💡 **스마트 솔루션**: 에러 분석 기반 컨텍스트 인식 수정 제안
+- ✅ **VCS 지원**: Unity .meta 파일 충돌 및 버전 관리 통합 처리
+- 📝 **분석 스크립트**: VSCode diagnostics 처리를 위한 Node.js 스크립트 포함
 
 ### v1.2.0 (2025-10-18)
 - 🎨 **UI Toolkit 템플릿**: Editor와 Runtime 모두를 위한 완전한 UI Toolkit 템플릿 추가 (총 6개 파일)

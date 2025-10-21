@@ -2,7 +2,7 @@
 
 > **언어**: [English](README.md) | [한국어](README.ko.md)
 
-Claude Code 세션이 끝날 때마다 자동으로 git 커밋을 생성하여 작업 손실을 방지합니다.
+> Claude Code 세션이 끝날 때마다 자동으로 git 커밋을 생성하여 작업 손실을 방지합니다.
 
 ## 주요 기능
 

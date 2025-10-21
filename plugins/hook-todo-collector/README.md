@@ -2,7 +2,7 @@
 
 > **Language**: [English](README.md) | [한국어](README.ko.md)
 
-Tracks TODO comments in modified files and detects changes during your Claude Code sessions.
+> Tracks TODO comments in modified files and detects changes during your Claude Code sessions.
 
 ## Features
 

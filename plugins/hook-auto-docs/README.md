@@ -2,7 +2,7 @@
 
 > **Language**: [English](README.md) | [한국어](README.ko.md)
 
-Automatically scans and documents your project structure.
+> Automatically scans and documents your project structure.
 
 ## Features
 

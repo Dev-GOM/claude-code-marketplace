@@ -1,0 +1,368 @@
+{
+  "CS0246": {
+    "errorCode": "CS0246",
+    "description": "The type or namespace name could not be found",
+    "commonCauses": [
+      "Missing using directive (e.g., using UnityEngine;)",
+      "Assembly definition reference not added",
+      "Typo in type name",
+      "Missing package or plugin"
+    ],
+    "solutions": [
+      {
+        "step": 1,
+        "action": "Add missing using directive",
+        "example": "using UnityEngine;\nusing UnityEngine.UI;\nusing TMPro;"
+      },
+      {
+        "step": 2,
+        "action": "Check assembly definition references",
+        "details": "If using Assembly Definition files (.asmdef), ensure required assemblies are referenced"
+      },
+      {
+        "step": 3,
+        "action": "Verify type name spelling",
+        "details": "Check for typos in class, struct, or namespace names"
+      },
+      {
+        "step": 4,
+        "action": "Install missing packages",
+        "details": "Open Package Manager and install required Unity packages (TextMeshPro, Input System, etc.)"
+      }
+    ],
+    "unityNotes": "Common Unity namespaces: UnityEngine, UnityEngine.UI, UnityEngine.SceneManagement, UnityEditor (editor-only)",
+    "examples": [
+      {
+        "error": "The type or namespace name 'Rigidbody' could not be found",
+        "fix": "Add 'using UnityEngine;' at the top of the file"
+      },
+      {
+        "error": "The type or namespace name 'TextMeshProUGUI' could not be found",
+        "fix": "Add 'using TMPro;' and ensure TextMeshPro package is installed"
+      }
+    ]
+  },
+  "CS0029": {
+    "errorCode": "CS0029",
+    "description": "Cannot implicitly convert type",
+    "commonCauses": [
+      "Assigning incompatible types",
+      "Missing type cast",
+      "Incorrect GameObject/Component access",
+      "Unity API version changes"
+    ],
+    "solutions": [
+      {
+        "step": 1,
+        "action": "Add explicit cast",
+        "example": "Rigidbody rb = (Rigidbody)GetComponent(typeof(Rigidbody));"
+      },
+      {
+        "step": 2,
+        "action": "Use generic GetComponent",
+        "example": "Rigidbody rb = GetComponent<Rigidbody>();"
+      },
+      {
+        "step": 3,
+        "action": "Check variable type declaration",
+        "details": "Ensure variable type matches assigned value type"
+      }
+    ],
+    "unityNotes": "Unity uses generic methods extensively. Prefer GetComponent<T>() over non-generic versions",
+    "examples": [
+      {
+        "error": "Cannot implicitly convert type 'UnityEngine.Component' to 'UnityEngine.Rigidbody'",
+        "fix": "Use GetComponent<Rigidbody>() instead of GetComponent(typeof(Rigidbody))"
+      }
+    ]
+  },
+  "CS1061": {
+    "errorCode": "CS1061",
+    "description": "Type does not contain a definition for member",
+    "commonCauses": [
+      "Typo in method or property name",
+      "Unity API version difference",
+      "Accessing wrong object type",
+      "Missing component reference"
+    ],
+    "solutions": [
+      {
+        "step": 1,
+        "action": "Check spelling and capitalization",
+        "details": "C# is case-sensitive. Ensure method/property name is correct"
+      },
+      {
+        "step": 2,
+        "action": "Verify Unity API version",
+        "details": "Some APIs change between Unity versions. Check Unity documentation"
+      },
+      {
+        "step": 3,
+        "action": "Ensure correct component type",
+        "example": "transform.position (correct) vs gameObject.position (incorrect)"
+      },
+      {
+        "step": 4,
+        "action": "Use correct Unity API",
+        "details": "GameObject vs Component vs Transform have different members"
+      }
+    ],
+    "unityNotes": "Common confusion: GameObject.transform.position (correct) vs GameObject.position (incorrect)",
+    "examples": [
+      {
+        "error": "'GameObject' does not contain a definition for 'position'",
+        "fix": "Use 'transform.position' or 'gameObject.transform.position'"
+      },
+      {
+        "error": "'Rigidbody' does not contain a definition for 'Translate'",
+        "fix": "Use 'transform.Translate()' instead - Translate is a Transform method, not Rigidbody"
+      }
+    ]
+  },
+  "CS0101": {
+    "errorCode": "CS0101",
+    "description": "The namespace already contains a definition",
+    "commonCauses": [
+      "Duplicate class names in same namespace",
+      "Partial class definitions conflict",
+      "Multiple files with same class name",
+      "Copy-pasted scripts not renamed"
+    ],
+    "solutions": [
+      {
+        "step": 1,
+        "action": "Rename one of the conflicting classes",
+        "details": "Each class in a namespace must have a unique name"
+      },
+      {
+        "step": 2,
+        "action": "Move class to different namespace",
+        "example": "namespace MyGame.Player { class Controller { } }"
+      },
+      {
+        "step": 3,
+        "action": "Check for duplicate files",
+        "details": "Search project for files with same class name"
+      }
+    ],
+    "unityNotes": "Unity script file names should match class names. Rename both file and class together",
+    "examples": [
+      {
+        "error": "The namespace 'MyGame' already contains a definition for 'PlayerController'",
+        "fix": "Rename one class to 'PlayerMovement' or use different namespaces"
+      }
+    ]
+  },
+  "CS1002": {
+    "errorCode": "CS1002",
+    "description": "Expected semicolon",
+    "commonCauses": [
+      "Missing semicolon at end of statement",
+      "Incomplete method call",
+      "Syntax error in expression"
+    ],
+    "solutions": [
+      {
+        "step": 1,
+        "action": "Add missing semicolon",
+        "example": "int health = 100; // semicolon required"
+      },
+      {
+        "step": 2,
+        "action": "Check line above error",
+        "details": "Error often reported on line after the actual missing semicolon"
+      }
+    ],
+    "unityNotes": "Check Unity lifecycle methods (Start, Update) for missing semicolons",
+    "examples": [
+      {
+        "error": "Expected ';' after 'transform.position = newPos'",
+        "fix": "Add semicolon: transform.position = newPos;"
+      }
+    ]
+  },
+  "CS1003": {
+    "errorCode": "CS1003",
+    "description": "Syntax error, expected comma",
+    "commonCauses": [
+      "Missing comma in parameter list",
+      "Missing comma in array initialization",
+      "Incorrect method signature"
+    ],
+    "solutions": [
+      {
+        "step": 1,
+        "action": "Add missing comma",
+        "example": "Vector3 pos = new Vector3(1.0f, 2.0f, 3.0f);"
+      },
+      {
+        "step": 2,
+        "action": "Check method parameters",
+        "details": "Ensure parameters are separated by commas"
+      }
+    ],
+    "unityNotes": "Unity methods like Vector3, Quaternion require commas between components",
+    "examples": [
+      {
+        "error": "Expected ',' in Vector3 constructor",
+        "fix": "new Vector3(1.0f, 2.0f, 3.0f) // commas required"
+      }
+    ]
+  },
+  "CS1525": {
+    "errorCode": "CS1525",
+    "description": "Invalid expression term",
+    "commonCauses": [
+      "Keyword used in wrong context",
+      "Incomplete expression",
+      "Missing opening brace"
+    ],
+    "solutions": [
+      {
+        "step": 1,
+        "action": "Check for matching braces",
+        "details": "Ensure all { } are properly matched"
+      },
+      {
+        "step": 2,
+        "action": "Verify expression syntax",
+        "details": "Check for incomplete or malformed expressions"
+      }
+    ],
+    "unityNotes": "Common in Unity lifecycle methods - ensure proper { } around method bodies",
+    "examples": [
+      {
+        "error": "Invalid expression term 'void'",
+        "fix": "Check for missing brace before method definition"
+      }
+    ]
+  },
+  "CS0122": {
+    "errorCode": "CS0122",
+    "description": "Member is inaccessible due to its protection level",
+    "commonCauses": [
+      "Accessing private member from outside class",
+      "Missing public/protected modifier",
+      "Incorrect inheritance setup"
+    ],
+    "solutions": [
+      {
+        "step": 1,
+        "action": "Change member to public",
+        "example": "public float speed = 5.0f;"
+      },
+      {
+        "step": 2,
+        "action": "Use SerializeField for private fields",
+        "example": "[SerializeField] private float speed;"
+      },
+      {
+        "step": 3,
+        "action": "Add public property or method",
+        "example": "public float Speed { get { return speed; } }"
+      }
+    ],
+    "unityNotes": "Use [SerializeField] for private fields that should appear in Inspector",
+    "examples": [
+      {
+        "error": "'PlayerController.speed' is inaccessible due to its protection level",
+        "fix": "Change 'private float speed;' to 'public float speed;' or add [SerializeField]"
+      }
+    ]
+  },
+  "CS0103": {
+    "errorCode": "CS0103",
+    "description": "The name does not exist in the current context",
+    "commonCauses": [
+      "Variable not declared",
+      "Typo in variable name",
+      "Variable out of scope",
+      "Missing component reference"
+    ],
+    "solutions": [
+      {
+        "step": 1,
+        "action": "Declare variable before use",
+        "example": "Rigidbody rb;\nvoid Start() { rb = GetComponent<Rigidbody>(); }"
+      },
+      {
+        "step": 2,
+        "action": "Check variable name spelling",
+        "details": "Variable names are case-sensitive"
+      },
+      {
+        "step": 3,
+        "action": "Ensure variable is in scope",
+        "details": "Variables declared in methods are only accessible within that method"
+      }
+    ],
+    "unityNotes": "Common with component references - ensure they're declared as class fields",
+    "examples": [
+      {
+        "error": "The name 'rb' does not exist in the current context",
+        "fix": "Declare 'Rigidbody rb;' at class level before using in methods"
+      }
+    ]
+  },
+  "CS0119": {
+    "errorCode": "CS0119",
+    "description": "Member is a type, which is not valid in the given context",
+    "commonCauses": [
+      "Using type name instead of instance",
+      "Missing instantiation",
+      "Incorrect static/instance usage"
+    ],
+    "solutions": [
+      {
+        "step": 1,
+        "action": "Create instance of type",
+        "example": "GameObject player = new GameObject(); // not just 'GameObject'"
+      },
+      {
+        "step": 2,
+        "action": "Use correct Unity API",
+        "example": "GameObject.Find('Player') // static method on type"
+      }
+    ],
+    "unityNotes": "Unity has both static methods (GameObject.Find) and instance methods (gameObject.SetActive)",
+    "examples": [
+      {
+        "error": "'GameObject' is a type but is used like a variable",
+        "fix": "Use 'gameObject' (lowercase - current instance) or 'new GameObject()'"
+      }
+    ]
+  },
+  "CS0117": {
+    "errorCode": "CS0117",
+    "description": "Type does not contain a definition",
+    "commonCauses": [
+      "Unity API version change",
+      "Incorrect class/namespace",
+      "Missing package reference"
+    ],
+    "solutions": [
+      {
+        "step": 1,
+        "action": "Check Unity documentation",
+        "details": "API may have changed in your Unity version"
+      },
+      {
+        "step": 2,
+        "action": "Verify class name",
+        "details": "Ensure using correct Unity class"
+      },
+      {
+        "step": 3,
+        "action": "Update deprecated APIs",
+        "details": "Some APIs are replaced in newer Unity versions"
+      }
+    ],
+    "unityNotes": "Unity 2020+ changed many APIs. Check Unity Upgrade Guide",
+    "examples": [
+      {
+        "error": "'Input' does not contain a definition for 'GetKey'",
+        "fix": "In new Input System, use 'Keyboard.current.spaceKey.isPressed' instead"
+      }
+    ]
+  }
+}

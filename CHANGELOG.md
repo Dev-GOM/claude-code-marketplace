@@ -2,7 +2,20 @@
 
 All notable changes to the Dev GOM Plugins marketplace will be documented in this file.
 
-> **Version**: 2.4.2 | **Last Updated**: 2025-10-21
+> **Version**: 2.4.3 | **Last Updated**: 2025-10-22
+
+---
+
+## [2.4.3] - 2025-10-22
+
+### Added
+- 🔧 **Unity Dev Toolkit v1.3.0**: New compile error resolution skill
+  - Added `unity-compile-fixer` skill for automated C# compilation error detection and resolution
+  - VSCode diagnostics integration (OmniSharp) for real-time error detection
+  - Comprehensive Unity C# error patterns database (CS0246, CS0029, CS1061, etc.)
+  - Smart context-aware fix suggestions based on error analysis
+  - Unity .meta file conflict detection and version control integration
+  - Node.js analysis script for processing VSCode diagnostics
 
 ---
 
@@ -298,6 +311,14 @@ All notable changes to the Dev GOM Plugins marketplace will be documented in thi
 ---
 
 ## Unity Dev Toolkit
+
+### v1.3.0 (2025-10-22)
+- 🔧 **New Skill**: Added `unity-compile-fixer` skill for automated C# compilation error detection and resolution
+- 🔍 **VSCode Integration**: Leverages VSCode diagnostics (OmniSharp) for real-time error detection
+- 📊 **Error Pattern Database**: Includes comprehensive Unity C# error patterns (CS0246, CS0029, CS1061, etc.)
+- 💡 **Smart Solutions**: Proposes context-aware fixes based on error analysis
+- ✅ **VCS Support**: Handles Unity .meta file conflicts and version control integration
+- 📝 **Analysis Scripts**: Includes Node.js script for processing VSCode diagnostics
 
 ### v1.2.0 (2025-10-18)
 - 🎨 **UI Toolkit Templates**: Added complete UI Toolkit templates for both Editor and Runtime (6 files total)
