@@ -72,12 +72,13 @@ Auto Release Manager is a Claude Code skill that streamlines the entire release 
 
 ### Basic Usage
 
-Simply ask Claude to handle your release:
+Simply ask Claude to use the release manager:
 
 ```
-"Bump patch version and create release"
-"Update to v1.0.3"
-"Create Unity release with version 1.5.0"
+"Use release manager to bump patch version"
+"Release manager update to v1.0.3"
+"Release manager create Unity release with version 1.5.0"
+"Release manager push the changes"
 ```
 
 Claude will:
