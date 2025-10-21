@@ -73,7 +73,7 @@ Confirm the current directory contains a valid Unity project using cross-platfor
 // Use Read tool to check for Unity project indicators
 Read({ file_path: "ProjectSettings/ProjectVersion.txt" })
 
-// Or use Glob to verify Assets directory exists
+// Use Glob to verify Assets directory exists
 Glob({ pattern: "Assets/*", path: "." })
 ```
 

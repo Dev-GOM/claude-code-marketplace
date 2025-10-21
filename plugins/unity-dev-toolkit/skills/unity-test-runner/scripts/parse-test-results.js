@@ -59,8 +59,8 @@ const jsonOutput = args.includes('--json');
  */
 function extractTagContent(xml, tagName) {
   // Non-greedy matching: [\s\S]*? ensures minimal capture between tags
-  // [^>]* allows for attributes without capturing them
-  const regex = new RegExp(`<${tagName}[^>]*?>([\\s\\S]*?)<\\/${tagName}>`, 'i');
+  // [^>]* allows for attributes without capturing them (stops at first >)
+  const regex = new RegExp(`<${tagName}[^>]*>([\\s\\S]*?)<\\/${tagName}>`, 'i');
   const match = xml.match(regex);
   return match ? match[1].trim() : '';
 }
@@ -159,7 +159,7 @@ function parseTestCase(testCaseXml) {
  */
 function parseTestResults(xmlContent) {
   // Validate XML has test-run root element
-  const testRunMatch = xmlContent.match(/<test-run[^>]*?>/i);
+  const testRunMatch = xmlContent.match(/<test-run[^>]*>/i);
   if (!testRunMatch) {
     throw new Error('Invalid Unity Test Framework XML: <test-run> element not found. ' +
                    'Ensure the file is a valid NUnit XML results file from Unity.');
@@ -178,7 +178,8 @@ function parseTestResults(xmlContent) {
 
   // Extract all test cases using non-greedy matching
   // Pattern matches <test-case ...>...</test-case> with minimal capture
-  const testCaseRegex = /<test-case[^>]*?>[\s\S]*?<\/test-case>/gi;
+  // [^>]* stops at first >, [\s\S]*? captures minimal content between tags
+  const testCaseRegex = /<test-case[^>]*>[\s\S]*?<\/test-case>/gi;
   const testCaseMatches = xmlContent.match(testCaseRegex) || [];
 
   const allTests = [];
