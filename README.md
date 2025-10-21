@@ -141,6 +141,21 @@ Comprehensive Unity game development toolkit with intelligent scripting assistan
 
 </details>
 
+---
+
+### 9. 🚀 [Auto Release Manager](plugins/auto-release-manager/README.md)
+
+<details>
+<summary><strong>📖 Plugin Details</strong> (Click to expand)</summary>
+
+Automate version updates and releases for any project type with intelligent detection and cross-platform support.
+
+**Quick Info:** Universal project type detection (Node.js, Python, Rust, Go, Unity, Unreal, etc.) | Cross-platform version management | CHANGELOG auto-generation | Git workflow automation | **Features:** Semantic versioning, Unity dual-file sync, Conventional Commits parsing, Zero external dependencies (Python 3.11+)
+
+**[Read Full Documentation →](plugins/auto-release-manager/README.md)**
+
+</details>
+
 ## Installation
 
 ### Quick Start (Recommended)
@@ -174,6 +189,9 @@ Comprehensive Unity game development toolkit with intelligent scripting assistan
    ```
    ```bash
    /plugin install unity-dev-toolkit@dev-gom-plugins
+   ```
+   ```bash
+   /plugin install auto-release-manager@dev-gom-plugins
    ```
 
 3. Restart Claude Code to load the plugins:
@@ -211,6 +229,7 @@ Once installed, the plugins work automatically:
 - **AI Pair Programming Suite**: Provides intelligent assistance with commands, agents, and hooks
 - **Spec-Kit Integration**: Use `/spec-kit:*` commands to guide specification-driven development workflow
 - **Unity Dev Toolkit**: Use `/unity:*` commands, invoke expert agents with `@unity-*`, and get automatic script validation through Agent Skills
+- **Auto Release Manager**: Ask Claude to "update version" or "create release" for automated version management and release workflow
 
 ## Configuration
 
