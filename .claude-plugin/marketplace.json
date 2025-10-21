@@ -120,7 +120,7 @@
       "name": "spec-kit",
       "source": "./plugins/spec-kit",
       "description": "GitHub Spec-Kit integration for Specification-Driven Development - define WHAT and HOW before coding",
-      "version": "2.3.1",
+      "version": "2.3.2",
       "author": {
         "name": "Dev GOM"
       },
