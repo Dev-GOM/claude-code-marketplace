@@ -67,11 +67,14 @@ node scripts/find-unity-editor.js --json
 
 ### 2. Verify Unity Project Path
 
-Confirm the current directory contains a valid Unity project:
+Confirm the current directory contains a valid Unity project using cross-platform checks:
 
-```bash
-# Check for Unity project indicators
-test -f "ProjectSettings/ProjectVersion.txt" && test -d "Assets"
+```typescript
+// Use Read tool to check for Unity project indicators
+Read({ file_path: "ProjectSettings/ProjectVersion.txt" })
+
+// Use Glob to verify Assets directory exists
+Glob({ pattern: "Assets/*", path: "." })
 ```
 
 **Validation steps:**
@@ -328,7 +331,7 @@ Create a comprehensive test report for the user:
 
 ## Next Steps
 1. Review failed test locations and fix implementation
-2. Re-run tests after fixes: `node scripts/test-runner.js`
+2. Re-run tests after fixes by re-invoking the skill
 3. Consider adding more assertions for edge cases
 ```
 

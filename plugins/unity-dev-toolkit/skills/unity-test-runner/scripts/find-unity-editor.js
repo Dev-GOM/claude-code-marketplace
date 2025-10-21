@@ -25,7 +25,6 @@
 
 const fs = require('fs');
 const path = require('path');
-const { execSync } = require('child_process');
 
 // Parse command line arguments
 const args = process.argv.slice(2);
@@ -87,24 +86,6 @@ function getUnityExecutableName() {
 }
 
 /**
- * Check if a path contains a valid Unity installation
- */
-function isValidUnityInstallation(versionPath) {
-  const platform = process.platform;
-  let executablePath;
-
-  if (platform === 'win32') {
-    executablePath = path.join(versionPath, 'Editor', 'Unity.exe');
-  } else if (platform === 'darwin') {
-    executablePath = path.join(versionPath, 'Unity.app', 'Contents', 'MacOS', 'Unity');
-  } else {
-    executablePath = path.join(versionPath, 'Editor', 'Unity');
-  }
-
-  return fs.existsSync(executablePath);
-}
-
-/**
  * Get Unity executable path from version directory
  */
 function getUnityExecutablePath(versionPath) {
@@ -117,6 +98,13 @@ function getUnityExecutablePath(versionPath) {
   } else {
     return path.join(versionPath, 'Editor', 'Unity');
   }
+}
+
+/**
+ * Check if a path contains a valid Unity installation
+ */
+function isValidUnityInstallation(versionPath) {
+  return fs.existsSync(getUnityExecutablePath(versionPath));
 }
 
 /**

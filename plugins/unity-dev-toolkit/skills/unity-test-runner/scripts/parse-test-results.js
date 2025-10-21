@@ -49,8 +49,17 @@ const jsonOutput = args.includes('--json');
 
 /**
  * Extract text content from XML tag
+ *
+ * Note: This uses regex-based parsing instead of a full XML parser library.
+ * While regex-based XML parsing is generally not recommended, it's sufficient
+ * for Unity Test Framework's consistent NUnit XML output format. The patterns
+ * are designed to be non-greedy and handle common variations (attributes, whitespace).
+ *
+ * For production use with arbitrary XML, consider using fast-xml-parser or xml2js.
  */
 function extractTagContent(xml, tagName) {
+  // Non-greedy matching: [\s\S]*? ensures minimal capture between tags
+  // [^>]* allows for attributes without capturing them (stops at first >)
   const regex = new RegExp(`<${tagName}[^>]*>([\\s\\S]*?)<\\/${tagName}>`, 'i');
   const match = xml.match(regex);
   return match ? match[1].trim() : '';
@@ -58,9 +67,14 @@ function extractTagContent(xml, tagName) {
 
 /**
  * Extract attribute value from XML tag
+ *
+ * Handles attributes with double quotes. Unity NUnit XML consistently uses
+ * double quotes for attributes, so this simple pattern is reliable.
  */
 function extractAttribute(tag, attrName) {
-  const regex = new RegExp(`${attrName}="([^"]*)"`, 'i');
+  // Escape special regex characters in attribute name
+  const escapedAttrName = attrName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const regex = new RegExp(`${escapedAttrName}="([^"]*)"`, 'i');
   const match = tag.match(regex);
   return match ? match[1] : null;
 }
@@ -95,8 +109,12 @@ function extractFileInfo(stackTrace) {
 
 /**
  * Parse test-case element
+ *
+ * Extracts test metadata from <test-case> XML element using attribute matching.
+ * All attributes are optional - defaults are provided for missing values.
  */
 function parseTestCase(testCaseXml) {
+  // Extract attributes with fallback defaults
   const nameMatch = testCaseXml.match(/name="([^"]*)"/);
   const fullNameMatch = testCaseXml.match(/fullname="([^"]*)"/);
   const resultMatch = testCaseXml.match(/result="([^"]*)"/);
@@ -106,7 +124,7 @@ function parseTestCase(testCaseXml) {
     name: nameMatch ? nameMatch[1] : 'Unknown',
     fullName: fullNameMatch ? fullNameMatch[1] : 'Unknown',
     result: resultMatch ? resultMatch[1] : 'Unknown',
-    duration: durationMatch ? parseFloat(durationMatch[1]) : 0
+    duration: durationMatch ? parseFloat(durationMatch[1]) || 0 : 0
   };
 
   // Extract failure information if test failed
@@ -131,12 +149,20 @@ function parseTestCase(testCaseXml) {
 
 /**
  * Parse Unity Test Framework XML results
+ *
+ * Parses NUnit XML format produced by Unity Test Framework.
+ * Expects standard Unity test output structure with <test-run> root element.
+ *
+ * @param {string} xmlContent - Raw XML content from test results file
+ * @returns {Object} Parsed test results with summary, failures, and all tests
+ * @throws {Error} If XML structure is invalid or test-run element is missing
  */
 function parseTestResults(xmlContent) {
-  // Extract test-run attributes for summary
+  // Validate XML has test-run root element
   const testRunMatch = xmlContent.match(/<test-run[^>]*>/i);
   if (!testRunMatch) {
-    throw new Error('Invalid Unity Test Framework XML: test-run element not found');
+    throw new Error('Invalid Unity Test Framework XML: <test-run> element not found. ' +
+                   'Ensure the file is a valid NUnit XML results file from Unity.');
   }
 
   const testRunTag = testRunMatch[0];
@@ -150,7 +176,9 @@ function parseTestResults(xmlContent) {
     duration: parseFloat(extractAttribute(testRunTag, 'duration') || '0')
   };
 
-  // Extract all test cases
+  // Extract all test cases using non-greedy matching
+  // Pattern matches <test-case ...>...</test-case> with minimal capture
+  // [^>]* stops at first >, [\s\S]*? captures minimal content between tags
   const testCaseRegex = /<test-case[^>]*>[\s\S]*?<\/test-case>/gi;
   const testCaseMatches = xmlContent.match(testCaseRegex) || [];
 
