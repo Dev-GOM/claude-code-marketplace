@@ -59,11 +59,11 @@ Auto Release Manager는 다양한 프로젝트 타입에서 전체 릴리즈 워
 
 ```bash
 # 마켓플레이스에서 설치
-claude-code plugins:marketplace:add https://github.com/Dev-GOM/claude-code-marketplace
-claude-code plugins:install auto-release-manager
+/plugin marketplace add https://github.com/Dev-GOM/claude-code-marketplace.git
+/plugin install auto-release-manager@dev-gom-plugins
 
 # 또는 직접 설치
-claude-code plugins:add https://github.com/Dev-GOM/claude-code-marketplace/tree/main/plugins/auto-release-manager
+/plugin add https://github.com/Dev-GOM/claude-code-marketplace/tree/main/plugins/auto-release-manager
 ```
 
 ## 사용법

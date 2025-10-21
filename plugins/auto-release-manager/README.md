@@ -59,11 +59,11 @@ Auto Release Manager is a Claude Code skill that streamlines the entire release 
 
 ```bash
 # Install from marketplace
-claude-code plugins:marketplace:add https://github.com/Dev-GOM/claude-code-marketplace
-claude-code plugins:install auto-release-manager
+/plugin marketplace add https://github.com/Dev-GOM/claude-code-marketplace.git
+/plugin install auto-release-manager@dev-gom-plugins
 
 # Or install directly
-claude-code plugins:add https://github.com/Dev-GOM/claude-code-marketplace/tree/main/plugins/auto-release-manager
+/plugin add https://github.com/Dev-GOM/claude-code-marketplace/tree/main/plugins/auto-release-manager
 ```
 
 ## Usage

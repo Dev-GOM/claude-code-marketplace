@@ -141,6 +141,21 @@ Claude Code 세션(Session)이 끝날 때마다 자동으로 git 커밋을 생�
 
 </details>
 
+---
+
+### 9. 🚀 [Auto Release Manager](plugins/auto-release-manager/README.ko.md)
+
+<details>
+<summary><strong>📖 플러그인 상세</strong> (펼치기)</summary>
+
+지능형 감지와 크로스 플랫폼 지원으로 모든 프로젝트 타입의 버전 업데이트 및 릴리즈를 자동화합니다.
+
+**요약:** 범용 프로젝트 타입 감지 (Node.js, Python, Rust, Go, Unity, Unreal 등) | 크로스 플랫폼 버전 관리 | CHANGELOG 자동 생성 | Git 워크플로우 자동화 | **기능:** 시맨틱 버저닝, Unity 이중 파일 동기화, Conventional Commits 파싱, 외부 의존성 제로 (Python 3.11+)
+
+**[전체 문서 보기 →](plugins/auto-release-manager/README.ko.md)**
+
+</details>
+
 ## 설치
 
 ### 빠른 시작 (권장)
@@ -174,6 +189,9 @@ Claude Code 세션(Session)이 끝날 때마다 자동으로 git 커밋을 생�
    ```
    ```bash
    /plugin install unity-dev-toolkit@dev-gom-plugins
+   ```
+   ```bash
+   /plugin install auto-release-manager@dev-gom-plugins
    ```
 
 3. 플러그인을 로드하기 위해 Claude Code 재시작:
@@ -211,6 +229,7 @@ Claude Code 세션(Session)이 끝날 때마다 자동으로 git 커밋을 생�
 - **AI 페어 프로그래밍 스위트**: 커맨드, 에이전트, 훅으로 지능형 지원 제공
 - **Spec-Kit 통합**: `/spec-kit:*` 커맨드로 명세 주도 개발 워크플로우 안내
 - **Unity Dev Toolkit**: `/unity:*` 커맨드 사용, `@unity-*`로 전문 에이전트 호출, Agent Skills를 통한 자동 스크립트 검증
+- **Auto Release Manager**: Claude에게 "버전 업데이트" 또는 "릴리즈 생성" 요청으로 자동 버전 관리 및 릴리즈 워크플로우
 
 ## 설정
 
