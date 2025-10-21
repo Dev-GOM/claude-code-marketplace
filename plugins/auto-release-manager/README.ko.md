@@ -1,5 +1,7 @@
 # Auto Release Manager
 
+[English Documentation](README.md)
+
 > 지능형 감지 및 크로스 플랫폼 지원으로 모든 프로젝트 타입의 버전 업데이트 및 릴리즈를 자동화합니다.
 
 ## 개요

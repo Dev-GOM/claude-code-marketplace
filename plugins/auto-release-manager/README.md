@@ -1,5 +1,7 @@
 # Auto Release Manager
 
+[한국어 문서](README.ko.md)
+
 > Automate version updates and releases for any project type with intelligent detection and cross-platform support.
 
 ## Overview
