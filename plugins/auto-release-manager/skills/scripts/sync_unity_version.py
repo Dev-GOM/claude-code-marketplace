@@ -71,7 +71,7 @@ def sync_unity_version(project_root: str = ".") -> bool:
 
         return True
 
-    except (json.JSONDecodeError, IOError) as e:
+    except (json.JSONDecodeError, IOError, UnicodeDecodeError) as e:
         print(f"Error syncing Unity version: {e}", file=sys.stderr)
         return False
 

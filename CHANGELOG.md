@@ -2,7 +2,16 @@
 
 All notable changes to the Dev GOM Plugins marketplace will be documented in this file.
 
-> **Version**: 2.4.1 | **Last Updated**: 2025-10-21
+> **Version**: 2.4.2 | **Last Updated**: 2025-10-21
+
+---
+
+## [2.4.2] - 2025-10-21
+
+### Fixed
+- 🔒 **Auto Release Manager v1.0.3**: Enhanced error handling
+  - Added UnicodeDecodeError handling in detect_project.py and sync_unity_version.py
+  - Prevents script crashes when encountering malformed or non-UTF-8 encoded files
 
 ---
 
@@ -320,6 +329,14 @@ All notable changes to the Dev GOM Plugins marketplace will be documented in thi
 ---
 
 ## Auto Release Manager
+
+### v1.0.3 (2025-10-21)
+
+#### Fixed
+- 🔒 **Error Handling**: Added UnicodeDecodeError handling for better robustness
+  - `detect_project.py`: Now handles UTF-8 decoding errors in Unreal Engine .uproject files
+  - `sync_unity_version.py`: Now handles UTF-8 decoding errors in Unity files
+  - Prevents script crashes when encountering malformed or non-UTF-8 encoded files
 
 ### v1.0.2 (2025-10-21)
 

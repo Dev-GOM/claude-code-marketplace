@@ -74,7 +74,7 @@ Simply ask Claude to handle your release:
 
 ```
 "Bump patch version and create release"
-"Update to v1.0.2"
+"Update to v1.0.3"
 "Create Unity release with version 1.5.0"
 ```
 

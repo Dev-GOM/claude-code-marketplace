@@ -1,6 +1,6 @@
 {
   "name": "auto-release-manager",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Automate version updates and releases for any project type (Node.js, Python, Rust, Unity, Unreal, etc.) with intelligent project detection and cross-platform support.",
   "author": {
     "name": "Dev GOM",

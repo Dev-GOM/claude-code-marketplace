@@ -2,7 +2,27 @@
 
 Dev GOM Plugins 마켓플레이스의 모든 주요 변경사항이 이 파일에 문서화됩니다.
 
-> **버전**: 2.4.0 | **최종 업데이트**: 2025-10-21
+> **버전**: 2.4.2 | **최종 업데이트**: 2025-10-21
+
+---
+
+## [2.4.2] - 2025-10-21
+
+### 수정됨
+- 🔒 **Auto Release Manager v1.0.3**: 향상된 오류 처리
+  - detect_project.py 및 sync_unity_version.py에 UnicodeDecodeError 처리 추가
+  - 잘못된 형식이거나 UTF-8로 인코딩되지 않은 파일을 만났을 때 스크립트 충돌 방지
+
+---
+
+## [2.4.1] - 2025-10-21
+
+### 수정됨
+- 🔧 **Auto Release Manager v1.0.2**: 코드 품질 및 문서 개선
+  - Unreal Engine 버전 감지 우선순위 수정
+  - 구체적인 예외 타입으로 오류 처리 개선
+  - 모든 문서에서 Python 버전 요구사항을 3.11+로 업데이트
+  - plugin.json skills 배열 설정 수정
 
 ---
 
@@ -309,6 +329,14 @@ Dev GOM Plugins 마켓플레이스의 모든 주요 변경사항이 이 파일�
 ---
 
 ## Auto Release Manager
+
+### v1.0.3 (2025-10-21)
+
+#### 수정됨
+- 🔒 **오류 처리**: 더 나은 강건성을 위해 UnicodeDecodeError 처리 추가
+  - `detect_project.py`: Unreal Engine .uproject 파일의 UTF-8 디코딩 오류 처리
+  - `sync_unity_version.py`: Unity 파일의 UTF-8 디코딩 오류 처리
+  - 잘못된 형식이거나 UTF-8로 인코딩되지 않은 파일을 만났을 때 스크립트 충돌 방지
 
 ### v1.0.2 (2025-10-21)
 

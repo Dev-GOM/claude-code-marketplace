@@ -1,6 +1,6 @@
 # Claude Code Plugins
 
-> **Version**: 2.4.1 | **Last Updated**: 2025-10-21
+> **Version**: 2.4.2 | **Last Updated**: 2025-10-21
 >
 > **Language**: [English](README.md) | [한국어](README.ko.md)
 >

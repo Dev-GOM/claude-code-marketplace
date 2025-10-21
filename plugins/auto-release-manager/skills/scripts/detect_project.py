@@ -112,7 +112,7 @@ class ProjectDetector:
             try:
                 data = json.loads(uproject.read_text(encoding='utf-8'))
                 version = data.get('Version') or data.get('EngineAssociation')
-            except (json.JSONDecodeError, IOError):
+            except (json.JSONDecodeError, IOError, UnicodeDecodeError):
                 pass
 
             return {
