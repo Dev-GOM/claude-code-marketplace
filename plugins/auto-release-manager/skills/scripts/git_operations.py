@@ -57,7 +57,7 @@ class GitOperations:
     def commit(self, message: str) -> bool:
         """Create git commit."""
         self.run_command(['git', 'commit', '-m', message])
-        print(f"✓ Committed: {message.split(chr(10))[0][:60]}...")
+        print(f"✓ Committed: {message.split('\n')[0][:60]}...")
         return True
 
     def create_tag(self, tag_name: str, message: Optional[str] = None) -> bool:

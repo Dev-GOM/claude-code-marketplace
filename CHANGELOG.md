@@ -2,7 +2,27 @@
 
 All notable changes to the Dev GOM Plugins marketplace will be documented in this file.
 
-> **Version**: 2.4.0 | **Last Updated**: 2025-10-21
+> **Version**: 2.4.2 | **Last Updated**: 2025-10-21
+
+---
+
+## [2.4.2] - 2025-10-21
+
+### Fixed
+- 🔒 **Auto Release Manager v1.0.3**: Enhanced error handling
+  - Added UnicodeDecodeError handling in detect_project.py and sync_unity_version.py
+  - Prevents script crashes when encountering malformed or non-UTF-8 encoded files
+
+---
+
+## [2.4.1] - 2025-10-21
+
+### Fixed
+- 🔧 **Auto Release Manager v1.0.2**: Code quality and documentation improvements
+  - Fixed Unreal Engine version detection priority
+  - Improved exception handling with specific exception types
+  - Updated Python version requirements to 3.11+ across all documentation
+  - Fixed plugin.json skills array configuration
 
 ---
 
@@ -309,6 +329,29 @@ All notable changes to the Dev GOM Plugins marketplace will be documented in thi
 ---
 
 ## Auto Release Manager
+
+### v1.0.3 (2025-10-21)
+
+#### Fixed
+- 🔒 **Error Handling**: Added UnicodeDecodeError handling for better robustness
+  - `detect_project.py`: Now handles UTF-8 decoding errors in Unreal Engine .uproject files
+  - `sync_unity_version.py`: Now handles UTF-8 decoding errors in Unity files
+  - Prevents script crashes when encountering malformed or non-UTF-8 encoded files
+
+### v1.0.2 (2025-10-21)
+
+#### Fixed
+- 🔧 **Unreal Engine Version Priority**: Fixed version detection to prioritize `Version` over `EngineAssociation`
+  - Now correctly reads project version instead of engine version
+  - Aligned with documentation in unreal-guide.md
+- 🐛 **Exception Handling**: Improved error handling with specific exceptions
+  - Changed `except BaseException` to `except (json.JSONDecodeError, IOError)` in detect_project.py
+  - Changed `except Exception` to `except (json.JSONDecodeError, IOError)` in sync_unity_version.py
+- 📝 **Code Readability**: Replaced `chr(10)` with `'\n'` in git_operations.py
+- 🔧 **Plugin Configuration**: Fixed skills array in plugin.json to use actual skill name
+
+#### Documentation
+- 📚 **Consistency**: Updated all Python version requirements from 3.8+ to 3.11+ across all documentation files
 
 ### v1.0.1 (2025-10-21)
 

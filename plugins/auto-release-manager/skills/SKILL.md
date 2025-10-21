@@ -241,7 +241,7 @@ Handle common errors:
 - Handle authentication issues
 
 **Script errors:**
-- Ensure Python 3.8+ is installed
+- Ensure Python 3.11+ is installed
 - Check file permissions
 - Verify file encodings (UTF-8)
 
@@ -287,7 +287,7 @@ Use these when creating new version files.
 
 ## Notes
 
-- Scripts use Python 3.8+ with only stdlib dependencies
+- Scripts use Python 3.11+ with only stdlib dependencies
 - All file operations use UTF-8 encoding
 - Path handling uses pathlib for cross-platform compatibility
 - Git operations use subprocess for reliability
