@@ -111,7 +111,7 @@
   },
   "commonFailurePatterns": [
     {
-      "pattern": "Expected: <(.+)>.*But was: <(.+)>",
+      "pattern": "Expected: <(.+?)>.*?But was: <(.+?)>",
       "type": "AssertionFailure",
       "category": "ValueMismatch",
       "description": "Value assertion failed - expected value doesn't match actual value",
