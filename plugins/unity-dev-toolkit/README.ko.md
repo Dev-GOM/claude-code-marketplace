@@ -642,7 +642,7 @@ MIT 라이선스 - 프로젝트에서 자유롭게 사용하고 수정할 수 �
 - 🎉 최초 릴리스
 - 📝 3개 슬래시 커맨드: `/unity:new-script`, `/unity:optimize-scene`, `/unity:setup-test`
 - 🤖 3개 전문 에이전트: `@unity-scripter`, `@unity-performance`, `@unity-architect`
-- ⚡ 6개 Agent Skills: `unity-script-validator`, `unity-scene-optimizer`, `unity-template-generator`, `unity-ui-selector`, `unity-uitoolkit`, `unity-compile-fixer`
+- ⚡ 4개 Agent Skills: `unity-script-validator`, `unity-scene-optimizer`, `unity-template-generator`, `unity-ui-selector`
 - 📄 MonoBehaviour, ScriptableObject, Editor, Test 스크립트를 위한 프로덕션 수준 템플릿
 
 ## 🙏 제작자

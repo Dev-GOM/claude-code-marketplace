@@ -642,7 +642,7 @@ This plugin works with:
 - 🎉 Initial release
 - 📝 3 slash commands: `/unity:new-script`, `/unity:optimize-scene`, `/unity:setup-test`
 - 🤖 3 expert agents: `@unity-scripter`, `@unity-performance`, `@unity-architect`
-- ⚡ 6 Agent Skills: `unity-script-validator`, `unity-scene-optimizer`, `unity-template-generator`, `unity-ui-selector`, `unity-uitoolkit`, `unity-compile-fixer`
+- ⚡ 4 Agent Skills: `unity-script-validator`, `unity-scene-optimizer`, `unity-template-generator`, `unity-ui-selector`
 - 📄 Production-ready templates for MonoBehaviour, ScriptableObject, Editor, and Test scripts
 
 ## 🙏 Credits

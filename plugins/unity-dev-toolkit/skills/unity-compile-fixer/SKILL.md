@@ -106,7 +106,7 @@ For each approved fix:
 Example:
 ```typescript
 Edit({
-  file_path: "D:/Unity/MyProject/Assets/Scripts/PlayerController.cs",
+  file_path: "Assets/Scripts/PlayerController.cs",
   old_string: "public class PlayerController : MonoBehaviour",
   new_string: "using UnityEngine;\n\npublic class PlayerController : MonoBehaviour"
 })
