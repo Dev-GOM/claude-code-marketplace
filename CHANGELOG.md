@@ -8,6 +8,22 @@ All notable changes to the Dev GOM Plugins marketplace will be documented in thi
 
 ## Spec-Kit Integration
 
+### [2.3.2] - 2025-10-21
+
+#### Fixed
+- AskUserQuestion tool not being called due to ambiguous instructions ("필요시", "선택적")
+- Step 4.2 minimum options requirement violation (1 option → 2 options required)
+
+#### Added
+- Explicit AskUserQuestion Tool Usage Guidelines section with all constraints
+- MUST directives for all user interaction points (Step 1-B, 1-C, Step 2, Step 4.2, What's Next)
+- Tool constraint validation with checkmarks (✅) in all sections
+- Clear documentation of "Other" option auto-addition by system
+
+#### Changed
+- Step 4.2 header changed from "(선택적)" to mandatory
+- Added "요구사항 추가" option to meet 2-4 options requirement
+
 ### [2.3.1] - 2025-10-21
 
 #### Changed

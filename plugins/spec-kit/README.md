@@ -478,11 +478,18 @@ MIT License - see [LICENSE](LICENSE) file.
 
 ---
 
-**Version**: 2.3.1
+**Version**: 2.3.2
 **Last Updated**: 2025-10-21
 **Status**: Beta
 
 ## Changelog
+
+### v2.3.2 (2025-10-21)
+- **Fixed**: AskUserQuestion tool not being called due to ambiguous instructions
+- **Added**: Explicit tool usage guidelines with all constraints (2-4 options, 12 char header, 1-5 word labels)
+- **Added**: MUST directives for all user interaction points
+- **Fixed**: Step 4.2 minimum options requirement (added "요구사항 추가" option)
+- **Improved**: Clear constraint validation with checkmarks in all sections
 
 ### v2.3.1 (2025-10-21)
 - **Improved**: Removed rigid AskUserQuestion JSON structures from tasks command
