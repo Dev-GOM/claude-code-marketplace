@@ -12,6 +12,23 @@ const path = require('path');
 const projectRoot = process.cwd();
 
 /**
+ * Normalize path for the current OS
+ * Converts Unix-style paths (/d/Work/...) to Windows-style (D:\Work\...) on Windows
+ */
+function normalizePathForOS(filePath) {
+  if (!filePath) return filePath;
+
+  // On Windows, convert Unix-style paths to Windows-style
+  if (process.platform === 'win32') {
+    // Convert /d/Work/... to D:\Work\...
+    const normalized = filePath.replace(/^\/([a-z])\//i, '$1:\\').replace(/\//g, '\\');
+    return path.normalize(normalized);
+  }
+
+  return filePath;
+}
+
+/**
  * Load plugin configuration from .plugin-config (project root)
  */
 function loadPluginConfig() {
@@ -29,6 +46,7 @@ function loadPluginConfig() {
   return {
     enabled: true,
     autoStage: true,
+    openInIDE: true,
     showNotification: true,
     onlyTrackedFiles: false,
     excludePatterns: [
@@ -127,6 +145,31 @@ function stageFile(filePath) {
 }
 
 /**
+ * Open file in VS Code and show Source Control panel
+ */
+function openInVSCode(filePath) {
+  return new Promise((resolve) => {
+    const normalizedPath = normalizePathForOS(filePath);
+
+    // Open file in existing window
+    exec(`code -r "${normalizedPath}"`, (error) => {
+      if (error) {
+        resolve(); // Silent fail
+        return;
+      }
+
+      // Wait for file to open, then open Source Control
+      setTimeout(() => {
+        // Use vscode:// URI to open Source Control view
+        exec('code --open-url "vscode://vscode.scm"', (error) => {
+          resolve(); // Complete regardless of error
+        });
+      }, 500);
+    });
+  });
+}
+
+/**
  * Output notification to Claude Code
  */
 function outputNotification(filePath) {
@@ -208,6 +251,11 @@ process.stdin.on('end', async () => {
         try {
           await stageFile(filePath);
 
+          // Open file in IDE and show Source Control panel
+          if (config.openInIDE) {
+            await openInVSCode(filePath);
+          }
+
           // Show notification
           if (config.showNotification) {
             outputNotification(filePath);
@@ -222,6 +270,11 @@ process.stdin.on('end', async () => {
       // Stage the file without checking if tracked
       try {
         await stageFile(filePath);
+
+        // Open file in IDE and show Source Control panel
+        if (config.openInIDE) {
+          await openInVSCode(filePath);
+        }
 
         // Show notification
         if (config.showNotification) {

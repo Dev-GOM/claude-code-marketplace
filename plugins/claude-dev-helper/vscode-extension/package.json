@@ -1,0 +1,100 @@
+{
+  "name": "claude-dev-helper",
+  "displayName": "Claude Dev Helper",
+  "description": "⚠️ Requires Claude Code plugin! VS Code Extension for claude-dev-helper plugin - provides CodeLens buttons and keyboard shortcuts for reviewing Claude's code changes",
+  "version": "0.3.3",
+  "publisher": "devGOM",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gom-code/claude-code-marketplace"
+  },
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "icon": "icon.png",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "claudeDevHelper.acceptChange",
+        "title": "Accept Change"
+      },
+      {
+        "command": "claudeDevHelper.rejectChange",
+        "title": "Reject Change"
+      },
+      {
+        "command": "claudeDevHelper.acceptAll",
+        "title": "Accept All Changes"
+      },
+      {
+        "command": "claudeDevHelper.rejectAll",
+        "title": "Reject All Changes"
+      },
+      {
+        "command": "claudeDevHelper.acceptChangeAtLine",
+        "title": "Accept Change at Line"
+      },
+      {
+        "command": "claudeDevHelper.rejectChangeAtLine",
+        "title": "Reject Change at Line"
+      },
+      {
+        "command": "claudeDevHelper.showDiff",
+        "title": "Show Git Diff"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "claudeDevHelper.acceptChange",
+        "key": "cmd+y",
+        "mac": "cmd+y",
+        "win": "ctrl+y",
+        "linux": "ctrl+y",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "claudeDevHelper.rejectChange",
+        "key": "cmd+n",
+        "mac": "cmd+n",
+        "win": "ctrl+n",
+        "linux": "ctrl+n",
+        "when": "editorTextFocus"
+      }
+    ],
+    "configuration": {
+      "title": "Claude Dev Helper",
+      "properties": {
+        "claudeDevHelper.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable inline accept/reject buttons"
+        },
+        "claudeDevHelper.enableCodeLens": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable CodeLens buttons above changed lines"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.80.0",
+    "typescript": "^5.0.0",
+    "@vscode/vsce": "^2.22.0"
+  }
+}

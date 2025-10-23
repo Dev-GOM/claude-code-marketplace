@@ -32,6 +32,7 @@ const PLUGIN_VERSION = getPluginVersion();
 const defaultConfig = {
   enabled: true,
   autoStage: true,
+  openInIDE: true,
   showNotification: true,
   onlyTrackedFiles: false,
   excludePatterns: [
