@@ -1,0 +1,68 @@
+{
+  "description": "Automatically stage file changes for review in VS Code Source Control with Git-based diff workflow",
+  "version": "1.0.0",
+  "author": "Dev GOM",
+  "lastUpdated": "2025-10-23",
+  "hooks": {
+    "SessionStart": [
+      {
+        "description": "Initialize plugin configuration at session start",
+        "priority": 100,
+        "enabled": true,
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/init-config.js",
+            "description": "Creates default configuration file if it doesn't exist",
+            "timeout": 5000,
+            "continueOnError": true,
+            "suppressOutput": true
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "description": "Auto-stage changed files for review in VS Code Source Control",
+        "matcher": "Write|Edit",
+        "priority": 50,
+        "enabled": true,
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/auto-stage-changes.js",
+            "description": "Stages modified files to VS Code Source Control for diff review",
+            "timeout": 5000,
+            "continueOnError": true,
+            "suppressOutput": false
+          }
+        ]
+      }
+    ]
+  },
+  "configuration": {
+    "enabled": true,
+    "autoStage": true,
+    "showNotification": true,
+    "onlyTrackedFiles": false,
+    "excludePatterns": [
+      "*.log",
+      "*.tmp",
+      ".DS_Store",
+      "node_modules/**",
+      ".git/**",
+      "dist/**",
+      "build/**"
+    ],
+    "includeDirs": [],
+    "excludeDirs": [
+      "node_modules",
+      ".git",
+      "dist",
+      "build",
+      "coverage",
+      ".next",
+      "out"
+    ]
+  }
+}

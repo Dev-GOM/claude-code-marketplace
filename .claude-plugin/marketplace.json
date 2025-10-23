@@ -114,6 +114,26 @@
       ]
     },
     {
+      "name": "hook-git-diff-review",
+      "source": "./plugins/hook-git-diff-review",
+      "description": "Automatically stage file changes for review in VS Code Source Control with Git-based diff workflow",
+      "version": "1.0.0",
+      "author": {
+        "name": "Dev GOM"
+      },
+      "category": "hooks",
+      "homepage": "https://github.com/Dev-GOM/claude-code-marketplace",
+      "keywords": [
+        "git",
+        "diff",
+        "review",
+        "source-control",
+        "vscode",
+        "hooks",
+        "workflow"
+      ]
+    },
+    {
       "name": "ai-pair-programming",
       "source": "./plugins/ai-pair-programming",
       "description": "Complete AI pair programming suite with slash commands, expert agents, and intelligent hooks",

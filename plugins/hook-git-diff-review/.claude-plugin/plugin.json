@@ -1,0 +1,22 @@
+{
+  "name": "hook-git-diff-review",
+  "version": "1.0.0",
+  "description": "Automatically stage file changes for review in VS Code Source Control with Git-based diff workflow",
+  "author": {
+    "name": "Dev GOM",
+    "url": "https://github.com/Dev-GOM/claude-code-marketplace"
+  },
+  "homepage": "https://github.com/Dev-GOM/claude-code-marketplace",
+  "repository": "https://github.com/Dev-GOM/claude-code-marketplace.git",
+  "license": "MIT",
+  "keywords": [
+    "git",
+    "diff",
+    "review",
+    "source-control",
+    "vscode",
+    "hooks",
+    "workflow"
+  ],
+  "hooks": "./hooks/hooks.json"
+}
