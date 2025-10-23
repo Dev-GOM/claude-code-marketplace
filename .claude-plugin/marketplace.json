@@ -96,6 +96,24 @@
       ]
     },
     {
+      "name": "hook-auto-open-file",
+      "source": "./plugins/hook-auto-open-file",
+      "description": "Automatically opens files in VS Code when they are created or modified",
+      "version": "1.0.0",
+      "author": {
+        "name": "Dev GOM"
+      },
+      "category": "hooks",
+      "homepage": "https://github.com/Dev-GOM/claude-code-marketplace",
+      "keywords": [
+        "vscode",
+        "ide",
+        "automation",
+        "hooks",
+        "developer-experience"
+      ]
+    },
+    {
       "name": "ai-pair-programming",
       "source": "./plugins/ai-pair-programming",
       "description": "Complete AI pair programming suite with slash commands, expert agents, and intelligent hooks",

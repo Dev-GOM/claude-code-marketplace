@@ -1,0 +1,15 @@
+# Test files
+test-*.js
+test-*.ts
+test-*.json
+test-*.md
+*-debug.js
+demo-*.js
+FINAL-*.md
+*-TEST.md
+
+# State files (if any)
+.state/
+
+# Config files (user-specific)
+.plugin-config/
