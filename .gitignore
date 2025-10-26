@@ -31,8 +31,16 @@ Thumbs.db
 .claude-code-marketplace-pair-programming-session.md
 /.playwright-mcp
 
-# VSCode Extension (별도 브랜치에서 관리)
-plugins/claude-dev-helper/vscode-extension/
+# Plugin core files (develop 브랜치에서 관리)
+plugins/claude-dev-helper/hooks/
+plugins/claude-dev-helper/scripts/
+plugins/claude-dev-helper/.claude-plugin/
+plugins/claude-dev-helper/README.md
+plugins/claude-dev-helper/README.ko.md
+plugins/claude-dev-helper/.gitignore
 
 # Diff Editor (배포 보류)
 plugins/claude-dev-helper/diff-editor/
+
+# VSCode extension build artifacts
+plugins/claude-dev-helper/vscode-extension/*.vsix

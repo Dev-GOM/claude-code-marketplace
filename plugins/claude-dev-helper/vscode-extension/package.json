@@ -1,0 +1,71 @@
+{
+  "name": "claude-dev-helper",
+  "displayName": "Claude Dev Helper",
+  "description": "⚠️ Requires Claude Code plugin! VS Code Extension for claude-dev-helper plugin - provides CodeLens buttons and keyboard shortcuts for reviewing Claude's code changes",
+  "version": "1.0.0",
+  "publisher": "devGOM",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gom-code/claude-code-marketplace"
+  },
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "icon": "icon.png",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "claudeDevHelper.showDiff",
+        "title": "Show Git Diff"
+      },
+      {
+        "command": "claudeDevHelper.showBrowserDiff",
+        "title": "Show Git Diff (Browser)"
+      },
+      {
+        "command": "claudeDevHelper.enableInlineDiffMode",
+        "title": "Enable Inline Diff Mode"
+      }
+    ],
+    "configuration": {
+      "title": "Claude Dev Helper",
+      "properties": {
+        "claudeDevHelper.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable inline accept/reject buttons"
+        },
+        "claudeDevHelper.enableCodeLens": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable CodeLens buttons above changed lines"
+        },
+        "claudeDevHelper.autoSetInlineDiffMode": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically set VSCode diff editor to inline mode on first activation"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.80.0",
+    "typescript": "^5.0.0",
+    "@vscode/vsce": "^2.22.0"
+  }
+}
