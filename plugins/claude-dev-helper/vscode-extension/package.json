@@ -2,7 +2,7 @@
   "name": "claude-dev-helper",
   "displayName": "Claude Dev Helper",
   "description": "⚠️ Requires Claude Code plugin! VS Code Extension for claude-dev-helper plugin - provides CodeLens buttons and keyboard shortcuts for reviewing Claude's code changes",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "publisher": "devGOM",
   "license": "MIT",
   "repository": {
