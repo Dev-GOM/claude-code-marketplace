@@ -12,6 +12,11 @@ plugins/*/.state/
 # Node modules
 node_modules/
 
+# Environment variables (secrets)
+.env
+.env.*
+!.env.example
+
 # IDE
 .vscode/
 .idea/
