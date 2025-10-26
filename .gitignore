@@ -31,16 +31,35 @@ Thumbs.db
 .claude-code-marketplace-pair-programming-session.md
 /.playwright-mcp
 
-# Plugin core files (develop 브랜치에서 관리)
+# All other plugins (develop 브랜치에서 관리)
+plugins/ai-pair-programming/
+plugins/auto-release-manager/
+plugins/hook-auto-docs/
+plugins/hook-auto-open-file/
+plugins/hook-complexity-monitor/
+plugins/hook-git-auto-backup/
+plugins/hook-session-summary/
+plugins/hook-todo-collector/
+plugins/spec-kit/
+plugins/unity-dev-toolkit/
+
+# Claude-dev-helper plugin core files (develop 브랜치에서 관리)
 plugins/claude-dev-helper/hooks/
 plugins/claude-dev-helper/scripts/
 plugins/claude-dev-helper/.claude-plugin/
 plugins/claude-dev-helper/README.md
 plugins/claude-dev-helper/README.ko.md
 plugins/claude-dev-helper/.gitignore
-
-# Diff Editor (배포 보류)
 plugins/claude-dev-helper/diff-editor/
 
 # VSCode extension build artifacts
 plugins/claude-dev-helper/vscode-extension/*.vsix
+
+# Root level files (develop 브랜치에서 관리)
+.claude-plugin/
+README.md
+README.ko.md
+CHANGELOG.md
+CHANGELOG.ko.md
+PLUGINS.md
+PLUGINS.ko.md
