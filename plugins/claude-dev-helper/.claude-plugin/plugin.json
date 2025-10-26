@@ -1,7 +1,7 @@
 {
   "name": "claude-dev-helper",
   "version": "1.0.0",
-  "description": "Enhances Claude Code development workflow with Git-based diff review, auto-staging, and feedback collection for VS Code",
+  "description": "Git diff review integration for Claude Code with VSCode extension. Provides inline diff view, browser diff editor, and auto-staging hooks.",
   "author": {
     "name": "Dev GOM",
     "url": "https://github.com/Dev-GOM/claude-code-marketplace"
@@ -16,7 +16,17 @@
     "source-control",
     "vscode",
     "hooks",
-    "workflow"
+    "workflow",
+    "inline-diff"
   ],
-  "hooks": "./hooks/hooks.json"
+  "hooks": "./hooks/hooks.json",
+  "requirements": {
+    "vscode-extension": {
+      "name": "claude-dev-helper",
+      "version": ">=0.8.0",
+      "publisher": "devGOM",
+      "optional": false,
+      "description": "VSCode extension for inline git diff viewing"
+    }
+  }
 }

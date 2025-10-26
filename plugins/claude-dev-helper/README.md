@@ -1,17 +1,38 @@
-# Git Diff Review
+# Claude Dev Helper
 
 > **Language**: [English](README.md) | [한국어](README.ko.md)
 
-> Automatically stage file changes for review in VS Code Source Control with Git-based diff workflow. Accept or reject changes line-by-line or all at once, just like Cursor!
+> Git diff review integration for Claude Code with VSCode extension. Review Claude's changes with inline diff view or browser-based diff editor.
+
+## ⚠️ Requirements
+
+**VSCode Extension Required:**
+- Install the companion VSCode extension for the best experience
+- **VS Marketplace**: Search "claude-dev-helper" by devGOM (Coming soon)
+- **Manual Install**: Download `.vsix` from [GitHub Releases](https://github.com/Dev-GOM/claude-code-marketplace/releases)
 
 ## Features
 
-- 🔄 **Auto-Staging**: Automatically stages modified files to VS Code Source Control
-- 👀 **Visual Diff**: Review all changes in VS Code's built-in diff viewer
-- ✅ **Line-by-Line Control**: Accept or reject individual lines
-- 🎯 **Bulk Operations**: Accept all or reject all changes with one click
-- 🎨 **Zero Configuration**: Works out of the box with sensible defaults
-- ⚙️ **Highly Configurable**: Customize patterns, directories, and behavior
+### 🎯 Two Diff Viewing Modes
+
+**1. VSCode Inline Diff (Recommended)**
+- 🚀 **Native VSCode Integration**: Uses VSCode's built-in diff editor
+- 📊 **Inline View**: See additions and deletions in context
+- ⚡ **Fast**: No server startup required
+- 🎨 **Theme Support**: Respects your VSCode theme
+
+**2. Browser Diff Editor (Alternative)**
+- 🌐 **Monaco Editor**: Full-featured diff editor in browser
+- 📂 **Multi-file View**: Review all changes in one page
+- 🔄 **Accept/Reject Lines**: Granular control over changes
+- 🖥️ **Separate Window**: Keep VSCode focused on code
+
+### 🛠️ Additional Features
+
+- 🔄 **Auto-Staging**: Automatically stages modified files (optional)
+- 🎯 **CodeLens Buttons**: Quick access to diff commands
+- ⚙️ **Configurable Hooks**: Customize your workflow
+- 📦 **No Setup**: Works immediately after installation
 
 ## How it Works
 
@@ -66,44 +87,95 @@ function hello() {
 
 ## Installation
 
+### Step 1: Install Claude Code Plugin
+
 ```bash
-/plugin install hook-git-diff-review@dev-gom-plugins
+/plugin install claude-dev-helper@dev-gom-plugins
 ```
 
-## Prerequisites
+### Step 2: Install VSCode Extension
 
-- Git initialized in your project (`git init`)
-- VS Code or any editor with Git integration
+**Option A: VS Marketplace (Coming Soon)**
+1. Open VSCode Extensions (`Ctrl+Shift+X`)
+2. Search "claude-dev-helper" by devGOM
+3. Click Install
+
+**Option B: Manual Install (.vsix)**
+1. Download `.vsix` from [GitHub Releases](https://github.com/Dev-GOM/claude-code-marketplace/releases)
+2. VSCode → Extensions → `...` → Install from VSIX...
+3. Select downloaded file
+
+**Option C: Command Line**
+```bash
+code --install-extension claude-dev-helper-0.8.0.vsix
+```
+
+### Step 3: Reload VSCode
+
+```
+Ctrl+Shift+P → "Developer: Reload Window"
+```
 
 ## Usage
 
-Once installed, the plugin works automatically:
+### Method 1: VSCode Inline Diff (Recommended)
 
-1. **Claude modifies a file** → File is auto-staged
-2. **Open VS Code Source Control panel** (Ctrl+Shift+G)
-3. **Click on file** to view diff
-4. **Accept or reject changes**:
-   - ✓ Line-by-line: Click "Stage Change" or "Discard Change"
-   - ✓ File-level: Click "Stage" or "Discard" button
-   - ✓ All changes: Click "Commit" or "Discard All"
+1. **Claude modifies a file**
+2. **CodeLens appears**: "Show Diff" button above changed lines
+3. **Click "Show Diff"**
+4. **VSCode diff view opens** with inline changes:
+   - 🔴 Red lines = deleted
+   - 🟢 Green lines = added
 
-### Example Workflow
+**Settings** (Auto-applied on first run):
+```json
+{
+  "diffEditor.renderSideBySide": false  // Inline view
+}
+```
+
+### Method 2: Browser Diff Editor
+
+1. **Claude modifies a file**
+2. **Open Command Palette** (`Ctrl+Shift+P`)
+3. **Run**: "Show Git Diff (Browser)"
+4. **Browser opens** with Monaco diff editor
+5. **Review changes** and accept/reject lines
+
+### Quick Access
+
+**CodeLens Button:**
+```typescript
+// Changed file shows:
+[Show Diff]  ← Click to open VSCode diff
+```
+
+**Command Palette:**
+```
+Ctrl+Shift+P →
+  • "Show Git Diff" → VSCode inline diff
+  • "Show Git Diff (Browser)" → Browser diff editor
+```
+
+## Example Workflow
 
 ```
-User: "Create a new React component called Button.tsx"
-
-Claude: [Creates Button.tsx]
+You: "Add error handling to the API client"
   ↓
-Plugin: [Automatically stages Button.tsx]
+Claude: [Modifies api-client.ts]
   ↓
-VS Code: Shows notification "📋 File staged for review: Button.tsx"
+CodeLens: [Show Diff] button appears
   ↓
-You: Open Source Control → Review diff → Accept/Reject
+You: Click "Show Diff"
+  ↓
+VSCode: Opens inline diff view
+  ↓
+You: Review changes, accept/reject, commit
 ```
 
 ## Configuration
 
-Edit `.plugin-config/hook-git-diff-review.json` in your project root:
+Edit `.plugin-config/claude-dev-helper.json` in your project root:
 
 ```json
 {
@@ -209,13 +281,13 @@ Edit `.plugin-config/hook-git-diff-review.json` in your project root:
 | **Auto-diff on change** | ✅ | ✅ |
 | **Line-by-line accept/reject** | ✅ | ✅ |
 | **Accept/reject all** | ✅ | ✅ |
-| **Inline buttons** | ✅ In-editor | ✅ In Source Control |
+| **Inline buttons** | ✅ In-editor | ✅ In Source Control / Extension |
 | **Zero config** | ✅ | ✅ |
 | **Works with any editor** | ❌ | ✅ (Git-based) |
 
 **Location difference**:
 - **Cursor**: Buttons appear inline in the editor
-- **This plugin**: Buttons appear in VS Code Source Control panel
+- **This plugin**: Buttons appear in VS Code Source Control panel (or via Extension)
 
 **Why Source Control panel?**
 - ✅ Native VS Code feature (no custom UI needed)
@@ -291,6 +363,17 @@ npm run lint
 2. Let Claude make changes → Auto-staged
 3. Review diffs → Accept/reject
 4. Commit → Push → Create PR
+
+## Roadmap
+
+This plugin is designed to be an extensible development assistant. Future features planned:
+
+- 🔍 Code quality analysis
+- 📊 Project structure insights
+- 🛠️ Automated refactoring suggestions
+- 📝 Documentation generation
+- 🧪 Test coverage analysis
+- And more...
 
 ## License
 

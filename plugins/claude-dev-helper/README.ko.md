@@ -1,8 +1,8 @@
-# Git Diff Review
+# Claude Dev Helper
 
 > **언어**: [English](README.md) | [한국어](README.ko.md)
 
-> Git 기반 diff 워크플로우로 VS Code Source Control에서 파일 변경사항을 자동으로 스테이징하여 검토합니다. Cursor처럼 줄 단위 또는 전체 변경사항을 수락/거부할 수 있습니다!
+> 확장 가능한 개발 도우미 플러그인입니다. 현재는 Git diff 리뷰 기능을 제공하며, VS Code Source Control에서 Claude가 수정한 파일을 자동으로 스테이징하여 Cursor처럼 줄 단위 또는 전체 변경사항을 수락/거부할 수 있습니다.
 
 ## 주요 기능
 
@@ -12,6 +12,18 @@
 - 🎯 **일괄 작업**: 한 번의 클릭으로 모든 변경사항 수락/거부
 - 🎨 **제로 설정**: 합리적인 기본값으로 즉시 사용 가능
 - ⚙️ **고도로 설정 가능**: 패턴, 디렉토리, 동작 커스터마이징
+- 🚀 **확장 가능**: 향후 더 많은 개발 보조 기능 추가 예정
+
+## VS Code Extension
+
+더 나은 사용자 경험을 위해 VS Code Extension을 함께 사용할 수 있습니다:
+
+**[VS Code Marketplace에서 설치](https://marketplace.visualstudio.com/items?itemName=dev-gom.claude-dev-helper)**
+
+Extension 기능:
+- ✨ **CodeLens 버튼**: 에디터 상단에 "Accept All Changes" / "Reject All Changes" 버튼 표시
+- ⌨️ **키보드 단축키**: 빠른 수락/거부 (`Ctrl+Shift+A` / `Ctrl+Shift+R`)
+- 🔔 **변경 알림**: staged 파일 개수와 함께 알림 표시
 
 ## 작동 원리
 
@@ -67,7 +79,7 @@ function hello() {
 ## 설치
 
 ```bash
-/plugin install hook-git-diff-review@dev-gom-plugins
+/plugin install claude-dev-helper@dev-gom-plugins
 ```
 
 ## 사전 요구사항
@@ -87,6 +99,10 @@ function hello() {
    - ✓ 파일 단위: "Stage" 또는 "Discard" 버튼 클릭
    - ✓ 전체: "Commit" 또는 "Discard All" 클릭
 
+**Extension을 사용하는 경우**:
+   - ✓ 에디터 상단 CodeLens 버튼 클릭
+   - ✓ 키보드 단축키 사용 (`Ctrl+Shift+A` / `Ctrl+Shift+R`)
+
 ### 예시 워크플로우
 
 ```
@@ -103,7 +119,7 @@ VS Code: "📋 파일이 검토를 위해 스테이징됨: Button.tsx" 알림 �
 
 ## 설정
 
-프로젝트 루트의 `.plugin-config/hook-git-diff-review.json` 편집:
+프로젝트 루트의 `.plugin-config/claude-dev-helper.json` 편집:
 
 ```json
 {
@@ -184,10 +200,15 @@ VS Code: "📋 파일이 검토를 위해 스테이징됨: Button.tsx" 알림 �
 
 ### 키보드 단축키
 
+**기본 VS Code 단축키:**
 - `Ctrl+Shift+G` - Source Control 패널 열기
 - `Enter` - 선택한 파일의 diff 보기
 - `Ctrl+Enter` - 선택한 파일 stage
 - `Alt+Enter` - 선택한 파일 discard
+
+**Extension 단축키 (설치 시):**
+- `Ctrl+Shift+A` - 모든 변경사항 수락
+- `Ctrl+Shift+R` - 모든 변경사항 거부
 
 ### 분할 Diff 뷰
 
@@ -209,13 +230,13 @@ VS Code: "📋 파일이 검토를 위해 스테이징됨: Button.tsx" 알림 �
 | **변경 시 자동 diff** | ✅ | ✅ |
 | **줄 단위 수락/거부** | ✅ | ✅ |
 | **전체 수락/거부** | ✅ | ✅ |
-| **인라인 버튼** | ✅ 에디터 내부 | ✅ Source Control 패널 |
+| **인라인 버튼** | ✅ 에디터 내부 | ✅ Source Control 패널 + Extension |
 | **제로 설정** | ✅ | ✅ |
 | **모든 에디터 지원** | ❌ | ✅ (Git 기반) |
 
 **위치 차이**:
 - **Cursor**: 버튼이 에디터 내부에 인라인으로 표시
-- **이 플러그인**: 버튼이 VS Code Source Control 패널에 표시
+- **이 플러그인**: 버튼이 VS Code Source Control 패널에 표시 (Extension 사용 시 에디터 상단에도 표시)
 
 **왜 Source Control 패널인가?**
 - ✅ VS Code 기본 기능 (커스텀 UI 불필요)
@@ -291,6 +312,15 @@ npm run lint
 2. Claude가 변경 → 자동 스테이징
 3. Diff 검토 → 수락/거부
 4. 커밋 → 푸시 → PR 생성
+
+## 향후 계획
+
+이 플러그인은 확장 가능한 개발 도우미로 설계되었습니다. 향후 추가될 기능:
+
+- 🔍 코드 분석 및 리팩토링 제안
+- 📝 자동 문서 생성
+- 🧪 테스트 코드 생성 및 실행
+- 🎯 코드 품질 체크
 
 ## 라이선스
 

@@ -114,9 +114,9 @@
       ]
     },
     {
-      "name": "hook-git-diff-review",
-      "source": "./plugins/hook-git-diff-review",
-      "description": "Automatically stage file changes for review in VS Code Source Control with Git-based diff workflow",
+      "name": "claude-dev-helper",
+      "source": "./plugins/claude-dev-helper",
+      "description": "Development assistant for Claude Code - Git diff review, auto-staging, change feedback collection, and enhanced workflow integration with VS Code",
       "version": "1.0.0",
       "author": {
         "name": "Dev GOM"
@@ -124,13 +124,16 @@
       "category": "hooks",
       "homepage": "https://github.com/Dev-GOM/claude-code-marketplace",
       "keywords": [
+        "development",
+        "assistant",
         "git",
         "diff",
         "review",
-        "source-control",
+        "feedback",
         "vscode",
         "hooks",
-        "workflow"
+        "workflow",
+        "productivity"
       ]
     },
     {

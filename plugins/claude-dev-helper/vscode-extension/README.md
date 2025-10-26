@@ -2,6 +2,35 @@
 
 A comprehensive development assistant for Claude Code users - providing inline code review tools and more!
 
+---
+
+## ⚠️ **IMPORTANT: Requires Claude Code Plugin**
+
+**This VS Code Extension ONLY provides UI features (CodeLens buttons & keyboard shortcuts).**
+
+**You MUST install the Claude Code plugin first:**
+
+### Step 1: Add the Marketplace
+
+```bash
+/plugin marketplace add https://github.com/Dev-GOM/claude-code-marketplace.git
+```
+
+### Step 2: Install the Plugin
+
+```bash
+/plugin install claude-dev-helper@dev-gom-plugins
+```
+
+**Without the plugin, this extension will NOT work!**
+
+- **Plugin**: Tracks Claude's changes and manages feedback
+- **Extension**: Provides visual UI and shortcuts in VS Code
+
+**📦 Plugin Repository**: [dev-gom-plugins](https://github.com/Dev-GOM/claude-code-marketplace)
+
+---
+
 ## Overview
 
 Claude Dev Helper is an extensible VS Code extension designed to enhance your development workflow when using Claude Code. Currently focused on git change review capabilities, this extension will evolve to include additional development assistance features in future releases.

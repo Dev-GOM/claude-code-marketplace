@@ -38,49 +38,40 @@ const vscode = __importStar(require("vscode"));
 const cp = __importStar(require("child_process"));
 const path = __importStar(require("path"));
 const util_1 = require("util");
-const i18n_1 = require("./i18n");
 const execAsync = (0, util_1.promisify)(cp.exec);
 class GitDiffCodeLensProvider {
-    constructor() {
+    constructor(isEnabledFunc) {
         this._onDidChangeCodeLenses = new vscode.EventEmitter();
         this.onDidChangeCodeLenses = this._onDidChangeCodeLenses.event;
+        this.isEnabledFunc = isEnabledFunc;
     }
-    /**
-     * Refresh CodeLenses
-     */
     refresh() {
         this._onDidChangeCodeLenses.fire();
     }
-    /**
-     * Provide CodeLenses for git changes
-     */
     async provideCodeLenses(document, token) {
         if (document.uri.scheme !== 'file') {
             return [];
         }
+        // Don't show CodeLens when inline diff is disabled
+        if (!this.isEnabledFunc()) {
+            return [];
+        }
         const changes = await this.getGitChanges(document.uri);
+        if (changes.length === 0) {
+            return [];
+        }
+        const groups = this.groupConsecutiveChanges(changes);
         const codeLenses = [];
-        for (const change of changes) {
-            const range = new vscode.Range(change.startLine, 0, change.startLine, 0);
-            // Accept CodeLens
-            const acceptLens = new vscode.CodeLens(range, {
-                title: `✓ ${i18n_1.i18n.t('accept')}`,
-                command: 'claudeGitDiff.acceptChangeAtLine',
-                arguments: [document.uri, change.startLine, change.endLine]
-            });
-            // Reject CodeLens
-            const rejectLens = new vscode.CodeLens(range, {
-                title: `✗ ${i18n_1.i18n.t('reject')}`,
-                command: 'claudeGitDiff.rejectChangeAtLine',
-                arguments: [document.uri, change.startLine, change.endLine]
-            });
-            codeLenses.push(acceptLens, rejectLens);
+        for (const group of groups) {
+            const range = new vscode.Range(group.startLine, 0, group.startLine, 0);
+            codeLenses.push(new vscode.CodeLens(range, {
+                title: `$(diff) Show Diff Editor`,
+                command: 'claudeDevHelper.showDiff',
+                arguments: [document.uri]
+            }));
         }
         return codeLenses;
     }
-    /**
-     * Get git changes for a file
-     */
     async getGitChanges(uri) {
         try {
             const workspaceFolder = vscode.workspace.getWorkspaceFolder(uri);
@@ -88,7 +79,6 @@ class GitDiffCodeLensProvider {
                 return [];
             }
             const relativePath = path.relative(workspaceFolder.uri.fsPath, uri.fsPath);
-            // Get git diff
             const { stdout } = await execAsync(`git diff --unified=0 "${relativePath}"`, {
                 cwd: workspaceFolder.uri.fsPath
             });
@@ -98,25 +88,60 @@ class GitDiffCodeLensProvider {
             return [];
         }
     }
-    /**
-     * Parse git diff output
-     */
     parseGitDiff(diffOutput) {
         const changes = [];
         const lines = diffOutput.split('\n');
+        let currentNewLine = 0;
+        let inHunk = false;
         for (const line of lines) {
             const hunkMatch = line.match(/^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@/);
             if (hunkMatch) {
-                const newStart = parseInt(hunkMatch[3], 10) - 1;
-                const newCount = hunkMatch[4] ? parseInt(hunkMatch[4], 10) : 1;
-                changes.push({
-                    startLine: newStart,
-                    endLine: newStart + newCount - 1,
-                    type: 'addition'
-                });
+                currentNewLine = parseInt(hunkMatch[3], 10);
+                inHunk = true;
+                continue;
+            }
+            if (!inHunk)
+                continue;
+            if (line.startsWith('+')) {
+                changes.push({ startLine: currentNewLine - 1, endLine: currentNewLine - 1 });
+                currentNewLine++;
+            }
+            else if (line.startsWith('-')) {
+                const deletionMarkerLine = currentNewLine - 1;
+                if (deletionMarkerLine >= 0) {
+                    changes.push({ startLine: deletionMarkerLine, endLine: deletionMarkerLine });
+                }
+            }
+            else if (line.startsWith(' ')) {
+                currentNewLine++;
+            }
+            else if (line.startsWith('\\')) {
+                continue;
+            }
+            else if (line.startsWith('diff ') || line.startsWith('index ') ||
+                line.startsWith('---') || line.startsWith('+++')) {
+                inHunk = false;
             }
         }
         return changes;
+    }
+    groupConsecutiveChanges(changes) {
+        if (changes.length === 0)
+            return [];
+        const grouped = [];
+        let current = { ...changes[0] };
+        for (let i = 1; i < changes.length; i++) {
+            const change = changes[i];
+            if (change.startLine <= current.endLine + 1) {
+                current.endLine = change.endLine;
+            }
+            else {
+                grouped.push(current);
+                current = { ...change };
+            }
+        }
+        grouped.push(current);
+        return grouped;
     }
 }
 exports.GitDiffCodeLensProvider = GitDiffCodeLensProvider;

@@ -2,196 +2,42 @@
 
 /**
  * Auto Stage Changes Script
- * Automatically stages modified files to VS Code Source Control for diff review
+ * Stages modified files and triggers diff editor
  */
 
 const { exec } = require('child_process');
-const fs = require('fs');
 const path = require('path');
 
 const projectRoot = process.cwd();
 
 /**
- * Normalize path for the current OS
- * Converts Unix-style paths (/d/Work/...) to Windows-style (D:\Work\...) on Windows
- */
-function normalizePathForOS(filePath) {
-  if (!filePath) return filePath;
-
-  // On Windows, convert Unix-style paths to Windows-style
-  if (process.platform === 'win32') {
-    // Convert /d/Work/... to D:\Work\...
-    const normalized = filePath.replace(/^\/([a-z])\//i, '$1:\\').replace(/\//g, '\\');
-    return path.normalize(normalized);
-  }
-
-  return filePath;
-}
-
-/**
- * Load plugin configuration from .plugin-config (project root)
- */
-function loadPluginConfig() {
-  const configPath = path.join(projectRoot, '.plugin-config', 'hook-git-diff-review.json');
-
-  try {
-    if (fs.existsSync(configPath)) {
-      return JSON.parse(fs.readFileSync(configPath, 'utf8'));
-    }
-  } catch (error) {
-    // Fall through to default config
-  }
-
-  // Default config
-  return {
-    enabled: true,
-    autoStage: true,
-    openInIDE: true,
-    showNotification: true,
-    onlyTrackedFiles: false,
-    excludePatterns: [
-      '*.log',
-      '*.tmp',
-      '.DS_Store',
-      'node_modules/**',
-      '.git/**',
-      'dist/**',
-      'build/**'
-    ],
-    includeDirs: [],
-    excludeDirs: [
-      'node_modules',
-      '.git',
-      'dist',
-      'build',
-      'coverage',
-      '.next',
-      'out'
-    ]
-  };
-}
-
-const config = loadPluginConfig();
-
-/**
- * Check if file matches exclude patterns
- */
-function isExcluded(filePath) {
-  const relativePath = path.relative(projectRoot, filePath);
-
-  // Check exclude patterns
-  for (const pattern of config.excludePatterns) {
-    // Simple wildcard matching
-    const regexPattern = pattern
-      .replace(/\./g, '\\.')
-      .replace(/\*\*/g, '.*')
-      .replace(/\*/g, '[^/]*');
-
-    const regex = new RegExp(`^${regexPattern}$`);
-    if (regex.test(relativePath)) {
-      return true;
-    }
-  }
-
-  // Check exclude directories
-  const pathParts = relativePath.split(path.sep);
-  for (const excludeDir of config.excludeDirs) {
-    if (pathParts.includes(excludeDir)) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
-/**
- * Check if file is in an included directory
- */
-function isInIncludedDir(filePath) {
-  if (!config.includeDirs || config.includeDirs.length === 0) {
-    return true; // No includeDirs specified - include all
-  }
-
-  const relativePath = path.relative(projectRoot, filePath);
-  return config.includeDirs.some(includedDir => {
-    const normalizedDir = includedDir.replace(/\\/g, '/');
-    const normalizedRelPath = relativePath.replace(/\\/g, '/');
-    return normalizedRelPath.startsWith(normalizedDir + '/') || normalizedRelPath.startsWith(normalizedDir);
-  });
-}
-
-/**
- * Check if file is tracked by Git
- */
-function isTrackedByGit(filePath, callback) {
-  exec(`git ls-files --error-unmatch "${filePath}"`, { cwd: projectRoot }, (error) => {
-    callback(!error); // If no error, file is tracked
-  });
-}
-
-/**
  * Stage file with git add
  */
 function stageFile(filePath) {
-  return new Promise((resolve, reject) => {
-    exec(`git add "${filePath}"`, { cwd: projectRoot }, (error, stdout, stderr) => {
-      if (error) {
-        reject(error);
-      } else {
-        resolve();
-      }
-    });
-  });
-}
-
-/**
- * Open file in VS Code and show Source Control panel
- */
-function openInVSCode(filePath) {
-  return new Promise((resolve) => {
-    const normalizedPath = normalizePathForOS(filePath);
-
-    // Open file in existing window
-    exec(`code -r "${normalizedPath}"`, (error) => {
-      if (error) {
-        resolve(); // Silent fail
-        return;
-      }
-
-      // Wait for file to open, then open Source Control
-      setTimeout(() => {
-        // Use vscode:// URI to open Source Control view
-        exec('code --open-url "vscode://vscode.scm"', (error) => {
-          resolve(); // Complete regardless of error
+    return new Promise((resolve, reject) => {
+        exec(`git add "${filePath}"`, { cwd: projectRoot }, (error) => {
+            if (error) {
+                reject(error);
+            } else {
+                resolve();
+            }
         });
-      }, 500);
     });
-  });
 }
 
 /**
- * Output notification to Claude Code
+ * Trigger diff editor check
  */
-function outputNotification(filePath) {
-  const relativePath = path.relative(projectRoot, filePath);
-  const output = {
-    systemMessage: [
-      '',
-      '📋 **Git Diff Review**',
-      '',
-      `File staged for review: \`${relativePath}\``,
-      '',
-      '💡 Open **VS Code Source Control** panel to:',
-      '  • View diff (click on file)',
-      '  • Accept changes (✓ button or Stage)',
-      '  • Reject changes (✗ button or Discard)',
-      '  • Accept all (✓ Commit button)',
-      '  • Reject all (↶ Discard All button)',
-      ''
-    ].join('\n')
-  };
+function triggerDiffEditor(filePath) {
+    const editorScript = path.join(__dirname, 'check-and-open-editor.js');
+    const relativePath = path.relative(projectRoot, filePath);
 
-  console.log(JSON.stringify(output));
+    exec(`node "${editorScript}" "${relativePath}"`, { cwd: projectRoot }, (error) => {
+        // Silent fail - don't interrupt workflow
+        if (error) {
+            console.error('[Auto Stage] Error triggering diff editor:', error.message);
+        }
+    });
 }
 
 /**
@@ -200,95 +46,47 @@ function outputNotification(filePath) {
 let inputData = '';
 
 process.stdin.on('data', (chunk) => {
-  inputData += chunk;
+    inputData += chunk;
 });
 
 process.stdin.on('end', async () => {
-  try {
-    // Check if plugin is enabled
-    if (!config.enabled || !config.autoStage) {
-      process.exit(0);
-    }
+    try {
+        const input = JSON.parse(inputData);
 
-    const input = JSON.parse(inputData);
+        // Only process Write and Edit operations
+        const toolName = input.tool_name;
+        if (toolName !== 'Write' && toolName !== 'Edit') {
+            process.exit(0);
+        }
 
-    // Only process Write and Edit operations
-    const toolName = input.tool_name;
-    if (toolName !== 'Write' && toolName !== 'Edit') {
-      process.exit(0);
-    }
+        // Extract file path from tool input
+        const toolInput = input.tool_input || {};
+        let filePath = toolInput.file_path;
 
-    // Extract file path from tool input
-    const toolInput = input.tool_input || {};
-    let filePath = toolInput.file_path;
+        if (!filePath) {
+            process.exit(0);
+        }
 
-    if (!filePath) {
-      process.exit(0);
-    }
-
-    // Convert to absolute path if necessary
-    if (!path.isAbsolute(filePath)) {
-      filePath = path.join(projectRoot, filePath);
-    }
-
-    // Check if file should be staged based on configuration
-    if (isExcluded(filePath)) {
-      process.exit(0); // File is excluded
-    }
-
-    if (!isInIncludedDir(filePath)) {
-      process.exit(0); // File not in included directory
-    }
-
-    // Check if file is tracked by Git (if onlyTrackedFiles is true)
-    if (config.onlyTrackedFiles) {
-      isTrackedByGit(filePath, async (isTracked) => {
-        if (!isTracked) {
-          process.exit(0); // File not tracked
+        // Convert to absolute path if necessary
+        if (!path.isAbsolute(filePath)) {
+            filePath = path.join(projectRoot, filePath);
         }
 
         // Stage the file
         try {
-          await stageFile(filePath);
+            await stageFile(filePath);
+            console.log(`[Auto Stage] Staged: ${path.relative(projectRoot, filePath)}`);
 
-          // Open file in IDE and show Source Control panel
-          if (config.openInIDE) {
-            await openInVSCode(filePath);
-          }
-
-          // Show notification
-          if (config.showNotification) {
-            outputNotification(filePath);
-          }
+            // Trigger diff editor check
+            triggerDiffEditor(filePath);
         } catch (error) {
-          // Silent fail - git might not be initialized
+            // Silent fail - git might not be initialized
+            console.error('[Auto Stage] Failed to stage:', error.message);
         }
 
         process.exit(0);
-      });
-    } else {
-      // Stage the file without checking if tracked
-      try {
-        await stageFile(filePath);
-
-        // Open file in IDE and show Source Control panel
-        if (config.openInIDE) {
-          await openInVSCode(filePath);
-        }
-
-        // Show notification
-        if (config.showNotification) {
-          outputNotification(filePath);
-        }
-      } catch (error) {
-        // Silent fail - git might not be initialized
-      }
-
-      process.exit(0);
+    } catch (err) {
+        // Silent fail - don't interrupt the workflow
+        process.exit(0);
     }
-
-  } catch (err) {
-    // Silent fail - don't interrupt the workflow
-    process.exit(0);
-  }
 });

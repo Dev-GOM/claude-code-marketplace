@@ -2,7 +2,7 @@
   "name": "claude-dev-helper",
   "displayName": "Claude Dev Helper",
   "description": "⚠️ Requires Claude Code plugin! VS Code Extension for claude-dev-helper plugin - provides CodeLens buttons and keyboard shortcuts for reviewing Claude's code changes",
-  "version": "0.3.3",
+  "version": "0.8.0",
   "publisher": "devGOM",
   "license": "MIT",
   "repository": {
@@ -23,50 +23,16 @@
   "contributes": {
     "commands": [
       {
-        "command": "claudeDevHelper.acceptChange",
-        "title": "Accept Change"
-      },
-      {
-        "command": "claudeDevHelper.rejectChange",
-        "title": "Reject Change"
-      },
-      {
-        "command": "claudeDevHelper.acceptAll",
-        "title": "Accept All Changes"
-      },
-      {
-        "command": "claudeDevHelper.rejectAll",
-        "title": "Reject All Changes"
-      },
-      {
-        "command": "claudeDevHelper.acceptChangeAtLine",
-        "title": "Accept Change at Line"
-      },
-      {
-        "command": "claudeDevHelper.rejectChangeAtLine",
-        "title": "Reject Change at Line"
-      },
-      {
         "command": "claudeDevHelper.showDiff",
         "title": "Show Git Diff"
-      }
-    ],
-    "keybindings": [
-      {
-        "command": "claudeDevHelper.acceptChange",
-        "key": "cmd+y",
-        "mac": "cmd+y",
-        "win": "ctrl+y",
-        "linux": "ctrl+y",
-        "when": "editorTextFocus"
       },
       {
-        "command": "claudeDevHelper.rejectChange",
-        "key": "cmd+n",
-        "mac": "cmd+n",
-        "win": "ctrl+n",
-        "linux": "ctrl+n",
-        "when": "editorTextFocus"
+        "command": "claudeDevHelper.showBrowserDiff",
+        "title": "Show Git Diff (Browser)"
+      },
+      {
+        "command": "claudeDevHelper.enableInlineDiffMode",
+        "title": "Enable Inline Diff Mode"
       }
     ],
     "configuration": {
@@ -81,6 +47,11 @@
           "type": "boolean",
           "default": true,
           "description": "Enable CodeLens buttons above changed lines"
+        },
+        "claudeDevHelper.autoSetInlineDiffMode": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically set VSCode diff editor to inline mode on first activation"
         }
       }
     }

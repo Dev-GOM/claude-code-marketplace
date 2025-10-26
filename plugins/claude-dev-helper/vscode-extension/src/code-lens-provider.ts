@@ -2,30 +2,27 @@ import * as vscode from 'vscode';
 import * as cp from 'child_process';
 import * as path from 'path';
 import { promisify } from 'util';
-import { i18n } from './i18n';
 
 const execAsync = promisify(cp.exec);
 
 interface GitChange {
     startLine: number;
     endLine: number;
-    type: 'addition' | 'deletion' | 'modification';
 }
 
 export class GitDiffCodeLensProvider implements vscode.CodeLensProvider {
-    private _onDidChangeCodeLenses: vscode.EventEmitter<void> = new vscode.EventEmitter<void>();
-    public readonly onDidChangeCodeLenses: vscode.Event<void> = this._onDidChangeCodeLenses.event;
+    private _onDidChangeCodeLenses = new vscode.EventEmitter<void>();
+    public readonly onDidChangeCodeLenses = this._onDidChangeCodeLenses.event;
+    private isEnabledFunc: () => boolean;
 
-    /**
-     * Refresh CodeLenses
-     */
+    constructor(isEnabledFunc: () => boolean) {
+        this.isEnabledFunc = isEnabledFunc;
+    }
+
     refresh(): void {
         this._onDidChangeCodeLenses.fire();
     }
 
-    /**
-     * Provide CodeLenses for git changes
-     */
     async provideCodeLenses(
         document: vscode.TextDocument,
         token: vscode.CancellationToken
@@ -34,35 +31,31 @@ export class GitDiffCodeLensProvider implements vscode.CodeLensProvider {
             return [];
         }
 
+        // Don't show CodeLens when inline diff is disabled
+        if (!this.isEnabledFunc()) {
+            return [];
+        }
+
         const changes = await this.getGitChanges(document.uri);
+        if (changes.length === 0) {
+            return [];
+        }
+
+        const groups = this.groupConsecutiveChanges(changes);
         const codeLenses: vscode.CodeLens[] = [];
 
-        for (const change of changes) {
-            const range = new vscode.Range(change.startLine, 0, change.startLine, 0);
-
-            // Accept CodeLens
-            const acceptLens = new vscode.CodeLens(range, {
-                title: `✓ ${i18n.t('accept')}`,
-                command: 'claudeDevHelper.acceptChangeAtLine',
-                arguments: [document.uri, change.startLine, change.endLine]
-            });
-
-            // Reject CodeLens
-            const rejectLens = new vscode.CodeLens(range, {
-                title: `✗ ${i18n.t('reject')}`,
-                command: 'claudeDevHelper.rejectChangeAtLine',
-                arguments: [document.uri, change.startLine, change.endLine]
-            });
-
-            codeLenses.push(acceptLens, rejectLens);
+        for (const group of groups) {
+            const range = new vscode.Range(group.startLine, 0, group.startLine, 0);
+            codeLenses.push(new vscode.CodeLens(range, {
+                title: `$(diff) Show Diff Editor`,
+                command: 'claudeDevHelper.showDiff',
+                arguments: [document.uri]
+            }));
         }
 
         return codeLenses;
     }
 
-    /**
-     * Get git changes for a file
-     */
     private async getGitChanges(uri: vscode.Uri): Promise<GitChange[]> {
         try {
             const workspaceFolder = vscode.workspace.getWorkspaceFolder(uri);
@@ -71,8 +64,6 @@ export class GitDiffCodeLensProvider implements vscode.CodeLensProvider {
             }
 
             const relativePath = path.relative(workspaceFolder.uri.fsPath, uri.fsPath);
-
-            // Get git diff
             const { stdout } = await execAsync(`git diff --unified=0 "${relativePath}"`, {
                 cwd: workspaceFolder.uri.fsPath
             });
@@ -83,28 +74,60 @@ export class GitDiffCodeLensProvider implements vscode.CodeLensProvider {
         }
     }
 
-    /**
-     * Parse git diff output
-     */
     private parseGitDiff(diffOutput: string): GitChange[] {
         const changes: GitChange[] = [];
         const lines = diffOutput.split('\n');
+        let currentNewLine = 0;
+        let inHunk = false;
 
         for (const line of lines) {
             const hunkMatch = line.match(/^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@/);
-
             if (hunkMatch) {
-                const newStart = parseInt(hunkMatch[3], 10) - 1;
-                const newCount = hunkMatch[4] ? parseInt(hunkMatch[4], 10) : 1;
+                currentNewLine = parseInt(hunkMatch[3], 10);
+                inHunk = true;
+                continue;
+            }
 
-                changes.push({
-                    startLine: newStart,
-                    endLine: newStart + newCount - 1,
-                    type: 'addition'
-                });
+            if (!inHunk) continue;
+
+            if (line.startsWith('+')) {
+                changes.push({ startLine: currentNewLine - 1, endLine: currentNewLine - 1 });
+                currentNewLine++;
+            } else if (line.startsWith('-')) {
+                const deletionMarkerLine = currentNewLine - 1;
+                if (deletionMarkerLine >= 0) {
+                    changes.push({ startLine: deletionMarkerLine, endLine: deletionMarkerLine });
+                }
+            } else if (line.startsWith(' ')) {
+                currentNewLine++;
+            } else if (line.startsWith('\\')) {
+                continue;
+            } else if (line.startsWith('diff ') || line.startsWith('index ') ||
+                       line.startsWith('---') || line.startsWith('+++')) {
+                inHunk = false;
             }
         }
 
         return changes;
+    }
+
+    private groupConsecutiveChanges(changes: GitChange[]): GitChange[] {
+        if (changes.length === 0) return [];
+
+        const grouped: GitChange[] = [];
+        let current = { ...changes[0] };
+
+        for (let i = 1; i < changes.length; i++) {
+            const change = changes[i];
+            if (change.startLine <= current.endLine + 1) {
+                current.endLine = change.endLine;
+            } else {
+                grouped.push(current);
+                current = { ...change };
+            }
+        }
+
+        grouped.push(current);
+        return grouped;
     }
 }

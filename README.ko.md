@@ -143,7 +143,22 @@ Claude Code 세션(Session)이 끝날 때마다 자동으로 git 커밋을 생�
 
 ---
 
-### 9. 🚀 [Auto Release Manager](plugins/auto-release-manager/README.ko.md)
+### 9. 🔧 [Claude Dev Helper](plugins/claude-dev-helper/README.ko.md)
+
+<details>
+<summary><strong>📖 플러그인 상세</strong> (펼치기)</summary>
+
+Git diff 리뷰, 자동 스테이징, 변경사항 피드백 수집, VS Code Extension과의 향상된 워크플로우 통합 등 확장 가능한 기능을 갖춘 개발 보조 도구.
+
+**요약:** Git diff 리뷰 및 자동 스테이징을 위한 PostToolUse 훅 | 향상된 워크플로우를 위한 VS Code Extension | 변경사항 피드백 수집 | **훅(Hooks):** `PostToolUse` (Edit|Write) | **기능:** Git 통합, VS Code 통합, 확장 가능한 아키텍처
+
+**[전체 문서 보기 →](plugins/claude-dev-helper/README.ko.md)**
+
+</details>
+
+---
+
+### 10. 🚀 [Auto Release Manager](plugins/auto-release-manager/README.ko.md)
 
 <details>
 <summary><strong>📖 플러그인 상세</strong> (펼치기)</summary>
@@ -191,6 +206,9 @@ Claude Code 세션(Session)이 끝날 때마다 자동으로 git 커밋을 생�
    /plugin install unity-dev-toolkit@dev-gom-plugins
    ```
    ```bash
+   /plugin install claude-dev-helper@dev-gom-plugins
+   ```
+   ```bash
    /plugin install auto-release-manager@dev-gom-plugins
    ```
 
@@ -229,6 +247,7 @@ Claude Code 세션(Session)이 끝날 때마다 자동으로 git 커밋을 생�
 - **AI 페어 프로그래밍 스위트**: 커맨드, 에이전트, 훅으로 지능형 지원 제공
 - **Spec-Kit 통합**: `/spec-kit:*` 커맨드로 명세 주도 개발 워크플로우 안내
 - **Unity Dev Toolkit**: `/unity:*` 커맨드 사용, `@unity-*`로 전문 에이전트 호출, Agent Skills를 통한 자동 스크립트 검증
+- **Claude Dev Helper**: Git diff 자동 리뷰, 변경사항 스테이징, 피드백 수집; VS Code Extension 통합으로 향상된 기능
 - **Auto Release Manager**: Claude에게 "버전 업데이트" 또는 "릴리즈 생성" 요청으로 자동 버전 관리 및 릴리즈 워크플로우
 
 ## 설정
@@ -263,6 +282,7 @@ Claude Code 세션(Session)이 끝날 때마다 자동으로 git 커밋을 생�
 - **[Session Tracker 설정 →](plugins/hook-session-summary/README.ko.md#설정)**
 - **[AI 페어 프로그래밍 설정 →](plugins/ai-pair-programming/README.ko.md#설정)**
 - **[Spec-Kit 문서 →](plugins/spec-kit/README.ko.md)**
+- **[Claude Dev Helper 문서 →](plugins/claude-dev-helper/README.ko.md)**
 
 ### 빠른 예제
 
@@ -363,6 +383,7 @@ Claude Code 세션(Session)이 끝날 때마다 자동으로 git 커밋을 생�
 - [Session Tracker 기술 세부사항](plugins/hook-session-summary/README.ko.md#기술-세부사항)
 - [AI 페어 프로그래밍 기술 세부사항](plugins/ai-pair-programming/README.ko.md#동작-원리)
 - [Spec-Kit 통합 가이드](plugins/spec-kit/README.ko.md)
+- [Claude Dev Helper 기술 세부사항](plugins/claude-dev-helper/README.ko.md#동작-원리)
 
 ## 기여
 
