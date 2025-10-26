@@ -2,6 +2,8 @@
 
 > **언어**: [English](README.md) | [한국어](README.ko.md)
 
+> ⚠️ **실험적 기능**: 이 플러그인은 현재 실험 단계입니다. 일부 기능이 불안정하거나 변경될 수 있습니다.
+
 > Claude Code를 위한 Git diff 리뷰 플러그인 (VSCode 확장 지원)
 
 ## 주요 기능

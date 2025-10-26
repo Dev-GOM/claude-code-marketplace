@@ -2,6 +2,8 @@
 
 > **Language**: [English](README.md) | [한국어](README.ko.md)
 
+> ⚠️ **Experimental Feature**: This plugin is currently in experimental stage. Some features may be unstable or subject to change.
+
 > Git diff review plugin for Claude Code with optional VSCode extension support.
 
 ## Features
