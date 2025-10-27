@@ -2,7 +2,17 @@
 
 All notable changes to the Dev GOM Plugins marketplace will be documented in this file.
 
-> **Version**: 2.4.5 | **Last Updated**: 2025-10-27
+> **Version**: 2.4.6 | **Last Updated**: 2025-10-27
+
+---
+
+## [2.4.6] - 2025-10-27
+
+### Fixed
+- 🔧 **Claude Dev Helper v1.1.1**: Plugin manifest validation fix
+  - Removed unsupported `requirements` key from plugin.json
+  - Fixes "Unrecognized key(s) in object: 'requirements'" validation error
+  - Plugin now loads correctly without manifest errors
 
 ---
 
