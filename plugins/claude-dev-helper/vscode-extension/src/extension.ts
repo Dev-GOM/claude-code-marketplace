@@ -199,7 +199,7 @@ function setupAutoOpenFileWatcher(context: vscode.ExtensionContext) {
             const newFiles = queue.filter((item: any) => !processedFiles.has(item.filePath + item.timestamp));
 
             for (const item of newFiles) {
-                const { filePath, focus = false } = item;
+                const { filePath, focus = false, openLocation = 'beside' } = item;
 
                 // Mark as processed
                 processedFiles.add(filePath + item.timestamp);
@@ -214,11 +214,18 @@ function setupAutoOpenFileWatcher(context: vscode.ExtensionContext) {
                         await vscode.window.showTextDocument(doc, { preview: false });
                     } else {
                         // Open without focus
-                        await vscode.window.showTextDocument(doc, {
+                        const options: any = {
                             preview: false,
-                            preserveFocus: true,
-                            viewColumn: vscode.ViewColumn.Beside
-                        });
+                            preserveFocus: true
+                        };
+
+                        // Add viewColumn based on openLocation setting
+                        if (openLocation === 'beside') {
+                            options.viewColumn = vscode.ViewColumn.Beside;
+                        }
+                        // If 'current', don't specify viewColumn to open in current tab
+
+                        await vscode.window.showTextDocument(doc, options);
                     }
 
                     console.log(`[Auto-open] Opened file: ${path.basename(filePath)}`);
