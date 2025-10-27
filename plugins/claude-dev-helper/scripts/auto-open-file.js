@@ -29,7 +29,7 @@ function loadConfig() {
     autoOpen: {
       enabled: true,
       focus: false,
-      openLocation: 1,  // 0 = current, 1 = beside
+      openLocation: 1,  // 0 = first column, 1 = second column
       maxQueueSize: 10
     }
   };
