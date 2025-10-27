@@ -5,7 +5,7 @@
   },
   "metadata": {
     "description": "Productivity plugins for Claude Code to automate development workflows",
-    "version": "2.4.6",
+    "version": "2.4.7",
     "homepage": "https://github.com/Dev-GOM/claude-code-marketplace"
   },
   "plugins": [
@@ -46,7 +46,7 @@
       "name": "hook-complexity-monitor",
       "source": "./plugins/hook-complexity-monitor",
       "description": "Monitor code complexity and maintain code quality",
-      "version": "1.1.1",
+      "version": "1.1.2",
       "author": {
         "name": "Dev GOM"
       },
@@ -81,7 +81,7 @@
       "name": "hook-session-summary",
       "source": "./plugins/hook-session-summary",
       "description": "Track and summarize all files used during a Claude Code session",
-      "version": "1.1.1",
+      "version": "1.1.2",
       "author": {
         "name": "Dev GOM"
       },
@@ -117,7 +117,7 @@
       "name": "claude-dev-helper",
       "source": "./plugins/claude-dev-helper",
       "description": "Development assistant for Claude Code - Auto-open files in VSCode, Git diff review, and enhanced workflow integration",
-      "version": "1.1.1",
+      "version": "1.1.2",
       "author": {
         "name": "Dev GOM"
       },
@@ -140,7 +140,7 @@
       "name": "ai-pair-programming",
       "source": "./plugins/ai-pair-programming",
       "description": "Complete AI pair programming suite with slash commands, expert agents, and intelligent hooks",
-      "version": "1.1.1",
+      "version": "1.1.2",
       "author": {
         "name": "Dev GOM"
       },
