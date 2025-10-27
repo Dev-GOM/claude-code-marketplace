@@ -199,7 +199,7 @@ function setupAutoOpenFileWatcher(context: vscode.ExtensionContext) {
             const newFiles = queue.filter((item: any) => !processedFiles.has(item.filePath + item.timestamp));
 
             for (const item of newFiles) {
-                const { filePath, focus = false, openLocation = 'beside' } = item;
+                const { filePath, focus = false, openLocation = 1 } = item;
 
                 // Mark as processed
                 processedFiles.add(filePath + item.timestamp);
@@ -220,12 +220,14 @@ function setupAutoOpenFileWatcher(context: vscode.ExtensionContext) {
                         };
 
                         // Add viewColumn based on openLocation setting
-                        if (openLocation === 'beside') {
+                        // 0 = current (Active), 1 = beside (Two)
+                        if (openLocation === 1) {
                             // Use ViewColumn.Two to always open in second column (right side)
-                            // instead of Beside which creates new groups each time
                             options.viewColumn = vscode.ViewColumn.Two;
+                        } else {
+                            // Use ViewColumn.Active to open in current column without stealing focus
+                            options.viewColumn = vscode.ViewColumn.Active;
                         }
-                        // If 'current', don't specify viewColumn to open in current tab
 
                         await vscode.window.showTextDocument(doc, options);
                     }
