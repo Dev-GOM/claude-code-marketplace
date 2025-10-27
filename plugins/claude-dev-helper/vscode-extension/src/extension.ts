@@ -163,6 +163,12 @@ function setupAutoOpenFileWatcher(context: vscode.ExtensionContext) {
     const stateDir = path.join(workspaceRoot, '.claude-dev-helper');
     const openFilesPath = path.join(stateDir, 'open-files.json');
 
+    // Ensure state directory exists before setting up watcher
+    if (!fs.existsSync(stateDir)) {
+        fs.mkdirSync(stateDir, { recursive: true });
+        console.log('[Auto-open] Created .claude-dev-helper directory');
+    }
+
     // Track processed files to avoid duplicates
     const processedFiles = new Set<string>();
     let lastModifiedTime = 0;
