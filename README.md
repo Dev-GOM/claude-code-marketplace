@@ -143,14 +143,14 @@ Comprehensive Unity game development toolkit with intelligent scripting assistan
 
 ---
 
-### 9. 🔧 [Claude Dev Helper](plugins/claude-dev-helper/README.md)
+### 9. 🔧 [Claude Dev Helper](plugins/claude-dev-helper/README.md) `v1.1.0`
 
 <details>
 <summary><strong>📖 Plugin Details</strong> (Click to expand)</summary>
 
-Development assistant with extensible features including git diff review, auto-staging, change feedback collection, and enhanced workflow integration with VS Code Extension.
+Development assistant with auto-open files, git diff review, and enhanced workflow integration with VS Code Extension.
 
-**Quick Info:** PostToolUse hook for git diff review and auto-staging | VS Code Extension for enhanced workflow | Change feedback collection | **Hooks:** `PostToolUse` (Edit|Write) | **Features:** Git integration, VS Code integration, extensible architecture
+**Quick Info:** Auto-opens files in VSCode when Claude creates/edits them | Git diff review with CodeLens | VS Code Extension for enhanced workflow | **Hooks:** `SessionStart`, `PostToolUse` (Edit|Write) | **Features:** Auto-open files, Git integration, VS Code integration
 
 **[Read Full Documentation →](plugins/claude-dev-helper/README.md)**
 

@@ -143,14 +143,14 @@ Claude Code 세션(Session)이 끝날 때마다 자동으로 git 커밋을 생�
 
 ---
 
-### 9. 🔧 [Claude Dev Helper](plugins/claude-dev-helper/README.ko.md)
+### 9. 🔧 [Claude Dev Helper](plugins/claude-dev-helper/README.ko.md) `v1.1.0`
 
 <details>
 <summary><strong>📖 플러그인 상세</strong> (펼치기)</summary>
 
-Git diff 리뷰, 자동 스테이징, 변경사항 피드백 수집, VS Code Extension과의 향상된 워크플로우 통합 등 확장 가능한 기능을 갖춘 개발 보조 도구.
+자동 파일 열기, Git diff 리뷰, VS Code Extension과의 향상된 워크플로우 통합을 제공하는 개발 보조 도구.
 
-**요약:** Git diff 리뷰 및 자동 스테이징을 위한 PostToolUse 훅 | 향상된 워크플로우를 위한 VS Code Extension | 변경사항 피드백 수집 | **훅(Hooks):** `PostToolUse` (Edit|Write) | **기능:** Git 통합, VS Code 통합, 확장 가능한 아키텍처
+**요약:** Claude가 파일 생성/수정 시 VSCode에서 자동 열기 | CodeLens로 Git diff 리뷰 | VS Code Extension으로 향상된 워크플로우 | **훅(Hooks):** `SessionStart`, `PostToolUse` (Edit|Write) | **기능:** 자동 파일 열기, Git 통합, VS Code 통합
 
 **[전체 문서 보기 →](plugins/claude-dev-helper/README.ko.md)**
 
