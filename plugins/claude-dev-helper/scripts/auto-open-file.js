@@ -29,6 +29,7 @@ function loadConfig() {
     autoOpen: {
       enabled: true,
       focus: false,
+      openLocation: 1,  // 0 = current, 1 = beside
       maxQueueSize: 10
     }
   };
@@ -111,7 +112,7 @@ function processFile(absolutePath, config) {
       filePath: absolutePath,
       timestamp: Date.now(),
       focus: config.autoOpen.focus,
-      openLocation: config.autoOpen.openLocation || 'beside'
+      openLocation: config.autoOpen.openLocation ?? 1  // Use ?? to handle 0 value
     });
 
     // Keep only last N files based on config to prevent memory leak

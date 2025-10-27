@@ -32,7 +32,7 @@ const defaultConfig = {
   autoOpen: {
     enabled: true,
     focus: false,
-    openLocation: 'beside',  // 'beside' (split view) or 'current' (current tab)
+    openLocation: 1,  // 0 = current (current tab), 1 = beside (split view)
     maxQueueSize: 10
   }
 };
