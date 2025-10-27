@@ -4,12 +4,18 @@
 .project-structure.md
 .session-summary.md
 .pair-programming-session.md
+.claude-code-review/
 
 # Plugin state directories (internal data - do not delete!)
 plugins/*/.state/
 
 # Node modules
 node_modules/
+
+# Environment variables (secrets)
+.env
+.env.*
+!.env.example
 
 # IDE
 .vscode/
@@ -23,3 +29,10 @@ Thumbs.db
 /.plugin-config
 /.specify
 .claude-code-marketplace-pair-programming-session.md
+/.playwright-mcp
+
+# VSCode Extension (별도 브랜치에서 관리)
+plugins/claude-dev-helper/vscode-extension/
+
+# Diff Editor (배포 보류)
+plugins/claude-dev-helper/diff-editor/

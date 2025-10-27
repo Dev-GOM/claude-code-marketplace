@@ -1,6 +1,6 @@
 # Claude Code Plugins
 
-> **Version**: 2.4.4 | **Last Updated**: 2025-10-22
+> **Version**: 2.4.5 | **Last Updated**: 2025-10-27
 >
 > **Language**: [English](README.md) | [한국어](README.ko.md)
 >
@@ -143,7 +143,22 @@ Comprehensive Unity game development toolkit with intelligent scripting assistan
 
 ---
 
-### 9. 🚀 [Auto Release Manager](plugins/auto-release-manager/README.md)
+### 9. 🔧 [Claude Dev Helper](plugins/claude-dev-helper/README.md) `v1.1.0`
+
+<details>
+<summary><strong>📖 Plugin Details</strong> (Click to expand)</summary>
+
+Development assistant with auto-open files, git diff review, and enhanced workflow integration with VS Code Extension.
+
+**Quick Info:** Auto-opens files in VSCode when Claude creates/edits them | Git diff review with CodeLens | VS Code Extension for enhanced workflow | **Hooks:** `SessionStart`, `PostToolUse` (Edit|Write) | **Features:** Auto-open files, Git integration, VS Code integration
+
+**[Read Full Documentation →](plugins/claude-dev-helper/README.md)**
+
+</details>
+
+---
+
+### 10. 🚀 [Auto Release Manager](plugins/auto-release-manager/README.md)
 
 <details>
 <summary><strong>📖 Plugin Details</strong> (Click to expand)</summary>
@@ -191,6 +206,9 @@ Automate version updates and releases for any project type with intelligent dete
    /plugin install unity-dev-toolkit@dev-gom-plugins
    ```
    ```bash
+   /plugin install claude-dev-helper@dev-gom-plugins
+   ```
+   ```bash
    /plugin install auto-release-manager@dev-gom-plugins
    ```
 
@@ -229,6 +247,7 @@ Once installed, the plugins work automatically:
 - **AI Pair Programming Suite**: Provides intelligent assistance with commands, agents, and hooks
 - **Spec-Kit Integration**: Use `/spec-kit:*` commands to guide specification-driven development workflow
 - **Unity Dev Toolkit**: Use `/unity:*` commands, invoke expert agents with `@unity-*`, and get automatic script validation through Agent Skills
+- **Claude Dev Helper**: Automatically reviews git diffs, stages changes, and collects feedback; enhanced with VS Code Extension integration
 - **Auto Release Manager**: Ask Claude to "update version" or "create release" for automated version management and release workflow
 
 ## Configuration
@@ -263,6 +282,7 @@ For detailed configuration options:
 - **[Session Tracker Configuration →](plugins/hook-session-summary/README.md#configuration)**
 - **[AI Pair Programming Configuration →](plugins/ai-pair-programming/README.md#configuration)**
 - **[Spec-Kit Documentation →](plugins/spec-kit/README.md)**
+- **[Claude Dev Helper Documentation →](plugins/claude-dev-helper/README.md)**
 
 ### Quick Examples
 
@@ -363,6 +383,7 @@ Each plugin has detailed technical documentation in its README:
 - [Session Tracker Technical Details](plugins/hook-session-summary/README.md#technical-details)
 - [AI Pair Programming Technical Details](plugins/ai-pair-programming/README.md#how-it-works)
 - [Spec-Kit Integration Guide](plugins/spec-kit/README.md)
+- [Claude Dev Helper Technical Details](plugins/claude-dev-helper/README.md#how-it-works)
 
 ## Contributing
 

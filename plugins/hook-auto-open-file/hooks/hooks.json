@@ -1,0 +1,69 @@
+{
+  "description": "Automatically opens files in VS Code when they are created or modified",
+  "version": "1.0.0",
+  "author": "Dev GOM",
+  "lastUpdated": "2025-10-23",
+  "hooks": {
+    "SessionStart": [
+      {
+        "description": "Initialize plugin configuration at session start",
+        "priority": 100,
+        "enabled": true,
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/init-config.js",
+            "description": "Creates default configuration file if it doesn't exist",
+            "timeout": 5000,
+            "continueOnError": true,
+            "suppressOutput": true
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "description": "Automatically open file in VS Code after Write/Edit operations",
+        "matcher": "Write|Edit",
+        "priority": 50,
+        "enabled": true,
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/auto-open-file.js",
+            "description": "Opens the created or modified file in VS Code",
+            "timeout": 3000,
+            "continueOnError": true,
+            "suppressOutput": true
+          }
+        ]
+      }
+    ]
+  },
+  "configuration": {
+    "enabled": true,
+    "openInNewWindow": false,
+    "focusEditor": true,
+    "jumpToLine": true,
+    "codeExtensions": [
+      ".js", ".ts", ".jsx", ".tsx",
+      ".py", ".java", ".cpp", ".c", ".cs",
+      ".go", ".rs", ".rb", ".php", ".swift",
+      ".kt", ".scala", ".r", ".m", ".h", ".hpp",
+      ".sql", ".sh", ".bash", ".ps1",
+      ".html", ".css", ".scss", ".sass", ".less",
+      ".json", ".yaml", ".yml", ".toml", ".xml",
+      ".md", ".txt", ".env"
+    ],
+    "excludeDirs": [
+      "node_modules",
+      ".git",
+      "dist",
+      "build",
+      "coverage",
+      ".next",
+      "out",
+      ".nuxt"
+    ]
+  }
+}

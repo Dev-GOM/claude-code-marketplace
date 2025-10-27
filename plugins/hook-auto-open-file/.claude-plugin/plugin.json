@@ -1,0 +1,20 @@
+{
+  "name": "hook-auto-open-file",
+  "version": "1.0.0",
+  "description": "Automatically opens files in VS Code when they are created or modified",
+  "author": {
+    "name": "Dev GOM",
+    "url": "https://github.com/Dev-GOM/claude-code-marketplace"
+  },
+  "homepage": "https://github.com/Dev-GOM/claude-code-marketplace",
+  "repository": "https://github.com/Dev-GOM/claude-code-marketplace.git",
+  "license": "MIT",
+  "keywords": [
+    "vscode",
+    "ide",
+    "automation",
+    "hooks",
+    "developer-experience"
+  ],
+  "hooks": "./hooks/hooks.json"
+}

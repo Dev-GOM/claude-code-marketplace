@@ -5,7 +5,7 @@
   },
   "metadata": {
     "description": "Productivity plugins for Claude Code to automate development workflows",
-    "version": "2.4.4",
+    "version": "2.4.5",
     "homepage": "https://github.com/Dev-GOM/claude-code-marketplace"
   },
   "plugins": [
@@ -92,6 +92,47 @@
         "tracking",
         "summary",
         "files",
+        "productivity"
+      ]
+    },
+    {
+      "name": "hook-auto-open-file",
+      "source": "./plugins/hook-auto-open-file",
+      "description": "Automatically opens files in VS Code when they are created or modified",
+      "version": "1.0.0",
+      "author": {
+        "name": "Dev GOM"
+      },
+      "category": "hooks",
+      "homepage": "https://github.com/Dev-GOM/claude-code-marketplace",
+      "keywords": [
+        "vscode",
+        "ide",
+        "automation",
+        "hooks",
+        "developer-experience"
+      ]
+    },
+    {
+      "name": "claude-dev-helper",
+      "source": "./plugins/claude-dev-helper",
+      "description": "Development assistant for Claude Code - Auto-open files in VSCode, Git diff review, and enhanced workflow integration",
+      "version": "1.1.0",
+      "author": {
+        "name": "Dev GOM"
+      },
+      "category": "hooks",
+      "homepage": "https://github.com/Dev-GOM/claude-code-marketplace",
+      "keywords": [
+        "development",
+        "assistant",
+        "git",
+        "diff",
+        "review",
+        "feedback",
+        "vscode",
+        "hooks",
+        "workflow",
         "productivity"
       ]
     },

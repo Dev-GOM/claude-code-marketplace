@@ -2,7 +2,21 @@
 
 Dev GOM Plugins 마켓플레이스의 모든 주요 변경사항이 이 파일에 문서화됩니다.
 
-> **버전**: 2.4.4 | **최종 업데이트**: 2025-10-22
+> **버전**: 2.4.5 | **최종 업데이트**: 2025-10-27
+
+---
+
+## [2.4.5] - 2025-10-27
+
+### 추가됨
+- 🔧 **Claude Dev Helper v1.1.0**: 자동 파일 열기 기능
+  - Claude가 파일을 생성하거나 수정하면 VSCode에서 자동으로 열림
+  - 프로젝트 루트의 `.plugin-config/claude-dev-helper.json`으로 설정 가능
+  - 설정: enabled (기본값: true), focus (기본값: false), maxQueueSize (기본값: 10)
+  - SessionStart 훅이 기본값으로 config 초기화
+  - VSCode Extension v1.1.0 VS Marketplace에 퍼블리시
+  - `.claude-dev-helper/open-files.json`과 파일 워처 통합
+  - 백그라운드 열기 지원 (포커스 안 가져감)
 
 ---
 
