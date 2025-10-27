@@ -47,42 +47,48 @@ process.stdin.on('end', () => {
 
     // Check if auto-open is enabled
     if (!config.autoOpen.enabled) {
-      console.log('[Auto-open] Feature is disabled in config');
       process.exit(0);
     }
 
-    const toolUse = JSON.parse(inputData);
+    const input = JSON.parse(inputData);
 
-    // Extract file path from tool parameters
-    const filePath = toolUse.parameters?.file_path;
+    // Only process Write and Edit operations
+    const toolName = input.tool_name;
+    if (toolName !== 'Write' && toolName !== 'Edit') {
+      process.exit(0);
+    }
+
+    // Extract file path from tool input
+    const toolInput = input.tool_input || {};
+    let filePath = toolInput.file_path;
 
     if (!filePath) {
-      console.error('[Auto-open] No file path in tool parameters');
       process.exit(0);
     }
 
-    // Resolve to absolute path
-    const absolutePath = path.resolve(process.cwd(), filePath);
+    // Convert to absolute path if necessary
+    if (!path.isAbsolute(filePath)) {
+      filePath = path.join(process.cwd(), filePath);
+    }
 
-    processFile(absolutePath, config);
+    processFile(filePath, config);
   } catch (error) {
-    console.error(`[Auto-open] Error parsing input: ${error.message}`);
+    // Silent fail - don't interrupt the workflow
     process.exit(0);
   }
 });
 
 function processFile(absolutePath, config) {
-  // Check if file exists
-  if (!fs.existsSync(absolutePath)) {
-    console.error(`[Auto-open] File not found: ${absolutePath}`);
-    process.exit(0);
-  }
-
-  // Write to communication file for VSCode extension
-  const stateDir = path.join(process.cwd(), '.claude-dev-helper');
-  const openFilesPath = path.join(stateDir, 'open-files.json');
-
   try {
+    // Check if file exists
+    if (!fs.existsSync(absolutePath)) {
+      process.exit(0);
+    }
+
+    // Write to communication file for VSCode extension
+    const stateDir = path.join(process.cwd(), '.claude-dev-helper');
+    const openFilesPath = path.join(stateDir, 'open-files.json');
+
     // Ensure state directory exists
     if (!fs.existsSync(stateDir)) {
       fs.mkdirSync(stateDir, { recursive: true });
@@ -115,10 +121,9 @@ function processFile(absolutePath, config) {
 
     // Write back to file
     fs.writeFileSync(openFilesPath, JSON.stringify(queue, null, 2), 'utf8');
-
-    console.log(`[Auto-open] Queued file for opening: ${path.basename(absolutePath)}`);
   } catch (error) {
-    console.error(`[Auto-open] Error: ${error.message}`);
-    process.exit(0);
+    // Silent fail - don't interrupt the workflow
   }
+
+  process.exit(0);
 }

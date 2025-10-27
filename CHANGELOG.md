@@ -2,7 +2,19 @@
 
 All notable changes to the Dev GOM Plugins marketplace will be documented in this file.
 
-> **Version**: 2.4.6 | **Last Updated**: 2025-10-27
+> **Version**: 2.4.7 | **Last Updated**: 2025-10-27
+
+---
+
+## [2.4.7] - 2025-10-27
+
+### Fixed
+- 🔧 **Claude Dev Helper v1.1.2**: Auto-open stdin parsing fix
+  - Fixed stdin data structure parsing for PostToolUse hook
+  - Corrected from `toolUse.parameters.file_path` to `input.tool_input.file_path`
+  - Added `tool_name` validation for Write and Edit operations
+  - Matches hook-auto-open-file plugin pattern
+  - Removed unnecessary console logging for silent operation
 
 ---
 

@@ -2,7 +2,19 @@
 
 Dev GOM Plugins 마켓플레이스의 모든 주요 변경사항이 이 파일에 문서화됩니다.
 
-> **버전**: 2.4.6 | **최종 업데이트**: 2025-10-27
+> **버전**: 2.4.7 | **최종 업데이트**: 2025-10-27
+
+---
+
+## [2.4.7] - 2025-10-27
+
+### 수정됨
+- 🔧 **Claude Dev Helper v1.1.2**: 자동 파일 열기 stdin 파싱 수정
+  - PostToolUse 훅의 stdin 데이터 구조 파싱 수정
+  - `toolUse.parameters.file_path`에서 `input.tool_input.file_path`로 수정
+  - Write 및 Edit 작업에 대한 `tool_name` 검증 추가
+  - hook-auto-open-file 플러그인 패턴과 일치
+  - 무음 작동을 위한 불필요한 콘솔 로깅 제거
 
 ---
 
