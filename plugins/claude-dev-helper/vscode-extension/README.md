@@ -33,30 +33,40 @@ A comprehensive development assistant for Claude Code users - providing inline c
 
 ## Overview
 
-Claude Dev Helper is an extensible VS Code extension designed to enhance your development workflow when using Claude Code. Currently focused on git change review capabilities, this extension will evolve to include additional development assistance features in future releases.
+Claude Dev Helper enhances your development workflow when using Claude Code by automatically opening files and providing quick access to git diff views.
 
 ## Features
 
 ### Current Features
 
-- **Inline Accept/Reject Buttons**: See CodeLens buttons above each changed code block - just like Cursor!
-- **Per-Change Control**: Accept or reject individual changes with precision
-- **Bulk Actions**: Accept or reject all changes at once for faster workflows
-- **Git Integration**: Uses native Git commands for reliable staging/discarding
+- **Auto-Open Files**: Files automatically open in VS Code when Claude creates or edits them
+  - Opens in background without stealing focus (configurable)
+  - Configurable via plugin's `config.json`
+
+- **Quick Diff Review**: CodeLens "Show Diff Editor" button appears above changed code blocks
+  - One-click access to VSCode's inline diff view
+  - Compares working file with HEAD version
+  - Automatic inline diff mode for better readability
+
+- **Browser Diff Viewer**: Optional browser-based diff viewer for enhanced visualization
+  - Standalone diff server
+  - Side-by-side comparison view
 
 ### Coming Soon
 
-- Additional development assistance tools
+- Inline accept/reject buttons for individual changes
+- Per-line git operations
 - Enhanced code review capabilities
-- More productivity features for Claude Code users
 
 ## Usage
 
-1. When Claude Code modifies a file, this extension automatically detects unstaged changes
-2. CodeLens buttons appear above each change:
-   - `✓ Accept` - Stage the change
-   - `✗ Reject` - Discard the change
-3. Click the buttons to accept or reject changes inline
+### Auto-Open Files
+When Claude creates or modifies a file, it automatically opens in VS Code without interrupting your workflow.
+
+### Diff Review
+1. When Claude modifies a file, a CodeLens button appears: `$(diff) Show Diff Editor`
+2. Click to open VSCode's inline diff view
+3. Review changes between working file and HEAD version
 
 ## Requirements
 
@@ -69,21 +79,57 @@ Claude Dev Helper is an extensible VS Code extension designed to enhance your de
 This extension contributes the following settings:
 
 * `claudeDevHelper.enabled`: Enable/disable inline accept/reject buttons (default: `true`)
-* `claudeDevHelper.autoShowDiff`: Automatically show diff view when files are modified (default: `true`)
+* `claudeDevHelper.enableCodeLens`: Enable/disable CodeLens buttons above changed lines (default: `true`)
+* `claudeDevHelper.autoSetInlineDiffMode`: Automatically set VSCode diff editor to inline mode on first activation (default: `true`)
+
+### Plugin Configuration
+
+Configure auto-open behavior in `.claude-plugin/config.json`:
+
+```json
+{
+  "autoOpen": {
+    "enabled": true,
+    "focus": false,
+    "maxQueueSize": 10
+  }
+}
+```
+
+- `enabled`: Enable/disable auto-open feature
+- `focus`: Whether to focus the opened file (default: false - opens in background)
+- `maxQueueSize`: Maximum number of files to track (default: 10)
 
 ## Known Limitations
 
-- Currently, rejecting a change reverts the entire file (not just the specific lines)
-- Line-level git operations are planned for future releases
+- No inline accept/reject buttons yet (planned for future releases)
+- Diff view is read-only - use Git commands separately to stage/discard changes
+- Auto-open requires both plugin and extension to be installed
 
 ## Release Notes
 
-### 0.1.0
+### 1.1.0
+
+New features:
+- **Auto-Open Files**: Automatically opens files in VS Code when Claude creates or edits them
+- File watcher integration with `.claude-dev-helper/open-files.json`
+- Configurable focus and queue size settings via plugin config
+- Background opening support (opens without stealing focus)
+
+### 1.0.2
+
+Improvements:
+- Enhanced diff editor integration
+- Better CodeLens stability
+
+### 1.0.0
 
 Initial release:
-- Inline CodeLens for accept/reject
-- Git integration for staging/discarding
-- Basic change detection
+- CodeLens "Show Diff Editor" button on changed lines
+- VSCode inline diff view integration
+- Browser-based diff viewer support
+- Automatic inline diff mode configuration
+- Git change detection
 
 ## License
 
