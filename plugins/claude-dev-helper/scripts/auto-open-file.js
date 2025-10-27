@@ -12,7 +12,9 @@ const path = require('path');
 
 // Load plugin configuration
 function loadConfig() {
-  const configPath = path.join(__dirname, '..', '.claude-plugin', 'config.json');
+  const projectRoot = process.cwd();
+  const configPath = path.join(projectRoot, '.plugin-config', 'claude-dev-helper.json');
+
   try {
     if (fs.existsSync(configPath)) {
       const configContent = fs.readFileSync(configPath, 'utf8');

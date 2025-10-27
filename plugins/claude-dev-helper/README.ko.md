@@ -8,6 +8,7 @@
 
 ## 주요 기능
 
+- 📂 **자동 파일 열기** (v1.1.0+): Claude가 파일을 생성/수정하면 VSCode에서 자동으로 열림
 - 🎯 **Git Diff 리뷰**: CodeLens 버튼으로 Claude의 코드 변경 검토
 - 🌐 **브라우저 Diff 에디터**: Monaco 기반 diff 뷰어
 - 🔄 **자동 스테이징** (선택): 수정된 파일 자동 스테이징
@@ -25,12 +26,13 @@
 
 향상된 diff 보기를 위해 VSCode 확장 설치:
 
-**방법 A: GitHub Releases**
+**방법 A: VS Marketplace** (권장)
+- [VS Marketplace](https://marketplace.visualstudio.com/items?itemName=devGOM.claude-dev-helper)에서 설치
+- 또는 VSCode Extensions에서 "claude-dev-helper" 검색
+
+**방법 B: GitHub Releases**
 1. [Releases](https://github.com/Dev-GOM/claude-code-marketplace/releases)에서 `.vsix` 다운로드
 2. 설치: `code --install-extension claude-dev-helper-{version}.vsix`
-
-**방법 B: VS Marketplace** (출시 예정)
-- VSCode Extensions에서 "claude-dev-helper" 검색
 
 **방법 C: 소스에서 빌드**
 ```bash
@@ -69,6 +71,28 @@ Ctrl+Shift+P → "Show Git Diff (Browser)"
 - 개별 줄 승인/거부
 
 ## 설정
+
+### 자동 파일 열기 설정
+
+플러그인이 프로젝트 루트에 `.plugin-config/claude-dev-helper.json` 파일을 기본 설정으로 자동 생성합니다:
+
+```json
+{
+  "autoOpen": {
+    "enabled": true,
+    "focus": false,
+    "maxQueueSize": 10
+  },
+  "_pluginVersion": "1.1.0"
+}
+```
+
+**설정 항목:**
+- `enabled`: 자동 열기 기능 활성화/비활성화 (기본값: true)
+- `focus`: 열린 파일로 포커스 이동 여부 (기본값: false - 백그라운드에서 열림)
+- `maxQueueSize`: 추적할 최대 파일 수 (기본값: 10)
+
+`.plugin-config/claude-dev-helper.json` 파일을 편집하여 동작을 커스터마이징할 수 있습니다.
 
 ### 자동 스테이징 훅 활성화
 

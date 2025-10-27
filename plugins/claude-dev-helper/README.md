@@ -8,6 +8,7 @@
 
 ## Features
 
+- 📂 **Auto-Open Files** (v1.1.0+): Automatically opens files in VSCode when Claude creates/edits them
 - 🎯 **Git Diff Review**: Review Claude's code changes with CodeLens buttons
 - 🌐 **Browser Diff Editor**: Monaco-based diff viewer in your browser
 - 🔄 **Auto-Staging** (Optional): Automatically stage modified files
@@ -25,12 +26,13 @@
 
 For enhanced diff viewing with VSCode integration:
 
-**Option A: From GitHub Releases**
+**Option A: VS Marketplace** (Recommended)
+- Install from [VS Marketplace](https://marketplace.visualstudio.com/items?itemName=devGOM.claude-dev-helper)
+- Or search "claude-dev-helper" in VSCode Extensions
+
+**Option B: From GitHub Releases**
 1. Download `.vsix` from [Releases](https://github.com/Dev-GOM/claude-code-marketplace/releases)
 2. Install: `code --install-extension claude-dev-helper-{version}.vsix`
-
-**Option B: VS Marketplace** (Coming Soon)
-- Search "claude-dev-helper" in VSCode Extensions
 
 **Option C: Build from Source**
 ```bash
@@ -69,6 +71,28 @@ Ctrl+Shift+P → "Show Git Diff (Browser)"
 - Accept/reject individual lines
 
 ## Configuration
+
+### Auto-Open Files Settings
+
+The plugin automatically creates `.plugin-config/claude-dev-helper.json` in your project root with default settings:
+
+```json
+{
+  "autoOpen": {
+    "enabled": true,
+    "focus": false,
+    "maxQueueSize": 10
+  },
+  "_pluginVersion": "1.1.0"
+}
+```
+
+**Settings:**
+- `enabled`: Enable/disable auto-open feature (default: true)
+- `focus`: Whether to focus the opened file (default: false - opens in background)
+- `maxQueueSize`: Maximum number of files to track (default: 10)
+
+Edit `.plugin-config/claude-dev-helper.json` to customize the behavior.
 
 ### Enable Auto-Staging Hook
 
