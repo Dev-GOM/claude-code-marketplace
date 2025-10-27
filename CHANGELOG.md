@@ -2,7 +2,18 @@
 
 All notable changes to the Dev GOM Plugins marketplace will be documented in this file.
 
-> **Version**: 2.4.10 | **Last Updated**: 2025-10-27
+> **Version**: 2.4.11 | **Last Updated**: 2025-10-27
+
+---
+
+## [2.4.11] - 2025-10-27
+
+### Fixed
+- 🔧 **Claude Dev Helper v1.1.6**: Config migration bug fix
+  - Fixed deep merge logic in init-config.js to properly add new fields
+  - `openLocation` field now correctly added to existing config files during migration
+  - Version bump to 1.1.6 to trigger config re-migration for existing users
+  - Users with v1.1.5 will automatically receive openLocation field on next session
 
 ---
 
