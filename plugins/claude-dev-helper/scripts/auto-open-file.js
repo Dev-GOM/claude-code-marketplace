@@ -3,16 +3,20 @@
 /**
  * Auto-open file in VSCode after Write/Edit operations
  *
- * This script is triggered by PostToolUse hook and notifies VSCode extension
- * to open the modified file without focusing it.
+ * This script is triggered by PostToolUse hook and opens files directly
+ * in VSCode using the `code` command.
  */
 
+const { exec } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
-// Load plugin configuration
+const projectRoot = process.cwd();
+
+/**
+ * Load plugin configuration from .plugin-config (project root)
+ */
 function loadConfig() {
-  const projectRoot = process.cwd();
   const configPath = path.join(projectRoot, '.plugin-config', 'claude-dev-helper.json');
 
   try {
@@ -21,10 +25,10 @@ function loadConfig() {
       return JSON.parse(configContent);
     }
   } catch (error) {
-    console.error(`[Auto-open] Failed to load config: ${error.message}`);
+    // Fall through to default config
   }
 
-  // Default config if file doesn't exist or is invalid
+  // Default config
   return {
     autoOpen: {
       enabled: true,
@@ -34,15 +38,59 @@ function loadConfig() {
   };
 }
 
-// Read tool use data from stdin
+/**
+ * Normalize path for the current OS
+ * Windows requires backslash paths (D:\path\to\file)
+ * Unix/Linux/macOS use forward slashes (/path/to/file)
+ */
+function normalizePathForOS(filePath) {
+  // On Windows, convert Unix-style paths to Windows-style
+  if (process.platform === 'win32') {
+    // Convert /d/Work/... to D:\Work\...
+    const normalized = filePath.replace(/^\/([a-z])\//i, '$1:\\').replace(/\//g, '\\');
+    return path.normalize(normalized);
+  }
+  return filePath;
+}
+
+/**
+ * Open file in VS Code
+ */
+function openInVSCode(filePath, focus) {
+  // Normalize path for current OS
+  const normalizedPath = normalizePathForOS(filePath);
+
+  // Build VS Code command
+  let command = 'code';
+
+  // If focus is false, reuse existing window without focusing
+  if (!focus) {
+    command += ' -r'; // Reuse existing window
+  }
+
+  // Add file path (properly quoted for cross-platform compatibility)
+  command += ` "${normalizedPath}"`;
+
+  // Execute command
+  exec(command, (error, stdout, stderr) => {
+    if (error) {
+      // Silent fail - don't interrupt workflow
+      // VS Code CLI might not be available on all systems
+    }
+  });
+}
+
+/**
+ * Parse JSON input from stdin
+ */
 let inputData = '';
-process.stdin.on('data', chunk => {
+
+process.stdin.on('data', (chunk) => {
   inputData += chunk;
 });
 
 process.stdin.on('end', () => {
   try {
-    // Load configuration
     const config = loadConfig();
 
     // Check if auto-open is enabled
@@ -68,62 +116,20 @@ process.stdin.on('end', () => {
 
     // Convert to absolute path if necessary
     if (!path.isAbsolute(filePath)) {
-      filePath = path.join(process.cwd(), filePath);
+      filePath = path.join(projectRoot, filePath);
     }
 
-    processFile(filePath, config);
-  } catch (error) {
-    // Silent fail - don't interrupt the workflow
-    process.exit(0);
-  }
-});
-
-function processFile(absolutePath, config) {
-  try {
     // Check if file exists
-    if (!fs.existsSync(absolutePath)) {
+    if (!fs.existsSync(filePath)) {
       process.exit(0);
     }
 
-    // Write to communication file for VSCode extension
-    const stateDir = path.join(process.cwd(), '.claude-dev-helper');
-    const openFilesPath = path.join(stateDir, 'open-files.json');
+    // Open file in VS Code
+    openInVSCode(filePath, config.autoOpen.focus);
 
-    // Ensure state directory exists
-    if (!fs.existsSync(stateDir)) {
-      fs.mkdirSync(stateDir, { recursive: true });
-    }
-
-    // Read existing queue
-    let queue = [];
-    if (fs.existsSync(openFilesPath)) {
-      try {
-        const content = fs.readFileSync(openFilesPath, 'utf8');
-        queue = JSON.parse(content);
-      } catch (e) {
-        // Invalid JSON, start fresh
-        queue = [];
-      }
-    }
-
-    // Add new file to queue with timestamp and focus setting
-    queue.push({
-      filePath: absolutePath,
-      timestamp: Date.now(),
-      focus: config.autoOpen.focus
-    });
-
-    // Keep only last N files based on config to prevent memory leak
-    const maxQueueSize = config.autoOpen.maxQueueSize || 10;
-    if (queue.length > maxQueueSize) {
-      queue = queue.slice(-maxQueueSize);
-    }
-
-    // Write back to file
-    fs.writeFileSync(openFilesPath, JSON.stringify(queue, null, 2), 'utf8');
   } catch (error) {
     // Silent fail - don't interrupt the workflow
   }
 
   process.exit(0);
-}
+});

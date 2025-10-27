@@ -2,7 +2,20 @@
 
 All notable changes to the Dev GOM Plugins marketplace will be documented in this file.
 
-> **Version**: 2.4.7 | **Last Updated**: 2025-10-27
+> **Version**: 2.4.8 | **Last Updated**: 2025-10-27
+
+---
+
+## [2.4.8] - 2025-10-27
+
+### Changed
+- 🔧 **Claude Dev Helper v1.1.3**: Simplified auto-open implementation
+  - Replaced VSCode extension dependency with direct `code` command execution
+  - Uses `exec` to run `code -r "filepath"` for background file opening
+  - No longer requires `.claude-dev-helper/open-files.json` or file watcher
+  - Simplified architecture: hook script → code CLI → VSCode
+  - Cross-platform path normalization for Windows/Unix/Linux
+  - Eliminates need to install VSCode extension separately
 
 ---
 
