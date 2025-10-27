@@ -207,29 +207,28 @@ function setupAutoOpenFileWatcher(context: vscode.ExtensionContext) {
                 // Open file in VSCode
                 try {
                     const uri = vscode.Uri.file(filePath);
-                    const doc = await vscode.workspace.openTextDocument(uri);
 
                     if (focus) {
                         // Open and focus
+                        const doc = await vscode.workspace.openTextDocument(uri);
                         await vscode.window.showTextDocument(doc, { preview: false });
                     } else {
-                        // Open without focus
-                        const options: any = {
-                            preview: false,
-                            preserveFocus: true
+                        // Open in background using vscode.open command
+                        // This properly preserves focus unlike showTextDocument
+                        const openOptions: any = {
+                            background: true,
+                            preview: false
                         };
 
                         // Add viewColumn based on openLocation setting
                         // 0 = first column (One), 1 = second column (Two)
                         if (openLocation === 1) {
-                            // Use ViewColumn.Two to always open in second column (right side)
-                            options.viewColumn = vscode.ViewColumn.Two;
+                            openOptions.viewColumn = vscode.ViewColumn.Two;
                         } else {
-                            // Use ViewColumn.One to open in first column
-                            options.viewColumn = vscode.ViewColumn.One;
+                            openOptions.viewColumn = vscode.ViewColumn.One;
                         }
 
-                        await vscode.window.showTextDocument(doc, options);
+                        await vscode.commands.executeCommand('vscode.open', uri, openOptions);
                     }
 
                     console.log(`[Auto-open] Opened file: ${path.basename(filePath)}`);
