@@ -2,7 +2,20 @@
 
 All notable changes to the Dev GOM Plugins marketplace will be documented in this file.
 
-> **Version**: 2.4.12 | **Last Updated**: 2025-10-27
+> **Version**: 2.4.13 | **Last Updated**: 2025-10-27
+
+---
+
+## [2.4.13] - 2025-10-27
+
+### Fixed
+- 🔧 **Claude Dev Helper v1.1.8 + Extension v1.1.6**: Focus preservation finally working!
+  - **BREAKING**: Changed to `vscode.open` command with `background: true` instead of `showTextDocument`
+  - This properly preserves focus - files now open in background without stealing focus
+  - Updated `openLocation` semantics: `0` = first column (left), `1` = second column (right)
+  - Both values now use explicit viewColumn (ViewColumn.One / ViewColumn.Two)
+  - Based on VSCode API recommendation for background file opening
+  - Extension v1.1.6 ready for VS Marketplace
 
 ---
 
