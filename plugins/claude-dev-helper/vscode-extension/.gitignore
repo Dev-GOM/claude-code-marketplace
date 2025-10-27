@@ -1,0 +1,15 @@
+# Environment variables (secrets)
+.env
+.env.*
+!.env.example
+
+# Build output
+out/
+dist/
+*.vsix
+
+# Dependencies
+node_modules/
+
+# IDE
+.vscode/
