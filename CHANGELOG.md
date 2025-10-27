@@ -2,7 +2,19 @@
 
 All notable changes to the Dev GOM Plugins marketplace will be documented in this file.
 
-> **Version**: 2.4.8 | **Last Updated**: 2025-10-27
+> **Version**: 2.4.9 | **Last Updated**: 2025-10-27
+
+---
+
+## [2.4.9] - 2025-10-27
+
+### Fixed
+- 🔧 **Claude Dev Helper v1.1.4**: Restored VSCode extension pattern for focus control
+  - Reverted from direct `code` command to VSCode extension + file watcher pattern
+  - Fixed focus issue: files now open in background without stealing focus
+  - Restored `.claude-dev-helper/open-files.json` queue communication
+  - VSCode extension with `preserveFocus: true` provides proper focus control
+  - **Note**: VSCode extension installation required for auto-open feature
 
 ---
 
