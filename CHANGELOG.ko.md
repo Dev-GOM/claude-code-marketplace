@@ -2,7 +2,20 @@
 
 Dev GOM Plugins 마켓플레이스의 모든 주요 변경사항이 이 파일에 문서화됩니다.
 
-> **버전**: 2.4.12 | **최종 업데이트**: 2025-10-27
+> **버전**: 2.4.13 | **최종 업데이트**: 2025-10-27
+
+---
+
+## [2.4.13] - 2025-10-27
+
+### 수정됨
+- 🔧 **Claude Dev Helper v1.1.8 + Extension v1.1.6**: 포커스 유지 문제 완전 해결!
+  - **주요 변경**: `showTextDocument` 대신 `vscode.open` 명령어와 `background: true` 옵션 사용
+  - 이제 포커스가 제대로 유지됨 - 파일이 백그라운드에서 열리고 포커스를 가져가지 않음
+  - `openLocation` 의미 변경: `0` = 첫 번째 컬럼 (왼쪽), `1` = 두 번째 컬럼 (오른쪽)
+  - 두 값 모두 명시적 viewColumn 사용 (ViewColumn.One / ViewColumn.Two)
+  - VSCode API 권장 방식에 따른 백그라운드 파일 열기 구현
+  - Extension v1.1.6 VS Marketplace 업로드 준비 완료
 
 ---
 
