@@ -1,6 +1,6 @@
 # Claude Code 플러그인
 
-> **버전**: 2.4.9 | **최종 업데이트**: 2025-10-27
+> **버전**: 2.4.10 | **최종 업데이트**: 2025-10-27
 >
 > **언어**: [English](README.md) | [한국어](README.ko.md)
 >
@@ -143,7 +143,7 @@ Claude Code 세션(Session)이 끝날 때마다 자동으로 git 커밋을 생�
 
 ---
 
-### 9. 🔧 [Claude Dev Helper](plugins/claude-dev-helper/README.ko.md) `v1.1.0`
+### 9. 🔧 [Claude Dev Helper](plugins/claude-dev-helper/README.ko.md)
 
 <details>
 <summary><strong>📖 플러그인 상세</strong> (펼치기)</summary>

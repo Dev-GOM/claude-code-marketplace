@@ -2,7 +2,19 @@
 
 All notable changes to the Dev GOM Plugins marketplace will be documented in this file.
 
-> **Version**: 2.4.9 | **Last Updated**: 2025-10-27
+> **Version**: 2.4.10 | **Last Updated**: 2025-10-27
+
+---
+
+## [2.4.10] - 2025-10-27
+
+### Added
+- 🎯 **Claude Dev Helper v1.1.5 + Extension v1.1.2**: Configurable file opening location
+  - New `openLocation` config option: `'beside'` (split view) or `'current'` (current tab)
+  - Default: `'beside'` (maintains existing behavior - opens in split view)
+  - Set to `'current'` to open files in the current editor tab instead
+  - Configurable via `.plugin-config/claude-dev-helper.json`
+  - VSCode extension updated to support both opening modes
 
 ---
 
