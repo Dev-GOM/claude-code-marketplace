@@ -221,7 +221,9 @@ function setupAutoOpenFileWatcher(context: vscode.ExtensionContext) {
 
                         // Add viewColumn based on openLocation setting
                         if (openLocation === 'beside') {
-                            options.viewColumn = vscode.ViewColumn.Beside;
+                            // Use ViewColumn.Two to always open in second column (right side)
+                            // instead of Beside which creates new groups each time
+                            options.viewColumn = vscode.ViewColumn.Two;
                         }
                         // If 'current', don't specify viewColumn to open in current tab
 
