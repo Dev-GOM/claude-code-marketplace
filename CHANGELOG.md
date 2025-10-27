@@ -2,7 +2,21 @@
 
 All notable changes to the Dev GOM Plugins marketplace will be documented in this file.
 
-> **Version**: 2.4.4 | **Last Updated**: 2025-10-22
+> **Version**: 2.4.5 | **Last Updated**: 2025-10-27
+
+---
+
+## [2.4.5] - 2025-10-27
+
+### Added
+- 🔧 **Claude Dev Helper v1.1.0**: Auto-open files feature
+  - Automatically opens files in VSCode when Claude creates or edits them
+  - Configurable via `.plugin-config/claude-dev-helper.json` (project root)
+  - Settings: enabled (default: true), focus (default: false), maxQueueSize (default: 10)
+  - SessionStart hook initializes config with default values
+  - VSCode Extension v1.1.0 published to VS Marketplace
+  - File watcher integration with `.claude-dev-helper/open-files.json`
+  - Background opening support (no focus stealing)
 
 ---
 
