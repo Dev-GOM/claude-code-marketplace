@@ -220,13 +220,13 @@ function setupAutoOpenFileWatcher(context: vscode.ExtensionContext) {
                         };
 
                         // Add viewColumn based on openLocation setting
-                        // 0 = current (Active), 1 = beside (Two)
+                        // 0 = first column (One), 1 = second column (Two)
                         if (openLocation === 1) {
                             // Use ViewColumn.Two to always open in second column (right side)
                             options.viewColumn = vscode.ViewColumn.Two;
                         } else {
-                            // Use ViewColumn.Active to open in current column without stealing focus
-                            options.viewColumn = vscode.ViewColumn.Active;
+                            // Use ViewColumn.One to open in first column
+                            options.viewColumn = vscode.ViewColumn.One;
                         }
 
                         await vscode.window.showTextDocument(doc, options);
