@@ -3,6 +3,7 @@ import * as cp from 'child_process';
 import * as path from 'path';
 import * as crypto from 'crypto';
 import * as http from 'http';
+import * as fs from 'fs';
 import { promisify } from 'util';
 import { GitDiffCodeLensProvider } from './code-lens-provider';
 
@@ -144,6 +145,100 @@ export function activate(context: vscode.ExtensionContext) {
             }
         )
     );
+
+    // Setup auto-open file watcher
+    setupAutoOpenFileWatcher(context);
+}
+
+/**
+ * Setup file watcher for auto-opening files created/edited by Claude
+ */
+function setupAutoOpenFileWatcher(context: vscode.ExtensionContext) {
+    const workspaceFolders = vscode.workspace.workspaceFolders;
+    if (!workspaceFolders || workspaceFolders.length === 0) {
+        return;
+    }
+
+    const workspaceRoot = workspaceFolders[0].uri.fsPath;
+    const stateDir = path.join(workspaceRoot, '.claude-dev-helper');
+    const openFilesPath = path.join(stateDir, 'open-files.json');
+
+    // Track processed files to avoid duplicates
+    const processedFiles = new Set<string>();
+    let lastModifiedTime = 0;
+
+    // Create watcher for the open-files.json
+    const watcher = fs.watch(stateDir, { persistent: false }, async (eventType, filename) => {
+        if (filename !== 'open-files.json') {
+            return;
+        }
+
+        try {
+            // Check if file was actually modified (avoid duplicate events)
+            const stats = fs.statSync(openFilesPath);
+            if (stats.mtimeMs <= lastModifiedTime) {
+                return;
+            }
+            lastModifiedTime = stats.mtimeMs;
+
+            // Read queue
+            const content = fs.readFileSync(openFilesPath, 'utf8');
+            const queue = JSON.parse(content);
+
+            if (!Array.isArray(queue) || queue.length === 0) {
+                return;
+            }
+
+            // Process new files
+            const newFiles = queue.filter((item: any) => !processedFiles.has(item.filePath + item.timestamp));
+
+            for (const item of newFiles) {
+                const { filePath, focus = false } = item;
+
+                // Mark as processed
+                processedFiles.add(filePath + item.timestamp);
+
+                // Open file in VSCode
+                try {
+                    const uri = vscode.Uri.file(filePath);
+                    const doc = await vscode.workspace.openTextDocument(uri);
+
+                    if (focus) {
+                        // Open and focus
+                        await vscode.window.showTextDocument(doc, { preview: false });
+                    } else {
+                        // Open without focus
+                        await vscode.window.showTextDocument(doc, {
+                            preview: false,
+                            preserveFocus: true,
+                            viewColumn: vscode.ViewColumn.Beside
+                        });
+                    }
+
+                    console.log(`[Auto-open] Opened file: ${path.basename(filePath)}`);
+                } catch (error) {
+                    console.error(`[Auto-open] Failed to open file: ${filePath}`, error);
+                }
+            }
+
+            // Clean up old entries from processed set (keep last 50)
+            if (processedFiles.size > 50) {
+                const entries = Array.from(processedFiles);
+                const toRemove = entries.slice(0, entries.length - 50);
+                toRemove.forEach(entry => processedFiles.delete(entry));
+            }
+        } catch (error) {
+            // Ignore errors (file might be being written)
+            console.error('[Auto-open] Error processing queue:', error);
+        }
+    });
+
+    // Cleanup on deactivate
+    context.subscriptions.push({
+        dispose: () => {
+            watcher.close();
+        }
+    });
 }
 
 async function getGitChanges(uri: vscode.Uri): Promise<GitChange[]> {
