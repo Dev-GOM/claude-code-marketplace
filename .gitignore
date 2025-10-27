@@ -36,3 +36,4 @@ plugins/claude-dev-helper/vscode-extension/
 
 # Diff Editor (배포 보류)
 plugins/claude-dev-helper/diff-editor/
+/.claude-dev-helper

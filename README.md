@@ -1,6 +1,6 @@
 # Claude Code Plugins
 
-> **Version**: 2.4.9 | **Last Updated**: 2025-10-27
+> **Version**: 2.4.10 | **Last Updated**: 2025-10-27
 >
 > **Language**: [English](README.md) | [한국어](README.ko.md)
 >
@@ -143,7 +143,7 @@ Comprehensive Unity game development toolkit with intelligent scripting assistan
 
 ---
 
-### 9. 🔧 [Claude Dev Helper](plugins/claude-dev-helper/README.md) `v1.1.0`
+### 9. 🔧 [Claude Dev Helper](plugins/claude-dev-helper/README.md)
 
 <details>
 <summary><strong>📖 Plugin Details</strong> (Click to expand)</summary>

@@ -106,11 +106,12 @@ function processFile(absolutePath, config) {
       }
     }
 
-    // Add new file to queue with timestamp and focus setting
+    // Add new file to queue with timestamp, focus, and openLocation settings
     queue.push({
       filePath: absolutePath,
       timestamp: Date.now(),
-      focus: config.autoOpen.focus
+      focus: config.autoOpen.focus,
+      openLocation: config.autoOpen.openLocation || 'beside'
     });
 
     // Keep only last N files based on config to prevent memory leak
