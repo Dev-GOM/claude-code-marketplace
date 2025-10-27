@@ -1,23 +1,23 @@
 {
-  "description": "Claude Dev Helper - Auto-staging and custom diff editor integration",
-  "version": "1.0.0",
+  "description": "Claude Dev Helper - Auto-open files in VSCode after Write/Edit",
+  "version": "1.0.1",
   "author": "Dev GOM",
-  "lastUpdated": "2025-10-24",
+  "lastUpdated": "2025-10-27",
   "hooks": {
     "PostToolUse": [
       {
-        "description": "Auto-stage changed files and trigger diff editor",
+        "description": "Auto-open modified files in VSCode without focus",
         "matcher": "Write|Edit",
         "priority": 50,
-        "enabled": false,
+        "enabled": true,
         "hooks": [
           {
             "type": "command",
-            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/auto-stage-changes.js",
-            "description": "Stages modified files and checks if diff editor should be opened",
-            "timeout": 10000,
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/auto-open-file.js",
+            "description": "Opens modified file in VSCode without focusing",
+            "timeout": 5000,
             "continueOnError": true,
-            "suppressOutput": false
+            "suppressOutput": true
           }
         ]
       }

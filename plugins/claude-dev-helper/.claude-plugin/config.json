@@ -1,0 +1,8 @@
+{
+  "autoOpen": {
+    "enabled": true,
+    "focus": false,
+    "maxQueueSize": 10,
+    "description": "Automatically open files in VSCode when Claude creates or edits them"
+  }
+}
