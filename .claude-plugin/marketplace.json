@@ -5,7 +5,7 @@
   },
   "metadata": {
     "description": "Productivity plugins for Claude Code to automate development workflows",
-    "version": "2.4.7",
+    "version": "2.4.8",
     "homepage": "https://github.com/Dev-GOM/claude-code-marketplace"
   },
   "plugins": [
@@ -117,7 +117,7 @@
       "name": "claude-dev-helper",
       "source": "./plugins/claude-dev-helper",
       "description": "Development assistant for Claude Code - Auto-open files in VSCode, Git diff review, and enhanced workflow integration",
-      "version": "1.1.2",
+      "version": "1.1.3",
       "author": {
         "name": "Dev GOM"
       },
