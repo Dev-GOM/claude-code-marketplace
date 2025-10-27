@@ -57,10 +57,13 @@ function initializeConfig() {
           process.exit(0);
         }
 
-        // Migrate: merge existing config with new defaults
+        // Migrate: merge existing config with new defaults (deep merge for autoOpen)
         const migratedConfig = {
           ...defaultConfig,
-          ...existingConfig,
+          autoOpen: {
+            ...defaultConfig.autoOpen,
+            ...existingConfig.autoOpen
+          },
           _pluginVersion: PLUGIN_VERSION
         };
 
