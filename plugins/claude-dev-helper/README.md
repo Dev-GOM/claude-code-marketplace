@@ -8,7 +8,7 @@
 
 ## Features
 
-- 📂 **Auto-Open Files** (v1.1.6+): Automatically opens files in VSCode when Claude creates/edits them
+- 📂 **Auto-Open Files** (v1.1.7+): Automatically opens files in VSCode when Claude creates/edits them
 - 🎯 **Git Diff Review**: Review Claude's code changes with CodeLens buttons
 - 🌐 **Browser Diff Editor**: Monaco-based diff viewer in your browser
 - 🔄 **Auto-Staging** (Optional): Automatically stage modified files

@@ -2,7 +2,19 @@
 
 Dev GOM Plugins 마켓플레이스의 모든 주요 변경사항이 이 파일에 문서화됩니다.
 
-> **버전**: 2.4.11 | **최종 업데이트**: 2025-10-27
+> **버전**: 2.4.12 | **최종 업데이트**: 2025-10-27
+
+---
+
+## [2.4.12] - 2025-10-27
+
+### 변경됨
+- 🔧 **Claude Dev Helper v1.1.7 + Extension v1.1.4**: openLocation을 숫자 값으로 변경
+  - 타입 안전성을 위해 `openLocation`을 문자열에서 숫자로 변경 (오타 방지)
+  - `0` = current (ViewColumn.Active로 현재 탭에서 열기)
+  - `1` = beside (ViewColumn.Two로 분할 뷰에서 열기)
+  - 포커스 문제 수정: 'current' 모드에 ViewColumn.Active 추가하여 포커스 정상 유지
+  - 기본값: `1` (beside - 기존 동작 유지)
 
 ---
 

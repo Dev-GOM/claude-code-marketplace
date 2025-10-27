@@ -2,7 +2,19 @@
 
 All notable changes to the Dev GOM Plugins marketplace will be documented in this file.
 
-> **Version**: 2.4.11 | **Last Updated**: 2025-10-27
+> **Version**: 2.4.12 | **Last Updated**: 2025-10-27
+
+---
+
+## [2.4.12] - 2025-10-27
+
+### Changed
+- 🔧 **Claude Dev Helper v1.1.7 + Extension v1.1.4**: Change openLocation to numeric values
+  - Changed `openLocation` from string to number for type safety (prevents typos)
+  - `0` = current (open in current tab with ViewColumn.Active)
+  - `1` = beside (open in split view with ViewColumn.Two)
+  - Fixed focus issue: ViewColumn.Active added for 'current' mode to properly preserve focus
+  - Default value: `1` (beside - maintains existing behavior)
 
 ---
 
