@@ -20,7 +20,7 @@ Claude Code 훅 이벤트에 대한 오디오 알림 (사운드 및 볼륨 조�
   - Claude Code 훅 중복 실행 버그 방지
 
 - 🌐 **크로스 플랫폼 지원**
-  - Windows: VBScript + WMPlayer (볼륨 조절 지원)
+  - Windows: PowerShell MediaPlayer (볼륨 조절 지원)
   - macOS: afplay (볼륨 조절 미지원)
   - Linux: mpg123 (MP3, 볼륨 지원) / aplay (WAV)
 
@@ -89,7 +89,24 @@ Claude Code 훅 이벤트에 대한 오디오 알림 (사운드 및 볼륨 조�
 ## 알려진 이슈
 
 - PostToolUse 훅 활성화 시 Claude Code가 멈출 수 있음
-- Windows: 긴 사운드 파일(3초+)이 중간에 끊길 수 있음 (조사 중)
+
+## 변경 이력
+
+### v1.1.0 (2025-10-29)
+- **변경:** Windows 사운드 재생 방식을 VBScript에서 PowerShell MediaPlayer로 변경하여 안정성 향상
+- **추가:** SessionEnd 훅에서 hooks.json 설정 업데이트하여 다음 세션에 적용
+- **추가:** 모든 스크립트에 중복 실행 방지 유틸리티 적용
+- **수정:** 설정 변경이 세션 재시작 후 정상적으로 적용되도록 수정
+
+### v1.0.2 (2025-10-29)
+- **수정:** sound-hook.js의 설정 파일 경로 오류 수정
+
+### v1.0.1 (2025-10-29)
+- **수정:** init-config.js의 훅 선택 로직 수정
+- **수정:** 플러그인 매니페스트 author 필드 검증 오류 수정
+
+### v1.0.0 (2025-10-29)
+- 독립 플러그인 첫 릴리즈
 
 ## 라이선스
 

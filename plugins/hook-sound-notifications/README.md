@@ -20,7 +20,7 @@ Audio notifications for Claude Code hook events with customizable sounds and vol
   - Prevents Claude Code hook duplication bug
 
 - 🌐 **Cross-platform support**
-  - Windows: VBScript + WMPlayer (volume control supported)
+  - Windows: PowerShell MediaPlayer (volume control supported)
   - macOS: afplay (no volume control)
   - Linux: mpg123 (MP3, volume control) / aplay (WAV)
 
@@ -89,7 +89,24 @@ Replace sound files in the plugin's `sounds` folder, or update `soundFile` paths
 ## Known Issues
 
 - PostToolUse hook may cause Claude Code to hang when enabled
-- Windows: Long sound files (3+ seconds) may be cut short (under investigation)
+
+## Changelog
+
+### v1.1.0 (2025-10-29)
+- **Changed:** Windows sound playback from VBScript to PowerShell MediaPlayer for better stability
+- **Added:** SessionEnd hook to update hooks.json settings for next session
+- **Added:** Duplicate execution prevention utility for all scripts
+- **Fixed:** Settings changes now properly apply after session restart
+
+### v1.0.2 (2025-10-29)
+- **Fixed:** Configuration file path in sound-hook.js
+
+### v1.0.1 (2025-10-29)
+- **Fixed:** Hook selection logic in init-config.js
+- **Fixed:** Plugin manifest author field validation
+
+### v1.0.0 (2025-10-29)
+- Initial release as independent plugin
 
 ## License
 
