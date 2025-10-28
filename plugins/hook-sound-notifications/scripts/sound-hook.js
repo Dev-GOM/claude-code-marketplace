@@ -10,12 +10,12 @@ const path = require('path');
 const { spawn } = require('child_process');
 
 /**
- * Load plugin configuration from .plugin-config/claude-dev-helper.json
+ * Load plugin configuration from .plugin-config/hook-sound-notifications.json
  * @returns {Object|null} Configuration object or null if not found
  */
 function loadConfig() {
   const projectRoot = process.cwd();
-  const configPath = path.join(projectRoot, '.plugin-config', 'claude-dev-helper.json');
+  const configPath = path.join(projectRoot, '.plugin-config', 'hook-sound-notifications.json');
 
   try {
     if (fs.existsSync(configPath)) {

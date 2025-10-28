@@ -2,7 +2,16 @@
 
 All notable changes to the Dev GOM Plugins marketplace will be documented in this file.
 
-> **Version**: 2.5.1 | **Last Updated**: 2025-10-29
+> **Version**: 2.5.2 | **Last Updated**: 2025-10-29
+
+---
+
+## [2.5.2] - 2025-10-29
+
+### Fixed
+- 🐛 **Sound Notifications v1.0.2**: Configuration Path Bug Fix
+  - Fixed sound-hook.js to load correct config file (`hook-sound-notifications.json` instead of `claude-dev-helper.json`)
+  - Sounds now properly play when configured
 
 ---
 
