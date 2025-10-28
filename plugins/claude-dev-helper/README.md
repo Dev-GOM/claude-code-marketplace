@@ -10,6 +10,7 @@
 
 - 📂 **Auto-Open Files** (v1.2.5+): Automatically opens files in VSCode when Claude creates/edits them
 - 🔔 **Sound Notifications** (v1.2.0+): Audio feedback for all hook events (SessionStart, SessionEnd, PreToolUse, PostToolUse, Notification, UserPromptSubmit, Stop, SubagentStop, PreCompact)
+- 🔊 **Volume Control** (v1.2.4+): Configurable volume for each sound notification (global + per-hook override)
 - 🎯 **Git Diff Review**: Review Claude's code changes with CodeLens buttons
 - 🌐 **Browser Diff Editor**: Monaco-based diff viewer in your browser
 - 🔄 **Auto-Staging** (Optional): Automatically stage modified files
@@ -103,44 +104,23 @@ The plugin includes optional sound notifications for hook events. Configuration 
 ```json
 {
   "soundNotifications": {
-    "enabled": false,
-    "soundsFolder": ".plugin-config/sounds",
+    "enabled": true,
+    "volume": 0.5,
     "hooks": {
       "SessionStart": {
         "enabled": true,
-        "soundFile": "session-start.mp3"
-      },
-      "SessionEnd": {
-        "enabled": false,
-        "soundFile": "session-end.mp3"
+        "soundFile": "session-start.mp3",
+        "volume": 0.5
       },
       "PreToolUse": {
-        "enabled": false,
-        "soundFile": "pre-tool-use.mp3"
+        "enabled": true,
+        "soundFile": "pre-tool-use.mp3",
+        "volume": 0.3
       },
       "PostToolUse": {
-        "enabled": false,
-        "soundFile": "post-tool-use.mp3"
-      },
-      "Notification": {
-        "enabled": false,
-        "soundFile": "notification.mp3"
-      },
-      "UserPromptSubmit": {
-        "enabled": false,
-        "soundFile": "user-prompt-submit.mp3"
-      },
-      "Stop": {
-        "enabled": false,
-        "soundFile": "stop.mp3"
-      },
-      "SubagentStop": {
-        "enabled": false,
-        "soundFile": "subagent-stop.mp3"
-      },
-      "PreCompact": {
-        "enabled": false,
-        "soundFile": "pre-compact.mp3"
+        "enabled": true,
+        "soundFile": "post-tool-use.mp3",
+        "volume": 0.3
       }
     }
   }
@@ -148,70 +128,32 @@ The plugin includes optional sound notifications for hook events. Configuration 
 ```
 
 **Settings:**
-- `enabled`: Global enable/disable for all sound notifications (default: false)
-- `soundsFolder`: Path to sound files folder (relative or absolute)
-- `hooks.[hookType].enabled`: Enable/disable specific hook sound
-- `hooks.[hookType].soundFile`: Sound file name for the hook
+- `enabled`: Enable/disable sound notifications globally (default: true)
+- `volume`: Global volume level 0.0-1.0 (default: 0.5)
+- `soundsFolder`: Path to sounds folder (auto-detected from plugin location)
+- Per-hook settings:
+  - `enabled`: Enable/disable this specific hook (default: varies)
+  - `soundFile`: Sound file name (default: provided)
+  - `volume`: Override global volume for this hook (default: uses global volume)
 
-**To enable sound notifications:**
+**Volume Control (v1.2.4+):**
+- Set global volume with `soundNotifications.volume` (0.0 = mute, 1.0 = max)
+- Override per-hook with `hooks.[hookType].volume`
+- Recommended: 0.3-0.5 for frequent events (PreToolUse, PostToolUse)
+- Platform support:
+  - ✅ Windows: WMPlayer volume setting
+  - ✅ Linux: mpg123 --scale option
+  - ⚠️ macOS: afplay (no volume control yet)
 
-1. **Set up sound files**:
-   - Create `.plugin-config/sounds/` folder in your project root
-   - Add sound files for the hooks you want to use (e.g., `session-start.mp3`, `post-tool-use.mp3`, `stop.mp3`, etc.)
-   - Supported formats: MP3 (all platforms), WAV (all platforms)
-   - You can find free sound effects at:
-     - [Freesound](https://freesound.org/)
-     - [Zapsplat](https://www.zapsplat.com/)
-     - [Pixabay](https://pixabay.com/sound-effects/)
-     - Or create your own short notification sounds
+**Sound files:**
+- Automatically included in plugin installation
+- Located in plugin's `sounds` folder
+- No manual setup required
 
-2. **Enable in configuration** (`.plugin-config/claude-dev-helper.json`):
-   ```json
-   {
-     "soundNotifications": {
-       "enabled": true,
-       "hooks": {
-         "SessionStart": { "enabled": true },
-         "PostToolUse": { "enabled": true },
-         "Stop": { "enabled": true }
-       }
-     }
-   }
-   ```
-
-3. **Restart Claude Code** ⚠️ IMPORTANT
-   - Configuration changes require Claude Code restart to take effect
-   - On next session start, `hooks.json` will be automatically updated
-   - You'll see a restart notice if changes were detected
-
-**Note**: PostToolUse is disabled by default to avoid performance impact on every tool use.
-
-**Customizing sound files:**
-
-You can change sound files at any time by:
-1. Replacing the sound files in `.plugin-config/sounds/` folder
-2. Or updating the `soundFile` path in the configuration to point to different files
-3. Restart Claude Code to apply changes
-
-Example: Using different sounds for different hooks
-```json
-{
-  "soundNotifications": {
-    "enabled": true,
-    "soundsFolder": ".plugin-config/sounds",
-    "hooks": {
-      "SessionStart": {
-        "enabled": true,
-        "soundFile": "my-custom-start.mp3"
-      },
-      "Stop": {
-        "enabled": true,
-        "soundFile": "my-custom-stop.wav"
-      }
-    }
-  }
-}
-```
+**Configuration Changes:**
+- Edit `.plugin-config/claude-dev-helper.json`
+- Restart Claude Code to apply changes
+- `hooks.json` automatically updates on next session start
 
 ### Enable Auto-Staging Hook
 
