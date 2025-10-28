@@ -25,9 +25,15 @@ function playSound(filePath) {
   let command, args;
 
   if (platform === 'win32') {
-    // Windows: Use PowerShell with Media.SoundPlayer
-    // Supports WAV and other formats through Windows Media Player
-    const psCommand = `(New-Object Media.SoundPlayer '${filePath.replace(/'/g, "''")}').PlaySync()`;
+    // Windows: Use PowerShell with MediaPlayer through Add-Type
+    // This method supports MP3 files
+    const psCommand = `
+      Add-Type -AssemblyName presentationCore;
+      $mediaPlayer = New-Object System.Windows.Media.MediaPlayer;
+      $mediaPlayer.Open([System.Uri]::new('${filePath.replace(/\\/g, '\\\\')}'));
+      $mediaPlayer.Play();
+      Start-Sleep -Seconds 2;
+    `.trim();
     command = 'powershell';
     args = ['-NoProfile', '-NonInteractive', '-Command', psCommand];
   } else if (platform === 'darwin') {

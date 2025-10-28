@@ -67,10 +67,21 @@ function playSoundForHook(hookType) {
     process.exit(0);
   }
 
-  // Execute play-sound.js to play the sound
-  const playSoundScript = path.join(__dirname, 'play-sound.js');
+  // Use Python script for better cross-platform MP3 support (especially Windows)
+  const playPythonScript = path.join(__dirname, 'play-sound.py');
+  const playNodeScript = path.join(__dirname, 'play-sound.js');
 
-  const player = spawn('node', [playSoundScript, soundFilePath], {
+  // Prefer Python for better Windows MP3 support, fallback to Node.js
+  let command, args;
+  if (fs.existsSync(playPythonScript)) {
+    command = 'python';
+    args = [playPythonScript, soundFilePath];
+  } else {
+    command = 'node';
+    args = [playNodeScript, soundFilePath];
+  }
+
+  const player = spawn(command, args, {
     detached: true,
     stdio: 'ignore'
   });
