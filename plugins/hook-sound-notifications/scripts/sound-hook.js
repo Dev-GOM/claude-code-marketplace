@@ -8,6 +8,7 @@
 const fs = require('fs');
 const path = require('path');
 const { spawn } = require('child_process');
+const { preventDuplicateExecutionOrExit } = require('./utils/duplicate-prevention');
 
 /**
  * Load plugin configuration from .plugin-config/hook-sound-notifications.json
@@ -34,32 +35,8 @@ function loadConfig() {
  * @param {string} hookType - Hook type (SessionStart, PostToolUse, Stop)
  */
 function playSoundForHook(hookType) {
-  // Timestamp-based duplicate execution prevention
-  // Prevents Claude Code bug where hooks fire multiple times
-  const stateDir = path.join(__dirname, '..', '.state');
-  const lockFile = path.join(stateDir, `.${hookType}-hook.lock`);
-  const now = Date.now();
-
-  try {
-    // Ensure state directory exists
-    if (!fs.existsSync(stateDir)) {
-      fs.mkdirSync(stateDir, { recursive: true });
-    }
-
-    // Check if hook ran recently (within 1 second)
-    if (fs.existsSync(lockFile)) {
-      const lastRun = parseInt(fs.readFileSync(lockFile, 'utf8'));
-      if (!isNaN(lastRun) && (now - lastRun < 1000)) {
-        // Hook ran too recently - likely a duplicate execution
-        process.exit(0);
-      }
-    }
-
-    // Update lock file with current timestamp
-    fs.writeFileSync(lockFile, now.toString(), 'utf8');
-  } catch (error) {
-    // If lock file handling fails, continue anyway
-  }
+  // Prevent duplicate execution (Claude Code bug where hooks fire multiple times)
+  preventDuplicateExecutionOrExit(`sound-hook-${hookType}`);
 
   // Load configuration
   const config = loadConfig();
@@ -113,38 +90,42 @@ function playSoundForHook(hookType) {
   const platform = process.platform;
 
   if (platform === 'win32') {
-    // Windows: Use VBScript with WMPlayer
-    const os = require('os');
-    const windowsVolume = Math.round(clampedVolume * 100);
+    // Windows: Use PowerShell with MediaPlayer
+    const psCommand = `
+      Add-Type -AssemblyName presentationCore
+      $mediaPlayer = New-Object System.Windows.Media.MediaPlayer
+      $mediaPlayer.Open([System.Uri]::new('${soundFilePath.replace(/\\/g, '\\\\')}'))
+      $mediaPlayer.Volume = ${clampedVolume}
 
-    // Create temporary VBS file
-    const vbsPath = path.join(os.tmpdir(), `claude-sound-${Date.now()}.vbs`);
-    const vbsContent = `
-Set player = CreateObject("WMPlayer.OCX")
-player.URL = "${soundFilePath.replace(/\\/g, '\\\\')}"
-player.settings.volume = ${windowsVolume}
+      # Wait for media to load
+      Start-Sleep -Milliseconds 500
 
-' Wait for media to load
-Do While player.currentMedia.duration = 0
-    WScript.Sleep 50
-Loop
+      # Get duration
+      while ($mediaPlayer.NaturalDuration.HasTimeSpan -eq $false) {
+        Start-Sleep -Milliseconds 50
+      }
+      $duration = $mediaPlayer.NaturalDuration.TimeSpan.TotalMilliseconds
 
-' Start playback
-player.controls.play
+      # Play
+      $mediaPlayer.Play()
 
-' Wait for playback duration plus buffer
-Dim duration
-duration = CInt(player.currentMedia.duration * 1000) + 500
-WScript.Sleep duration
-`.trim();
+      # Wait for playback to complete
+      Start-Sleep -Milliseconds ($duration + 500)
 
-    fs.writeFileSync(vbsPath, vbsContent, 'utf8');
+      # Cleanup
+      $mediaPlayer.Stop()
+      $mediaPlayer.Close()
+    `.trim();
 
-    // Execute VBS with wscript
-    spawn('wscript', [vbsPath], {
+    // Execute PowerShell
+    spawn('powershell.exe', [
+      '-NoProfile',
+      '-NonInteractive',
+      '-WindowStyle', 'Hidden',
+      '-Command', psCommand
+    ], {
       detached: true,
-      stdio: 'ignore',
-      windowsHide: true
+      stdio: 'ignore'
     }).unref();
 
   } else if (platform === 'darwin') {

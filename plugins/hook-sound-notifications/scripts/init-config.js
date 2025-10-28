@@ -7,6 +7,10 @@
 
 const fs = require('fs');
 const path = require('path');
+const { preventDuplicateExecutionOrExit } = require('./utils/duplicate-prevention');
+
+// Prevent duplicate execution
+preventDuplicateExecutionOrExit('init-config');
 
 const projectRoot = process.cwd();
 const configDir = path.join(projectRoot, '.plugin-config');
@@ -241,10 +245,8 @@ function initializeConfig() {
       currentConfig = newConfig;
     }
 
-    // Update hooks.json based on current configuration
-    if (currentConfig && currentConfig.soundNotifications) {
-      updateHooksJson(currentConfig.soundNotifications);
-    }
+    // Note: hooks.json is now updated at SessionEnd by update-hooks-config.js
+    // This ensures settings are applied for the next session
   } catch (error) {
     // Fail silently - don't block session start if config creation fails
   }

@@ -1,6 +1,6 @@
 {
   "description": "Sound Notifications - Audio alerts for Claude Code hook events",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "author": "Dev GOM",
   "lastUpdated": "2025-10-29",
   "hooks": {
@@ -35,6 +35,20 @@
       }
     ],
     "SessionEnd": [
+      {
+        "description": "Update hooks configuration for next session",
+        "priority": 100,
+        "enabled": true,
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/update-hooks-config.js",
+            "description": "Updates hooks.json based on user configuration",
+            "continueOnError": true,
+            "suppressOutput": true
+          }
+        ]
+      },
       {
         "description": "Play session end sound notification",
         "priority": 50,
