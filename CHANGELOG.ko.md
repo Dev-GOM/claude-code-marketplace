@@ -2,7 +2,37 @@
 
 Dev GOM Plugins 마켓플레이스의 모든 주요 변경사항이 이 파일에 문서화됩니다.
 
-> **버전**: 2.4.19 | **최종 업데이트**: 2025-10-28
+> **버전**: 2.5.0 | **최종 업데이트**: 2025-10-29
+
+---
+
+## [2.5.0] - 2025-10-29
+
+### 추가됨
+- ✨ **새 플러그인: Sound Notifications v1.0.0**
+  - Claude Code 훅 이벤트를 위한 독립 사운드 알림 플러그인
+  - 9가지 훅 타입 지원: SessionStart, SessionEnd, PreToolUse, PostToolUse, Notification, UserPromptSubmit, Stop, SubagentStop, PreCompact
+  - 전역 및 훅별 볼륨 조절 기능 (0.0-1.0)
+  - 크로스 플랫폼 지원: Windows (VBScript + WMPlayer), macOS (afplay), Linux (mpg123/aplay)
+  - 1초 쿨다운을 통한 중복 실행 방지
+  - PostToolUse는 불안정성 방지를 위해 기본 비활성화
+  - `.plugin-config/hook-sound-notifications.json`을 통한 설정
+  - MP3 및 WAV 파일 형식 지원
+
+### 변경됨
+- 🔄 **Claude Dev Helper v1.4.0**: 주요 변경사항 - 사운드 알림 제거
+  - 사운드 알림 기능이 별도 `hook-sound-notifications` 플러그인으로 이동
+  - 핵심 파일 관리 및 Git diff 기능에 집중하도록 간소화
+  - sound-hook.js 및 sounds 폴더 제거
+  - `soundNotifications` 설정 섹션 제거
+  - hooks.json에서 모든 사운드 관련 훅 제거
+  - 마이그레이션 필요: 오디오 피드백을 위해 `hook-sound-notifications` 플러그인을 별도로 설치해야 함
+
+### 마이그레이션 가이드
+Claude Dev Helper에서 사운드 알림을 사용하고 있었다면:
+1. 새 플러그인 설치: `/plugin install hook-sound-notifications@dev-gom-plugins`
+2. `.plugin-config/hook-sound-notifications.json`에서 사운드 설정 재구성
+3. 이전 사운드 설정은 수동으로 마이그레이션해야 함
 
 ---
 

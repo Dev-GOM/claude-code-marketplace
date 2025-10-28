@@ -1,0 +1,168 @@
+{
+  "description": "Sound Notifications - Audio alerts for Claude Code hook events",
+  "version": "1.0.0",
+  "author": "Dev GOM",
+  "lastUpdated": "2025-10-29",
+  "hooks": {
+    "SessionStart": [
+      {
+        "description": "Initialize plugin configuration at session start",
+        "priority": 100,
+        "enabled": true,
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/init-config.js",
+            "description": "Creates default configuration file if it doesn't exist",
+            "continueOnError": true,
+            "suppressOutput": true
+          }
+        ]
+      },
+      {
+        "description": "Play session start sound notification",
+        "priority": 90,
+        "enabled": true,
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/sound-hook.js SessionStart",
+            "description": "Plays sound when session starts",
+            "continueOnError": true,
+            "suppressOutput": true
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "description": "Play session end sound notification",
+        "priority": 50,
+        "enabled": true,
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/sound-hook.js SessionEnd",
+            "description": "Plays sound when session ends",
+            "continueOnError": true,
+            "suppressOutput": true
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "description": "Play pre-tool-use sound notification",
+        "matcher": ".*",
+        "priority": 40,
+        "enabled": true,
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/sound-hook.js PreToolUse",
+            "description": "Plays sound before tool execution",
+            "continueOnError": true,
+            "suppressOutput": true
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "description": "Play post-tool-use sound notification",
+        "matcher": ".*",
+        "priority": 40,
+        "enabled": false,
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/sound-hook.js PostToolUse",
+            "description": "Plays sound after tool execution",
+            "continueOnError": true,
+            "suppressOutput": true
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "description": "Play notification sound",
+        "priority": 100,
+        "enabled": true,
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/sound-hook.js Notification",
+            "description": "Plays sound when notification occurs",
+            "continueOnError": true,
+            "suppressOutput": true
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "description": "Play user prompt submit sound notification",
+        "priority": 50,
+        "enabled": true,
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/sound-hook.js UserPromptSubmit",
+            "description": "Plays sound when user submits a prompt",
+            "continueOnError": true,
+            "suppressOutput": true
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "description": "Play stop sound notification",
+        "priority": 50,
+        "enabled": true,
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/sound-hook.js Stop",
+            "description": "Plays sound when agent stops responding",
+            "continueOnError": true,
+            "suppressOutput": true
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "description": "Play subagent stop sound notification",
+        "priority": 50,
+        "enabled": true,
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/sound-hook.js SubagentStop",
+            "description": "Plays sound when subagent task completes",
+            "continueOnError": true,
+            "suppressOutput": true
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "description": "Play pre-compact sound notification",
+        "priority": 50,
+        "enabled": true,
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/sound-hook.js PreCompact",
+            "description": "Plays sound before context compaction",
+            "continueOnError": true,
+            "suppressOutput": true
+          }
+        ]
+      }
+    ]
+  }
+}

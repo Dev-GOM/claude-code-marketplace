@@ -2,7 +2,37 @@
 
 All notable changes to the Dev GOM Plugins marketplace will be documented in this file.
 
-> **Version**: 2.4.19 | **Last Updated**: 2025-10-28
+> **Version**: 2.5.0 | **Last Updated**: 2025-10-29
+
+---
+
+## [2.5.0] - 2025-10-29
+
+### Added
+- ✨ **New Plugin: Sound Notifications v1.0.0**
+  - Independent sound notification plugin for Claude Code hook events
+  - Supports 9 hook types: SessionStart, SessionEnd, PreToolUse, PostToolUse, Notification, UserPromptSubmit, Stop, SubagentStop, PreCompact
+  - Features global and per-hook volume control (0.0-1.0)
+  - Cross-platform support: Windows (VBScript + WMPlayer), macOS (afplay), Linux (mpg123/aplay)
+  - Duplicate execution prevention with 1-second cooldown
+  - PostToolUse disabled by default to prevent instability
+  - Configuration via `.plugin-config/hook-sound-notifications.json`
+  - MP3 and WAV file format support
+
+### Changed
+- 🔄 **Claude Dev Helper v1.4.0**: Breaking Changes - Sound Notifications Removed
+  - Sound notification features moved to separate `hook-sound-notifications` plugin
+  - Simplified to focus on core file management and Git diff features
+  - Removed sound-hook.js and sounds folder
+  - Removed `soundNotifications` configuration section
+  - Removed all sound-related hooks from hooks.json
+  - Migration required: Install `hook-sound-notifications` plugin separately for audio feedback
+
+### Migration Guide
+If you were using sound notifications in Claude Dev Helper:
+1. Install the new plugin: `/plugin install hook-sound-notifications@dev-gom-plugins`
+2. Reconfigure sound settings in `.plugin-config/hook-sound-notifications.json`
+3. Your previous sound settings will need to be manually migrated
 
 ---
 

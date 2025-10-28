@@ -5,7 +5,7 @@
   },
   "metadata": {
     "description": "Productivity plugins for Claude Code to automate development workflows",
-    "version": "2.4.19",
+    "version": "2.5.0",
     "homepage": "https://github.com/Dev-GOM/claude-code-marketplace"
   },
   "plugins": [
@@ -96,28 +96,10 @@
       ]
     },
     {
-      "name": "hook-auto-open-file",
-      "source": "./plugins/hook-auto-open-file",
-      "description": "Automatically opens files in VS Code when they are created or modified",
-      "version": "1.0.0",
-      "author": {
-        "name": "Dev GOM"
-      },
-      "category": "hooks",
-      "homepage": "https://github.com/Dev-GOM/claude-code-marketplace",
-      "keywords": [
-        "vscode",
-        "ide",
-        "automation",
-        "hooks",
-        "developer-experience"
-      ]
-    },
-    {
       "name": "claude-dev-helper",
       "source": "./plugins/claude-dev-helper",
       "description": "Development assistant for Claude Code - Auto-open files in VSCode, Git diff review, and enhanced workflow integration",
-      "version": "1.2.5",
+      "version": "1.4.0",
       "author": {
         "name": "Dev GOM"
       },
@@ -134,6 +116,25 @@
         "hooks",
         "workflow",
         "productivity"
+      ]
+    },
+    {
+      "name": "hook-sound-notifications",
+      "source": "./plugins/hook-sound-notifications",
+      "description": "Audio notifications for Claude Code hook events with customizable sounds and volume control",
+      "version": "1.0.0",
+      "author": {
+        "name": "Dev GOM"
+      },
+      "category": "hooks",
+      "homepage": "https://github.com/Dev-GOM/claude-code-marketplace",
+      "keywords": [
+        "sound",
+        "notifications",
+        "audio",
+        "hooks",
+        "feedback",
+        "volume-control"
       ]
     },
     {
@@ -227,5 +228,5 @@
       ]
     }
   ],
-  "version": "2.4.15"
+  "version": "2.5.0"
 }

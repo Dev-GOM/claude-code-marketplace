@@ -1,7 +1,7 @@
 {
   "name": "claude-dev-helper",
-  "version": "1.3.0",
-  "description": "Git diff review integration for Claude Code with VSCode extension. Provides inline diff view, browser diff editor, auto-open files, and sound notifications for hook events.",
+  "version": "1.4.0",
+  "description": "Git diff review integration for Claude Code with VSCode extension. Provides inline diff view, browser diff editor, and auto-open files.",
   "author": {
     "name": "Dev GOM",
     "url": "https://github.com/Dev-GOM/claude-code-marketplace"
@@ -17,9 +17,7 @@
     "vscode",
     "hooks",
     "workflow",
-    "inline-diff",
-    "sound-notifications",
-    "audio-feedback"
+    "inline-diff"
   ],
   "hooks": "./hooks/hooks.json"
 }
