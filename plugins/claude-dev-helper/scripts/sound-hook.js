@@ -34,6 +34,33 @@ function loadConfig() {
  * @param {string} hookType - Hook type (SessionStart, PostToolUse, Stop)
  */
 function playSoundForHook(hookType) {
+  // Timestamp-based duplicate execution prevention
+  // Prevents Claude Code bug where hooks fire multiple times
+  const stateDir = path.join(__dirname, '..', '.state');
+  const lockFile = path.join(stateDir, `.${hookType}-hook.lock`);
+  const now = Date.now();
+
+  try {
+    // Ensure state directory exists
+    if (!fs.existsSync(stateDir)) {
+      fs.mkdirSync(stateDir, { recursive: true });
+    }
+
+    // Check if hook ran recently (within 1 second)
+    if (fs.existsSync(lockFile)) {
+      const lastRun = parseInt(fs.readFileSync(lockFile, 'utf8'));
+      if (!isNaN(lastRun) && (now - lastRun < 1000)) {
+        // Hook ran too recently - likely a duplicate execution
+        process.exit(0);
+      }
+    }
+
+    // Update lock file with current timestamp
+    fs.writeFileSync(lockFile, now.toString(), 'utf8');
+  } catch (error) {
+    // If lock file handling fails, continue anyway
+  }
+
   // Load configuration
   const config = loadConfig();
 
@@ -82,27 +109,75 @@ function playSoundForHook(hookType) {
   // Clamp volume to 0.0 - 1.0 range
   const clampedVolume = Math.max(0.0, Math.min(1.0, volume));
 
-  // Use Python script for better cross-platform MP3 support (especially Windows)
-  const playPythonScript = path.join(__dirname, 'play-sound.py');
-  const playNodeScript = path.join(__dirname, 'play-sound.js');
+  // Cross-platform sound playback
+  const platform = process.platform;
 
-  // Prefer Python for better Windows MP3 support, fallback to Node.js
-  let command, args;
-  if (fs.existsSync(playPythonScript)) {
-    command = 'python';
-    args = [playPythonScript, soundFilePath, clampedVolume.toString()];
+  if (platform === 'win32') {
+    // Windows: Use VBScript with WMPlayer
+    const os = require('os');
+    const windowsVolume = Math.round(clampedVolume * 100);
+
+    // Create temporary VBS file
+    const vbsPath = path.join(os.tmpdir(), `claude-sound-${Date.now()}.vbs`);
+    const vbsContent = `
+Set player = CreateObject("WMPlayer.OCX")
+player.URL = "${soundFilePath.replace(/\\/g, '\\\\')}"
+player.settings.volume = ${windowsVolume}
+
+' Wait for media to load
+Do While player.currentMedia.duration = 0
+    WScript.Sleep 50
+Loop
+
+' Start playback
+player.controls.play
+
+' Wait for playback duration plus buffer
+Dim duration
+duration = CInt(player.currentMedia.duration * 1000) + 500
+WScript.Sleep duration
+`.trim();
+
+    fs.writeFileSync(vbsPath, vbsContent, 'utf8');
+
+    // Execute VBS with wscript
+    spawn('wscript', [vbsPath], {
+      detached: true,
+      stdio: 'ignore',
+      windowsHide: true
+    }).unref();
+
+  } else if (platform === 'darwin') {
+    // macOS: Use afplay (no volume control support)
+    spawn('afplay', [soundFilePath], {
+      detached: true,
+      stdio: 'ignore'
+    }).unref();
+
   } else {
-    command = 'node';
-    args = [playNodeScript, soundFilePath, clampedVolume.toString()];
+    // Linux: Use mpg123 or aplay
+    const ext = path.extname(soundFilePath).toLowerCase();
+    const volumeScale = clampedVolume;
+
+    let command, args;
+    if (ext === '.mp3') {
+      // mpg123 with volume scale
+      command = 'mpg123';
+      args = ['-q', '--scale', volumeScale.toString(), soundFilePath];
+    } else if (ext === '.wav') {
+      // aplay (no simple volume control)
+      command = 'aplay';
+      args = ['-q', soundFilePath];
+    } else {
+      // Unsupported format
+      process.exit(0);
+    }
+
+    spawn(command, args, {
+      detached: true,
+      stdio: 'ignore'
+    }).unref();
   }
-
-  const player = spawn(command, args, {
-    detached: true,
-    stdio: 'ignore'
-  });
-
-  // Unref to allow parent process to exit independently
-  player.unref();
 
   // Exit immediately (sound plays in background)
   process.exit(0);
