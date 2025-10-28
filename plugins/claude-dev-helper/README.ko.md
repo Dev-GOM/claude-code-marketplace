@@ -10,6 +10,7 @@
 
 - 📂 **자동 파일 열기** (v1.2.5+): Claude가 파일을 생성/수정하면 VSCode에서 자동으로 열림
 - 🔔 **사운드 알림** (v1.2.0+): 모든 훅 이벤트에 대한 오디오 피드백 (SessionStart, SessionEnd, PreToolUse, PostToolUse, Notification, UserPromptSubmit, Stop, SubagentStop, PreCompact)
+- 🔊 **볼륨 조절** (v1.2.4+): 각 사운드 알림의 볼륨 설정 가능 (전역 + 훅별 재정의)
 - 🎯 **Git Diff 리뷰**: CodeLens 버튼으로 Claude의 코드 변경 검토
 - 🌐 **브라우저 Diff 에디터**: Monaco 기반 diff 뷰어
 - 🔄 **자동 스테이징** (선택): 수정된 파일 자동 스테이징
@@ -103,44 +104,23 @@ Ctrl+Shift+P → "Show Git Diff (Browser)"
 ```json
 {
   "soundNotifications": {
-    "enabled": false,
-    "soundsFolder": ".plugin-config/sounds",
+    "enabled": true,
+    "volume": 0.5,
     "hooks": {
       "SessionStart": {
         "enabled": true,
-        "soundFile": "session-start.mp3"
-      },
-      "SessionEnd": {
-        "enabled": false,
-        "soundFile": "session-end.mp3"
+        "soundFile": "session-start.mp3",
+        "volume": 0.5
       },
       "PreToolUse": {
-        "enabled": false,
-        "soundFile": "pre-tool-use.mp3"
+        "enabled": true,
+        "soundFile": "pre-tool-use.mp3",
+        "volume": 0.3
       },
       "PostToolUse": {
-        "enabled": false,
-        "soundFile": "post-tool-use.mp3"
-      },
-      "Notification": {
-        "enabled": false,
-        "soundFile": "notification.mp3"
-      },
-      "UserPromptSubmit": {
-        "enabled": false,
-        "soundFile": "user-prompt-submit.mp3"
-      },
-      "Stop": {
-        "enabled": false,
-        "soundFile": "stop.mp3"
-      },
-      "SubagentStop": {
-        "enabled": false,
-        "soundFile": "subagent-stop.mp3"
-      },
-      "PreCompact": {
-        "enabled": false,
-        "soundFile": "pre-compact.mp3"
+        "enabled": true,
+        "soundFile": "post-tool-use.mp3",
+        "volume": 0.3
       }
     }
   }
@@ -148,65 +128,32 @@ Ctrl+Shift+P → "Show Git Diff (Browser)"
 ```
 
 **설정 항목:**
-- `enabled`: 모든 사운드 알림 전역 활성화/비활성화 (기본값: false)
-- `soundsFolder`: 사운드 파일 폴더 경로 (상대 경로 또는 절대 경로)
-- `hooks.[hookType].enabled`: 특정 훅 사운드 활성화/비활성화
-- `hooks.[hookType].soundFile`: 해당 훅의 사운드 파일 이름
+- `enabled`: 모든 사운드 알림 전역 활성화/비활성화 (기본값: true)
+- `volume`: 전역 볼륨 레벨 0.0-1.0 (기본값: 0.5)
+- `soundsFolder`: 사운드 파일 폴더 경로 (플러그인 위치에서 자동 감지)
+- 훅별 설정:
+  - `enabled`: 특정 훅 활성화/비활성화 (기본값: 훅마다 다름)
+  - `soundFile`: 사운드 파일 이름 (기본값: 제공됨)
+  - `volume`: 이 훅의 전역 볼륨 재정의 (기본값: 전역 볼륨 사용)
 
-**사운드 알림을 활성화하려면:**
+**볼륨 조절 (v1.2.4+):**
+- `soundNotifications.volume`으로 전역 볼륨 설정 (0.0 = 음소거, 1.0 = 최대)
+- `hooks.[hookType].volume`으로 훅별 재정의
+- 권장 설정: 빈번한 이벤트(PreToolUse, PostToolUse)는 0.3-0.5
+- 플랫폼 지원:
+  - ✅ Windows: WMPlayer 볼륨 설정
+  - ✅ Linux: mpg123 --scale 옵션
+  - ⚠️ macOS: afplay (볼륨 조절 미지원)
 
-1. **사운드 파일 설정**:
-   - 프로젝트 루트에 `.plugin-config/sounds/` 폴더 생성
-   - 사용할 훅에 대한 사운드 파일 추가 (예: `session-start.mp3`, `post-tool-use.mp3`, `stop.mp3` 등)
-   - 지원 형식: MP3 (모든 플랫폼), WAV (모든 플랫폼)
+**사운드 파일:**
+- 플러그인 설치 시 자동으로 포함됨
+- 플러그인의 `sounds` 폴더에 위치
+- 수동 설정 불필요
 
-2. **설정에서 활성화** (`.plugin-config/claude-dev-helper.json`):
-   ```json
-   {
-     "soundNotifications": {
-       "enabled": true,
-       "hooks": {
-         "SessionStart": { "enabled": true },
-         "PostToolUse": { "enabled": true },
-         "Stop": { "enabled": true }
-       }
-     }
-   }
-   ```
-
-3. **Claude Code 재시작** ⚠️ 중요
-   - 설정 변경사항을 적용하려면 Claude Code 재시작 필요
-   - 다음 세션 시작 시 `hooks.json`이 자동으로 업데이트됨
-   - 변경사항이 감지되면 재시작 안내가 표시됨
-
-**참고**: PostToolUse는 모든 도구 사용마다 성능 영향을 피하기 위해 기본적으로 비활성화되어 있습니다.
-
-**사운드 파일 커스터마이징:**
-
-언제든지 다음 방법으로 사운드 파일을 변경할 수 있습니다:
-1. `.plugin-config/sounds/` 폴더의 사운드 파일 교체
-2. 또는 설정에서 `soundFile` 경로를 다른 파일로 업데이트
-3. Claude Code 재시작하여 변경사항 적용
-
-예시: 훅별로 다른 사운드 사용
-```json
-{
-  "soundNotifications": {
-    "enabled": true,
-    "soundsFolder": ".plugin-config/sounds",
-    "hooks": {
-      "SessionStart": {
-        "enabled": true,
-        "soundFile": "my-custom-start.mp3"
-      },
-      "Stop": {
-        "enabled": true,
-        "soundFile": "my-custom-stop.wav"
-      }
-    }
-  }
-}
-```
+**설정 변경:**
+- `.plugin-config/claude-dev-helper.json` 편집
+- Claude Code 재시작하여 변경사항 적용
+- 다음 세션 시작 시 `hooks.json`이 자동으로 업데이트됨
 
 ### 자동 스테이징 훅 활성화
 
