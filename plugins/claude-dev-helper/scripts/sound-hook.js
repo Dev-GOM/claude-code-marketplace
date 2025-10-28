@@ -74,6 +74,14 @@ function playSoundForHook(hookType) {
     process.exit(0);
   }
 
+  // Get volume (hook-specific volume overrides global volume)
+  const volume = hookConfig.volume !== undefined
+    ? hookConfig.volume
+    : (soundConfig.volume !== undefined ? soundConfig.volume : 0.5);
+
+  // Clamp volume to 0.0 - 1.0 range
+  const clampedVolume = Math.max(0.0, Math.min(1.0, volume));
+
   // Use Python script for better cross-platform MP3 support (especially Windows)
   const playPythonScript = path.join(__dirname, 'play-sound.py');
   const playNodeScript = path.join(__dirname, 'play-sound.js');
@@ -82,10 +90,10 @@ function playSoundForHook(hookType) {
   let command, args;
   if (fs.existsSync(playPythonScript)) {
     command = 'python';
-    args = [playPythonScript, soundFilePath];
+    args = [playPythonScript, soundFilePath, clampedVolume.toString()];
   } else {
     command = 'node';
-    args = [playNodeScript, soundFilePath];
+    args = [playNodeScript, soundFilePath, clampedVolume.toString()];
   }
 
   const player = spawn(command, args, {

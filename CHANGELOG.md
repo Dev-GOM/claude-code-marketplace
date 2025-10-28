@@ -2,7 +2,23 @@
 
 All notable changes to the Dev GOM Plugins marketplace will be documented in this file.
 
-> **Version**: 2.4.16 | **Last Updated**: 2025-10-28
+> **Version**: 2.4.18 | **Last Updated**: 2025-10-28
+
+---
+
+## [2.4.18] - 2025-10-28
+
+### Added
+- 🔊 **Claude Dev Helper v1.2.4**: Volume Control for Sound Notifications
+  - Added global volume control (0.0 - 1.0)
+  - Added per-hook volume override capability
+  - PreToolUse and PostToolUse default to 0.3 (quieter for frequent events)
+  - Other hooks default to 0.5 (50% volume)
+  - Platform support:
+    - Windows: WMPlayer volume setting (0-100)
+    - Linux: mpg123 --scale option for MP3 files
+    - macOS: afplay (no volume control yet)
+  - Users can customize volume in `.plugin-config/claude-dev-helper.json`
 
 ---
 

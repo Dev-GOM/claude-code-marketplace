@@ -48,42 +48,52 @@ const defaultConfig = {
   soundNotifications: {
     enabled: true,
     soundsFolder: getPluginSoundsFolder(),  // Auto-detected plugin sounds folder
+    volume: 0.5,  // Global volume (0.0 - 1.0), can be overridden per hook
     hooks: {
       SessionStart: {
         enabled: true,
-        soundFile: 'session-start.mp3'
+        soundFile: 'session-start.mp3',
+        volume: 0.5
       },
       SessionEnd: {
         enabled: true,
-        soundFile: 'session-end.mp3'
+        soundFile: 'session-end.mp3',
+        volume: 0.5
       },
       PreToolUse: {
-        enabled: true,  // Disabled by default to avoid performance impact
-        soundFile: 'pre-tool-use.mp3'
+        enabled: true,
+        soundFile: 'pre-tool-use.mp3',
+        volume: 0.3  // Lower volume for frequent events
       },
       PostToolUse: {
-        enabled: true,  // Disabled by default to avoid performance impact
-        soundFile: 'post-tool-use.mp3'
+        enabled: true,
+        soundFile: 'post-tool-use.mp3',
+        volume: 0.3  // Lower volume for frequent events
       },
       Notification: {
         enabled: true,
-        soundFile: 'notification.mp3'
+        soundFile: 'notification.mp3',
+        volume: 0.5
       },
       UserPromptSubmit: {
         enabled: true,
-        soundFile: 'user-prompt-submit.mp3'
+        soundFile: 'user-prompt-submit.mp3',
+        volume: 0.5
       },
       Stop: {
         enabled: true,
-        soundFile: 'stop.mp3'
+        soundFile: 'stop.mp3',
+        volume: 0.5
       },
       SubagentStop: {
         enabled: true,
-        soundFile: 'subagent-stop.mp3'
+        soundFile: 'subagent-stop.mp3',
+        volume: 0.5
       },
       PreCompact: {
         enabled: true,
-        soundFile: 'pre-compact.mp3'
+        soundFile: 'pre-compact.mp3',
+        volume: 0.5
       }
     }
   }

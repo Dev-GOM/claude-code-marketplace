@@ -1,6 +1,6 @@
 {
   "description": "Claude Dev Helper - Auto-open files in VSCode after Write/Edit + Sound notifications",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "author": "Dev GOM",
   "lastUpdated": "2025-10-28",
   "hooks": {
