@@ -1,6 +1,6 @@
 # Claude Code Plugins
 
-> **Version**: 2.4.19 | **Last Updated**: 2025-10-28
+> **Version**: 2.5.0 | **Last Updated**: 2025-10-29
 >
 > **Language**: [English](README.md) | [한국어](README.ko.md)
 >
@@ -148,9 +148,9 @@ Comprehensive Unity game development toolkit with intelligent scripting assistan
 <details>
 <summary><strong>📖 Plugin Details</strong> (Click to expand)</summary>
 
-Development assistant with auto-open files, sound notifications, git diff review, and enhanced workflow integration with VS Code Extension.
+Development assistant with auto-open files, git diff review, and enhanced workflow integration with VS Code Extension.
 
-**Quick Info:** Auto-opens files in VSCode when Claude creates/edits them | Sound notifications for all hook events | Git diff review with CodeLens | VS Code Extension for enhanced workflow | **Hooks:** `SessionStart`, `SessionEnd`, `PreToolUse`, `PostToolUse`, `Notification`, `UserPromptSubmit`, `Stop`, `SubagentStop`, `PreCompact` | **Features:** Auto-open files, Sound notifications (9 hook types), Git integration, VS Code integration
+**Quick Info:** Auto-opens files in VSCode when Claude creates/edits them | Git diff review with CodeLens | VS Code Extension for enhanced workflow | **Hooks:** `SessionStart`, `PostToolUse` | **Features:** Auto-open files, Git integration, VS Code integration
 
 **[Read Full Documentation →](plugins/claude-dev-helper/README.md)**
 
@@ -158,7 +158,22 @@ Development assistant with auto-open files, sound notifications, git diff review
 
 ---
 
-### 10. 🚀 [Auto Release Manager](plugins/auto-release-manager/README.md)
+### 10. 🔔 [Sound Notifications](plugins/hook-sound-notifications/README.md)
+
+<details>
+<summary><strong>📖 Plugin Details</strong> (Click to expand)</summary>
+
+Audio notifications for Claude Code hook events with customizable sounds and volume control.
+
+**Quick Info:** Sound notifications for 9 hook types with volume control | Cross-platform support (Windows, macOS, Linux) | Duplicate execution prevention | **Hooks:** `SessionStart`, `SessionEnd`, `PreToolUse`, `PostToolUse`, `Notification`, `UserPromptSubmit`, `Stop`, `SubagentStop`, `PreCompact` | **Features:** Global & per-hook volume settings, Custom sound files, MP3/WAV support
+
+**[Read Full Documentation →](plugins/hook-sound-notifications/README.md)**
+
+</details>
+
+---
+
+### 11. 🚀 [Auto Release Manager](plugins/auto-release-manager/README.md)
 
 <details>
 <summary><strong>📖 Plugin Details</strong> (Click to expand)</summary>
@@ -207,6 +222,9 @@ Automate version updates and releases for any project type with intelligent dete
    ```
    ```bash
    /plugin install claude-dev-helper@dev-gom-plugins
+   ```
+   ```bash
+   /plugin install hook-sound-notifications@dev-gom-plugins
    ```
    ```bash
    /plugin install auto-release-manager@dev-gom-plugins

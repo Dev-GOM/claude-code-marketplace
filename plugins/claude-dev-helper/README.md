@@ -6,13 +6,30 @@
 
 > Git diff review plugin for Claude Code with optional VSCode extension support.
 
+## What's New
+
+### v1.4.0 (2025-10-29)
+
+**Breaking Changes:**
+- 🔊 Sound notification features have been removed and moved to a separate plugin
+  - Install `hook-sound-notifications` plugin for audio feedback
+  - Configuration migrated: `soundNotifications` section is no longer used
+
+**Changes:**
+- Simplified to focus on core file management and Git diff features
+- Reduced plugin footprint by removing sound playback dependencies
+
+**Migration Guide:**
+If you were using sound notifications:
+1. Install the new plugin: `/plugin install hook-sound-notifications@dev-gom-plugins`
+2. Your sound settings will need to be reconfigured in `.plugin-config/hook-sound-notifications.json`
+3. See [hook-sound-notifications documentation](../hook-sound-notifications/README.md) for details
+
 ## Features
 
 - 📂 **Auto-Open Files** (v1.2.5+): Automatically opens files in VSCode when Claude creates/edits them
-- 🔔 **Sound Notifications** (v1.2.0+): Audio feedback for all hook events (SessionStart, SessionEnd, PreToolUse, PostToolUse, Notification, UserPromptSubmit, Stop, SubagentStop, PreCompact)
-- 🔊 **Volume Control** (v1.2.4+): Configurable volume for each sound notification (global + per-hook override)
 - 🎯 **Git Diff Review**: Review Claude's code changes with CodeLens buttons
-- 🌐 **Browser Diff Editor**: Monaco-based diff viewer in your browser
+- 🌐 **Browser Diff Editor**: Monaco-based diff viewer in your browser (future)
 - 🔄 **Auto-Staging** (Optional): Automatically stage modified files
 - ⚙️ **Configurable Hooks**: Customize your workflow
 
@@ -30,7 +47,7 @@ For enhanced diff viewing with VSCode integration:
 
 **Option A: VS Marketplace** (Recommended)
 - Install from [VS Marketplace](https://marketplace.visualstudio.com/items?itemName=devGOM.claude-dev-helper)
-- Or search "claude-dev-helper" in VSCode Extensions
+- Or search "claude dev helper" in VSCode Extensions
 
 **Option B: From GitHub Releases**
 1. Download `.vsix` from [Releases](https://github.com/Dev-GOM/claude-code-marketplace/releases)
@@ -97,64 +114,6 @@ The plugin automatically creates `.plugin-config/claude-dev-helper.json` in your
 
 Edit `.plugin-config/claude-dev-helper.json` to customize the behavior.
 
-### Sound Notifications Settings
-
-The plugin includes optional sound notifications for hook events. Configuration is in `.plugin-config/claude-dev-helper.json`:
-
-```json
-{
-  "soundNotifications": {
-    "enabled": true,
-    "volume": 0.5,
-    "hooks": {
-      "SessionStart": {
-        "enabled": true,
-        "soundFile": "session-start.mp3",
-        "volume": 0.5
-      },
-      "PreToolUse": {
-        "enabled": true,
-        "soundFile": "pre-tool-use.mp3",
-        "volume": 0.3
-      },
-      "PostToolUse": {
-        "enabled": true,
-        "soundFile": "post-tool-use.mp3",
-        "volume": 0.3
-      }
-    }
-  }
-}
-```
-
-**Settings:**
-- `enabled`: Enable/disable sound notifications globally (default: true)
-- `volume`: Global volume level 0.0-1.0 (default: 0.5)
-- `soundsFolder`: Path to sounds folder (auto-detected from plugin location)
-- Per-hook settings:
-  - `enabled`: Enable/disable this specific hook (default: varies)
-  - `soundFile`: Sound file name (default: provided)
-  - `volume`: Override global volume for this hook (default: uses global volume)
-
-**Volume Control (v1.2.4+):**
-- Set global volume with `soundNotifications.volume` (0.0 = mute, 1.0 = max)
-- Override per-hook with `hooks.[hookType].volume`
-- Recommended: 0.3-0.5 for frequent events (PreToolUse, PostToolUse)
-- Platform support:
-  - ✅ Windows: WMPlayer volume setting
-  - ✅ Linux: mpg123 --scale option
-  - ⚠️ macOS: afplay (no volume control yet)
-
-**Sound files:**
-- Automatically included in plugin installation
-- Located in plugin's `sounds` folder
-- No manual setup required
-
-**Configuration Changes:**
-- Edit `.plugin-config/claude-dev-helper.json`
-- Restart Claude Code to apply changes
-- `hooks.json` automatically updates on next session start
-
 ### Enable Auto-Staging Hook
 
 Edit `plugins/claude-dev-helper/hooks/hooks.json`:
@@ -217,13 +176,6 @@ VSCode Diff Mode:
 **Q: Diff showing side-by-side instead of inline?**
 - Run command: "Enable Inline Diff Mode"
 - Or set `diffEditor.renderSideBySide: false` in VSCode settings
-
-**Q: Sound notifications not playing?**
-- Ensure `soundNotifications.enabled: true` in `.plugin-config/claude-dev-helper.json`
-- Check sound files exist in configured `soundsFolder`
-- Verify sound file format (MP3 or WAV)
-- Restart Claude Code after configuration changes
-- On Linux: Ensure `aplay` (for WAV) or `mpg123` (for MP3) is installed
 
 ## Development
 

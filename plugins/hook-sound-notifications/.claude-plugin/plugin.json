@@ -1,0 +1,9 @@
+{
+  "name": "hook-sound-notifications",
+  "version": "1.0.0",
+  "description": "Audio notifications for Claude Code hook events with customizable sounds and volume control",
+  "author": "Dev GOM",
+  "license": "MIT",
+  "repository": "https://github.com/Dev-GOM/claude-code-marketplace",
+  "hooks": "./hooks/hooks.json"
+}

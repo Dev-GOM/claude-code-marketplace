@@ -1,6 +1,6 @@
 # Claude Code 플러그인
 
-> **버전**: 2.4.19 | **최종 업데이트**: 2025-10-28
+> **버전**: 2.5.0 | **최종 업데이트**: 2025-10-29
 >
 > **언어**: [English](README.md) | [한국어](README.ko.md)
 >
@@ -148,9 +148,9 @@ Claude Code 세션(Session)이 끝날 때마다 자동으로 git 커밋을 생�
 <details>
 <summary><strong>📖 플러그인 상세</strong> (펼치기)</summary>
 
-자동 파일 열기, 사운드 알림, Git diff 리뷰, VS Code Extension과의 향상된 워크플로우 통합을 제공하는 개발 보조 도구.
+자동 파일 열기, Git diff 리뷰, VS Code Extension과의 향상된 워크플로우 통합을 제공하는 개발 보조 도구.
 
-**요약:** Claude가 파일 생성/수정 시 VSCode에서 자동 열기 | 모든 훅 이벤트에 대한 사운드 알림 | CodeLens로 Git diff 리뷰 | VS Code Extension으로 향상된 워크플로우 | **훅(Hooks):** `SessionStart`, `SessionEnd`, `PreToolUse`, `PostToolUse`, `Notification`, `UserPromptSubmit`, `Stop`, `SubagentStop`, `PreCompact` | **기능:** 자동 파일 열기, 사운드 알림 (9가지 훅 타입), Git 통합, VS Code 통합
+**요약:** Claude가 파일 생성/수정 시 VSCode에서 자동 열기 | CodeLens로 Git diff 리뷰 | VS Code Extension으로 향상된 워크플로우 | **훅(Hooks):** `SessionStart`, `PostToolUse` | **기능:** 자동 파일 열기, Git 통합, VS Code 통합
 
 **[전체 문서 보기 →](plugins/claude-dev-helper/README.ko.md)**
 
@@ -158,7 +158,22 @@ Claude Code 세션(Session)이 끝날 때마다 자동으로 git 커밋을 생�
 
 ---
 
-### 10. 🚀 [Auto Release Manager](plugins/auto-release-manager/README.ko.md)
+### 10. 🔔 [사운드 알림](plugins/hook-sound-notifications/README.ko.md)
+
+<details>
+<summary><strong>📖 플러그인 상세</strong> (펼치기)</summary>
+
+사운드 및 볼륨 조절 지원을 갖춘 Claude Code 훅 이벤트에 대한 오디오 알림.
+
+**요약:** 9가지 훅 타입에 대한 볼륨 조절 가능한 사운드 알림 | 크로스 플랫폼 지원 (Windows, macOS, Linux) | 중복 실행 방지 | **훅(Hooks):** `SessionStart`, `SessionEnd`, `PreToolUse`, `PostToolUse`, `Notification`, `UserPromptSubmit`, `Stop`, `SubagentStop`, `PreCompact` | **기능:** 전역 및 훅별 볼륨 설정, 커스텀 사운드 파일, MP3/WAV 지원
+
+**[전체 문서 보기 →](plugins/hook-sound-notifications/README.ko.md)**
+
+</details>
+
+---
+
+### 11. 🚀 [Auto Release Manager](plugins/auto-release-manager/README.ko.md)
 
 <details>
 <summary><strong>📖 플러그인 상세</strong> (펼치기)</summary>
@@ -207,6 +222,9 @@ Claude Code 세션(Session)이 끝날 때마다 자동으로 git 커밋을 생�
    ```
    ```bash
    /plugin install claude-dev-helper@dev-gom-plugins
+   ```
+   ```bash
+   /plugin install hook-sound-notifications@dev-gom-plugins
    ```
    ```bash
    /plugin install auto-release-manager@dev-gom-plugins

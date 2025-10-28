@@ -6,13 +6,30 @@
 
 > Claude Code를 위한 Git diff 리뷰 플러그인 (VSCode 확장 지원)
 
+## 최신 소식
+
+### v1.4.0 (2025-10-29)
+
+**주요 변경사항 (Breaking Changes):**
+- 🔊 사운드 알림 기능이 제거되어 별도 플러그인으로 분리되었습니다
+  - 오디오 피드백이 필요한 경우 `hook-sound-notifications` 플러그인 설치
+  - 설정 마이그레이션: `soundNotifications` 섹션은 더 이상 사용되지 않음
+
+**변경사항:**
+- 핵심 파일 관리 및 Git diff 기능에 집중하도록 간소화
+- 사운드 재생 의존성 제거로 플러그인 용량 감소
+
+**마이그레이션 가이드:**
+사운드 알림을 사용하고 있었다면:
+1. 새 플러그인 설치: `/plugin install hook-sound-notifications@dev-gom-plugins`
+2. 사운드 설정을 `.plugin-config/hook-sound-notifications.json`에서 재설정 필요
+3. 자세한 내용은 [hook-sound-notifications 문서](../hook-sound-notifications/README.ko.md) 참조
+
 ## 주요 기능
 
 - 📂 **자동 파일 열기** (v1.2.5+): Claude가 파일을 생성/수정하면 VSCode에서 자동으로 열림
-- 🔔 **사운드 알림** (v1.2.0+): 모든 훅 이벤트에 대한 오디오 피드백 (SessionStart, SessionEnd, PreToolUse, PostToolUse, Notification, UserPromptSubmit, Stop, SubagentStop, PreCompact)
-- 🔊 **볼륨 조절** (v1.2.4+): 각 사운드 알림의 볼륨 설정 가능 (전역 + 훅별 재정의)
 - 🎯 **Git Diff 리뷰**: CodeLens 버튼으로 Claude의 코드 변경 검토
-- 🌐 **브라우저 Diff 에디터**: Monaco 기반 diff 뷰어
+- 🌐 **브라우저 Diff 에디터**: Monaco 기반 diff 뷰어 (예정)
 - 🔄 **자동 스테이징** (선택): 수정된 파일 자동 스테이징
 - ⚙️ **훅 설정**: 워크플로우 커스터마이징
 
@@ -30,7 +47,7 @@
 
 **방법 A: VS Marketplace** (권장)
 - [VS Marketplace](https://marketplace.visualstudio.com/items?itemName=devGOM.claude-dev-helper)에서 설치
-- 또는 VSCode Extensions에서 "claude-dev-helper" 검색
+- 또는 VSCode Extensions에서 "claude dev helper" 검색
 
 **방법 B: GitHub Releases**
 1. [Releases](https://github.com/Dev-GOM/claude-code-marketplace/releases)에서 `.vsix` 다운로드
@@ -97,64 +114,6 @@ Ctrl+Shift+P → "Show Git Diff (Browser)"
 
 `.plugin-config/claude-dev-helper.json` 파일을 편집하여 동작을 커스터마이징할 수 있습니다.
 
-### 사운드 알림 설정
-
-플러그인에는 훅 이벤트에 대한 선택적 사운드 알림이 포함되어 있습니다. 설정은 `.plugin-config/claude-dev-helper.json`에 있습니다:
-
-```json
-{
-  "soundNotifications": {
-    "enabled": true,
-    "volume": 0.5,
-    "hooks": {
-      "SessionStart": {
-        "enabled": true,
-        "soundFile": "session-start.mp3",
-        "volume": 0.5
-      },
-      "PreToolUse": {
-        "enabled": true,
-        "soundFile": "pre-tool-use.mp3",
-        "volume": 0.3
-      },
-      "PostToolUse": {
-        "enabled": true,
-        "soundFile": "post-tool-use.mp3",
-        "volume": 0.3
-      }
-    }
-  }
-}
-```
-
-**설정 항목:**
-- `enabled`: 모든 사운드 알림 전역 활성화/비활성화 (기본값: true)
-- `volume`: 전역 볼륨 레벨 0.0-1.0 (기본값: 0.5)
-- `soundsFolder`: 사운드 파일 폴더 경로 (플러그인 위치에서 자동 감지)
-- 훅별 설정:
-  - `enabled`: 특정 훅 활성화/비활성화 (기본값: 훅마다 다름)
-  - `soundFile`: 사운드 파일 이름 (기본값: 제공됨)
-  - `volume`: 이 훅의 전역 볼륨 재정의 (기본값: 전역 볼륨 사용)
-
-**볼륨 조절 (v1.2.4+):**
-- `soundNotifications.volume`으로 전역 볼륨 설정 (0.0 = 음소거, 1.0 = 최대)
-- `hooks.[hookType].volume`으로 훅별 재정의
-- 권장 설정: 빈번한 이벤트(PreToolUse, PostToolUse)는 0.3-0.5
-- 플랫폼 지원:
-  - ✅ Windows: WMPlayer 볼륨 설정
-  - ✅ Linux: mpg123 --scale 옵션
-  - ⚠️ macOS: afplay (볼륨 조절 미지원)
-
-**사운드 파일:**
-- 플러그인 설치 시 자동으로 포함됨
-- 플러그인의 `sounds` 폴더에 위치
-- 수동 설정 불필요
-
-**설정 변경:**
-- `.plugin-config/claude-dev-helper.json` 편집
-- Claude Code 재시작하여 변경사항 적용
-- 다음 세션 시작 시 `hooks.json`이 자동으로 업데이트됨
-
 ### 자동 스테이징 훅 활성화
 
 `plugins/claude-dev-helper/hooks/hooks.json` 편집:
@@ -217,13 +176,6 @@ VSCode Diff 모드:
 **Q: Diff가 좌우 분할로 표시되나요?**
 - 명령 실행: "Enable Inline Diff Mode"
 - 또는 VSCode 설정에서 `diffEditor.renderSideBySide: false` 설정
-
-**Q: 사운드 알림이 재생되지 않나요?**
-- `.plugin-config/claude-dev-helper.json`에서 `soundNotifications.enabled: true` 확인
-- 설정된 `soundsFolder`에 사운드 파일이 존재하는지 확인
-- 사운드 파일 형식 확인 (MP3 또는 WAV)
-- 설정 변경 후 Claude Code 재시작
-- Linux의 경우: `aplay` (WAV용) 또는 `mpg123` (MP3용) 설치 확인
 
 ## 개발
 
