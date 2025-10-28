@@ -34,6 +34,48 @@ const defaultConfig = {
     focus: false,
     openLocation: 1,  // 0 = first column (left), 1 = second column (right)
     maxQueueSize: 10
+  },
+  soundNotifications: {
+    enabled: false,  // Disabled by default - user must explicitly enable
+    soundsFolder: '.plugin-config/sounds',  // Relative or absolute path
+    hooks: {
+      SessionStart: {
+        enabled: true,
+        soundFile: 'session-start.mp3'
+      },
+      SessionEnd: {
+        enabled: false,
+        soundFile: 'session-end.mp3'
+      },
+      PreToolUse: {
+        enabled: false,  // Disabled by default to avoid performance impact
+        soundFile: 'pre-tool-use.mp3'
+      },
+      PostToolUse: {
+        enabled: false,  // Disabled by default to avoid performance impact
+        soundFile: 'post-tool-use.mp3'
+      },
+      Notification: {
+        enabled: false,
+        soundFile: 'notification.mp3'
+      },
+      UserPromptSubmit: {
+        enabled: false,
+        soundFile: 'user-prompt-submit.mp3'
+      },
+      Stop: {
+        enabled: false,
+        soundFile: 'stop.mp3'
+      },
+      SubagentStop: {
+        enabled: false,
+        soundFile: 'subagent-stop.mp3'
+      },
+      PreCompact: {
+        enabled: false,
+        soundFile: 'pre-compact.mp3'
+      }
+    }
   }
 };
 
@@ -57,12 +99,20 @@ function initializeConfig() {
           process.exit(0);
         }
 
-        // Migrate: merge existing config with new defaults (deep merge for autoOpen)
+        // Migrate: merge existing config with new defaults (deep merge for nested objects)
         const migratedConfig = {
           ...defaultConfig,
           autoOpen: {
             ...defaultConfig.autoOpen,
             ...existingConfig.autoOpen
+          },
+          soundNotifications: {
+            ...defaultConfig.soundNotifications,
+            ...existingConfig.soundNotifications,
+            hooks: {
+              ...defaultConfig.soundNotifications.hooks,
+              ...(existingConfig.soundNotifications?.hooks || {})
+            }
           },
           _pluginVersion: PLUGIN_VERSION
         };

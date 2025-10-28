@@ -8,7 +8,8 @@
 
 ## Features
 
-- 📂 **Auto-Open Files** (v1.1.8+): Automatically opens files in VSCode when Claude creates/edits them
+- 📂 **Auto-Open Files** (v1.2.0+): Automatically opens files in VSCode when Claude creates/edits them
+- 🔔 **Sound Notifications** (v1.2.0+): Audio feedback for all hook events (SessionStart, SessionEnd, PreToolUse, PostToolUse, Notification, UserPromptSubmit, Stop, SubagentStop, PreCompact)
 - 🎯 **Git Diff Review**: Review Claude's code changes with CodeLens buttons
 - 🌐 **Browser Diff Editor**: Monaco-based diff viewer in your browser
 - 🔄 **Auto-Staging** (Optional): Automatically stage modified files
@@ -90,9 +91,124 @@ The plugin automatically creates `.plugin-config/claude-dev-helper.json` in your
 **Settings:**
 - `enabled`: Enable/disable auto-open feature (default: true)
 - `focus`: Whether to focus the opened file (default: false - opens in background)
+- `openLocation`: Where to open files - `0` for first column (left), `1` for second column (right) (default: 1)
 - `maxQueueSize`: Maximum number of files to track (default: 10)
 
 Edit `.plugin-config/claude-dev-helper.json` to customize the behavior.
+
+### Sound Notifications Settings
+
+The plugin includes optional sound notifications for hook events. Configuration is in `.plugin-config/claude-dev-helper.json`:
+
+```json
+{
+  "soundNotifications": {
+    "enabled": false,
+    "soundsFolder": ".plugin-config/sounds",
+    "hooks": {
+      "SessionStart": {
+        "enabled": true,
+        "soundFile": "session-start.mp3"
+      },
+      "SessionEnd": {
+        "enabled": false,
+        "soundFile": "session-end.mp3"
+      },
+      "PreToolUse": {
+        "enabled": false,
+        "soundFile": "pre-tool-use.mp3"
+      },
+      "PostToolUse": {
+        "enabled": false,
+        "soundFile": "post-tool-use.mp3"
+      },
+      "Notification": {
+        "enabled": false,
+        "soundFile": "notification.mp3"
+      },
+      "UserPromptSubmit": {
+        "enabled": false,
+        "soundFile": "user-prompt-submit.mp3"
+      },
+      "Stop": {
+        "enabled": false,
+        "soundFile": "stop.mp3"
+      },
+      "SubagentStop": {
+        "enabled": false,
+        "soundFile": "subagent-stop.mp3"
+      },
+      "PreCompact": {
+        "enabled": false,
+        "soundFile": "pre-compact.mp3"
+      }
+    }
+  }
+}
+```
+
+**Settings:**
+- `enabled`: Global enable/disable for all sound notifications (default: false)
+- `soundsFolder`: Path to sound files folder (relative or absolute)
+- `hooks.[hookType].enabled`: Enable/disable specific hook sound
+- `hooks.[hookType].soundFile`: Sound file name for the hook
+
+**To enable sound notifications:**
+
+1. **Set up sound files**:
+   - Create `.plugin-config/sounds/` folder in your project root
+   - Add sound files for the hooks you want to use (e.g., `session-start.mp3`, `post-tool-use.mp3`, `stop.mp3`, etc.)
+   - Supported formats: MP3 (all platforms), WAV (all platforms)
+   - You can find free sound effects at:
+     - [Freesound](https://freesound.org/)
+     - [Zapsplat](https://www.zapsplat.com/)
+     - [Pixabay](https://pixabay.com/sound-effects/)
+     - Or create your own short notification sounds
+
+2. **Enable in configuration**:
+   ```json
+   {
+     "soundNotifications": {
+       "enabled": true,
+       "hooks": {
+         "SessionStart": { "enabled": true },
+         "PostToolUse": { "enabled": true },
+         "Stop": { "enabled": true }
+       }
+     }
+   }
+   ```
+
+3. **Restart Claude Code** for settings to take effect
+
+**Note**: PostToolUse is disabled by default to avoid performance impact on every tool use.
+
+**Customizing sound files:**
+
+You can change sound files at any time by:
+1. Replacing the sound files in `.plugin-config/sounds/` folder
+2. Or updating the `soundFile` path in the configuration to point to different files
+3. Restart Claude Code to apply changes
+
+Example: Using different sounds for different hooks
+```json
+{
+  "soundNotifications": {
+    "enabled": true,
+    "soundsFolder": ".plugin-config/sounds",
+    "hooks": {
+      "SessionStart": {
+        "enabled": true,
+        "soundFile": "my-custom-start.mp3"
+      },
+      "Stop": {
+        "enabled": true,
+        "soundFile": "my-custom-stop.wav"
+      }
+    }
+  }
+}
+```
 
 ### Enable Auto-Staging Hook
 
@@ -156,6 +272,13 @@ VSCode Diff Mode:
 **Q: Diff showing side-by-side instead of inline?**
 - Run command: "Enable Inline Diff Mode"
 - Or set `diffEditor.renderSideBySide: false` in VSCode settings
+
+**Q: Sound notifications not playing?**
+- Ensure `soundNotifications.enabled: true` in `.plugin-config/claude-dev-helper.json`
+- Check sound files exist in configured `soundsFolder`
+- Verify sound file format (MP3 or WAV)
+- Restart Claude Code after configuration changes
+- On Linux: Ensure `aplay` (for WAV) or `mpg123` (for MP3) is installed
 
 ## Development
 

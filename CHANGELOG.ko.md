@@ -2,7 +2,36 @@
 
 Dev GOM Plugins 마켓플레이스의 모든 주요 변경사항이 이 파일에 문서화됩니다.
 
-> **버전**: 2.4.13 | **최종 업데이트**: 2025-10-27
+> **버전**: 2.4.14 | **최종 업데이트**: 2025-10-28
+
+---
+
+## [2.4.14] - 2025-10-28
+
+### 추가됨
+- 🔔 **Claude Dev Helper v1.2.0**: 모든 훅 이벤트에 대한 사운드 알림
+  - **Claude Code의 모든 9가지 훅 타입**에 대한 오디오 피드백:
+    - SessionStart, SessionEnd
+    - PreToolUse, PostToolUse
+    - Notification, UserPromptSubmit
+    - Stop, SubagentStop, PreCompact
+  - 훅 타입별 사운드 파일 설정 가능
+  - 전역 및 훅별 활성화/비활성화 플래그
+  - 사운드 폴더 경로 설정 가능 (상대 경로 또는 절대 경로)
+  - 크로스 플랫폼 사운드 재생 지원:
+    - Windows: PowerShell의 Media.SoundPlayer
+    - macOS: afplay (내장)
+    - Linux: aplay (WAV) / mpg123 (MP3)
+  - 비차단 사운드 재생 (detached process spawning)
+  - 비중요 사운드 작업에 대한 자동 실패 처리
+  - `.plugin-config/claude-dev-helper.json`에서 설정
+  - 성능 영향이 큰 훅 (PreToolUse, PostToolUse)은 기본 비활성화
+  - 설정 변경 후 Claude Code 재시작 필요
+  - soundeffect-lab.info에서 다운로드한 샘플 사운드 파일 포함
+  - 스크립트:
+    - `play-sound.js`: 크로스 플랫폼 사운드 재생 유틸리티
+    - `sound-hook.js`: 사운드 재생을 위한 훅 진입점
+    - `init-config.js`: soundNotifications 기본 설정 추가
 
 ---
 

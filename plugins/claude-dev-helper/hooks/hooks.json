@@ -1,8 +1,8 @@
 {
-  "description": "Claude Dev Helper - Auto-open files in VSCode after Write/Edit",
-  "version": "1.1.8",
+  "description": "Claude Dev Helper - Auto-open files in VSCode after Write/Edit + Sound notifications",
+  "version": "1.2.0",
   "author": "Dev GOM",
-  "lastUpdated": "2025-10-27",
+  "lastUpdated": "2025-10-28",
   "hooks": {
     "SessionStart": [
       {
@@ -15,6 +15,21 @@
             "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/init-config.js",
             "description": "Creates default configuration file if it doesn't exist",
             "timeout": 5000,
+            "continueOnError": true,
+            "suppressOutput": true
+          }
+        ]
+      },
+      {
+        "description": "Play session start sound notification",
+        "priority": 90,
+        "enabled": true,
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/sound-hook.js SessionStart",
+            "description": "Plays sound when session starts",
+            "timeout": 3000,
             "continueOnError": true,
             "suppressOutput": true
           }
@@ -33,6 +48,142 @@
             "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/auto-open-file.js",
             "description": "Opens modified file in VSCode without focusing",
             "timeout": 5000,
+            "continueOnError": true,
+            "suppressOutput": true
+          }
+        ]
+      },
+      {
+        "description": "Play tool use sound notification",
+        "matcher": ".*",
+        "priority": 40,
+        "enabled": true,
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/sound-hook.js PostToolUse",
+            "description": "Plays sound when tool is used",
+            "timeout": 3000,
+            "continueOnError": true,
+            "suppressOutput": true
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "description": "Play stop sound notification",
+        "priority": 50,
+        "enabled": true,
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/sound-hook.js Stop",
+            "description": "Plays sound when agent stops responding",
+            "timeout": 3000,
+            "continueOnError": true,
+            "suppressOutput": true
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "description": "Play session end sound notification",
+        "priority": 50,
+        "enabled": true,
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/sound-hook.js SessionEnd",
+            "description": "Plays sound when session ends",
+            "timeout": 3000,
+            "continueOnError": true,
+            "suppressOutput": true
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "description": "Play pre-tool-use sound notification",
+        "matcher": ".*",
+        "priority": 40,
+        "enabled": true,
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/sound-hook.js PreToolUse",
+            "description": "Plays sound before tool execution",
+            "timeout": 3000,
+            "continueOnError": true,
+            "suppressOutput": true
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "description": "Play notification sound",
+        "priority": 50,
+        "enabled": true,
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/sound-hook.js Notification",
+            "description": "Plays sound when notification occurs",
+            "timeout": 3000,
+            "continueOnError": true,
+            "suppressOutput": true
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "description": "Play user prompt submit sound notification",
+        "priority": 50,
+        "enabled": true,
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/sound-hook.js UserPromptSubmit",
+            "description": "Plays sound when user submits a prompt",
+            "timeout": 3000,
+            "continueOnError": true,
+            "suppressOutput": true
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "description": "Play subagent stop sound notification",
+        "priority": 50,
+        "enabled": true,
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/sound-hook.js SubagentStop",
+            "description": "Plays sound when subagent task completes",
+            "timeout": 3000,
+            "continueOnError": true,
+            "suppressOutput": true
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "description": "Play pre-compact sound notification",
+        "priority": 50,
+        "enabled": true,
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/sound-hook.js PreCompact",
+            "description": "Plays sound before context compaction",
+            "timeout": 3000,
             "continueOnError": true,
             "suppressOutput": true
           }
