@@ -127,13 +127,19 @@ function updateHooksJson(soundConfig) {
         return;
       }
 
-      // Find the sound hook entry
+      // Find the sound hook entry (description contains "sound")
       const soundHookArray = hooksJson.hooks[hookType];
       if (!Array.isArray(soundHookArray) || soundHookArray.length === 0) {
         return;
       }
 
-      const soundHook = soundHookArray[0];
+      const soundHook = soundHookArray.find(hook =>
+        hook.description && hook.description.toLowerCase().includes('sound')
+      );
+
+      if (!soundHook) {
+        return;
+      }
 
       // Determine if this hook should be enabled
       let shouldEnable = false;
