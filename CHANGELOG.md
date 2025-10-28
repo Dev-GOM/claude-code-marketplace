@@ -2,7 +2,20 @@
 
 All notable changes to the Dev GOM Plugins marketplace will be documented in this file.
 
-> **Version**: 2.4.14 | **Last Updated**: 2025-10-28
+> **Version**: 2.4.15 | **Last Updated**: 2025-10-28
+
+---
+
+## [2.4.15] - 2025-10-28
+
+### Changed
+- 🔧 **Claude Dev Helper v1.2.1**: Dynamic hooks.json Update
+  - Configuration changes now automatically update `hooks.json` on next session start
+  - Users only need to edit `.plugin-config/claude-dev-helper.json` (no manual hooks.json editing)
+  - When `soundNotifications.enabled` is `false`, all sound hooks are automatically disabled
+  - When `soundNotifications.enabled` is `true`, individual hook settings are respected
+  - Restart notice displayed when configuration changes are detected
+  - Eliminates unnecessary Node.js process overhead when sound notifications are disabled
 
 ---
 

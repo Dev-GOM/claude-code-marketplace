@@ -36,7 +36,7 @@ const defaultConfig = {
     maxQueueSize: 10
   },
   soundNotifications: {
-    enabled: false,  // Disabled by default - user must explicitly enable
+    enabled: true,  // Disabled by default - user must explicitly enable
     soundsFolder: '.plugin-config/sounds',  // Relative or absolute path
     hooks: {
       SessionStart: {
@@ -44,40 +44,117 @@ const defaultConfig = {
         soundFile: 'session-start.mp3'
       },
       SessionEnd: {
-        enabled: false,
+        enabled: true,
         soundFile: 'session-end.mp3'
       },
       PreToolUse: {
-        enabled: false,  // Disabled by default to avoid performance impact
+        enabled: true,  // Disabled by default to avoid performance impact
         soundFile: 'pre-tool-use.mp3'
       },
       PostToolUse: {
-        enabled: false,  // Disabled by default to avoid performance impact
+        enabled: true,  // Disabled by default to avoid performance impact
         soundFile: 'post-tool-use.mp3'
       },
       Notification: {
-        enabled: false,
+        enabled: true,
         soundFile: 'notification.mp3'
       },
       UserPromptSubmit: {
-        enabled: false,
+        enabled: true,
         soundFile: 'user-prompt-submit.mp3'
       },
       Stop: {
-        enabled: false,
+        enabled: true,
         soundFile: 'stop.mp3'
       },
       SubagentStop: {
-        enabled: false,
+        enabled: true,
         soundFile: 'subagent-stop.mp3'
       },
       PreCompact: {
-        enabled: false,
+        enabled: true,
         soundFile: 'pre-compact.mp3'
       }
     }
   }
 };
+
+/**
+ * Update hooks.json based on sound notification settings
+ * Returns true if changes were made
+ */
+function updateHooksJson(soundConfig) {
+  try {
+    const hooksJsonPath = path.join(__dirname, '..', 'hooks', 'hooks.json');
+
+    if (!fs.existsSync(hooksJsonPath)) {
+      return false;
+    }
+
+    const hooksJson = JSON.parse(fs.readFileSync(hooksJsonPath, 'utf8'));
+    let hasChanges = false;
+
+    // List of sound hook types
+    const soundHookTypes = [
+      'SessionStart',
+      'SessionEnd',
+      'PreToolUse',
+      'PostToolUse',
+      'Notification',
+      'UserPromptSubmit',
+      'Stop',
+      'SubagentStop',
+      'PreCompact'
+    ];
+
+    // Update each hook type
+    soundHookTypes.forEach(hookType => {
+      if (!hooksJson.hooks[hookType]) {
+        return;
+      }
+
+      // Find the sound hook entry (description contains "sound")
+      const soundHookIndex = hooksJson.hooks[hookType].findIndex(hook =>
+        hook.description && hook.description.toLowerCase().includes('sound')
+      );
+
+      if (soundHookIndex === -1) {
+        return;
+      }
+
+      const soundHook = hooksJson.hooks[hookType][soundHookIndex];
+
+      // Determine if this hook should be enabled
+      let shouldEnable = false;
+      if (soundConfig.enabled) {
+        // Global switch is on, check individual hook setting
+        const hookConfig = soundConfig.hooks?.[hookType];
+        shouldEnable = hookConfig?.enabled ?? false;
+      }
+      // else: Global switch is off, shouldEnable stays false
+
+      // Update if different
+      if (soundHook.enabled !== shouldEnable) {
+        soundHook.enabled = shouldEnable;
+        hasChanges = true;
+      }
+    });
+
+    // Save hooks.json if there were changes
+    if (hasChanges) {
+      fs.writeFileSync(hooksJsonPath, JSON.stringify(hooksJson, null, 2), 'utf8');
+
+      // Output restart notice
+      console.log('\n⚠️  Sound notification settings have been updated in hooks.json');
+      console.log('🔄 Please restart Claude Code for changes to take effect\n');
+    }
+
+    return hasChanges;
+  } catch (error) {
+    // Fail silently - don't block session start if hooks.json update fails
+    return false;
+  }
+}
 
 /**
  * Initialize or migrate configuration file
@@ -89,48 +166,60 @@ function initializeConfig() {
       fs.mkdirSync(configDir, { recursive: true });
     }
 
+    let currentConfig = null;
+
     // Check if config file exists
     if (fs.existsSync(configPath)) {
       try {
         const existingConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'));
 
-        // If version matches, no migration needed
+        // If version matches, no migration needed but still update hooks.json
         if (existingConfig._pluginVersion === PLUGIN_VERSION) {
-          process.exit(0);
+          currentConfig = existingConfig;
+        } else {
+          // Migrate: merge existing config with new defaults (deep merge for nested objects)
+          const migratedConfig = {
+            ...defaultConfig,
+            autoOpen: {
+              ...defaultConfig.autoOpen,
+              ...existingConfig.autoOpen
+            },
+            soundNotifications: {
+              ...defaultConfig.soundNotifications,
+              ...existingConfig.soundNotifications,
+              hooks: {
+                ...defaultConfig.soundNotifications.hooks,
+                ...(existingConfig.soundNotifications?.hooks || {})
+              }
+            },
+            _pluginVersion: PLUGIN_VERSION
+          };
+
+          fs.writeFileSync(configPath, JSON.stringify(migratedConfig, null, 2), 'utf8');
+          currentConfig = migratedConfig;
         }
-
-        // Migrate: merge existing config with new defaults (deep merge for nested objects)
-        const migratedConfig = {
-          ...defaultConfig,
-          autoOpen: {
-            ...defaultConfig.autoOpen,
-            ...existingConfig.autoOpen
-          },
-          soundNotifications: {
-            ...defaultConfig.soundNotifications,
-            ...existingConfig.soundNotifications,
-            hooks: {
-              ...defaultConfig.soundNotifications.hooks,
-              ...(existingConfig.soundNotifications?.hooks || {})
-            }
-          },
-          _pluginVersion: PLUGIN_VERSION
-        };
-
-        fs.writeFileSync(configPath, JSON.stringify(migratedConfig, null, 2), 'utf8');
       } catch (error) {
         // If parse fails, create new config
-        fs.writeFileSync(configPath, JSON.stringify({
+        const newConfig = {
           ...defaultConfig,
           _pluginVersion: PLUGIN_VERSION
-        }, null, 2), 'utf8');
+        };
+        fs.writeFileSync(configPath, JSON.stringify(newConfig, null, 2), 'utf8');
+        currentConfig = newConfig;
       }
     } else {
       // Create new config file
-      fs.writeFileSync(configPath, JSON.stringify({
+      const newConfig = {
         ...defaultConfig,
         _pluginVersion: PLUGIN_VERSION
-      }, null, 2), 'utf8');
+      };
+      fs.writeFileSync(configPath, JSON.stringify(newConfig, null, 2), 'utf8');
+      currentConfig = newConfig;
+    }
+
+    // Update hooks.json based on current configuration
+    if (currentConfig && currentConfig.soundNotifications) {
+      updateHooksJson(currentConfig.soundNotifications);
     }
   } catch (error) {
     // Fail silently - don't block session start if config creation fails

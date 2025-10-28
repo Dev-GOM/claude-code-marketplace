@@ -160,7 +160,7 @@ Ctrl+Shift+P → "Show Git Diff (Browser)"
    - 사용할 훅에 대한 사운드 파일 추가 (예: `session-start.mp3`, `post-tool-use.mp3`, `stop.mp3` 등)
    - 지원 형식: MP3 (모든 플랫폼), WAV (모든 플랫폼)
 
-2. **설정에서 활성화**:
+2. **설정에서 활성화** (`.plugin-config/claude-dev-helper.json`):
    ```json
    {
      "soundNotifications": {
@@ -174,7 +174,10 @@ Ctrl+Shift+P → "Show Git Diff (Browser)"
    }
    ```
 
-3. **Claude Code 재시작** - 설정을 적용하려면 재시작 필요
+3. **Claude Code 재시작** ⚠️ 중요
+   - 설정 변경사항을 적용하려면 Claude Code 재시작 필요
+   - 다음 세션 시작 시 `hooks.json`이 자동으로 업데이트됨
+   - 변경사항이 감지되면 재시작 안내가 표시됨
 
 **참고**: PostToolUse는 모든 도구 사용마다 성능 영향을 피하기 위해 기본적으로 비활성화되어 있습니다.
 

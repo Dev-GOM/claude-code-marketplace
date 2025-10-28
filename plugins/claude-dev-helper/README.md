@@ -165,7 +165,7 @@ The plugin includes optional sound notifications for hook events. Configuration 
      - [Pixabay](https://pixabay.com/sound-effects/)
      - Or create your own short notification sounds
 
-2. **Enable in configuration**:
+2. **Enable in configuration** (`.plugin-config/claude-dev-helper.json`):
    ```json
    {
      "soundNotifications": {
@@ -179,7 +179,10 @@ The plugin includes optional sound notifications for hook events. Configuration 
    }
    ```
 
-3. **Restart Claude Code** for settings to take effect
+3. **Restart Claude Code** ⚠️ IMPORTANT
+   - Configuration changes require Claude Code restart to take effect
+   - On next session start, `hooks.json` will be automatically updated
+   - You'll see a restart notice if changes were detected
 
 **Note**: PostToolUse is disabled by default to avoid performance impact on every tool use.
 

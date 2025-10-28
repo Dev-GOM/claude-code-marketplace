@@ -2,7 +2,20 @@
 
 Dev GOM Plugins 마켓플레이스의 모든 주요 변경사항이 이 파일에 문서화됩니다.
 
-> **버전**: 2.4.14 | **최종 업데이트**: 2025-10-28
+> **버전**: 2.4.15 | **최종 업데이트**: 2025-10-28
+
+---
+
+## [2.4.15] - 2025-10-28
+
+### 변경됨
+- 🔧 **Claude Dev Helper v1.2.1**: 동적 hooks.json 업데이트
+  - 설정 변경 시 다음 세션 시작 시 `hooks.json`이 자동으로 업데이트됨
+  - 사용자는 `.plugin-config/claude-dev-helper.json`만 수정하면 됨 (hooks.json 수동 편집 불필요)
+  - `soundNotifications.enabled`가 `false`면 모든 사운드 훅이 자동으로 비활성화됨
+  - `soundNotifications.enabled`가 `true`면 개별 훅 설정이 반영됨
+  - 설정 변경 감지 시 재시작 안내 표시
+  - 사운드 알림이 비활성화되었을 때 불필요한 Node.js 프로세스 오버헤드 제거
 
 ---
 
