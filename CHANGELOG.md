@@ -2,7 +2,18 @@
 
 All notable changes to the Dev GOM Plugins marketplace will be documented in this file.
 
-> **Version**: 2.4.18 | **Last Updated**: 2025-10-28
+> **Version**: 2.4.19 | **Last Updated**: 2025-10-28
+
+---
+
+## [2.4.19] - 2025-10-28
+
+### Fixed
+- 🐛 **Claude Dev Helper v1.2.5**: Config Migration Fix
+  - Fixed deep merge logic in init-config.js to properly add new fields to existing hooks
+  - New `volume` field now correctly added to all hooks during config migration
+  - Version bump triggers automatic migration for existing users
+  - Users with v1.2.4 will automatically receive volume fields on next session
 
 ---
 

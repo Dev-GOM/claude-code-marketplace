@@ -8,7 +8,7 @@
 
 ## 주요 기능
 
-- 📂 **자동 파일 열기** (v1.2.4+): Claude가 파일을 생성/수정하면 VSCode에서 자동으로 열림
+- 📂 **자동 파일 열기** (v1.2.5+): Claude가 파일을 생성/수정하면 VSCode에서 자동으로 열림
 - 🔔 **사운드 알림** (v1.2.0+): 모든 훅 이벤트에 대한 오디오 피드백 (SessionStart, SessionEnd, PreToolUse, PostToolUse, Notification, UserPromptSubmit, Stop, SubagentStop, PreCompact)
 - 🎯 **Git Diff 리뷰**: CodeLens 버튼으로 Claude의 코드 변경 검토
 - 🌐 **브라우저 Diff 에디터**: Monaco 기반 diff 뷰어

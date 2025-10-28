@@ -198,6 +198,20 @@ function initializeConfig() {
           currentConfig = existingConfig;
         } else {
           // Migrate: merge existing config with new defaults (deep merge for nested objects)
+
+          // Deep merge hooks: merge each hook individually to preserve new fields
+          const mergedHooks = {};
+          const defaultHooks = defaultConfig.soundNotifications.hooks;
+          const existingHooks = existingConfig.soundNotifications?.hooks || {};
+
+          // Merge each hook individually
+          Object.keys(defaultHooks).forEach(hookName => {
+            mergedHooks[hookName] = {
+              ...defaultHooks[hookName],
+              ...(existingHooks[hookName] || {})
+            };
+          });
+
           const migratedConfig = {
             ...defaultConfig,
             autoOpen: {
@@ -207,10 +221,7 @@ function initializeConfig() {
             soundNotifications: {
               ...defaultConfig.soundNotifications,
               ...existingConfig.soundNotifications,
-              hooks: {
-                ...defaultConfig.soundNotifications.hooks,
-                ...(existingConfig.soundNotifications?.hooks || {})
-              }
+              hooks: mergedHooks
             },
             _pluginVersion: PLUGIN_VERSION
           };

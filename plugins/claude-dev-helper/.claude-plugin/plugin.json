@@ -1,6 +1,6 @@
 {
   "name": "claude-dev-helper",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "description": "Git diff review integration for Claude Code with VSCode extension. Provides inline diff view, browser diff editor, auto-open files, and sound notifications for hook events.",
   "author": {
     "name": "Dev GOM",
