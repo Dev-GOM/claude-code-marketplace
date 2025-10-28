@@ -8,7 +8,8 @@
 
 ## 주요 기능
 
-- 📂 **자동 파일 열기** (v1.1.8+): Claude가 파일을 생성/수정하면 VSCode에서 자동으로 열림
+- 📂 **자동 파일 열기** (v1.2.0+): Claude가 파일을 생성/수정하면 VSCode에서 자동으로 열림
+- 🔔 **사운드 알림** (v1.2.0+): 모든 훅 이벤트에 대한 오디오 피드백 (SessionStart, SessionEnd, PreToolUse, PostToolUse, Notification, UserPromptSubmit, Stop, SubagentStop, PreCompact)
 - 🎯 **Git Diff 리뷰**: CodeLens 버튼으로 Claude의 코드 변경 검토
 - 🌐 **브라우저 Diff 에디터**: Monaco 기반 diff 뷰어
 - 🔄 **자동 스테이징** (선택): 수정된 파일 자동 스테이징
@@ -90,9 +91,122 @@ Ctrl+Shift+P → "Show Git Diff (Browser)"
 **설정 항목:**
 - `enabled`: 자동 열기 기능 활성화/비활성화 (기본값: true)
 - `focus`: 열린 파일로 포커스 이동 여부 (기본값: false - 백그라운드에서 열림)
+- `openLocation`: 파일을 열 위치 - `0`은 첫 번째 열(왼쪽), `1`은 두 번째 열(오른쪽) (기본값: 1)
 - `maxQueueSize`: 추적할 최대 파일 수 (기본값: 10)
 
 `.plugin-config/claude-dev-helper.json` 파일을 편집하여 동작을 커스터마이징할 수 있습니다.
+
+### 사운드 알림 설정
+
+플러그인에는 훅 이벤트에 대한 선택적 사운드 알림이 포함되어 있습니다. 설정은 `.plugin-config/claude-dev-helper.json`에 있습니다:
+
+```json
+{
+  "soundNotifications": {
+    "enabled": false,
+    "soundsFolder": ".plugin-config/sounds",
+    "hooks": {
+      "SessionStart": {
+        "enabled": true,
+        "soundFile": "session-start.mp3"
+      },
+      "SessionEnd": {
+        "enabled": false,
+        "soundFile": "session-end.mp3"
+      },
+      "PreToolUse": {
+        "enabled": false,
+        "soundFile": "pre-tool-use.mp3"
+      },
+      "PostToolUse": {
+        "enabled": false,
+        "soundFile": "post-tool-use.mp3"
+      },
+      "Notification": {
+        "enabled": false,
+        "soundFile": "notification.mp3"
+      },
+      "UserPromptSubmit": {
+        "enabled": false,
+        "soundFile": "user-prompt-submit.mp3"
+      },
+      "Stop": {
+        "enabled": false,
+        "soundFile": "stop.mp3"
+      },
+      "SubagentStop": {
+        "enabled": false,
+        "soundFile": "subagent-stop.mp3"
+      },
+      "PreCompact": {
+        "enabled": false,
+        "soundFile": "pre-compact.mp3"
+      }
+    }
+  }
+}
+```
+
+**설정 항목:**
+- `enabled`: 모든 사운드 알림 전역 활성화/비활성화 (기본값: false)
+- `soundsFolder`: 사운드 파일 폴더 경로 (상대 경로 또는 절대 경로)
+- `hooks.[hookType].enabled`: 특정 훅 사운드 활성화/비활성화
+- `hooks.[hookType].soundFile`: 해당 훅의 사운드 파일 이름
+
+**사운드 알림을 활성화하려면:**
+
+1. **사운드 파일 설정**:
+   - 프로젝트 루트에 `.plugin-config/sounds/` 폴더 생성
+   - 사용할 훅에 대한 사운드 파일 추가 (예: `session-start.mp3`, `post-tool-use.mp3`, `stop.mp3` 등)
+   - 지원 형식: MP3 (모든 플랫폼), WAV (모든 플랫폼)
+
+2. **설정에서 활성화** (`.plugin-config/claude-dev-helper.json`):
+   ```json
+   {
+     "soundNotifications": {
+       "enabled": true,
+       "hooks": {
+         "SessionStart": { "enabled": true },
+         "PostToolUse": { "enabled": true },
+         "Stop": { "enabled": true }
+       }
+     }
+   }
+   ```
+
+3. **Claude Code 재시작** ⚠️ 중요
+   - 설정 변경사항을 적용하려면 Claude Code 재시작 필요
+   - 다음 세션 시작 시 `hooks.json`이 자동으로 업데이트됨
+   - 변경사항이 감지되면 재시작 안내가 표시됨
+
+**참고**: PostToolUse는 모든 도구 사용마다 성능 영향을 피하기 위해 기본적으로 비활성화되어 있습니다.
+
+**사운드 파일 커스터마이징:**
+
+언제든지 다음 방법으로 사운드 파일을 변경할 수 있습니다:
+1. `.plugin-config/sounds/` 폴더의 사운드 파일 교체
+2. 또는 설정에서 `soundFile` 경로를 다른 파일로 업데이트
+3. Claude Code 재시작하여 변경사항 적용
+
+예시: 훅별로 다른 사운드 사용
+```json
+{
+  "soundNotifications": {
+    "enabled": true,
+    "soundsFolder": ".plugin-config/sounds",
+    "hooks": {
+      "SessionStart": {
+        "enabled": true,
+        "soundFile": "my-custom-start.mp3"
+      },
+      "Stop": {
+        "enabled": true,
+        "soundFile": "my-custom-stop.wav"
+      }
+    }
+  }
+}
+```
 
 ### 자동 스테이징 훅 활성화
 
@@ -156,6 +270,13 @@ VSCode Diff 모드:
 **Q: Diff가 좌우 분할로 표시되나요?**
 - 명령 실행: "Enable Inline Diff Mode"
 - 또는 VSCode 설정에서 `diffEditor.renderSideBySide: false` 설정
+
+**Q: 사운드 알림이 재생되지 않나요?**
+- `.plugin-config/claude-dev-helper.json`에서 `soundNotifications.enabled: true` 확인
+- 설정된 `soundsFolder`에 사운드 파일이 존재하는지 확인
+- 사운드 파일 형식 확인 (MP3 또는 WAV)
+- 설정 변경 후 Claude Code 재시작
+- Linux의 경우: `aplay` (WAV용) 또는 `mpg123` (MP3용) 설치 확인
 
 ## 개발
 

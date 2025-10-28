@@ -1,6 +1,6 @@
 # Claude Code Plugins
 
-> **Version**: 2.4.13 | **Last Updated**: 2025-10-27
+> **Version**: 2.4.15 | **Last Updated**: 2025-10-28
 >
 > **Language**: [English](README.md) | [한국어](README.ko.md)
 >
@@ -148,9 +148,9 @@ Comprehensive Unity game development toolkit with intelligent scripting assistan
 <details>
 <summary><strong>📖 Plugin Details</strong> (Click to expand)</summary>
 
-Development assistant with auto-open files, git diff review, and enhanced workflow integration with VS Code Extension.
+Development assistant with auto-open files, sound notifications, git diff review, and enhanced workflow integration with VS Code Extension.
 
-**Quick Info:** Auto-opens files in VSCode when Claude creates/edits them | Git diff review with CodeLens | VS Code Extension for enhanced workflow | **Hooks:** `SessionStart`, `PostToolUse` (Edit|Write) | **Features:** Auto-open files, Git integration, VS Code integration
+**Quick Info:** Auto-opens files in VSCode when Claude creates/edits them | Sound notifications for all hook events | Git diff review with CodeLens | VS Code Extension for enhanced workflow | **Hooks:** `SessionStart`, `SessionEnd`, `PreToolUse`, `PostToolUse`, `Notification`, `UserPromptSubmit`, `Stop`, `SubagentStop`, `PreCompact` | **Features:** Auto-open files, Sound notifications (9 hook types), Git integration, VS Code integration
 
 **[Read Full Documentation →](plugins/claude-dev-helper/README.md)**
 

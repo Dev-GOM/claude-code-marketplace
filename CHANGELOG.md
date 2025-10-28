@@ -2,7 +2,49 @@
 
 All notable changes to the Dev GOM Plugins marketplace will be documented in this file.
 
-> **Version**: 2.4.13 | **Last Updated**: 2025-10-27
+> **Version**: 2.4.15 | **Last Updated**: 2025-10-28
+
+---
+
+## [2.4.15] - 2025-10-28
+
+### Changed
+- 🔧 **Claude Dev Helper v1.2.1**: Dynamic hooks.json Update
+  - Configuration changes now automatically update `hooks.json` on next session start
+  - Users only need to edit `.plugin-config/claude-dev-helper.json` (no manual hooks.json editing)
+  - When `soundNotifications.enabled` is `false`, all sound hooks are automatically disabled
+  - When `soundNotifications.enabled` is `true`, individual hook settings are respected
+  - Restart notice displayed when configuration changes are detected
+  - Eliminates unnecessary Node.js process overhead when sound notifications are disabled
+
+---
+
+## [2.4.14] - 2025-10-28
+
+### Added
+- 🔔 **Claude Dev Helper v1.2.0**: Sound Notifications for ALL Hook Events
+  - Audio feedback for **all 9 Claude Code hook types**:
+    - SessionStart, SessionEnd
+    - PreToolUse, PostToolUse
+    - Notification, UserPromptSubmit
+    - Stop, SubagentStop, PreCompact
+  - Configurable sound files per hook type
+  - Global and per-hook enable/disable flags
+  - Configurable sound folder path (relative or absolute)
+  - Cross-platform sound playback support:
+    - Windows: PowerShell with Media.SoundPlayer
+    - macOS: afplay (built-in)
+    - Linux: aplay (WAV) / mpg123 (MP3)
+  - Non-blocking sound playback with detached process spawning
+  - Silent failure pattern for non-critical sound operations
+  - Configuration in `.plugin-config/claude-dev-helper.json`
+  - Performance-heavy hooks (PreToolUse, PostToolUse) disabled by default
+  - Settings require Claude Code restart to take effect
+  - Includes sample sound files downloaded from soundeffect-lab.info
+  - Scripts:
+    - `play-sound.js`: Cross-platform sound player utility
+    - `sound-hook.js`: Hook entry point for sound playback
+    - `init-config.js`: Updated with soundNotifications default config
 
 ---
 

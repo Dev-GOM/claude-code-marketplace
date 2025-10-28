@@ -2,7 +2,49 @@
 
 Dev GOM Plugins 마켓플레이스의 모든 주요 변경사항이 이 파일에 문서화됩니다.
 
-> **버전**: 2.4.13 | **최종 업데이트**: 2025-10-27
+> **버전**: 2.4.15 | **최종 업데이트**: 2025-10-28
+
+---
+
+## [2.4.15] - 2025-10-28
+
+### 변경됨
+- 🔧 **Claude Dev Helper v1.2.1**: 동적 hooks.json 업데이트
+  - 설정 변경 시 다음 세션 시작 시 `hooks.json`이 자동으로 업데이트됨
+  - 사용자는 `.plugin-config/claude-dev-helper.json`만 수정하면 됨 (hooks.json 수동 편집 불필요)
+  - `soundNotifications.enabled`가 `false`면 모든 사운드 훅이 자동으로 비활성화됨
+  - `soundNotifications.enabled`가 `true`면 개별 훅 설정이 반영됨
+  - 설정 변경 감지 시 재시작 안내 표시
+  - 사운드 알림이 비활성화되었을 때 불필요한 Node.js 프로세스 오버헤드 제거
+
+---
+
+## [2.4.14] - 2025-10-28
+
+### 추가됨
+- 🔔 **Claude Dev Helper v1.2.0**: 모든 훅 이벤트에 대한 사운드 알림
+  - **Claude Code의 모든 9가지 훅 타입**에 대한 오디오 피드백:
+    - SessionStart, SessionEnd
+    - PreToolUse, PostToolUse
+    - Notification, UserPromptSubmit
+    - Stop, SubagentStop, PreCompact
+  - 훅 타입별 사운드 파일 설정 가능
+  - 전역 및 훅별 활성화/비활성화 플래그
+  - 사운드 폴더 경로 설정 가능 (상대 경로 또는 절대 경로)
+  - 크로스 플랫폼 사운드 재생 지원:
+    - Windows: PowerShell의 Media.SoundPlayer
+    - macOS: afplay (내장)
+    - Linux: aplay (WAV) / mpg123 (MP3)
+  - 비차단 사운드 재생 (detached process spawning)
+  - 비중요 사운드 작업에 대한 자동 실패 처리
+  - `.plugin-config/claude-dev-helper.json`에서 설정
+  - 성능 영향이 큰 훅 (PreToolUse, PostToolUse)은 기본 비활성화
+  - 설정 변경 후 Claude Code 재시작 필요
+  - soundeffect-lab.info에서 다운로드한 샘플 사운드 파일 포함
+  - 스크립트:
+    - `play-sound.js`: 크로스 플랫폼 사운드 재생 유틸리티
+    - `sound-hook.js`: 사운드 재생을 위한 훅 진입점
+    - `init-config.js`: soundNotifications 기본 설정 추가
 
 ---
 
