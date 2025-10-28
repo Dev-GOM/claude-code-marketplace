@@ -8,6 +8,14 @@ All notable changes to the Dev GOM Plugins marketplace will be documented in thi
 
 ## [2.4.15] - 2025-10-28
 
+### Fixed
+- 🐛 **Claude Dev Helper v1.2.2**: Code Quality Improvements
+  - Fixed Flake8 linting errors in `play-sound.py`:
+    - Added proper blank lines (E302, E305)
+    - Fixed line length violations (E501)
+    - Added type annotation for `file_path` parameter
+  - Improved code readability and maintainability
+
 ### Changed
 - 🔧 **Claude Dev Helper v1.2.1**: Dynamic hooks.json Update
   - Configuration changes now automatically update `hooks.json` on next session start

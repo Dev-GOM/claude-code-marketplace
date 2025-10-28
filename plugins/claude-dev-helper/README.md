@@ -8,7 +8,7 @@
 
 ## Features
 
-- 📂 **Auto-Open Files** (v1.2.0+): Automatically opens files in VSCode when Claude creates/edits them
+- 📂 **Auto-Open Files** (v1.2.2+): Automatically opens files in VSCode when Claude creates/edits them
 - 🔔 **Sound Notifications** (v1.2.0+): Audio feedback for all hook events (SessionStart, SessionEnd, PreToolUse, PostToolUse, Notification, UserPromptSubmit, Stop, SubagentStop, PreCompact)
 - 🎯 **Git Diff Review**: Review Claude's code changes with CodeLens buttons
 - 🌐 **Browser Diff Editor**: Monaco-based diff viewer in your browser
