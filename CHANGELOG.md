@@ -2,7 +2,17 @@
 
 All notable changes to the Dev GOM Plugins marketplace will be documented in this file.
 
-> **Version**: 2.5.0 | **Last Updated**: 2025-10-29
+> **Version**: 2.5.1 | **Last Updated**: 2025-10-29
+
+---
+
+## [2.5.1] - 2025-10-29
+
+### Fixed
+- 🐛 **Sound Notifications v1.0.1**: Critical Bug Fixes
+  - Fixed plugin.json author field format (string → object) for proper validation
+  - Fixed init-config.js hook selection logic using dynamic find() instead of hardcoded [0]
+  - SessionStart sound enable/disable settings now work correctly
 
 ---
 
