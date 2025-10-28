@@ -55,9 +55,16 @@ function playSoundForHook(hookType) {
   }
 
   // Calculate sound file path
-  const soundsFolder = path.isAbsolute(soundConfig.soundsFolder)
-    ? soundConfig.soundsFolder
-    : path.join(process.cwd(), soundConfig.soundsFolder);
+  let soundsFolder = soundConfig.soundsFolder;
+
+  if (!soundsFolder) {
+    // Default: use plugin's sounds folder from CLAUDE_PLUGIN_ROOT or script location
+    const pluginRoot = process.env.CLAUDE_PLUGIN_ROOT || path.join(__dirname, '..');
+    soundsFolder = path.join(pluginRoot, 'sounds');
+  } else if (!path.isAbsolute(soundsFolder)) {
+    // If relative path is provided, resolve from project root
+    soundsFolder = path.join(process.cwd(), soundsFolder);
+  }
 
   const soundFilePath = path.join(soundsFolder, hookConfig.soundFile);
 

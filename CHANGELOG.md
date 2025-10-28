@@ -2,7 +2,19 @@
 
 All notable changes to the Dev GOM Plugins marketplace will be documented in this file.
 
-> **Version**: 2.4.15 | **Last Updated**: 2025-10-28
+> **Version**: 2.4.16 | **Last Updated**: 2025-10-28
+
+---
+
+## [2.4.16] - 2025-10-28
+
+### Fixed
+- 🐛 **Claude Dev Helper v1.2.3**: Sound Path Configuration Fix
+  - Fixed sound file path to automatically use plugin's sounds folder
+  - sound-hook.js now uses `__dirname` to locate sounds folder (no config needed)
+  - Removed `soundsFolder` from default config - auto-detected from plugin location
+  - Ensures sounds work regardless of where the plugin is installed
+  - Users can still override with custom `soundsFolder` path if needed
 
 ---
 

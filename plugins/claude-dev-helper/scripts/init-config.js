@@ -27,17 +27,27 @@ function getPluginVersion() {
 
 const PLUGIN_VERSION = getPluginVersion();
 
+/**
+ * Get plugin sounds folder path
+ * Uses CLAUDE_PLUGIN_ROOT env var if available (when run from hooks),
+ * otherwise falls back to relative path from script location
+ */
+function getPluginSoundsFolder() {
+  const pluginRoot = process.env.CLAUDE_PLUGIN_ROOT || path.join(__dirname, '..');
+  return path.join(pluginRoot, 'sounds');
+}
+
 // Default configuration
 const defaultConfig = {
   autoOpen: {
     enabled: true,
     focus: false,
-    openLocation: 1,  // 0 = first column (left), 1 = second column (right)
+    openLocation: 0,  // 0 = first column (left), 1 = second column (right)
     maxQueueSize: 10
   },
   soundNotifications: {
-    enabled: true,  // Disabled by default - user must explicitly enable
-    soundsFolder: '.plugin-config/sounds',  // Relative or absolute path
+    enabled: true,
+    soundsFolder: getPluginSoundsFolder(),  // Auto-detected plugin sounds folder
     hooks: {
       SessionStart: {
         enabled: true,
