@@ -2,6 +2,18 @@
 
 Audio notifications for Claude Code hook events with customizable sounds and volume control.
 
+## ⚠️ Experimental Feature - Known Issues
+
+**WARNING**: This plugin is currently experimental and has known stability issues:
+
+- **Claude Code may intermittently crash or terminate** when using this plugin
+- This appears to be related to Claude Code's hook execution system
+- The issue occurs randomly and is not yet fully understood
+- **Recommended**: Disable this plugin if you experience frequent crashes
+- Use at your own risk for non-critical work
+
+We are actively investigating this issue. If you experience crashes, please disable the plugin via `/plugin disable hook-sound-notifications`.
+
 ## Features
 
 - 🔊 **Sound notifications for 9 hook types**
@@ -88,15 +100,28 @@ Replace sound files in the plugin's `sounds` folder, or update `soundFile` paths
 
 ## Known Issues
 
-- PostToolUse hook may cause Claude Code to hang when enabled
+### Critical
+- **Claude Code may intermittently crash or terminate** - This appears to be related to the hook execution system in Claude Code. The crashes occur randomly regardless of which sound playback method is used (VBScript, PowerShell, or PowerShell scripts).
+
+### Minor
+- PostToolUse hook may cause increased instability when enabled (disabled by default)
 
 ## Changelog
 
+### v1.2.0 (2025-10-29)
+- **Changed:** Windows sound playback to PowerShell script files (sound-hook.ps1, play-sound.ps1)
+- **Changed:** Hooks now directly call PowerShell scripts instead of Node.js wrapper
+- **Removed:** sound-hook.js (replaced by PowerShell scripts)
+- **Warning:** Added experimental feature warning due to intermittent Claude Code crashes
+- **Documentation:** Updated README with critical stability warnings
+
 ### v1.1.0 (2025-10-29)
-- **Changed:** Windows sound playback from VBScript to PowerShell MediaPlayer for better stability
+- **Changed:** Windows sound playback to PowerShell script files (sound-hook.ps1, play-sound.ps1)
+- **Changed:** Hooks now directly call PowerShell scripts instead of Node.js wrapper
 - **Added:** SessionEnd hook to update hooks.json settings for next session
 - **Added:** Duplicate execution prevention utility for all scripts
 - **Fixed:** Settings changes now properly apply after session restart
+- **Warning:** Added experimental feature warning due to intermittent Claude Code crashes
 
 ### v1.0.2 (2025-10-29)
 - **Fixed:** Configuration file path in sound-hook.js

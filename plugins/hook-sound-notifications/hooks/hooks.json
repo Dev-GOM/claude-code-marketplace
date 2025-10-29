@@ -1,6 +1,6 @@
 {
   "description": "Sound Notifications - Audio alerts for Claude Code hook events",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "author": "Dev GOM",
   "lastUpdated": "2025-10-29",
   "hooks": {
@@ -26,7 +26,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/sound-hook.js SessionStart",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File ${CLAUDE_PLUGIN_ROOT}/scripts/sound-hook.ps1 -HookType SessionStart",
             "description": "Plays sound when session starts",
             "continueOnError": true,
             "suppressOutput": true
@@ -56,7 +56,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/sound-hook.js SessionEnd",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File ${CLAUDE_PLUGIN_ROOT}/scripts/sound-hook.ps1 -HookType SessionEnd",
             "description": "Plays sound when session ends",
             "continueOnError": true,
             "suppressOutput": true
@@ -69,11 +69,11 @@
         "description": "Play pre-tool-use sound notification",
         "matcher": ".*",
         "priority": 40,
-        "enabled": true,
+        "enabled": false,
         "hooks": [
           {
             "type": "command",
-            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/sound-hook.js PreToolUse",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File ${CLAUDE_PLUGIN_ROOT}/scripts/sound-hook.ps1 -HookType PreToolUse",
             "description": "Plays sound before tool execution",
             "continueOnError": true,
             "suppressOutput": true
@@ -90,7 +90,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/sound-hook.js PostToolUse",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File ${CLAUDE_PLUGIN_ROOT}/scripts/sound-hook.ps1 -HookType PostToolUse",
             "description": "Plays sound after tool execution",
             "continueOnError": true,
             "suppressOutput": true
@@ -106,7 +106,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/sound-hook.js Notification",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File ${CLAUDE_PLUGIN_ROOT}/scripts/sound-hook.ps1 -HookType Notification",
             "description": "Plays sound when notification occurs",
             "continueOnError": true,
             "suppressOutput": true
@@ -122,7 +122,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/sound-hook.js UserPromptSubmit",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File ${CLAUDE_PLUGIN_ROOT}/scripts/sound-hook.ps1 -HookType UserPromptSubmit",
             "description": "Plays sound when user submits a prompt",
             "continueOnError": true,
             "suppressOutput": true
@@ -138,7 +138,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/sound-hook.js Stop",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File ${CLAUDE_PLUGIN_ROOT}/scripts/sound-hook.ps1 -HookType Stop",
             "description": "Plays sound when agent stops responding",
             "continueOnError": true,
             "suppressOutput": true
@@ -150,11 +150,11 @@
       {
         "description": "Play subagent stop sound notification",
         "priority": 50,
-        "enabled": true,
+        "enabled": false,
         "hooks": [
           {
             "type": "command",
-            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/sound-hook.js SubagentStop",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File ${CLAUDE_PLUGIN_ROOT}/scripts/sound-hook.ps1 -HookType SubagentStop",
             "description": "Plays sound when subagent task completes",
             "continueOnError": true,
             "suppressOutput": true
@@ -170,7 +170,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/sound-hook.js PreCompact",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File ${CLAUDE_PLUGIN_ROOT}/scripts/sound-hook.ps1 -HookType PreCompact",
             "description": "Plays sound before context compaction",
             "continueOnError": true,
             "suppressOutput": true
