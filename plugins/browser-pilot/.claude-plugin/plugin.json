@@ -1,0 +1,26 @@
+{
+  "name": "browser-pilot",
+  "version": "0.1.0",
+  "description": "Chrome DevTools Protocol (CDP) browser automation, web scraping, and crawling",
+  "author": {
+    "name": "Dev GOM",
+    "url": "https://github.com/Dev-GOM/claude-code-marketplace"
+  },
+  "homepage": "https://github.com/Dev-GOM/claude-code-marketplace",
+  "repository": "https://github.com/Dev-GOM/claude-code-marketplace.git",
+  "license": "MIT",
+  "keywords": [
+    "browser",
+    "automation",
+    "scraping",
+    "cdp",
+    "chrome",
+    "devtools",
+    "screenshot",
+    "pdf"
+  ],
+  "skills": [
+    "./skills"
+  ],
+  "hooks": "./hooks/hooks.json"
+}

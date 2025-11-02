@@ -1,0 +1,695 @@
+#!/usr/bin/env node
+
+/**
+ * CDP Browser CLI - Chrome DevTools Protocol browser automation tool.
+ */
+
+import { Command } from 'commander';
+import { ChromeBrowser } from './cdp/browser';
+import * as actions from './cdp/actions';
+
+const program = new Command();
+
+program
+  .name('cdp-browser')
+  .description('Chrome DevTools Protocol browser automation CLI')
+  .version('1.0.0');
+
+// Screenshot command
+program
+  .command('screenshot')
+  .description('Capture screenshot of a webpage')
+  .requiredOption('-u, --url <url>', 'URL to capture')
+  .option('-o, --output <path>', 'Output file path', 'screenshot.png')
+  .option('--headless', 'Run in headless mode', false)
+  .option('--full-page', 'Capture full page', true)
+  .action(async (options) => {
+    const browser = new ChromeBrowser(options.headless);
+    try {
+      // Try to connect to existing browser first, launch new one if failed
+      try {
+        await browser.connect();
+      } catch {
+        await browser.launch();
+      }
+      await actions.navigate(browser, options.url);
+      await actions.waitForLoad(browser);
+      const result = await actions.screenshot(browser, options.output, options.fullPage);
+      console.log('Screenshot saved:', result.path);
+      console.log('Browser remains open. Use "close" command to close it.');
+      process.exit(0);
+    } catch (error) {
+      console.error('Error:', error);
+      process.exit(1);
+    }
+  });
+
+// Navigate command
+program
+  .command('navigate')
+  .description('Navigate to a URL')
+  .requiredOption('-u, --url <url>', 'URL to navigate to')
+  .option('--headless', 'Run in headless mode', false)
+  .action(async (options) => {
+    const browser = new ChromeBrowser(options.headless);
+    try {
+      // Try to connect to existing browser first, launch new one if failed
+      try {
+        await browser.connect();
+      } catch {
+        await browser.launch();
+      }
+      const result = await actions.navigate(browser, options.url);
+      await actions.waitForLoad(browser);
+      console.log('Navigated to:', result.url);
+      console.log('Browser will stay open. Use "close" command to close it.');
+      process.exit(0);
+    } catch (error) {
+      console.error('Error:', error);
+      process.exit(1);
+    }
+  });
+
+// Extract text command
+program
+  .command('extract')
+  .description('Extract text from webpage')
+  .requiredOption('-u, --url <url>', 'URL to extract from')
+  .option('-s, --selector <selector>', 'CSS selector (optional)')
+  .option('--headless', 'Run in headless mode', false)
+  .action(async (options) => {
+    const browser = new ChromeBrowser(options.headless);
+    try {
+      // Try to connect to existing browser first, launch new one if failed
+      try {
+        await browser.connect();
+      } catch {
+        await browser.launch();
+      }
+      await actions.navigate(browser, options.url);
+      await actions.waitForLoad(browser);
+      const result = await actions.extractText(browser, options.selector);
+      console.log('Extracted text:', result.text);
+      console.log('Browser remains open. Use "close" command to close it.');
+      process.exit(0);
+    } catch (error) {
+      console.error('Error:', error);
+      process.exit(1);
+    }
+  });
+
+// Click command
+program
+  .command('click')
+  .description('Click an element on the page')
+  .requiredOption('-u, --url <url>', 'URL to navigate to')
+  .requiredOption('-s, --selector <selector>', 'CSS selector to click')
+  .option('--headless', 'Run in headless mode', false)
+  .action(async (options) => {
+    const browser = new ChromeBrowser(options.headless);
+    try {
+      // Try to connect to existing browser first, launch new one if failed
+      try {
+        await browser.connect();
+      } catch {
+        await browser.launch();
+      }
+      await actions.navigate(browser, options.url);
+      await actions.waitForLoad(browser);
+      const result = await actions.click(browser, options.selector);
+      console.log('Clicked:', result.selector);
+      console.log('Browser will stay open. Use "close" command to close it.');
+      process.exit(0);
+    } catch (error) {
+      console.error('Error:', error);
+      process.exit(1);
+    }
+  });
+
+// Fill command
+program
+  .command('fill')
+  .description('Fill an input field')
+  .requiredOption('-u, --url <url>', 'URL to navigate to')
+  .requiredOption('-s, --selector <selector>', 'CSS selector of input field')
+  .requiredOption('-v, --value <value>', 'Value to fill')
+  .option('--headless', 'Run in headless mode', false)
+  .action(async (options) => {
+    const browser = new ChromeBrowser(options.headless);
+    try {
+      // Try to connect to existing browser first, launch new one if failed
+      try {
+        await browser.connect();
+      } catch {
+        await browser.launch();
+      }
+      await actions.navigate(browser, options.url);
+      await actions.waitForLoad(browser);
+      const result = await actions.fill(browser, options.selector, options.value);
+      console.log('Filled:', result.selector, 'with:', result.value);
+      console.log('Browser will stay open. Use "close" command to close it.');
+      process.exit(0);
+    } catch (error) {
+      console.error('Error:', error);
+      process.exit(1);
+    }
+  });
+
+// Evaluate command
+program
+  .command('eval')
+  .description('Execute JavaScript on the page')
+  .requiredOption('-u, --url <url>', 'URL to navigate to')
+  .requiredOption('-e, --expression <script>', 'JavaScript expression to evaluate')
+  .option('--headless', 'Run in headless mode', false)
+  .action(async (options) => {
+    const browser = new ChromeBrowser(options.headless);
+    try {
+      // Try to connect to existing browser first, launch new one if failed
+      try {
+        await browser.connect();
+      } catch {
+        await browser.launch();
+      }
+      await actions.navigate(browser, options.url);
+      await actions.waitForLoad(browser);
+      const result = await actions.evaluate(browser, options.expression);
+      console.log('Result:', result.result);
+      console.log('Browser remains open. Use "close" command to close it.');
+      process.exit(0);
+    } catch (error) {
+      console.error('Error:', error);
+      process.exit(1);
+    }
+  });
+
+// Generate PDF command
+program
+  .command('pdf')
+  .description('Generate PDF from webpage')
+  .requiredOption('-u, --url <url>', 'URL to generate PDF from')
+  .option('-o, --output <path>', 'Output file path', 'page.pdf')
+  .option('--headless', 'Run in headless mode', false)
+  .option('--landscape', 'Use landscape orientation', false)
+  .action(async (options) => {
+    const browser = new ChromeBrowser(options.headless);
+    try {
+      // Try to connect to existing browser first, launch new one if failed
+      try {
+        await browser.connect();
+      } catch {
+        await browser.launch();
+      }
+      await actions.navigate(browser, options.url);
+      await actions.waitForLoad(browser);
+      const result = await actions.generatePdf(browser, options.output, options.landscape);
+      console.log('PDF saved:', result.path);
+      console.log('Browser remains open. Use "close" command to close it.');
+      process.exit(0);
+    } catch (error) {
+      console.error('Error:', error);
+      process.exit(1);
+    }
+  });
+
+// Get cookies command
+program
+  .command('cookies')
+  .description('Get all cookies from webpage')
+  .requiredOption('-u, --url <url>', 'URL to get cookies from')
+  .option('--headless', 'Run in headless mode', false)
+  .action(async (options) => {
+    const browser = new ChromeBrowser(options.headless);
+    try {
+      // Try to connect to existing browser first, launch new one if failed
+      try {
+        await browser.connect();
+      } catch {
+        await browser.launch();
+      }
+      await actions.navigate(browser, options.url);
+      await actions.waitForLoad(browser);
+      const result = await actions.getCookies(browser);
+      console.log(`Found ${result.count} cookies:`);
+      console.log(JSON.stringify(result.cookies, null, 2));
+      console.log('Browser remains open. Use "close" command to close it.');
+      process.exit(0);
+    } catch (error) {
+      console.error('Error:', error);
+      process.exit(1);
+    }
+  });
+
+// List tabs command
+program
+  .command('tabs')
+  .description('List all open tabs')
+  .action(async () => {
+    const browser = new ChromeBrowser(false);
+    try {
+      await browser.connect();
+      const result = await actions.listTabs(browser);
+      console.log(`Found ${result.count} tabs:`);
+      result.tabs.forEach((tab: any) => {
+        console.log(`[${tab.index}] ${tab.title} - ${tab.url}`);
+      });
+      process.exit(0);
+    } catch (error) {
+      console.error('Error:', error);
+      process.exit(1);
+    }
+  });
+
+// New tab command
+program
+  .command('new-tab')
+  .description('Open a new tab')
+  .option('-u, --url <url>', 'URL to open', 'about:blank')
+  .action(async (options) => {
+    const browser = new ChromeBrowser(false);
+    try {
+      await browser.connect();
+      const result = await actions.newTab(browser, options.url);
+      console.log('New tab opened:', result.targetId);
+      process.exit(0);
+    } catch (error) {
+      console.error('Error:', error);
+      process.exit(1);
+    }
+  });
+
+// Close tab command
+program
+  .command('close-tab')
+  .description('Close a tab by index')
+  .requiredOption('-i, --index <number>', 'Tab index to close', parseInt)
+  .action(async (options) => {
+    const browser = new ChromeBrowser(false);
+    try {
+      await browser.connect();
+      const result = await actions.closeTab(browser, undefined, options.index);
+      console.log(result.message);
+      process.exit(0);
+    } catch (error) {
+      console.error('Error:', error);
+      process.exit(1);
+    }
+  });
+
+// Close browser command
+program
+  .command('close')
+  .description('Close the browser')
+  .action(async () => {
+    const browser = new ChromeBrowser(false);
+    try {
+      await browser.connect();
+      await browser.close();
+      console.log('✓ Browser closed');
+      process.exit(0);
+    } catch (error) {
+      console.error('Error: Could not connect to browser. Is it running?');
+      process.exit(1);
+    }
+  });
+
+// Hover command
+program
+  .command('hover')
+  .description('Hover over an element')
+  .requiredOption('-u, --url <url>', 'URL to navigate to')
+  .requiredOption('-s, --selector <selector>', 'CSS selector to hover')
+  .option('--headless', 'Run in headless mode', false)
+  .action(async (options) => {
+    const browser = new ChromeBrowser(options.headless);
+    try {
+      try { await browser.connect(); } catch { await browser.launch(); }
+      await actions.navigate(browser, options.url);
+      await actions.waitForLoad(browser);
+      const result = await actions.hover(browser, options.selector);
+      console.log('Hovered:', result.selector);
+      console.log('Browser will stay open. Use "close" command to close it.');
+      process.exit(0);
+    } catch (error) {
+      console.error('Error:', error);
+      process.exit(1);
+    }
+  });
+
+// Press key command
+program
+  .command('press')
+  .description('Press a keyboard key')
+  .requiredOption('-k, --key <key>', 'Key to press (e.g., Enter, Tab, Escape)')
+  .option('--headless', 'Run in headless mode', false)
+  .action(async (options) => {
+    const browser = new ChromeBrowser(options.headless);
+    try {
+      await browser.connect();
+      const result = await actions.pressKey(browser, options.key);
+      console.log('Pressed key:', result.key);
+      process.exit(0);
+    } catch (error) {
+      console.error('Error:', error);
+      process.exit(1);
+    }
+  });
+
+// Type text command
+program
+  .command('type')
+  .description('Type text character by character')
+  .requiredOption('-t, --text <text>', 'Text to type')
+  .option('-d, --delay <ms>', 'Delay between characters (ms)', parseInt, 0)
+  .option('--headless', 'Run in headless mode', false)
+  .action(async (options) => {
+    const browser = new ChromeBrowser(options.headless);
+    try {
+      await browser.connect();
+      const result = await actions.typeText(browser, options.text, options.delay);
+      console.log('Typed:', result.text);
+      process.exit(0);
+    } catch (error) {
+      console.error('Error:', error);
+      process.exit(1);
+    }
+  });
+
+// Upload file command
+program
+  .command('upload')
+  .description('Upload file to input element')
+  .requiredOption('-u, --url <url>', 'URL to navigate to')
+  .requiredOption('-s, --selector <selector>', 'CSS selector of file input')
+  .requiredOption('-f, --file <path>', 'File path to upload')
+  .option('--headless', 'Run in headless mode', false)
+  .action(async (options) => {
+    const browser = new ChromeBrowser(options.headless);
+    try {
+      try { await browser.connect(); } catch { await browser.launch(); }
+      await actions.navigate(browser, options.url);
+      await actions.waitForLoad(browser);
+      const result = await actions.uploadFile(browser, options.selector, options.file);
+      console.log('Uploaded:', result.file);
+      console.log('Browser will stay open. Use "close" command to close it.');
+      process.exit(0);
+    } catch (error) {
+      console.error('Error:', error);
+      process.exit(1);
+    }
+  });
+
+// Reload command
+program
+  .command('reload')
+  .description('Reload the current page')
+  .option('--hard', 'Hard reload (ignore cache)', false)
+  .action(async (options) => {
+    const browser = new ChromeBrowser(false);
+    try {
+      await browser.connect();
+      const result = await actions.reload(browser, options.hard);
+      console.log('Page reloaded (hard:', result.hardReload, ')');
+      process.exit(0);
+    } catch (error) {
+      console.error('Error:', error);
+      process.exit(1);
+    }
+  });
+
+// Go back command
+program
+  .command('back')
+  .description('Navigate back in history')
+  .action(async () => {
+    const browser = new ChromeBrowser(false);
+    try {
+      await browser.connect();
+      const result = await actions.goBack(browser);
+      if (result.success) {
+        console.log('Navigated back to:', result.url);
+      } else {
+        console.log(result.error);
+      }
+      process.exit(0);
+    } catch (error) {
+      console.error('Error:', error);
+      process.exit(1);
+    }
+  });
+
+// Go forward command
+program
+  .command('forward')
+  .description('Navigate forward in history')
+  .action(async () => {
+    const browser = new ChromeBrowser(false);
+    try {
+      await browser.connect();
+      const result = await actions.goForward(browser);
+      if (result.success) {
+        console.log('Navigated forward to:', result.url);
+      } else {
+        console.log(result.error);
+      }
+      process.exit(0);
+    } catch (error) {
+      console.error('Error:', error);
+      process.exit(1);
+    }
+  });
+
+// Wait for element command
+program
+  .command('wait')
+  .description('Wait for element to appear')
+  .requiredOption('-s, --selector <selector>', 'CSS selector to wait for')
+  .option('-t, --timeout <ms>', 'Timeout in milliseconds', parseInt, 30000)
+  .action(async (options) => {
+    const browser = new ChromeBrowser(false);
+    try {
+      await browser.connect();
+      const result = await actions.waitFor(browser, options.selector, options.timeout);
+      console.log('Element found:', result.selector);
+      process.exit(0);
+    } catch (error) {
+      console.error('Error:', error);
+      process.exit(1);
+    }
+  });
+
+// Scroll command
+program
+  .command('scroll')
+  .description('Scroll page or element')
+  .requiredOption('-x, --x <pixels>', 'Horizontal scroll position', parseInt)
+  .requiredOption('-y, --y <pixels>', 'Vertical scroll position', parseInt)
+  .option('-s, --selector <selector>', 'CSS selector to scroll (optional)')
+  .action(async (options) => {
+    const browser = new ChromeBrowser(false);
+    try {
+      await browser.connect();
+      const result = await actions.scroll(browser, options.x, options.y, options.selector);
+      console.log('Scrolled to:', result.position);
+      process.exit(0);
+    } catch (error) {
+      console.error('Error:', error);
+      process.exit(1);
+    }
+  });
+
+// Get content command
+program
+  .command('content')
+  .description('Get page HTML content')
+  .action(async () => {
+    const browser = new ChromeBrowser(false);
+    try {
+      await browser.connect();
+      const result = await actions.getContent(browser);
+      console.log('HTML content length:', result.length);
+      console.log(result.content);
+      process.exit(0);
+    } catch (error) {
+      console.error('Error:', error);
+      process.exit(1);
+    }
+  });
+
+// Select option command
+program
+  .command('select')
+  .description('Select option from dropdown')
+  .requiredOption('-u, --url <url>', 'URL to navigate to')
+  .requiredOption('-s, --selector <selector>', 'CSS selector of select element')
+  .requiredOption('-v, --value <value>', 'Option value to select')
+  .option('--headless', 'Run in headless mode', false)
+  .action(async (options) => {
+    const browser = new ChromeBrowser(options.headless);
+    try {
+      try { await browser.connect(); } catch { await browser.launch(); }
+      await actions.navigate(browser, options.url);
+      await actions.waitForLoad(browser);
+      const result = await actions.selectOption(browser, options.selector, options.value);
+      console.log('Selected:', result.value, 'in', result.selector);
+      console.log('Browser will stay open. Use "close" command to close it.');
+      process.exit(0);
+    } catch (error) {
+      console.error('Error:', error);
+      process.exit(1);
+    }
+  });
+
+// Check checkbox command
+program
+  .command('check')
+  .description('Check a checkbox')
+  .requiredOption('-u, --url <url>', 'URL to navigate to')
+  .requiredOption('-s, --selector <selector>', 'CSS selector of checkbox')
+  .option('--headless', 'Run in headless mode', false)
+  .action(async (options) => {
+    const browser = new ChromeBrowser(options.headless);
+    try {
+      try { await browser.connect(); } catch { await browser.launch(); }
+      await actions.navigate(browser, options.url);
+      await actions.waitForLoad(browser);
+      const result = await actions.check(browser, options.selector);
+      console.log('Checked:', result.selector);
+      console.log('Browser will stay open. Use "close" command to close it.');
+      process.exit(0);
+    } catch (error) {
+      console.error('Error:', error);
+      process.exit(1);
+    }
+  });
+
+// Uncheck checkbox command
+program
+  .command('uncheck')
+  .description('Uncheck a checkbox')
+  .requiredOption('-u, --url <url>', 'URL to navigate to')
+  .requiredOption('-s, --selector <selector>', 'CSS selector of checkbox')
+  .option('--headless', 'Run in headless mode', false)
+  .action(async (options) => {
+    const browser = new ChromeBrowser(options.headless);
+    try {
+      try { await browser.connect(); } catch { await browser.launch(); }
+      await actions.navigate(browser, options.url);
+      await actions.waitForLoad(browser);
+      const result = await actions.uncheck(browser, options.selector);
+      console.log('Unchecked:', result.selector);
+      console.log('Browser will stay open. Use "close" command to close it.');
+      process.exit(0);
+    } catch (error) {
+      console.error('Error:', error);
+      process.exit(1);
+    }
+  });
+
+// Drag and drop command
+program
+  .command('drag')
+  .description('Drag and drop element')
+  .requiredOption('-u, --url <url>', 'URL to navigate to')
+  .requiredOption('--from <selector>', 'Source element selector')
+  .requiredOption('--to <selector>', 'Target element selector')
+  .option('--headless', 'Run in headless mode', false)
+  .action(async (options) => {
+    const browser = new ChromeBrowser(options.headless);
+    try {
+      try { await browser.connect(); } catch { await browser.launch(); }
+      await actions.navigate(browser, options.url);
+      await actions.waitForLoad(browser);
+      const result = await actions.dragAndDrop(browser, options.from, options.to);
+      console.log('Dragged', result.sourceSelector, 'to', result.targetSelector);
+      console.log('Browser will stay open. Use "close" command to close it.');
+      process.exit(0);
+    } catch (error) {
+      console.error('Error:', error);
+      process.exit(1);
+    }
+  });
+
+// Emulate media command
+program
+  .command('emulate-media')
+  .description('Emulate media type or color scheme')
+  .option('-m, --media <type>', 'Media type: screen or print')
+  .option('-c, --color-scheme <scheme>', 'Color scheme: light, dark, or no-preference')
+  .action(async (options) => {
+    const browser = new ChromeBrowser(false);
+    try {
+      await browser.connect();
+      const result = await actions.emulateMedia(
+        browser,
+        options.media as 'screen' | 'print' | undefined,
+        options.colorScheme as 'light' | 'dark' | 'no-preference' | undefined
+      );
+      console.log('Emulated media:', result.mediaType || 'none', 'colorScheme:', result.colorScheme || 'none');
+      process.exit(0);
+    } catch (error) {
+      console.error('Error:', error);
+      process.exit(1);
+    }
+  });
+
+// Dialog response command
+program
+  .command('dialog')
+  .description('Respond to JavaScript dialog (alert/confirm/prompt)')
+  .option('-a, --accept', 'Accept dialog (default: true)', true)
+  .option('-d, --dismiss', 'Dismiss dialog')
+  .option('-t, --text <text>', 'Text for prompt dialog')
+  .action(async (options) => {
+    const browser = new ChromeBrowser(false);
+    try {
+      await browser.connect();
+      const accept = !options.dismiss;
+      const result = await actions.respondToDialog(browser, accept, options.text);
+      console.log('Dialog', result.accept ? 'accepted' : 'dismissed');
+      if (result.promptText) {
+        console.log('Prompt text:', result.promptText);
+      }
+      process.exit(0);
+    } catch (error) {
+      console.error('Error:', error);
+      process.exit(1);
+    }
+  });
+
+// Block URL command
+program
+  .command('block-url')
+  .description('Block network requests matching URL pattern')
+  .requiredOption('-p, --pattern <pattern>', 'URL pattern to block (e.g., "*.jpg", "*ads*")')
+  .action(async (options) => {
+    const browser = new ChromeBrowser(false);
+    try {
+      await browser.connect();
+      const result = await actions.blockRequest(browser, options.pattern);
+      console.log('Blocked URL pattern:', result.urlPattern);
+      process.exit(0);
+    } catch (error) {
+      console.error('Error:', error);
+      process.exit(1);
+    }
+  });
+
+// Unblock URLs command
+program
+  .command('unblock-urls')
+  .description('Unblock all network requests')
+  .action(async () => {
+    const browser = new ChromeBrowser(false);
+    try {
+      await browser.connect();
+      await actions.unblockRequests(browser);
+      console.log('All URL blocks removed');
+      process.exit(0);
+    } catch (error) {
+      console.error('Error:', error);
+      process.exit(1);
+    }
+  });
+
+program.parse();

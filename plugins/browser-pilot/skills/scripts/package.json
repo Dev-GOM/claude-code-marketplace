@@ -1,0 +1,63 @@
+{
+  "name": "browser-pilot-cli",
+  "version": "1.0.0",
+  "description": "Chrome DevTools Protocol browser automation CLI",
+  "main": "dist/cli.js",
+  "bin": {
+    "cdp-browser": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist",
+    "test-env": "node test-env.js",
+    "bp:screenshot": "node dist/cli.js screenshot",
+    "bp:navigate": "node dist/cli.js navigate",
+    "bp:extract": "node dist/cli.js extract",
+    "bp:click": "node dist/cli.js click",
+    "bp:fill": "node dist/cli.js fill",
+    "bp:eval": "node dist/cli.js eval",
+    "bp:pdf": "node dist/cli.js pdf",
+    "bp:cookies": "node dist/cli.js cookies",
+    "bp:tabs": "node dist/cli.js tabs",
+    "bp:new-tab": "node dist/cli.js new-tab",
+    "bp:close-tab": "node dist/cli.js close-tab",
+    "bp:close": "node dist/cli.js close",
+    "bp:hover": "node dist/cli.js hover",
+    "bp:press": "node dist/cli.js press",
+    "bp:type": "node dist/cli.js type",
+    "bp:upload": "node dist/cli.js upload",
+    "bp:reload": "node dist/cli.js reload",
+    "bp:back": "node dist/cli.js back",
+    "bp:forward": "node dist/cli.js forward",
+    "bp:wait": "node dist/cli.js wait",
+    "bp:scroll": "node dist/cli.js scroll",
+    "bp:content": "node dist/cli.js content",
+    "bp:select": "node dist/cli.js select",
+    "bp:check": "node dist/cli.js check",
+    "bp:uncheck": "node dist/cli.js uncheck",
+    "bp:drag": "node dist/cli.js drag",
+    "bp:emulate-media": "node dist/cli.js emulate-media",
+    "bp:dialog": "node dist/cli.js dialog",
+    "bp:block-url": "node dist/cli.js block-url",
+    "bp:unblock-urls": "node dist/cli.js unblock-urls"
+  },
+  "keywords": [
+    "cdp",
+    "chrome",
+    "automation",
+    "browser",
+    "scraping"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^24.9.2",
+    "@types/ws": "^8.18.1",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "commander": "^14.0.2",
+    "ws": "^8.18.3"
+  }
+}
