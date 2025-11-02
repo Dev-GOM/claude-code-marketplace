@@ -30,6 +30,58 @@ export interface ConsoleMessage {
   stackTrace?: any;
 }
 
+// CDP Event Payload Interfaces
+interface LogEntry {
+  level?: 'verbose' | 'info' | 'warning' | 'error';
+  text?: string;
+  timestamp?: number;
+  url?: string;
+  lineNumber?: number;
+  stackTrace?: any;
+}
+
+interface LogEntryAddedPayload {
+  entry: LogEntry;
+}
+
+interface RemoteObject {
+  type?: string;
+  value?: any;
+  description?: string;
+  [key: string]: any;
+}
+
+interface StackTrace {
+  callFrames?: Array<{
+    url?: string;
+    lineNumber?: number;
+    columnNumber?: number;
+    functionName?: string;
+  }>;
+}
+
+interface ConsoleAPICalledPayload {
+  type?: string;
+  args?: RemoteObject[];
+  timestamp?: number;
+  stackTrace?: StackTrace;
+}
+
+interface ExceptionDetails {
+  exception?: {
+    description?: string;
+  };
+  text?: string;
+  timestamp?: number;
+  url?: string;
+  lineNumber?: number;
+  stackTrace?: any;
+}
+
+interface ExceptionThrownPayload {
+  exceptionDetails: ExceptionDetails;
+}
+
 export class ChromeBrowser {
   private readonly headless: boolean;
   public debugPort: number;
@@ -211,7 +263,7 @@ export class ChromeBrowser {
       await this.client.sendCommand('Runtime.enable');
 
       // Set up console message listeners
-      this.client.on('Log.entryAdded', (params: any) => {
+      this.client.on('Log.entryAdded', (params: LogEntryAddedPayload) => {
         const entry = params.entry;
         this.consoleMessages.push({
           level: entry.level || 'log',
@@ -224,9 +276,9 @@ export class ChromeBrowser {
       });
 
       // Also listen to Runtime.consoleAPICalled for console.log/warn/error
-      this.client.on('Runtime.consoleAPICalled', (params: any) => {
+      this.client.on('Runtime.consoleAPICalled', (params: ConsoleAPICalledPayload) => {
         const args = params.args || [];
-        const text = args.map((arg: any) => arg.value || arg.description || '').join(' ');
+        const text = args.map((arg: RemoteObject) => arg.value || arg.description || '').join(' ');
 
         this.consoleMessages.push({
           level: params.type || 'log',
@@ -238,7 +290,7 @@ export class ChromeBrowser {
       });
 
       // Listen to Runtime.exceptionThrown for errors
-      this.client.on('Runtime.exceptionThrown', (params: any) => {
+      this.client.on('Runtime.exceptionThrown', (params: ExceptionThrownPayload) => {
         const exception = params.exceptionDetails;
         const text = exception.exception?.description || exception.text || 'Unknown error';
 
