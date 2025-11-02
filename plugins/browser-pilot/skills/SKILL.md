@@ -36,6 +36,25 @@ Chrome must be installed. Build CLI once:
 cd "${CLAUDE_SKILL_ROOT}/scripts" && npm install && npm run build
 ```
 
+## How to Use
+
+**Extract required information from user's request:**
+- Target URL(s) to visit
+- Actions to perform (screenshot, click, fill, etc.)
+- Selectors for elements (CSS selectors or XPath)
+- Output file names for screenshots/PDFs
+- Any specific data to extract or forms to fill
+
+**When information is missing or ambiguous:**
+- Use the `AskUserQuestion` tool to provide clear options to the user
+- Offer specific choices rather than open-ended questions
+- Examples:
+  - "Which action?" → Choices: Screenshot, Navigate, Extract text, Fill form
+  - "Headless mode?" → Choices: Yes (faster, no UI), No (visible browser)
+  - "Full page screenshot?" → Choices: Yes (entire page), No (viewport only)
+
+**Important:** Always replace `<target-url>`, `<selector>`, `<output-file>`, and other placeholders with actual values from the user's request or AskUserQuestion responses.
+
 ### Usage
 
 **Method 1: npm scripts (Recommended)**
@@ -43,174 +62,82 @@ cd "${CLAUDE_SKILL_ROOT}/scripts" && npm install && npm run build
 cd "${CLAUDE_SKILL_ROOT}/scripts"
 
 # Screenshot - Capture webpage
-npm run bp:screenshot -- -u "https://example.com" -o "page.png" --headless --full-page
+npm run bp:screenshot -- -u "<target-url>" -o "<output-file>.png" --headless --full-page --project-root "$OLDPWD"
 
 # Navigate - Go to URL
-npm run bp:navigate -- -u "https://example.com"
+npm run bp:navigate -- -u "<target-url>" --project-root "$OLDPWD"
 
 # Extract - Get text content
-npm run bp:extract -- -u "https://example.com" -s "h1"
+npm run bp:extract -- -u "<target-url>" -s "<selector>" --project-root "$OLDPWD"
 
 # Click - Click element
-npm run bp:click -- -u "https://example.com" -s "button.submit"
+npm run bp:click -- -u "<target-url>" -s "<selector>" --project-root "$OLDPWD"
 
 # Fill - Fill input field
-npm run bp:fill -- -u "https://example.com/login" -s "#email" -v "user@example.com"
+npm run bp:fill -- -u "<target-url>" -s "<selector>" -v "<value>" --project-root "$OLDPWD"
 
 # Eval - Execute JavaScript
-npm run bp:eval -- -u "https://example.com" -e "document.title"
+npm run bp:eval -- -u "<target-url>" -e "<javascript-expression>" --project-root "$OLDPWD"
 
 # PDF - Generate PDF
-npm run bp:pdf -- -u "https://example.com" -o "page.pdf" --landscape
+npm run bp:pdf -- -u "<target-url>" -o "<output-file>.pdf" --landscape --project-root "$OLDPWD"
 
 # Cookies - Get cookies
-npm run bp:cookies -- -u "https://example.com"
+npm run bp:cookies -- -u "<target-url>" --project-root "$OLDPWD"
 
 # Tabs - List open tabs
-npm run bp:tabs
+npm run bp:tabs -- --project-root "$OLDPWD"
 
 # New Tab - Open new tab
-npm run bp:new-tab -- -u "https://github.com"
+npm run bp:new-tab -- -u "<target-url>" --project-root "$OLDPWD"
 
 # Close Tab - Close tab by index
-npm run bp:close-tab -- -i 0
+npm run bp:close-tab -- -i <tab-index> --project-root "$OLDPWD"
 
 # Close - Close browser
-npm run bp:close
+npm run bp:close -- --project-root "$OLDPWD"
 
 # Hover - Hover over element
-npm run bp:hover -- -u "https://example.com" -s "button.menu"
+npm run bp:hover -- -u "<target-url>" -s "<selector>" --project-root "$OLDPWD"
 
 # Press - Press keyboard key
-npm run bp:press -- -k "Enter"
+npm run bp:press -- -k "<key>" --project-root "$OLDPWD"
 
 # Type - Type text character by character
-npm run bp:type -- -t "Hello World" -d 100
+npm run bp:type -- -t "<text>" -d <delay-ms> --project-root "$OLDPWD"
 
 # Upload - Upload file to input
-npm run bp:upload -- -u "https://example.com/upload" -s "#file-input" -f "/path/to/file.pdf"
+npm run bp:upload -- -u "<target-url>" -s "<selector>" -f "<file-path>" --project-root "$OLDPWD"
 
 # Reload - Reload current page
-npm run bp:reload
+npm run bp:reload -- --project-root "$OLDPWD"
 
 # Back - Navigate back in history
-npm run bp:back
+npm run bp:back -- --project-root "$OLDPWD"
 
 # Forward - Navigate forward in history
-npm run bp:forward
+npm run bp:forward -- --project-root "$OLDPWD"
 
 # Wait - Wait for element to appear
-npm run bp:wait -- -s "div.loaded" -t 30000
+npm run bp:wait -- -s "<selector>" -t <timeout-ms> --project-root "$OLDPWD"
 
 # Scroll - Scroll page or element
-npm run bp:scroll -- -x 0 -y 500
+npm run bp:scroll -- -x <x-position> -y <y-position> --project-root "$OLDPWD"
 
 # Content - Get page HTML content
-npm run bp:content
+npm run bp:content -- --project-root "$OLDPWD"
 
 # Select - Select dropdown option
-npm run bp:select -- -u "https://example.com" -s "#country" -v "USA"
+npm run bp:select -- -u "<target-url>" -s "<selector>" -v "<option-value>" --project-root "$OLDPWD"
 
 # Check - Check checkbox
-npm run bp:check -- -u "https://example.com" -s "#agree-terms"
+npm run bp:check -- -u "<target-url>" -s "<selector>" --project-root "$OLDPWD"
 
 # Uncheck - Uncheck checkbox
-npm run bp:uncheck -- -u "https://example.com" -s "#subscribe"
+npm run bp:uncheck -- -u "<target-url>" -s "<selector>" --project-root "$OLDPWD"
 
 # Drag - Drag and drop element
-npm run bp:drag -- -u "https://example.com" --from "#item1" --to "#basket"
-```
-
-**Method 2: Shell scripts**
-```bash
-cd "${CLAUDE_SKILL_ROOT}/bin"
-
-# Windows
-browser-pilot-screenshot.bat -u "https://example.com" -o "page.png"
-browser-pilot-hover.bat -u "https://example.com" -s "button.menu"
-browser-pilot-reload.bat
-browser-pilot-back.bat
-browser-pilot-forward.bat
-
-# Unix/Mac
-./browser-pilot-screenshot.sh -u "https://example.com" -o "page.png"
-./browser-pilot-hover.sh -u "https://example.com" -s "button.menu"
-./browser-pilot-reload.sh
-./browser-pilot-back.sh
-./browser-pilot-forward.sh
-```
-
-All .bat/.sh scripts are now located in the `bin/` folder.
-
-**Method 3: Direct CLI**
-```bash
-node "${CLAUDE_SKILL_ROOT}/scripts/dist/cli.js" screenshot --url "https://example.com" --output "page.png"
-```
-
-Relative paths save to `.browser-pilot/` folder automatically.
-
-## Common Workflows
-
-### Capture Screenshot
-
-```bash
-# Headless mode
-node "${CLAUDE_SKILL_ROOT}/scripts/dist/cli.js" screenshot --url "https://github.com" --output "github.png" --headless --full-page
-
-# Headed mode (visible browser)
-node "${CLAUDE_SKILL_ROOT}/scripts/dist/cli.js" screenshot --url "https://github.com" --output "github.png"
-```
-
-### Extract Text
-
-```bash
-# Specific element
-node "${CLAUDE_SKILL_ROOT}/scripts/dist/cli.js" extract --url "https://example.com/products" --selector "h1" --headless
-
-# Entire body
-node "${CLAUDE_SKILL_ROOT}/scripts/dist/cli.js" extract --url "https://example.com" --headless
-```
-
-### Execute JavaScript
-
-```bash
-# Simple value
-node "${CLAUDE_SKILL_ROOT}/scripts/dist/cli.js" eval --url "https://example.com" --expression "document.title"
-
-# Complex object
-node "${CLAUDE_SKILL_ROOT}/scripts/dist/cli.js" eval --url "https://example.com" --expression "({title: document.title, links: document.querySelectorAll('a').length})"
-```
-
-### Interact with Page
-
-```bash
-# Fill form
-node "${CLAUDE_SKILL_ROOT}/scripts/dist/cli.js" fill --url "https://example.com/login" --selector "#email" --value "user@example.com"
-
-# Click button
-node "${CLAUDE_SKILL_ROOT}/scripts/dist/cli.js" click --url "https://example.com" --selector "button[type='submit']"
-```
-
-## CLI Commands
-
-```bash
-# screenshot - Capture webpage screenshot
-node dist/cli.js screenshot --url <URL> --output <PATH> [--headless] [--full-page]
-
-# navigate - Navigate to URL (keeps browser open)
-node dist/cli.js navigate --url <URL> [--headless]
-
-# extract - Extract text from page
-node dist/cli.js extract --url <URL> [--selector <CSS>] [--headless]
-
-# click - Click element (keeps browser open)
-node dist/cli.js click --url <URL> --selector <CSS> [--headless]
-
-# fill - Fill input field (keeps browser open)
-node dist/cli.js fill --url <URL> --selector <CSS> --value <TEXT> [--headless]
-
-# eval - Execute JavaScript
-node dist/cli.js eval --url <URL> --expression <SCRIPT> [--headless]
+npm run bp:drag -- -u "<target-url>" --from "<source-selector>" --to "<target-selector>" --project-root "$OLDPWD"
 ```
 
 **Options:**
@@ -225,6 +152,12 @@ node dist/cli.js eval --url <URL> --expression <SCRIPT> [--headless]
 
 CDP maintains `navigator.webdriver = false`, bypassing most anti-bot systems.
 
+**Additional Tips**:
+- Add `sleep` delays (0.5-2 seconds) between commands to mimic human behavior
+- Longer delays for critical actions (login, form submission)
+- Use random delays when automating multiple similar actions
+- Example: `npm run bp:fill ... && sleep 1 && npm run bp:click ...`
+
 Test: `node dist/cli.js screenshot --url "https://bot.sannysoft.com" --output "bot-test.png"`
 
 Expected: All checks **PASS** (green).
@@ -235,7 +168,8 @@ Expected: All checks **PASS** (green).
 2. **Use headed mode for debugging** - Omit `--headless` to see browser window
 3. **Prefer unique selectors** - Use IDs: `#username` > `.class` > `input[name="user"]`
 4. **Relative paths** - Files auto-save to `.browser-pilot/`
-5. **Respect rate limits** - Add delays between requests
+5. **Add human-like delays** - Use `sleep 0.5-2` between commands to avoid bot detection
+6. **Respect rate limits** - Add delays between requests
 
 ## Troubleshooting
 
@@ -303,3 +237,108 @@ scripts/
 - Credential stuffing
 
 Always respect robots.txt and website terms.
+
+## Examples
+
+Here are concrete examples showing how to use this skill:
+
+**Example 1: User Request**
+> "Take a screenshot of example.com"
+
+```bash
+cd "${CLAUDE_SKILL_ROOT}/scripts"
+npm run bp:screenshot -- -u "https://example.com" -o "example-screenshot.png" --headless --project-root "$OLDPWD"
+```
+
+**Example 2: User Request**
+> "Extract all h1 headings from github.com"
+
+```bash
+cd "${CLAUDE_SKILL_ROOT}/scripts"
+npm run bp:extract -- -u "https://github.com" -s "h1" --project-root "$OLDPWD"
+```
+
+**Example 3: User Request**
+> "Click the login button on example.com/login"
+
+```bash
+cd "${CLAUDE_SKILL_ROOT}/scripts"
+npm run bp:click -- -u "https://example.com/login" -s "button.login-btn" --project-root "$OLDPWD"
+```
+
+**Example 4: User Request**
+> "Fill in the email field with test@example.com on the signup page"
+
+```bash
+cd "${CLAUDE_SKILL_ROOT}/scripts"
+npm run bp:fill -- -u "https://example.com/signup" -s "#email" -v "test@example.com" --project-root "$OLDPWD"
+```
+
+**Example 5: User Request**
+> "Generate a PDF of the documentation page"
+
+```bash
+cd "${CLAUDE_SKILL_ROOT}/scripts"
+npm run bp:pdf -- -u "https://docs.example.com" -o "documentation.pdf" --landscape --project-root "$OLDPWD"
+```
+
+### Multi-Step Workflows
+
+You can chain multiple commands using `&&` to create workflows. The browser stays open between commands, making this efficient.
+
+**Important: Bot Detection Avoidance**
+- Add `sleep` delays between commands to mimic human behavior
+- Recommended delays: 0.5-2 seconds between actions
+- Longer delays for critical actions (login, submission)
+
+**Example 6: Login Workflow**
+> "Log into example.com with my email test@example.com and password mypass123"
+
+```bash
+cd "${CLAUDE_SKILL_ROOT}/scripts"
+npm run bp:navigate -- -u "https://example.com/login" --project-root "$OLDPWD" && \
+sleep 1 && \
+npm run bp:fill -- -s "#email" -v "test@example.com" --project-root "$OLDPWD" && \
+sleep 0.5 && \
+npm run bp:fill -- -s "#password" -v "mypass123" --project-root "$OLDPWD" && \
+sleep 0.5 && \
+npm run bp:click -- -s "button[type='submit']" --project-root "$OLDPWD"
+```
+
+**Example 7: Data Extraction with Screenshot**
+> "Go to github.com, extract the main heading, and take a screenshot"
+
+```bash
+cd "${CLAUDE_SKILL_ROOT}/scripts"
+npm run bp:navigate -- -u "https://github.com" --project-root "$OLDPWD" && \
+sleep 1 && \
+npm run bp:extract -- -s "h1" --project-root "$OLDPWD" && \
+sleep 0.5 && \
+npm run bp:screenshot -- -o "github-page.png" --full-page --project-root "$OLDPWD"
+```
+
+**Example 8: Form Submission Workflow**
+> "Fill out the contact form on example.com/contact with name 'John Doe', email 'john@example.com', message 'Hello', and submit it"
+
+```bash
+cd "${CLAUDE_SKILL_ROOT}/scripts"
+npm run bp:navigate -- -u "https://example.com/contact" --project-root "$OLDPWD" && \
+sleep 1 && \
+npm run bp:fill -- -s "#name" -v "John Doe" --project-root "$OLDPWD" && \
+sleep 0.5 && \
+npm run bp:fill -- -s "#email" -v "john@example.com" --project-root "$OLDPWD" && \
+sleep 0.5 && \
+npm run bp:fill -- -s "#message" -v "Hello" --project-root "$OLDPWD" && \
+sleep 0.5 && \
+npm run bp:click -- -s "button[type='submit']" --project-root "$OLDPWD" && \
+sleep 1 && \
+npm run bp:screenshot -- -o "contact-form-submitted.png" --project-root "$OLDPWD"
+```
+
+**Performance Note**:
+- Browser launches once and stays open (fast)
+- Each command reuses the same browser instance
+- ~100-200ms overhead per command (npm startup)
+- CDP communication is near-instant (milliseconds)
+- Add `sleep` delays to avoid bot detection (0.5-2 seconds recommended)
+- Total workflow time = page loads + sleep delays + command overhead

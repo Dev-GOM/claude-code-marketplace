@@ -316,25 +316,25 @@ async function waitForNetworkIdle(browser, timeout = 5000, maxInflight = 0) {
 }
 /**
  * Get console messages.
+ *
+ * NOTE: This is a placeholder implementation that does not work as expected.
+ * To properly collect console messages, you need to:
+ * 1. Subscribe to Runtime.consoleAPICalled event before page navigation
+ * 2. Collect messages as they arrive in event handler
+ * 3. Return collected messages
+ *
+ * Current implementation always returns empty array.
  */
 async function getConsoleMessages(browser, errorOnly = false) {
     await browser.sendCommand('Runtime.enable');
     await browser.sendCommand('Console.enable');
-    const script = `
-    (function() {
-      const errors = window.__errors || [];
-      return errors;
-    })()
-  `;
-    const result = await browser.sendCommand('Runtime.evaluate', {
-        expression: script,
-        returnByValue: true
-    });
-    const messages = result.result?.value || [];
+    // TODO: Implement proper console message collection via CDP events
+    // This requires event subscription before navigation and message buffering
     return {
         success: true,
-        messages,
-        count: messages.length
+        messages: [],
+        count: 0,
+        warning: 'Console message collection not fully implemented. Use browser DevTools for console inspection.'
     };
 }
 /**

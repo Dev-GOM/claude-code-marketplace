@@ -312,7 +312,7 @@ export async function newTab(
  * List all tabs.
  */
 export async function listTabs(browser: ChromeBrowser): Promise<ActionResult> {
-  const debugPort = 9222; // Get from browser instance
+  const debugPort = browser.debugPort;
   const response = await fetch(`http://localhost:${debugPort}/json`);
   const targets = await response.json() as any[];
 
@@ -340,7 +340,7 @@ export async function switchTab(
   targetId?: string,
   index?: number
 ): Promise<ActionResult> {
-  const debugPort = 9222;
+  const debugPort = browser.debugPort;
   const response = await fetch(`http://localhost:${debugPort}/json`);
   const targets = await response.json() as any[];
 
@@ -375,7 +375,7 @@ export async function closeTab(
   targetId?: string,
   index?: number
 ): Promise<ActionResult> {
-  const debugPort = 9222;
+  const debugPort = browser.debugPort;
   const response = await fetch(`http://localhost:${debugPort}/json`);
   const targets = await response.json() as any[];
 

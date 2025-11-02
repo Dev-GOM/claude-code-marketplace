@@ -44,7 +44,8 @@ const program = new commander_1.Command();
 program
     .name('cdp-browser')
     .description('Chrome DevTools Protocol browser automation CLI')
-    .version('1.0.0');
+    .version('1.0.0')
+    .option('--project-root <path>', 'Project root directory (overrides auto-detection)');
 // Screenshot command
 program
     .command('screenshot')
@@ -388,9 +389,15 @@ program
     .action(async (options) => {
     const browser = new browser_1.ChromeBrowser(options.headless);
     try {
-        await browser.connect();
+        try {
+            await browser.connect();
+        }
+        catch {
+            await browser.launch();
+        }
         const result = await actions.pressKey(browser, options.key);
         console.log('Pressed key:', result.key);
+        console.log('Browser will stay open. Use "close" command to close it.');
         process.exit(0);
     }
     catch (error) {
@@ -408,9 +415,15 @@ program
     .action(async (options) => {
     const browser = new browser_1.ChromeBrowser(options.headless);
     try {
-        await browser.connect();
+        try {
+            await browser.connect();
+        }
+        catch {
+            await browser.launch();
+        }
         const result = await actions.typeText(browser, options.text, options.delay);
         console.log('Typed:', result.text);
+        console.log('Browser will stay open. Use "close" command to close it.');
         process.exit(0);
     }
     catch (error) {
@@ -455,9 +468,15 @@ program
     .action(async (options) => {
     const browser = new browser_1.ChromeBrowser(false);
     try {
-        await browser.connect();
+        try {
+            await browser.connect();
+        }
+        catch {
+            await browser.launch();
+        }
         const result = await actions.reload(browser, options.hard);
         console.log('Page reloaded (hard:', result.hardReload, ')');
+        console.log('Browser will stay open. Use "close" command to close it.');
         process.exit(0);
     }
     catch (error) {
@@ -758,5 +777,11 @@ program
         process.exit(1);
     }
 });
+// Handle --project-root option before parsing commands
+const projectRootIndex = process.argv.indexOf('--project-root');
+if (projectRootIndex !== -1 && process.argv[projectRootIndex + 1]) {
+    process.env.CLAUDE_PROJECT_ROOT = process.argv[projectRootIndex + 1];
+}
+// Parse command line arguments
 program.parse();
 //# sourceMappingURL=cli.js.map

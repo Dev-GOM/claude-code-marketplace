@@ -273,7 +273,7 @@ async function newTab(browser, url = 'about:blank') {
  * List all tabs.
  */
 async function listTabs(browser) {
-    const debugPort = 9222; // Get from browser instance
+    const debugPort = browser.debugPort;
     const response = await fetch(`http://localhost:${debugPort}/json`);
     const targets = await response.json();
     const pageTabs = targets
@@ -294,7 +294,7 @@ async function listTabs(browser) {
  * Switch to tab.
  */
 async function switchTab(browser, targetId, index) {
-    const debugPort = 9222;
+    const debugPort = browser.debugPort;
     const response = await fetch(`http://localhost:${debugPort}/json`);
     const targets = await response.json();
     const pageTabs = targets.filter((t) => t.type === 'page');
@@ -320,7 +320,7 @@ async function switchTab(browser, targetId, index) {
  * Close tab.
  */
 async function closeTab(browser, targetId, index) {
-    const debugPort = 9222;
+    const debugPort = browser.debugPort;
     const response = await fetch(`http://localhost:${debugPort}/json`);
     const targets = await response.json();
     const pageTabs = targets.filter((t) => t.type === 'page');

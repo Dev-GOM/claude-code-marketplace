@@ -3,7 +3,7 @@
  */
 export declare class ChromeBrowser {
     private readonly headless;
-    private debugPort;
+    debugPort: number;
     private chromeProcess;
     private client;
     constructor(headless?: boolean);

@@ -23,7 +23,7 @@ interface Target {
 
 export class ChromeBrowser {
   private readonly headless: boolean;
-  private debugPort: number;
+  public debugPort: number;
   private chromeProcess: ChildProcess | null = null;
   private client: CDPClient | null = null;
 
@@ -142,8 +142,26 @@ export class ChromeBrowser {
       lastUsed: new Date().toISOString()
     });
 
-    // Wait for Chrome to start
-    await this.sleep(2000);
+    // Wait for Chrome to be ready by polling the JSON endpoint
+    let attempts = 0;
+    const maxAttempts = 20; // 10 seconds (20 * 500ms)
+    let connected = false;
+
+    while (attempts < maxAttempts && !connected) {
+      try {
+        const response = await fetch(`http://localhost:${this.debugPort}/json/version`);
+        if (response.ok) {
+          connected = true;
+        }
+      } catch (error) {
+        attempts++;
+        await this.sleep(500);
+      }
+    }
+
+    if (!connected) {
+      throw new Error('Failed to connect to Chrome within the timeout period (10 seconds).');
+    }
 
     // Connect to page target
     await this.connectToPage();
