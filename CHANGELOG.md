@@ -2,7 +2,54 @@
 
 All notable changes to the Dev GOM Plugins marketplace will be documented in this file.
 
-> **Version**: 2.7.0 | **Last Updated**: 2025-11-03
+> **Version**: 2.8.0 | **Last Updated**: 2025-11-03
+
+---
+
+## [2.8.0] - 2025-11-03
+
+### Added
+- ✨ **New Plugin: Browser Pilot v0.1.0**
+  - Chrome DevTools Protocol (CDP) based browser automation, web scraping, and crawling
+  - Features:
+    - Headless browser automation with screenshot capture and PDF generation
+    - Form automation (fill, click, type, press keys)
+    - Web scraping with element text extraction
+    - Tab management (list, switch, close)
+    - JavaScript execution in page context
+    - Bot detection bypass (`navigator.webdriver = false`)
+    - Multi-step workflows with human-like delays
+  - Cross-platform CLI built with TypeScript
+  - Auto-initialization via SessionStart hook
+  - Files saved to `.browser-pilot/` directory
+  - Comprehensive documentation with workflow examples
+
+- ✨ **New Plugin: Unity Editor Pilot v0.1.0** (🚧 Under Development)
+  - WebSocket-based Unity Editor control (port 30090-30099)
+  - Planned features:
+    - GameObject/Scene/PlayMode management
+    - Transform and component operations
+    - Build automation
+  - Status: Development in progress, not yet available for installation
+
+### Fixed
+- 🐛 **Browser Pilot v0.1.0**: Polling Logic Bug Fix
+  - Fixed potential infinite loop when HTTP response returns non-OK status
+  - Changed polling logic to increment attempts on every iteration
+  - Connection now properly times out after 10 seconds (20 attempts × 500ms)
+
+- 🐛 **Browser Pilot v0.1.0**: CLI Option Handling Improvement
+  - Replaced manual `process.argv` parsing with Commander.js `preAction` hook
+  - Improved maintainability and follows library best practices
+  - `--project-root` option now handled cleanly before command execution
+
+### Security
+- 🔒 **Browser Pilot v0.1.0**: XSS Vulnerability Fixes
+  - Fixed template string injection vulnerabilities in 11 high-priority functions
+  - Replaced unsafe template literals with `JSON.stringify()` for proper escaping
+  - Fixed functions: `click`, `fill`, `extractText`, `hover`, `focus`, `blur`, `extractData`, `selectOption`, `check`, `uncheck`, `waitFor`
+  - Prevents arbitrary JavaScript code execution through malicious selectors or values
+  - Example: `selector = "'); alert('XSS'); //"` no longer causes code injection
 
 ---
 
