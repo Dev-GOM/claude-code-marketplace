@@ -36,6 +36,17 @@ Chrome must be installed. Build CLI once:
 cd "${CLAUDE_SKILL_ROOT}/scripts" && npm install && npm run build
 ```
 
+## How to Use
+
+**Extract required information from user's request:**
+- Target URL(s) to visit
+- Actions to perform (screenshot, click, fill, etc.)
+- Selectors for elements (CSS selectors or XPath)
+- Output file names for screenshots/PDFs
+- Any specific data to extract or forms to fill
+
+**Important:** Always replace `<target-url>`, `<selector>`, `<output-file>`, and other placeholders with actual values from the user's request.
+
 ### Usage
 
 **Method 1: npm scripts (Recommended)**
@@ -43,82 +54,82 @@ cd "${CLAUDE_SKILL_ROOT}/scripts" && npm install && npm run build
 cd "${CLAUDE_SKILL_ROOT}/scripts"
 
 # Screenshot - Capture webpage
-npm run bp:screenshot -- -u "https://example.com" -o "page.png" --headless --full-page
+npm run bp:screenshot -- -u "<target-url>" -o "<output-file>.png" --headless --full-page --project-root "$OLDPWD"
 
 # Navigate - Go to URL
-npm run bp:navigate -- -u "https://example.com"
+npm run bp:navigate -- -u "<target-url>" --project-root "$OLDPWD"
 
 # Extract - Get text content
-npm run bp:extract -- -u "https://example.com" -s "h1"
+npm run bp:extract -- -u "<target-url>" -s "<selector>" --project-root "$OLDPWD"
 
 # Click - Click element
-npm run bp:click -- -u "https://example.com" -s "button.submit"
+npm run bp:click -- -u "<target-url>" -s "<selector>" --project-root "$OLDPWD"
 
 # Fill - Fill input field
-npm run bp:fill -- -u "https://example.com/login" -s "#email" -v "user@example.com"
+npm run bp:fill -- -u "<target-url>" -s "<selector>" -v "<value>" --project-root "$OLDPWD"
 
 # Eval - Execute JavaScript
-npm run bp:eval -- -u "https://example.com" -e "document.title"
+npm run bp:eval -- -u "<target-url>" -e "<javascript-expression>" --project-root "$OLDPWD"
 
 # PDF - Generate PDF
-npm run bp:pdf -- -u "https://example.com" -o "page.pdf" --landscape
+npm run bp:pdf -- -u "<target-url>" -o "<output-file>.pdf" --landscape --project-root "$OLDPWD"
 
 # Cookies - Get cookies
-npm run bp:cookies -- -u "https://example.com"
+npm run bp:cookies -- -u "<target-url>" --project-root "$OLDPWD"
 
 # Tabs - List open tabs
-npm run bp:tabs
+npm run bp:tabs -- --project-root "$OLDPWD"
 
 # New Tab - Open new tab
-npm run bp:new-tab -- -u "https://github.com"
+npm run bp:new-tab -- -u "<target-url>" --project-root "$OLDPWD"
 
 # Close Tab - Close tab by index
-npm run bp:close-tab -- -i 0
+npm run bp:close-tab -- -i <tab-index> --project-root "$OLDPWD"
 
 # Close - Close browser
-npm run bp:close
+npm run bp:close -- --project-root "$OLDPWD"
 
 # Hover - Hover over element
-npm run bp:hover -- -u "https://example.com" -s "button.menu"
+npm run bp:hover -- -u "<target-url>" -s "<selector>" --project-root "$OLDPWD"
 
 # Press - Press keyboard key
-npm run bp:press -- -k "Enter"
+npm run bp:press -- -k "<key>" --project-root "$OLDPWD"
 
 # Type - Type text character by character
-npm run bp:type -- -t "Hello World" -d 100
+npm run bp:type -- -t "<text>" -d <delay-ms> --project-root "$OLDPWD"
 
 # Upload - Upload file to input
-npm run bp:upload -- -u "https://example.com/upload" -s "#file-input" -f "/path/to/file.pdf"
+npm run bp:upload -- -u "<target-url>" -s "<selector>" -f "<file-path>" --project-root "$OLDPWD"
 
 # Reload - Reload current page
-npm run bp:reload
+npm run bp:reload -- --project-root "$OLDPWD"
 
 # Back - Navigate back in history
-npm run bp:back
+npm run bp:back -- --project-root "$OLDPWD"
 
 # Forward - Navigate forward in history
-npm run bp:forward
+npm run bp:forward -- --project-root "$OLDPWD"
 
 # Wait - Wait for element to appear
-npm run bp:wait -- -s "div.loaded" -t 30000
+npm run bp:wait -- -s "<selector>" -t <timeout-ms> --project-root "$OLDPWD"
 
 # Scroll - Scroll page or element
-npm run bp:scroll -- -x 0 -y 500
+npm run bp:scroll -- -x <x-position> -y <y-position> --project-root "$OLDPWD"
 
 # Content - Get page HTML content
-npm run bp:content
+npm run bp:content -- --project-root "$OLDPWD"
 
 # Select - Select dropdown option
-npm run bp:select -- -u "https://example.com" -s "#country" -v "USA"
+npm run bp:select -- -u "<target-url>" -s "<selector>" -v "<option-value>" --project-root "$OLDPWD"
 
 # Check - Check checkbox
-npm run bp:check -- -u "https://example.com" -s "#agree-terms"
+npm run bp:check -- -u "<target-url>" -s "<selector>" --project-root "$OLDPWD"
 
 # Uncheck - Uncheck checkbox
-npm run bp:uncheck -- -u "https://example.com" -s "#subscribe"
+npm run bp:uncheck -- -u "<target-url>" -s "<selector>" --project-root "$OLDPWD"
 
 # Drag - Drag and drop element
-npm run bp:drag -- -u "https://example.com" --from "#item1" --to "#basket"
+npm run bp:drag -- -u "<target-url>" --from "<source-selector>" --to "<target-selector>" --project-root "$OLDPWD"
 ```
 
 **Method 2: Shell scripts**
@@ -303,3 +314,47 @@ scripts/
 - Credential stuffing
 
 Always respect robots.txt and website terms.
+
+## Examples
+
+Here are concrete examples showing how to use this skill:
+
+**Example 1: User Request**
+> "Take a screenshot of example.com"
+
+```bash
+cd "${CLAUDE_SKILL_ROOT}/scripts"
+npm run bp:screenshot -- -u "https://example.com" -o "example-screenshot.png" --headless --project-root "$OLDPWD"
+```
+
+**Example 2: User Request**
+> "Extract all h1 headings from github.com"
+
+```bash
+cd "${CLAUDE_SKILL_ROOT}/scripts"
+npm run bp:extract -- -u "https://github.com" -s "h1" --project-root "$OLDPWD"
+```
+
+**Example 3: User Request**
+> "Click the login button on example.com/login"
+
+```bash
+cd "${CLAUDE_SKILL_ROOT}/scripts"
+npm run bp:click -- -u "https://example.com/login" -s "button.login-btn" --project-root "$OLDPWD"
+```
+
+**Example 4: User Request**
+> "Fill in the email field with test@example.com on the signup page"
+
+```bash
+cd "${CLAUDE_SKILL_ROOT}/scripts"
+npm run bp:fill -- -u "https://example.com/signup" -s "#email" -v "test@example.com" --project-root "$OLDPWD"
+```
+
+**Example 5: User Request**
+> "Generate a PDF of the documentation page"
+
+```bash
+cd "${CLAUDE_SKILL_ROOT}/scripts"
+npm run bp:pdf -- -u "https://docs.example.com" -o "documentation.pdf" --landscape --project-root "$OLDPWD"
+```

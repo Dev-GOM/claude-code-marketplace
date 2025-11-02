@@ -13,7 +13,8 @@ const program = new Command();
 program
   .name('cdp-browser')
   .description('Chrome DevTools Protocol browser automation CLI')
-  .version('1.0.0');
+  .version('1.0.0')
+  .option('--project-root <path>', 'Project root directory (overrides auto-detection)');
 
 // Screenshot command
 program
@@ -692,4 +693,11 @@ program
     }
   });
 
+// Handle --project-root option before parsing commands
+const projectRootIndex = process.argv.indexOf('--project-root');
+if (projectRootIndex !== -1 && process.argv[projectRootIndex + 1]) {
+  process.env.CLAUDE_PROJECT_ROOT = process.argv[projectRootIndex + 1];
+}
+
+// Parse command line arguments
 program.parse();
