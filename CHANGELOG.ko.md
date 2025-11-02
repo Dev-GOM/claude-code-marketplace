@@ -2,7 +2,22 @@
 
 Dev GOM Plugins 마켓플레이스의 모든 주요 변경사항이 이 파일에 문서화됩니다.
 
-> **버전**: 2.8.2 | **최종 업데이트**: 2025-11-03
+> **버전**: 2.8.3 | **최종 업데이트**: 2025-11-03
+
+---
+
+## [2.8.3] - 2025-11-03
+
+### 개선됨
+- 🔧 **Browser Pilot v0.1.3**: TypeScript 타입 안전성 개선
+  - CDP 이벤트 페이로드를 위한 명시적 TypeScript 인터페이스 추가:
+    - `LogEntryAddedPayload` - `Log.entryAdded` 이벤트용
+    - `ConsoleAPICalledPayload` - `Runtime.consoleAPICalled` 이벤트용
+    - `ExceptionThrownPayload` - `Runtime.exceptionThrown` 이벤트용
+    - `RemoteObject`, `StackTrace` 지원 인터페이스
+  - 이벤트 핸들러의 `params: any`를 타입이 지정된 매개변수로 교체
+  - CLI에서 콘솔 메시지 객체에 명시적 타입 주석 추가
+  - 코드 유지보수성 및 IDE 자동완성 지원 향상
 
 ---
 

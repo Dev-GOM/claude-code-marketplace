@@ -733,7 +733,7 @@ program
       if (result.messages.length === 0) {
         console.log('No console messages found.');
       } else {
-        result.messages.forEach((msg: any) => {
+        result.messages.forEach((msg: { level: string; text: string; timestamp: string; url?: string; lineNumber?: number }) => {
           const location = msg.url ? ` (${msg.url}:${msg.lineNumber || '?'})` : '';
           console.log(`[${msg.level.toUpperCase()}]${location} ${msg.text}`);
         });

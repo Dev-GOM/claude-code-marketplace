@@ -2,7 +2,22 @@
 
 All notable changes to the Dev GOM Plugins marketplace will be documented in this file.
 
-> **Version**: 2.8.2 | **Last Updated**: 2025-11-03
+> **Version**: 2.8.3 | **Last Updated**: 2025-11-03
+
+---
+
+## [2.8.3] - 2025-11-03
+
+### Improved
+- 🔧 **Browser Pilot v0.1.3**: TypeScript Type Safety Improvements
+  - Added explicit TypeScript interfaces for CDP event payloads:
+    - `LogEntryAddedPayload` for `Log.entryAdded` events
+    - `ConsoleAPICalledPayload` for `Runtime.consoleAPICalled` events
+    - `ExceptionThrownPayload` for `Runtime.exceptionThrown` events
+    - `RemoteObject`, `StackTrace` supporting interfaces
+  - Replaced `params: any` with typed parameters in event handlers
+  - Added explicit type annotation for console message objects in CLI
+  - Improved code maintainability and IDE autocomplete support
 
 ---
 
