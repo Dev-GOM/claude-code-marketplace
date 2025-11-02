@@ -63,8 +63,9 @@ export async function click(browser: ChromeBrowser, selector: string): Promise<A
 
   const script = `
     (function() {
-      const el = document.querySelector('${selector}');
-      if (!el) throw new Error('Element not found: ${selector}');
+      const selector = ${JSON.stringify(selector)};
+      const el = document.querySelector(selector);
+      if (!el) throw new Error('Element not found: ' + selector);
       el.click();
       return true;
     })()
@@ -86,9 +87,11 @@ export async function fill(browser: ChromeBrowser, selector: string, value: stri
 
   const script = `
     (function() {
-      const el = document.querySelector('${selector}');
-      if (!el) throw new Error('Element not found: ${selector}');
-      el.value = '${value.replace(/'/g, "\\'")}';
+      const selector = ${JSON.stringify(selector)};
+      const value = ${JSON.stringify(value)};
+      const el = document.querySelector(selector);
+      if (!el) throw new Error('Element not found: ' + selector);
+      el.value = value;
       el.dispatchEvent(new Event('input', { bubbles: true }));
       el.dispatchEvent(new Event('change', { bubbles: true }));
       return true;
@@ -167,7 +170,7 @@ export async function evaluate(browser: ChromeBrowser, script: string): Promise<
  */
 export async function extractText(browser: ChromeBrowser, selector?: string): Promise<ActionResult> {
   const script = selector
-    ? `document.querySelector('${selector}')?.textContent || ''`
+    ? `(function() { const selector = ${JSON.stringify(selector)}; return document.querySelector(selector)?.textContent || ''; })()`
     : `document.body.textContent || ''`;
 
   const result = await browser.sendCommand('Runtime.evaluate', {
@@ -411,8 +414,9 @@ export async function hover(
   console.log(`Hovering: ${selector}`);
   const script = `
     (function() {
-      const el = document.querySelector('${selector}');
-      if (!el) throw new Error('Element not found: ${selector}');
+      const selector = ${JSON.stringify(selector)};
+      const el = document.querySelector(selector);
+      if (!el) throw new Error('Element not found: ' + selector);
       el.dispatchEvent(new MouseEvent('mouseover', {
         bubbles: true,
         cancelable: true,
@@ -438,8 +442,9 @@ export async function focus(
   console.log(`Focusing: ${selector}`);
   const script = `
     (function() {
-      const el = document.querySelector('${selector}');
-      if (!el) throw new Error('Element not found: ${selector}');
+      const selector = ${JSON.stringify(selector)};
+      const el = document.querySelector(selector);
+      if (!el) throw new Error('Element not found: ' + selector);
       el.focus();
       return true;
     })()
@@ -461,8 +466,9 @@ export async function blur(
   console.log(`Blurring: ${selector}`);
   const script = `
     (function() {
-      const el = document.querySelector('${selector}');
-      if (!el) throw new Error('Element not found: ${selector}');
+      const selector = ${JSON.stringify(selector)};
+      const el = document.querySelector(selector);
+      if (!el) throw new Error('Element not found: ' + selector);
       el.blur();
       return true;
     })()

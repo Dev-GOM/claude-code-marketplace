@@ -2,7 +2,46 @@
 
 Dev GOM Plugins 마켓플레이스의 모든 주요 변경사항이 이 파일에 문서화됩니다.
 
-> **버전**: 2.5.2 | **최종 업데이트**: 2025-10-29
+> **버전**: 2.7.0 | **최종 업데이트**: 2025-11-03
+
+---
+
+## [2.7.0] - 2025-11-03
+
+### 추가됨
+- ✨ **새 플러그인: Browser Pilot v0.1.0**
+  - Chrome DevTools Protocol (CDP) 기반 브라우저 자동화, 웹 스크래핑 및 크롤링
+  - 기능:
+    - 스크린샷 캡처 및 PDF 생성이 가능한 Headless 브라우저 자동화
+    - 폼 자동화 (입력, 클릭, 타이핑, 키 입력)
+    - 요소 텍스트 추출을 통한 웹 스크래핑
+    - 탭 관리 (목록, 전환, 닫기)
+    - 페이지 컨텍스트에서 JavaScript 실행
+    - 봇 감지 우회 (`navigator.webdriver = false`)
+    - 인간 같은 딜레이를 사용한 멀티 스텝 워크플로우
+  - TypeScript로 빌드된 크로스 플랫폼 CLI
+  - SessionStart 훅을 통한 자동 초기화
+  - `.browser-pilot/` 디렉토리에 파일 저장
+  - 워크플로우 예제를 포함한 포괄적인 문서
+
+- ✨ **새 플러그인: Unity Editor Pilot v0.1.0** (🚧 개발 중)
+  - WebSocket 기반 Unity Editor 제어 (포트 30090-30099)
+  - 계획된 기능:
+    - GameObject/Scene/PlayMode 관리
+    - Transform 및 컴포넌트 작업
+    - 빌드 자동화
+  - 상태: 개발 진행 중, 아직 설치 불가
+
+### 수정됨
+- 🐛 **Browser Pilot v0.1.0**: 폴링 로직 버그 수정
+  - HTTP 응답이 non-OK 상태를 반환할 때 발생할 수 있는 무한 루프 수정
+  - 매 반복마다 시도 횟수를 증가시키도록 폴링 로직 변경
+  - 이제 10초 후 정상적으로 타임아웃됨 (20회 시도 × 500ms)
+
+- 🐛 **Browser Pilot v0.1.0**: CLI 옵션 처리 개선
+  - 수동 `process.argv` 파싱을 Commander.js `preAction` 훅으로 교체
+  - 유지보수성 향상 및 라이브러리 모범 사례 준수
+  - 명령 실행 전 `--project-root` 옵션이 깔끔하게 처리됨
 
 ---
 

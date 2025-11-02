@@ -1,6 +1,6 @@
 # Claude Code Plugins
 
-> **Version**: 2.5.2 | **Last Updated**: 2025-10-29
+> **Version**: 2.7.0 | **Last Updated**: 2025-11-03
 >
 > **Language**: [English](README.md) | [한국어](README.ko.md)
 >
@@ -186,6 +186,36 @@ Automate version updates and releases for any project type with intelligent dete
 
 </details>
 
+---
+
+### 12. 🌐 [Browser Pilot](plugins/browser-pilot/README.md)
+
+<details>
+<summary><strong>📖 Plugin Details</strong> (Click to expand)</summary>
+
+Chrome DevTools Protocol (CDP) based browser automation, web scraping, and crawling for Claude Code.
+
+**Quick Info:** Headless browser automation, Screenshot capture, PDF generation, Form automation, Web scraping | **Skills:** Browser automation via CLI | **Features:** Bot detection bypass (`navigator.webdriver = false`), Multi-step workflows with human-like delays, Tab management, JavaScript execution
+
+**[Read Full Documentation →](plugins/browser-pilot/README.md)**
+
+</details>
+
+---
+
+### 13. 🎮 [Unity Editor Pilot](plugins/unity-editor-pilot/README.md)
+
+<details>
+<summary><strong>📖 Plugin Details</strong> (Click to expand)</summary>
+
+Control Unity Editor programmatically via WebSocket - Create GameObjects, manage scenes, control Play Mode, and automate editor workflows directly from Claude Code.
+
+**Quick Info:** WebSocket-based Unity Editor control (port 30090-30099) | GameObject/Scene/PlayMode management | **Status:** 🚧 Under Development (v0.1.0) | **Features:** Real-time editor communication, Command-line interface, Cross-platform shell scripts
+
+**[Read Full Documentation →](plugins/unity-editor-pilot/README.md)**
+
+</details>
+
 ## Installation
 
 ### Quick Start (Recommended)
@@ -229,6 +259,11 @@ Automate version updates and releases for any project type with intelligent dete
    ```bash
    /plugin install auto-release-manager@dev-gom-plugins
    ```
+   ```bash
+   /plugin install browser-pilot@dev-gom-plugins
+   ```
+
+   > **Note**: Unity Editor Pilot is under development and not yet available for installation.
 
 3. Restart Claude Code to load the plugins:
    ```bash

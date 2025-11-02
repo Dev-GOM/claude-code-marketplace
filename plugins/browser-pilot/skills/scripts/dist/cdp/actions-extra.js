@@ -46,7 +46,8 @@ async function extractData(browser, selectors) {
         try {
             const script = `
         (function() {
-          const elements = document.querySelectorAll('${selector}');
+          const selector = ${JSON.stringify(selector)};
+          const elements = document.querySelectorAll(selector);
           if (elements.length === 0) return null;
           if (elements.length === 1) return elements[0].innerText;
           return Array.from(elements).map(el => el.innerText);
@@ -69,12 +70,13 @@ async function extractData(browser, selectors) {
  */
 async function selectOption(browser, selector, value) {
     console.log(`Selecting option ${value} in: ${selector}`);
-    const safeValue = value.replace(/'/g, "\\'");
     const script = `
     (function() {
-      const el = document.querySelector('${selector}');
-      if (!el) throw new Error('Element not found: ${selector}');
-      el.value = '${safeValue}';
+      const selector = ${JSON.stringify(selector)};
+      const value = ${JSON.stringify(value)};
+      const el = document.querySelector(selector);
+      if (!el) throw new Error('Element not found: ' + selector);
+      el.value = value;
       el.dispatchEvent(new Event('change', { bubbles: true }));
       return true;
     })()
@@ -92,8 +94,9 @@ async function check(browser, selector) {
     console.log(`Checking: ${selector}`);
     const script = `
     (function() {
-      const el = document.querySelector('${selector}');
-      if (!el) throw new Error('Element not found: ${selector}');
+      const selector = ${JSON.stringify(selector)};
+      const el = document.querySelector(selector);
+      if (!el) throw new Error('Element not found: ' + selector);
       el.checked = true;
       el.dispatchEvent(new Event('change', { bubbles: true }));
       return true;
@@ -112,8 +115,9 @@ async function uncheck(browser, selector) {
     console.log(`Unchecking: ${selector}`);
     const script = `
     (function() {
-      const el = document.querySelector('${selector}');
-      if (!el) throw new Error('Element not found: ${selector}');
+      const selector = ${JSON.stringify(selector)};
+      const el = document.querySelector(selector);
+      if (!el) throw new Error('Element not found: ' + selector);
       el.checked = false;
       el.dispatchEvent(new Event('change', { bubbles: true }));
       return true;
@@ -277,7 +281,7 @@ async function waitFor(browser, selector, timeout = 30000) {
     console.log(`Waiting for: ${selector}`);
     const startTime = Date.now();
     while (Date.now() - startTime < timeout) {
-        const script = `document.querySelector('${selector}') !== null`;
+        const script = `(function() { const selector = ${JSON.stringify(selector)}; return document.querySelector(selector) !== null; })()`;
         const result = await browser.sendCommand('Runtime.evaluate', {
             expression: script,
             returnByValue: true

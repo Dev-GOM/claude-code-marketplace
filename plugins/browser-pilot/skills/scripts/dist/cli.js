@@ -777,11 +777,13 @@ program
         process.exit(1);
     }
 });
-// Handle --project-root option before parsing commands
-const projectRootIndex = process.argv.indexOf('--project-root');
-if (projectRootIndex !== -1 && process.argv[projectRootIndex + 1]) {
-    process.env.CLAUDE_PROJECT_ROOT = process.argv[projectRootIndex + 1];
-}
+// Handle --project-root option before any command action
+program.hook('preAction', (thisCommand, actionCommand) => {
+    const opts = actionCommand.opts();
+    if (opts.projectRoot) {
+        process.env.CLAUDE_PROJECT_ROOT = opts.projectRoot;
+    }
+});
 // Parse command line arguments
 program.parse();
 //# sourceMappingURL=cli.js.map
