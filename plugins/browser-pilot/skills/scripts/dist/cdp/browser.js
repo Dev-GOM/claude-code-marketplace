@@ -15,6 +15,7 @@ class ChromeBrowser {
     debugPort;
     chromeProcess = null;
     client = null;
+    consoleMessages = [];
     constructor(headless = false) {
         this.headless = headless;
         // Load debug port from config
@@ -162,6 +163,46 @@ class ChromeBrowser {
             this.client = new client_1.CDPClient(wsUrl);
             await this.client.connect();
             console.log('Connected to Chrome DevTools Protocol');
+            // Enable Log domain to receive console messages
+            await this.client.sendCommand('Log.enable');
+            await this.client.sendCommand('Runtime.enable');
+            // Set up console message listeners
+            this.client.on('Log.entryAdded', (params) => {
+                const entry = params.entry;
+                this.consoleMessages.push({
+                    level: entry.level || 'log',
+                    text: entry.text || '',
+                    timestamp: entry.timestamp || Date.now(),
+                    url: entry.url,
+                    lineNumber: entry.lineNumber,
+                    stackTrace: entry.stackTrace
+                });
+            });
+            // Also listen to Runtime.consoleAPICalled for console.log/warn/error
+            this.client.on('Runtime.consoleAPICalled', (params) => {
+                const args = params.args || [];
+                const text = args.map((arg) => arg.value || arg.description || '').join(' ');
+                this.consoleMessages.push({
+                    level: params.type || 'log',
+                    text: text,
+                    timestamp: params.timestamp || Date.now(),
+                    url: params.stackTrace?.callFrames?.[0]?.url,
+                    lineNumber: params.stackTrace?.callFrames?.[0]?.lineNumber
+                });
+            });
+            // Listen to Runtime.exceptionThrown for errors
+            this.client.on('Runtime.exceptionThrown', (params) => {
+                const exception = params.exceptionDetails;
+                const text = exception.exception?.description || exception.text || 'Unknown error';
+                this.consoleMessages.push({
+                    level: 'error',
+                    text: text,
+                    timestamp: exception.timestamp || Date.now(),
+                    url: exception.url,
+                    lineNumber: exception.lineNumber,
+                    stackTrace: exception.stackTrace
+                });
+            });
         }
         catch (error) {
             throw new Error(`Failed to connect to Chrome: ${error}`);
@@ -175,6 +216,18 @@ class ChromeBrowser {
             throw new Error('Not connected to Chrome');
         }
         return this.client.sendCommand(method, params);
+    }
+    /**
+     * Get collected console messages.
+     */
+    getConsoleMessages() {
+        return [...this.consoleMessages];
+    }
+    /**
+     * Clear console messages buffer.
+     */
+    clearConsoleMessages() {
+        this.consoleMessages = [];
     }
     /**
      * Close browser and cleanup.

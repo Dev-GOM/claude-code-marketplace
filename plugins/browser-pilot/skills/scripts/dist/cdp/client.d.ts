@@ -1,6 +1,7 @@
 /**
  * CDP WebSocket Client for Chrome DevTools Protocol communication.
  */
+import { EventEmitter } from 'events';
 export interface CDPMessage {
     id: number;
     method: string;
@@ -14,7 +15,11 @@ export interface CDPResponse {
         message: string;
     };
 }
-export declare class CDPClient {
+export interface CDPEvent {
+    method: string;
+    params?: Record<string, any>;
+}
+export declare class CDPClient extends EventEmitter {
     private ws;
     private messageId;
     private readonly wsUrl;

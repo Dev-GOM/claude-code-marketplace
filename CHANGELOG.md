@@ -2,7 +2,40 @@
 
 All notable changes to the Dev GOM Plugins marketplace will be documented in this file.
 
-> **Version**: 2.8.1 | **Last Updated**: 2025-11-03
+> **Version**: 2.8.2 | **Last Updated**: 2025-11-03
+
+---
+
+## [2.8.2] - 2025-11-03
+
+### Added
+- ✨ **Browser Pilot v0.1.2**: Console Message Collection & 14 New CLI Commands
+  - **Console Message Collection**:
+    - Real-time console message collection via CDP events
+    - Captures `Log.entryAdded`, `Runtime.consoleAPICalled`, `Runtime.exceptionThrown`
+    - Message buffer with level, text, timestamp, URL, line number tracking
+    - Statistics: total, error, warning, and log counts
+  - **New CLI Commands** (14):
+    - `console` - Get console messages (with `-e` for errors only)
+    - `focus` / `blur` - Focus/unfocus elements
+    - `extract-data` - Extract multiple data points with JSON selector mapping
+    - `find` - Find element and get detailed info
+    - `get-property` - Get element property values
+    - `switch-tab` - Switch between browser tabs
+    - `set-cookie` / `delete-cookies` - Cookie management
+    - `sleep` - Wait for specified milliseconds
+    - `wait-idle` - Wait for network idle state
+    - `accessibility` - Get accessibility tree
+    - `enable-interception` / `disable-interception` - Request interception control
+
+### Improved
+- 🔧 **Browser Pilot v0.1.2**: Architecture Enhancements
+  - CDPClient now extends EventEmitter for proper event handling
+  - Added permanent event listener in WebSocket message handler
+  - ChromeBrowser maintains console message buffer
+  - All 48 implemented functions now accessible via CLI
+  - npm script shortcuts added for all commands in package.json
+  - Updated SKILL.md with comprehensive command documentation
 
 ---
 

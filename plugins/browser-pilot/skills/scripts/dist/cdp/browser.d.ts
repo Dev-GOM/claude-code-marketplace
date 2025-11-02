@@ -1,11 +1,20 @@
 /**
  * Chrome browser launcher and connection manager.
  */
+export interface ConsoleMessage {
+    level: string;
+    text: string;
+    timestamp: number;
+    url?: string;
+    lineNumber?: number;
+    stackTrace?: any;
+}
 export declare class ChromeBrowser {
     private readonly headless;
     debugPort: number;
     private chromeProcess;
     private client;
+    private consoleMessages;
     constructor(headless?: boolean);
     /**
      * Find Chrome executable path.
@@ -27,6 +36,14 @@ export declare class ChromeBrowser {
      * Send CDP command.
      */
     sendCommand(method: string, params?: Record<string, any>): Promise<Record<string, any>>;
+    /**
+     * Get collected console messages.
+     */
+    getConsoleMessages(): ConsoleMessage[];
+    /**
+     * Clear console messages buffer.
+     */
+    clearConsoleMessages(): void;
     /**
      * Close browser and cleanup.
      */

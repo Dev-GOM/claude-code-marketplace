@@ -376,29 +376,39 @@ export async function waitForNetworkIdle(
 /**
  * Get console messages.
  *
- * NOTE: This is a placeholder implementation that does not work as expected.
- * To properly collect console messages, you need to:
- * 1. Subscribe to Runtime.consoleAPICalled event before page navigation
- * 2. Collect messages as they arrive in event handler
- * 3. Return collected messages
- *
- * Current implementation always returns empty array.
+ * Returns console messages that have been collected since the browser connected.
+ * Messages are automatically collected when Log domain is enabled during connection.
  */
 export async function getConsoleMessages(
   browser: ChromeBrowser,
   errorOnly = false
 ): Promise<ActionResult> {
-  await browser.sendCommand('Runtime.enable');
-  await browser.sendCommand('Console.enable');
+  console.log('Getting console messages...');
 
-  // TODO: Implement proper console message collection via CDP events
-  // This requires event subscription before navigation and message buffering
+  // Get all collected messages from browser
+  const allMessages = browser.getConsoleMessages();
+
+  // Filter by error level if requested
+  const messages = errorOnly
+    ? allMessages.filter(msg => msg.level === 'error')
+    : allMessages;
+
+  // Format messages for display
+  const formattedMessages = messages.map(msg => ({
+    level: msg.level,
+    text: msg.text,
+    timestamp: new Date(msg.timestamp).toISOString(),
+    url: msg.url,
+    lineNumber: msg.lineNumber
+  }));
 
   return {
     success: true,
-    messages: [],
-    count: 0,
-    warning: 'Console message collection not fully implemented. Use browser DevTools for console inspection.'
+    messages: formattedMessages,
+    count: formattedMessages.length,
+    errorCount: allMessages.filter(msg => msg.level === 'error').length,
+    warningCount: allMessages.filter(msg => msg.level === 'warning').length,
+    logCount: allMessages.filter(msg => msg.level === 'log' || msg.level === 'info').length
   };
 }
 

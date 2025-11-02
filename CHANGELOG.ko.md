@@ -2,7 +2,40 @@
 
 Dev GOM Plugins 마켓플레이스의 모든 주요 변경사항이 이 파일에 문서화됩니다.
 
-> **버전**: 2.8.1 | **최종 업데이트**: 2025-11-03
+> **버전**: 2.8.2 | **최종 업데이트**: 2025-11-03
+
+---
+
+## [2.8.2] - 2025-11-03
+
+### 추가됨
+- ✨ **Browser Pilot v0.1.2**: 콘솔 메시지 수집 및 14개 새 CLI 명령
+  - **콘솔 메시지 수집**:
+    - CDP 이벤트를 통한 실시간 콘솔 메시지 수집
+    - `Log.entryAdded`, `Runtime.consoleAPICalled`, `Runtime.exceptionThrown` 캡처
+    - 레벨, 텍스트, 타임스탬프, URL, 라인 번호 추적이 포함된 메시지 버퍼
+    - 통계: 전체, 에러, 경고, 로그 개수
+  - **새 CLI 명령** (14개):
+    - `console` - 콘솔 메시지 가져오기 (에러만 보려면 `-e` 옵션)
+    - `focus` / `blur` - 요소 포커스/포커스 해제
+    - `extract-data` - JSON 셀렉터 매핑으로 여러 데이터 포인트 추출
+    - `find` - 요소 찾기 및 상세 정보 가져오기
+    - `get-property` - 요소 속성 값 가져오기
+    - `switch-tab` - 브라우저 탭 전환
+    - `set-cookie` / `delete-cookies` - 쿠키 관리
+    - `sleep` - 지정된 밀리초 동안 대기
+    - `wait-idle` - 네트워크 유휴 상태 대기
+    - `accessibility` - 접근성 트리 가져오기
+    - `enable-interception` / `disable-interception` - 요청 가로채기 제어
+
+### 개선됨
+- 🔧 **Browser Pilot v0.1.2**: 아키텍처 개선
+  - CDPClient가 EventEmitter를 확장하여 적절한 이벤트 처리
+  - WebSocket 메시지 핸들러에 영구 이벤트 리스너 추가
+  - ChromeBrowser가 콘솔 메시지 버퍼 유지
+  - 구현된 48개 함수 모두 CLI를 통해 접근 가능
+  - package.json에 모든 명령의 npm 스크립트 단축키 추가
+  - SKILL.md에 포괄적인 명령 문서 업데이트
 
 ---
 
