@@ -138,6 +138,50 @@ npm run bp:uncheck -- -u "<target-url>" -s "<selector>" --project-root "$OLDPWD"
 
 # Drag - Drag and drop element
 npm run bp:drag -- -u "<target-url>" --from "<source-selector>" --to "<target-selector>" --project-root "$OLDPWD"
+
+# Console - Get console messages
+npm run bp:console -- -u "<target-url>" --project-root "$OLDPWD"
+npm run bp:console -- -u "<target-url>" -e --project-root "$OLDPWD"  # Errors only
+
+# Focus - Focus on element
+npm run bp:focus -- -u "<target-url>" -s "<selector>" --project-root "$OLDPWD"
+
+# Blur - Remove focus from element
+npm run bp:blur -- -u "<target-url>" -s "<selector>" --project-root "$OLDPWD"
+
+# Extract Data - Extract multiple data points
+npm run bp:extract-data -- -u "<target-url>" -s '{"title":"h1","price":".price"}' --project-root "$OLDPWD"
+
+# Find - Find element and get info
+npm run bp:find -- -u "<target-url>" -s "<selector>" --project-root "$OLDPWD"
+
+# Get Property - Get element property value
+npm run bp:get-property -- -u "<target-url>" -s "<selector>" -p "value" --project-root "$OLDPWD"
+
+# Switch Tab - Switch to tab by index
+npm run bp:switch-tab -- -i <tab-index> --project-root "$OLDPWD"
+
+# Set Cookie - Set a cookie
+npm run bp:set-cookie -- -n "sessionId" -v "abc123" -d "localhost" --project-root "$OLDPWD"
+
+# Delete Cookies - Delete cookies
+npm run bp:delete-cookies -- -n "sessionId" --project-root "$OLDPWD"  # Specific cookie
+npm run bp:delete-cookies -- --project-root "$OLDPWD"  # All cookies
+
+# Sleep - Wait for milliseconds
+npm run bp:sleep -- -t 2000 --project-root "$OLDPWD"  # Wait 2 seconds
+
+# Wait Idle - Wait for network idle
+npm run bp:wait-idle -- -t 5000 --project-root "$OLDPWD"
+
+# Accessibility - Get accessibility tree
+npm run bp:accessibility -- -u "<target-url>" --project-root "$OLDPWD"
+
+# Enable Interception - Enable request interception
+npm run bp:enable-interception -- --project-root "$OLDPWD"
+
+# Disable Interception - Disable request interception
+npm run bp:disable-interception -- --project-root "$OLDPWD"
 ```
 
 **Options:**

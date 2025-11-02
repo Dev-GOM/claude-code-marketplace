@@ -136,12 +136,13 @@ async function pressKey(browser, key) {
     console.log(`Pressing key: ${key}`);
     const script = `
     (function() {
+      const key = ${JSON.stringify(key)};
       document.dispatchEvent(new KeyboardEvent('keydown', {
-        key: '${key}',
+        key: key,
         bubbles: true
       }));
       document.dispatchEvent(new KeyboardEvent('keyup', {
-        key: '${key}',
+        key: key,
         bubbles: true
       }));
       return true;
@@ -159,24 +160,24 @@ async function pressKey(browser, key) {
 async function typeText(browser, text, delay = 0) {
     console.log(`Typing: ${text}`);
     for (const char of text) {
-        const safeChar = char.replace(/'/g, "\\'");
         const script = `
       (function() {
+        const char = ${JSON.stringify(char)};
         const activeElement = document.activeElement;
         if (activeElement) {
           activeElement.dispatchEvent(new KeyboardEvent('keydown', {
-            key: '${safeChar}',
+            key: char,
             bubbles: true
           }));
           activeElement.dispatchEvent(new KeyboardEvent('keypress', {
-            key: '${safeChar}',
+            key: char,
             bubbles: true
           }));
           if (activeElement.value !== undefined) {
-            activeElement.value += '${safeChar}';
+            activeElement.value += char;
           }
           activeElement.dispatchEvent(new KeyboardEvent('keyup', {
-            key: '${safeChar}',
+            key: char,
             bubbles: true
           }));
         }
@@ -202,16 +203,20 @@ async function uploadFile(browser, selector, filePath) {
     const fileName = filePath.split(/[/\\]/).pop() || 'file';
     const script = `
     (function() {
-      const el = document.querySelector('${selector}');
-      if (!el) throw new Error('Element not found: ${selector}');
+      const selector = ${JSON.stringify(selector)};
+      const fileData = ${JSON.stringify(fileData)};
+      const fileName = ${JSON.stringify(fileName)};
+
+      const el = document.querySelector(selector);
+      if (!el) throw new Error('Element not found: ' + selector);
       if (el.tagName !== 'INPUT' || el.type !== 'file') {
         throw new Error('Element is not a file input');
       }
 
       const dataTransfer = new DataTransfer();
       const file = new File(
-        [Uint8Array.from(atob('${fileData}'), c => c.charCodeAt(0))],
-        '${fileName}'
+        [Uint8Array.from(atob(fileData), c => c.charCodeAt(0))],
+        fileName
       );
       dataTransfer.items.add(file);
       el.files = dataTransfer.files;
@@ -321,24 +326,32 @@ async function waitForNetworkIdle(browser, timeout = 5000, maxInflight = 0) {
 /**
  * Get console messages.
  *
- * NOTE: This is a placeholder implementation that does not work as expected.
- * To properly collect console messages, you need to:
- * 1. Subscribe to Runtime.consoleAPICalled event before page navigation
- * 2. Collect messages as they arrive in event handler
- * 3. Return collected messages
- *
- * Current implementation always returns empty array.
+ * Returns console messages that have been collected since the browser connected.
+ * Messages are automatically collected when Log domain is enabled during connection.
  */
 async function getConsoleMessages(browser, errorOnly = false) {
-    await browser.sendCommand('Runtime.enable');
-    await browser.sendCommand('Console.enable');
-    // TODO: Implement proper console message collection via CDP events
-    // This requires event subscription before navigation and message buffering
+    console.log('Getting console messages...');
+    // Get all collected messages from browser
+    const allMessages = browser.getConsoleMessages();
+    // Filter by error level if requested
+    const messages = errorOnly
+        ? allMessages.filter(msg => msg.level === 'error')
+        : allMessages;
+    // Format messages for display
+    const formattedMessages = messages.map(msg => ({
+        level: msg.level,
+        text: msg.text,
+        timestamp: new Date(msg.timestamp).toISOString(),
+        url: msg.url,
+        lineNumber: msg.lineNumber
+    }));
     return {
         success: true,
-        messages: [],
-        count: 0,
-        warning: 'Console message collection not fully implemented. Use browser DevTools for console inspection.'
+        messages: formattedMessages,
+        count: formattedMessages.length,
+        errorCount: allMessages.filter(msg => msg.level === 'error').length,
+        warningCount: allMessages.filter(msg => msg.level === 'warning').length,
+        logCount: allMessages.filter(msg => msg.level === 'log' || msg.level === 'info').length
     };
 }
 /**
@@ -347,9 +360,11 @@ async function getConsoleMessages(browser, errorOnly = false) {
 async function getElementProperty(browser, selector, propertyName) {
     const script = `
     (function() {
-      const el = document.querySelector('${selector}');
-      if (!el) throw new Error('Element not found: ${selector}');
-      return el['${propertyName}'];
+      const selector = ${JSON.stringify(selector)};
+      const propertyName = ${JSON.stringify(propertyName)};
+      const el = document.querySelector(selector);
+      if (!el) throw new Error('Element not found: ' + selector);
+      return el[propertyName];
     })()
   `;
     const result = await browser.sendCommand('Runtime.evaluate', {
@@ -375,7 +390,8 @@ async function getElementProperty(browser, selector, propertyName) {
 async function findElement(browser, selector) {
     const script = `
     (function() {
-      const el = document.querySelector('${selector}');
+      const selector = ${JSON.stringify(selector)};
+      const el = document.querySelector(selector);
       if (!el) return null;
 
       const rect = el.getBoundingClientRect();
@@ -459,15 +475,20 @@ async function scroll(browser, x = 0, y = 0, selector) {
     const script = selector
         ? `
       (function() {
-        const el = document.querySelector('${selector}');
-        if (!el) throw new Error('Element not found: ${selector}');
-        el.scrollTo(${x}, ${y});
+        const selector = ${JSON.stringify(selector)};
+        const x = ${JSON.stringify(x)};
+        const y = ${JSON.stringify(y)};
+        const el = document.querySelector(selector);
+        if (!el) throw new Error('Element not found: ' + selector);
+        el.scrollTo(x, y);
         return { x: el.scrollLeft, y: el.scrollTop };
       })()
     `
         : `
       (function() {
-        window.scrollTo(${x}, ${y});
+        const x = ${JSON.stringify(x)};
+        const y = ${JSON.stringify(y)};
+        window.scrollTo(x, y);
         return { x: window.scrollX, y: window.scrollY };
       })()
     `;
@@ -487,11 +508,14 @@ async function dragAndDrop(browser, sourceSelector, targetSelector) {
     console.log(`Dragging ${sourceSelector} to ${targetSelector}`);
     const script = `
     (function() {
-      const source = document.querySelector('${sourceSelector}');
-      const target = document.querySelector('${targetSelector}');
+      const sourceSelector = ${JSON.stringify(sourceSelector)};
+      const targetSelector = ${JSON.stringify(targetSelector)};
 
-      if (!source) throw new Error('Source element not found: ${sourceSelector}');
-      if (!target) throw new Error('Target element not found: ${targetSelector}');
+      const source = document.querySelector(sourceSelector);
+      const target = document.querySelector(targetSelector);
+
+      if (!source) throw new Error('Source element not found: ' + sourceSelector);
+      if (!target) throw new Error('Target element not found: ' + targetSelector);
 
       const sourceRect = source.getBoundingClientRect();
       const targetRect = target.getBoundingClientRect();

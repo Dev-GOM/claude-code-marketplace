@@ -40,7 +40,21 @@
     "bp:emulate-media": "node dist/cli.js emulate-media",
     "bp:dialog": "node dist/cli.js dialog",
     "bp:block-url": "node dist/cli.js block-url",
-    "bp:unblock-urls": "node dist/cli.js unblock-urls"
+    "bp:unblock-urls": "node dist/cli.js unblock-urls",
+    "bp:console": "node dist/cli.js console",
+    "bp:focus": "node dist/cli.js focus",
+    "bp:blur": "node dist/cli.js blur",
+    "bp:extract-data": "node dist/cli.js extract-data",
+    "bp:find": "node dist/cli.js find",
+    "bp:get-property": "node dist/cli.js get-property",
+    "bp:switch-tab": "node dist/cli.js switch-tab",
+    "bp:set-cookie": "node dist/cli.js set-cookie",
+    "bp:delete-cookies": "node dist/cli.js delete-cookies",
+    "bp:sleep": "node dist/cli.js sleep",
+    "bp:wait-idle": "node dist/cli.js wait-idle",
+    "bp:accessibility": "node dist/cli.js accessibility",
+    "bp:enable-interception": "node dist/cli.js enable-interception",
+    "bp:disable-interception": "node dist/cli.js disable-interception"
   },
   "keywords": [
     "cdp",

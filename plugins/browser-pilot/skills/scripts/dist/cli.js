@@ -777,6 +777,329 @@ program
         process.exit(1);
     }
 });
+// Get console messages
+program
+    .command('console')
+    .description('Get console messages from the page')
+    .option('-u, --url <url>', 'Navigate to URL before getting console messages')
+    .option('-e, --errors-only', 'Show only error messages', false)
+    .action(async (options) => {
+    const browser = new browser_1.ChromeBrowser();
+    try {
+        await browser.connect();
+        if (options.url) {
+            await actions.navigate(browser, options.url);
+            await actions.waitForLoad(browser);
+            // Wait a bit for console messages to appear
+            await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+        const result = await actions.getConsoleMessages(browser, options.errorsOnly);
+        console.log(`\n=== Console Messages (Total: ${result.count}) ===`);
+        console.log(`Errors: ${result.errorCount}, Warnings: ${result.warningCount}, Logs: ${result.logCount}\n`);
+        if (result.messages.length === 0) {
+            console.log('No console messages found.');
+        }
+        else {
+            result.messages.forEach((msg) => {
+                const location = msg.url ? ` (${msg.url}:${msg.lineNumber || '?'})` : '';
+                console.log(`[${msg.level.toUpperCase()}]${location} ${msg.text}`);
+            });
+        }
+        console.log('\nBrowser remains open. Use "close" command to close it.');
+        process.exit(0);
+    }
+    catch (error) {
+        console.error('Error:', error);
+        process.exit(1);
+    }
+});
+// Focus element
+program
+    .command('focus')
+    .description('Focus on an element')
+    .requiredOption('-s, --selector <selector>', 'CSS selector')
+    .option('-u, --url <url>', 'Navigate to URL first')
+    .action(async (options) => {
+    const browser = new browser_1.ChromeBrowser(false);
+    try {
+        await browser.connect();
+        if (options.url) {
+            await actions.navigate(browser, options.url);
+            await actions.waitForLoad(browser);
+        }
+        const result = await actions.focus(browser, options.selector);
+        console.log('Focused:', result.selector);
+        console.log('Browser will stay open. Use "close" command to close it.');
+        process.exit(0);
+    }
+    catch (error) {
+        console.error('Error:', error);
+        process.exit(1);
+    }
+});
+// Blur element
+program
+    .command('blur')
+    .description('Remove focus from an element')
+    .requiredOption('-s, --selector <selector>', 'CSS selector')
+    .option('-u, --url <url>', 'Navigate to URL first')
+    .action(async (options) => {
+    const browser = new browser_1.ChromeBrowser(false);
+    try {
+        await browser.connect();
+        if (options.url) {
+            await actions.navigate(browser, options.url);
+            await actions.waitForLoad(browser);
+        }
+        const result = await actions.blur(browser, options.selector);
+        console.log('Blurred:', result.selector);
+        console.log('Browser will stay open. Use "close" command to close it.');
+        process.exit(0);
+    }
+    catch (error) {
+        console.error('Error:', error);
+        process.exit(1);
+    }
+});
+// Extract data
+program
+    .command('extract-data')
+    .description('Extract data using multiple selectors')
+    .requiredOption('-s, --selectors <json>', 'JSON object of key-selector pairs')
+    .option('-u, --url <url>', 'Navigate to URL first')
+    .action(async (options) => {
+    const browser = new browser_1.ChromeBrowser(false);
+    try {
+        await browser.connect();
+        if (options.url) {
+            await actions.navigate(browser, options.url);
+            await actions.waitForLoad(browser);
+        }
+        const selectors = JSON.parse(options.selectors);
+        const result = await actions.extractData(browser, selectors);
+        console.log('Extracted data:', JSON.stringify(result.data, null, 2));
+        console.log('Browser remains open. Use "close" command to close it.');
+        process.exit(0);
+    }
+    catch (error) {
+        console.error('Error:', error);
+        process.exit(1);
+    }
+});
+// Find element
+program
+    .command('find')
+    .description('Find element and return its information')
+    .requiredOption('-s, --selector <selector>', 'CSS selector')
+    .option('-u, --url <url>', 'Navigate to URL first')
+    .action(async (options) => {
+    const browser = new browser_1.ChromeBrowser(false);
+    try {
+        await browser.connect();
+        if (options.url) {
+            await actions.navigate(browser, options.url);
+            await actions.waitForLoad(browser);
+        }
+        const result = await actions.findElement(browser, options.selector);
+        console.log('Element info:', JSON.stringify(result.element, null, 2));
+        console.log('Browser remains open. Use "close" command to close it.');
+        process.exit(0);
+    }
+    catch (error) {
+        console.error('Error:', error);
+        process.exit(1);
+    }
+});
+// Get element property
+program
+    .command('get-property')
+    .description('Get element property value')
+    .requiredOption('-s, --selector <selector>', 'CSS selector')
+    .requiredOption('-p, --property <property>', 'Property name')
+    .option('-u, --url <url>', 'Navigate to URL first')
+    .action(async (options) => {
+    const browser = new browser_1.ChromeBrowser(false);
+    try {
+        await browser.connect();
+        if (options.url) {
+            await actions.navigate(browser, options.url);
+            await actions.waitForLoad(browser);
+        }
+        const result = await actions.getElementProperty(browser, options.selector, options.property);
+        console.log(`${options.property}:`, result.value);
+        console.log('Browser remains open. Use "close" command to close it.');
+        process.exit(0);
+    }
+    catch (error) {
+        console.error('Error:', error);
+        process.exit(1);
+    }
+});
+// Switch tab
+program
+    .command('switch-tab')
+    .description('Switch to a tab by index')
+    .requiredOption('-i, --index <index>', 'Tab index', parseInt)
+    .action(async (options) => {
+    const browser = new browser_1.ChromeBrowser(false);
+    try {
+        await browser.connect();
+        const result = await actions.switchTab(browser, options.index);
+        console.log(result.message);
+        process.exit(0);
+    }
+    catch (error) {
+        console.error('Error:', error);
+        process.exit(1);
+    }
+});
+// Set cookie
+program
+    .command('set-cookie')
+    .description('Set a cookie')
+    .requiredOption('-n, --name <name>', 'Cookie name')
+    .requiredOption('-v, --value <value>', 'Cookie value')
+    .option('-d, --domain <domain>', 'Cookie domain')
+    .option('-p, --path <path>', 'Cookie path', '/')
+    .option('--secure', 'Secure cookie', false)
+    .option('--http-only', 'HTTP only cookie', false)
+    .action(async (options) => {
+    const browser = new browser_1.ChromeBrowser(false);
+    try {
+        await browser.connect();
+        const result = await actions.setCookie(browser, options.name, options.value, options.domain, options.path, options.secure, options.httpOnly);
+        console.log('Cookie set:', result.cookie);
+        console.log('Browser remains open. Use "close" command to close it.');
+        process.exit(0);
+    }
+    catch (error) {
+        console.error('Error:', error);
+        process.exit(1);
+    }
+});
+// Delete cookies
+program
+    .command('delete-cookies')
+    .description('Delete cookies by name')
+    .option('-n, --name <name>', 'Cookie name to delete (deletes all if not specified)')
+    .option('-u, --url <url>', 'Navigate to URL first')
+    .action(async (options) => {
+    const browser = new browser_1.ChromeBrowser(false);
+    try {
+        await browser.connect();
+        if (options.url) {
+            await actions.navigate(browser, options.url);
+            await actions.waitForLoad(browser);
+        }
+        const result = await actions.deleteCookies(browser, options.name);
+        console.log(result.message);
+        console.log('Browser remains open. Use "close" command to close it.');
+        process.exit(0);
+    }
+    catch (error) {
+        console.error('Error:', error);
+        process.exit(1);
+    }
+});
+// Wait milliseconds
+program
+    .command('sleep')
+    .description('Wait for specified milliseconds')
+    .requiredOption('-t, --time <ms>', 'Milliseconds to wait', parseInt)
+    .action(async (options) => {
+    const browser = new browser_1.ChromeBrowser(false);
+    try {
+        await browser.connect();
+        const result = await actions.waitMilliseconds(browser, options.time);
+        console.log(`Waited ${result.waitedMs}ms`);
+        console.log('Browser remains open. Use "close" command to close it.');
+        process.exit(0);
+    }
+    catch (error) {
+        console.error('Error:', error);
+        process.exit(1);
+    }
+});
+// Wait for network idle
+program
+    .command('wait-idle')
+    .description('Wait for network to be idle')
+    .option('-t, --timeout <ms>', 'Timeout in milliseconds', parseInt, 5000)
+    .action(async (options) => {
+    const browser = new browser_1.ChromeBrowser(false);
+    try {
+        await browser.connect();
+        const result = await actions.waitForNetworkIdle(browser, options.timeout);
+        console.log('Network is idle:', result.state);
+        console.log('Browser remains open. Use "close" command to close it.');
+        process.exit(0);
+    }
+    catch (error) {
+        console.error('Error:', error);
+        process.exit(1);
+    }
+});
+// Get accessibility snapshot
+program
+    .command('accessibility')
+    .description('Get accessibility tree snapshot')
+    .option('-u, --url <url>', 'Navigate to URL first')
+    .action(async (options) => {
+    const browser = new browser_1.ChromeBrowser(false);
+    try {
+        await browser.connect();
+        if (options.url) {
+            await actions.navigate(browser, options.url);
+            await actions.waitForLoad(browser);
+        }
+        const result = await actions.getAccessibilitySnapshot(browser);
+        console.log(`Accessibility nodes: ${result.nodeCount}`);
+        console.log('First 50 nodes:', JSON.stringify(result.nodes, null, 2));
+        console.log('Browser remains open. Use "close" command to close it.');
+        process.exit(0);
+    }
+    catch (error) {
+        console.error('Error:', error);
+        process.exit(1);
+    }
+});
+// Enable request interception
+program
+    .command('enable-interception')
+    .description('Enable network request interception')
+    .action(async () => {
+    const browser = new browser_1.ChromeBrowser(false);
+    try {
+        await browser.connect();
+        const result = await actions.enableRequestInterception(browser);
+        console.log('Request interception enabled');
+        console.log('Note:', result.note);
+        console.log('Browser remains open. Use "close" command to close it.');
+        process.exit(0);
+    }
+    catch (error) {
+        console.error('Error:', error);
+        process.exit(1);
+    }
+});
+// Disable request interception
+program
+    .command('disable-interception')
+    .description('Disable network request interception')
+    .action(async () => {
+    const browser = new browser_1.ChromeBrowser(false);
+    try {
+        await browser.connect();
+        await actions.disableRequestInterception(browser);
+        console.log('Request interception disabled');
+        console.log('Browser remains open. Use "close" command to close it.');
+        process.exit(0);
+    }
+    catch (error) {
+        console.error('Error:', error);
+        process.exit(1);
+    }
+});
 // Handle --project-root option before any command action
 program.hook('preAction', (thisCommand, actionCommand) => {
     const opts = actionCommand.opts();

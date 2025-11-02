@@ -3,6 +3,7 @@
  */
 
 import WebSocket from 'ws';
+import { EventEmitter } from 'events';
 
 export interface CDPMessage {
   id: number;
@@ -19,12 +20,18 @@ export interface CDPResponse {
   };
 }
 
-export class CDPClient {
+export interface CDPEvent {
+  method: string;
+  params?: Record<string, any>;
+}
+
+export class CDPClient extends EventEmitter {
   private ws: WebSocket | null = null;
   private messageId = 0;
   private readonly wsUrl: string;
 
   constructor(wsUrl: string) {
+    super();
     this.wsUrl = wsUrl;
   }
 
@@ -36,6 +43,21 @@ export class CDPClient {
       this.ws = new WebSocket(this.wsUrl);
 
       this.ws.on('open', () => {
+        // Set up global message handler for CDP events
+        this.ws!.on('message', (data: WebSocket.Data) => {
+          try {
+            const message = JSON.parse(data.toString());
+
+            // CDP events don't have 'id' field, only 'method' and 'params'
+            if (!message.id && message.method) {
+              this.emit('event', message as CDPEvent);
+              this.emit(message.method, message.params);
+            }
+          } catch (error) {
+            // Ignore parse errors
+          }
+        });
+
         resolve();
       });
 

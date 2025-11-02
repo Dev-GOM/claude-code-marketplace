@@ -8,11 +8,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CDPClient = void 0;
 const ws_1 = __importDefault(require("ws"));
-class CDPClient {
+const events_1 = require("events");
+class CDPClient extends events_1.EventEmitter {
     ws = null;
     messageId = 0;
     wsUrl;
     constructor(wsUrl) {
+        super();
         this.wsUrl = wsUrl;
     }
     /**
@@ -22,6 +24,20 @@ class CDPClient {
         return new Promise((resolve, reject) => {
             this.ws = new ws_1.default(this.wsUrl);
             this.ws.on('open', () => {
+                // Set up global message handler for CDP events
+                this.ws.on('message', (data) => {
+                    try {
+                        const message = JSON.parse(data.toString());
+                        // CDP events don't have 'id' field, only 'method' and 'params'
+                        if (!message.id && message.method) {
+                            this.emit('event', message);
+                            this.emit(message.method, message.params);
+                        }
+                    }
+                    catch (error) {
+                        // Ignore parse errors
+                    }
+                });
                 resolve();
             });
             this.ws.on('error', (error) => {
