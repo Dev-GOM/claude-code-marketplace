@@ -318,9 +318,9 @@ Browser Pilot은 포트가 사용 중일 경우 디버그 포트를 자동 증�
 
 ### 연결 시간 초과
 
-`src/cdp/browser.ts`에서 폴링 시도 횟수 증가:
+기본 타임아웃은 10초입니다 (20회 시도 × 500ms). 늘리려면 `src/cdp/browser.ts`를 수정:
 ```typescript
-const maxAttempts = 40; // 20초 (40 * 500ms)
+const maxAttempts = 40; // 20에서 40으로 변경하면 20초 타임아웃
 ```
 
 ### 요소를 찾을 수 없음

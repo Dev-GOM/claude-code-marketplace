@@ -1,6 +1,6 @@
 {
   "name": "browser-pilot",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Chrome DevTools Protocol (CDP) browser automation, web scraping, and crawling",
   "author": {
     "name": "Dev GOM",

@@ -2,7 +2,24 @@
 
 All notable changes to the Dev GOM Plugins marketplace will be documented in this file.
 
-> **Version**: 2.8.0 | **Last Updated**: 2025-11-03
+> **Version**: 2.8.1 | **Last Updated**: 2025-11-03
+
+---
+
+## [2.8.1] - 2025-11-03
+
+### Security
+- 🔒 **Browser Pilot v0.1.1**: Additional XSS Vulnerability Fixes
+  - Fixed template string injection vulnerabilities in 7 additional functions
+  - Fixed functions: `pressKey`, `typeText`, `uploadFile`, `getElementProperty`, `findElement`, `scroll`, `dragAndDrop`
+  - Replaced unsafe template literals with `JSON.stringify()` for proper escaping
+  - Total: 18 functions now protected against XSS attacks (11 in v2.8.0 + 7 in v2.8.1)
+
+### Fixed
+- 📝 **Browser Pilot v0.1.1**: Documentation Inconsistency
+  - Fixed README documentation where `maxAttempts` example (40) differed from actual code default (20)
+  - Clarified that default timeout is 10 seconds (20 attempts × 500ms)
+  - Updated both English and Korean documentation
 
 ---
 

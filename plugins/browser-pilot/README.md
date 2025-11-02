@@ -318,9 +318,9 @@ Browser Pilot auto-increments debug port (9222 → 9223 → ...) if port is busy
 
 ### Connection Timeout
 
-Increase polling attempts in `src/cdp/browser.ts`:
+Default timeout is 10 seconds (20 attempts × 500ms). To increase, modify `src/cdp/browser.ts`:
 ```typescript
-const maxAttempts = 40; // 20 seconds (40 * 500ms)
+const maxAttempts = 40; // Change from 20 to 40 for 20 seconds timeout
 ```
 
 ### Element Not Found
