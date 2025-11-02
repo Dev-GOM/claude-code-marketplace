@@ -1,6 +1,6 @@
 # Claude Code 플러그인
 
-> **버전**: 2.5.2 | **최종 업데이트**: 2025-10-29
+> **버전**: 2.7.0 | **최종 업데이트**: 2025-11-03
 >
 > **언어**: [English](README.md) | [한국어](README.ko.md)
 >
@@ -186,6 +186,36 @@ Claude Code 세션(Session)이 끝날 때마다 자동으로 git 커밋을 생�
 
 </details>
 
+---
+
+### 12. 🌐 [Browser Pilot](plugins/browser-pilot/README.ko.md)
+
+<details>
+<summary><strong>📖 플러그인 상세</strong> (펼치기)</summary>
+
+Claude Code를 위한 Chrome DevTools Protocol (CDP) 기반 브라우저 자동화, 웹 스크래핑 및 크롤링.
+
+**요약:** Headless 브라우저 자동화, 스크린샷 캡처, PDF 생성, 폼 자동화, 웹 스크래핑 | **스킬:** CLI를 통한 브라우저 자동화 | **기능:** 봇 감지 우회 (`navigator.webdriver = false`), 인간 같은 딜레이를 사용한 멀티 스텝 워크플로우, 탭 관리, JavaScript 실행
+
+**[전체 문서 보기 →](plugins/browser-pilot/README.ko.md)**
+
+</details>
+
+---
+
+### 13. 🎮 [Unity Editor Pilot](plugins/unity-editor-pilot/README.ko.md)
+
+<details>
+<summary><strong>📖 플러그인 상세</strong> (펼치기)</summary>
+
+WebSocket을 통해 Unity Editor를 프로그래밍 방식으로 제어 - GameObject 생성, 씬 관리, Play Mode 제어 및 Claude Code에서 직접 에디터 워크플로우 자동화.
+
+**요약:** WebSocket 기반 Unity Editor 제어 (포트 30090-30099) | GameObject/Scene/PlayMode 관리 | **상태:** 🚧 개발 중 (v0.1.0) | **기능:** 실시간 에디터 통신, 커맨드라인 인터페이스, 크로스 플랫폼 셸 스크립트
+
+**[전체 문서 보기 →](plugins/unity-editor-pilot/README.ko.md)**
+
+</details>
+
 ## 설치
 
 ### 빠른 시작 (권장)
@@ -229,6 +259,11 @@ Claude Code 세션(Session)이 끝날 때마다 자동으로 git 커밋을 생�
    ```bash
    /plugin install auto-release-manager@dev-gom-plugins
    ```
+   ```bash
+   /plugin install browser-pilot@dev-gom-plugins
+   ```
+
+   > **참고**: Unity Editor Pilot은 개발 중이며 아직 설치할 수 없습니다.
 
 3. 플러그인을 로드하기 위해 Claude Code 재시작:
    ```bash

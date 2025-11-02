@@ -1,0 +1,427 @@
+# Browser Pilot
+
+> **Status**: ✅ Released (v0.1.0)
+
+Chrome DevTools Protocol (CDP) based browser automation, web scraping, and crawling - Control Chrome browser programmatically from Claude Code.
+
+## Overview
+
+Browser Pilot enables direct control of Chrome browser through the Chrome DevTools Protocol (CDP), similar to how Selenium or Puppeteer works but with a CLI-first approach. This plugin allows you to:
+
+- 📸 Capture screenshots (viewport or full-page)
+- 🌐 Navigate to URLs and interact with pages
+- 🖱️ Click elements, fill forms, and press keys
+- 📄 Extract text content and scrape data
+- 📑 Generate PDFs from web pages
+- 🔗 Manage browser tabs (list, switch, close)
+- 🤖 Bypass bot detection (maintains `navigator.webdriver = false`)
+
+## Architecture
+
+```
+┌─────────────────┐    Chrome DevTools Protocol    ┌──────────────────────┐
+│  Claude Code    │◄──────────────────────────────►│   Chrome Browser     │
+│  (TypeScript)   │      WebSocket (Port 9222+)    │   (CDP Server)       │
+│                 │                                 │                      │
+│  - CLI Client   │                                 │  - Headless Mode     │
+│  - Commands     │                                 │  - Tab Management    │
+│  - Config Mgmt  │                                 │  - DevTools API      │
+└─────────────────┘                                 └──────────────────────┘
+```
+
+**Key Components:**
+- **TypeScript CLI**: Command-line interface for CDP operations
+- **Chrome Browser**: Runs in headless or headed mode with CDP enabled
+- **WebSocket Communication**: JSON-based command-response protocol
+
+## Installation
+
+### Prerequisites
+
+1. **Google Chrome** (latest version recommended)
+2. **Node.js** 18+ ([nodejs.org](https://nodejs.org))
+3. **Git Bash** (Windows) or Terminal (macOS/Linux)
+
+### Quick Installation
+
+```bash
+cd plugins/browser-pilot/skills/scripts
+npm install
+npm run build
+```
+
+The plugin will auto-initialize when you start a Claude Code session (via SessionStart hook).
+
+## Quick Start
+
+### Basic Usage
+
+All commands should be run from `plugins/browser-pilot/skills/scripts`:
+
+```bash
+cd plugins/browser-pilot/skills/scripts
+
+# Take a screenshot
+npm run bp:screenshot -- -u "https://example.com" -o "example.png" --headless --full-page --project-root "$OLDPWD"
+
+# Navigate to a URL
+npm run bp:navigate -- -u "https://github.com" --project-root "$OLDPWD"
+
+# Extract text from elements
+npm run bp:extract -- -u "https://example.com" -s "h1" --project-root "$OLDPWD"
+
+# Fill a form field
+npm run bp:fill -- -u "https://example.com/login" -s "#email" -v "user@example.com" --project-root "$OLDPWD"
+
+# Click an element
+npm run bp:click -- -u "https://example.com" -s "button.login-btn" --project-root "$OLDPWD"
+
+# Generate PDF
+npm run bp:pdf -- -u "https://docs.example.com" -o "documentation.pdf" --project-root "$OLDPWD"
+```
+
+**Important**: Always include `--project-root "$OLDPWD"` to ensure files are saved to the correct project directory.
+
+### Multi-Step Workflows
+
+Chain commands using `&&` with `sleep` delays to avoid bot detection:
+
+```bash
+cd plugins/browser-pilot/skills/scripts
+
+# Login workflow with human-like delays
+npm run bp:navigate -- -u "https://example.com/login" --project-root "$OLDPWD" && \
+sleep 1 && \
+npm run bp:fill -- -s "#email" -v "user@example.com" --project-root "$OLDPWD" && \
+sleep 0.5 && \
+npm run bp:fill -- -s "#password" -v "mypass123" --project-root "$OLDPWD" && \
+sleep 0.5 && \
+npm run bp:click -- -s "button[type='submit']" --project-root "$OLDPWD"
+```
+
+## Available Commands
+
+### Core Commands
+
+```bash
+# Launch browser
+launch           # Start Chrome in headless or headed mode
+  --headless     # Run without UI (default: false)
+
+# Navigate
+navigate         # Go to URL
+  -u, --url      # Target URL (required)
+
+# Screenshot
+screenshot       # Capture page screenshot
+  -u, --url      # Target URL (optional if browser already open)
+  -o, --output   # Output filename (saves to .browser-pilot/)
+  --full-page    # Capture entire page (default: viewport only)
+  --headless     # Run in headless mode
+
+# PDF Generation
+pdf              # Generate PDF from page
+  -u, --url      # Target URL (optional if browser already open)
+  -o, --output   # Output filename (saves to .browser-pilot/)
+  --landscape    # Use landscape orientation
+  --headless     # Run in headless mode
+```
+
+### Interaction Commands
+
+```bash
+# Click
+click            # Click element by selector
+  -u, --url      # Target URL (optional)
+  -s, --selector # CSS selector (required)
+
+# Fill Form
+fill             # Fill input field
+  -u, --url      # Target URL (optional)
+  -s, --selector # CSS selector (required)
+  -v, --value    # Text to fill (required)
+
+# Type Text
+type             # Type text in active element
+  --text         # Text to type (required)
+
+# Press Key
+press            # Press keyboard key
+  --key          # Key name (Enter, Tab, Escape, etc.)
+
+# Extract Content
+extract          # Extract text from elements
+  -u, --url      # Target URL (optional)
+  -s, --selector # CSS selector (required)
+  --all          # Extract all matching elements (default: first only)
+
+# Execute JavaScript
+eval             # Execute JavaScript in page context
+  -u, --url      # Target URL (optional)
+  --expression   # JavaScript code to execute (required)
+```
+
+### Tab Management
+
+```bash
+# List tabs
+list-tabs        # Show all open tabs with IDs and titles
+
+# Switch tab
+switch-tab       # Switch to specific tab
+  --id           # Tab ID (from list-tabs)
+  --index        # Or tab index (0-based)
+
+# Close tab
+close-tab        # Close specific tab
+  --id           # Tab ID (from list-tabs)
+  --index        # Or tab index (0-based)
+
+# Close browser
+close            # Close all tabs and exit browser
+```
+
+## Configuration
+
+### Config File
+
+Location: `.plugin-config/browser-pilot.json`
+
+```json
+{
+  "initialized": true,
+  "debugPort": 9222,
+  "lastUsed": "2025-11-03T05:00:00.000Z"
+}
+```
+
+### Output Directory
+
+All screenshots and PDFs are automatically saved to:
+- `.browser-pilot/` (in project root)
+- Auto-created with `.gitignore` to exclude generated files
+
+## Example Workflows
+
+### Screenshot Capture
+
+```bash
+# Full-page screenshot in headless mode
+npm run bp:screenshot -- \
+  -u "https://github.com" \
+  -o "github-homepage.png" \
+  --headless \
+  --full-page \
+  --project-root "$OLDPWD"
+```
+
+### Form Automation
+
+```bash
+cd plugins/browser-pilot/skills/scripts
+
+# Contact form submission with delays
+npm run bp:navigate -- -u "https://example.com/contact" --project-root "$OLDPWD" && \
+sleep 1 && \
+npm run bp:fill -- -s "#name" -v "John Doe" --project-root "$OLDPWD" && \
+sleep 0.5 && \
+npm run bp:fill -- -s "#email" -v "john@example.com" --project-root "$OLDPWD" && \
+sleep 0.5 && \
+npm run bp:fill -- -s "#message" -v "Hello from Browser Pilot!" --project-root "$OLDPWD" && \
+sleep 0.5 && \
+npm run bp:click -- -s "button[type='submit']" --project-root "$OLDPWD" && \
+sleep 1 && \
+npm run bp:screenshot -- -o "contact-submitted.png" --project-root "$OLDPWD"
+```
+
+### Web Scraping
+
+```bash
+# Extract all h1 headings from a page
+npm run bp:extract -- \
+  -u "https://news.ycombinator.com" \
+  -s "a.storylink" \
+  --all \
+  --project-root "$OLDPWD"
+```
+
+### PDF Generation
+
+```bash
+# Generate landscape PDF of documentation
+npm run bp:pdf -- \
+  -u "https://docs.example.com" \
+  -o "api-docs.pdf" \
+  --landscape \
+  --headless \
+  --project-root "$OLDPWD"
+```
+
+## Bot Detection Avoidance
+
+Browser Pilot maintains `navigator.webdriver = false`, bypassing most anti-bot systems.
+
+**Additional Tips**:
+- Add `sleep` delays (0.5-2 seconds) between commands to mimic human behavior
+- Longer delays for critical actions (login, form submission)
+- Use random delays when automating multiple similar actions
+- Example: `npm run bp:fill ... && sleep 1 && npm run bp:click ...`
+
+**Test Bot Detection**:
+```bash
+npm run bp:screenshot -- \
+  -u "https://bot.sannysoft.com" \
+  -o "bot-test.png" \
+  --headless \
+  --project-root "$OLDPWD"
+```
+
+Expected: All checks **PASS** (green).
+
+## Best Practices
+
+1. **Build once** - Run `npm run build` before first use
+2. **Use headed mode for debugging** - Omit `--headless` to see browser window
+3. **Prefer unique selectors** - Use IDs: `#username` > `.class` > `input[name="user"]`
+4. **Relative paths** - Files auto-save to `.browser-pilot/`
+5. **Add human-like delays** - Use `sleep 0.5-2` between commands to avoid bot detection
+6. **Respect rate limits** - Add delays between requests
+7. **Close browser when done** - Use `npm run bp:close` to free resources
+
+## Troubleshooting
+
+### Build Errors
+
+```bash
+cd plugins/browser-pilot/skills/scripts
+npm install && npm run build
+```
+
+### Chrome Not Found
+
+Browser Pilot automatically detects Chrome installation. If it fails:
+
+**Windows**:
+- Default: `C:\Program Files\Google\Chrome\Application\chrome.exe`
+- User: `%LOCALAPPDATA%\Google\Chrome\Application\chrome.exe`
+
+**macOS**:
+- `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome`
+
+**Linux**:
+- `/usr/bin/google-chrome`
+- `/usr/bin/chromium`
+
+### Port Already in Use
+
+Browser Pilot auto-increments debug port (9222 → 9223 → ...) if port is busy.
+
+### Connection Timeout
+
+Increase polling attempts in `src/cdp/browser.ts`:
+```typescript
+const maxAttempts = 40; // 20 seconds (40 * 500ms)
+```
+
+### Element Not Found
+
+- Verify selector with browser DevTools (`F12` → Console → `document.querySelector("...")`)
+- Wait for page load with `sleep 1` before interacting
+- Use more specific selectors (`#id` > `.class`)
+
+## Technical Details
+
+### Chrome DevTools Protocol
+
+Browser Pilot uses CDP for all browser operations:
+
+**Request:**
+```json
+{
+  "id": 1,
+  "method": "Page.navigate",
+  "params": {
+    "url": "https://example.com"
+  }
+}
+```
+
+**Response:**
+```json
+{
+  "id": 1,
+  "result": {
+    "frameId": "frame-id-here"
+  }
+}
+```
+
+### Project Structure
+
+```
+plugins/browser-pilot/
+├── .claude-plugin/
+│   └── plugin.json              # Plugin metadata
+├── hooks/
+│   ├── hooks.json               # SessionStart hook config
+│   └── scripts/
+│       └── init-config.js       # Auto-initialization script
+├── skills/
+│   ├── SKILL.md                 # Skill documentation
+│   └── scripts/
+│       ├── package.json         # Node.js dependencies
+│       ├── tsconfig.json        # TypeScript config
+│       ├── dist/                # Compiled JavaScript
+│       └── src/
+│           ├── cli.ts           # CLI entry point
+│           ├── cdp/
+│           │   ├── browser.ts   # Chrome launcher
+│           │   ├── client.ts    # CDP WebSocket client
+│           │   ├── actions.ts   # Core CDP actions
+│           │   ├── actions-extra.ts  # Extended actions
+│           │   └── utils.ts     # Utility functions
+│           └── config/
+│               └── manager.ts   # Config management
+└── README.md                    # This file
+```
+
+## Ethical Usage
+
+Browser Pilot is for **authorized automation only**. Do NOT use for:
+
+- Unauthorized access or credential theft
+- DDoS attacks or server overload
+- Copyright infringement (scraping copyrighted content)
+- Bypassing paywalls or access controls
+- Automated account creation (spam, fake accounts)
+- Credential stuffing
+
+Always respect robots.txt and website terms of service.
+
+## Performance
+
+**Command Chaining**:
+- Browser launches once and stays open (fast)
+- Each command reuses the same browser instance
+- ~100-200ms overhead per command (npm startup)
+- CDP communication is near-instant (milliseconds)
+- Add `sleep` delays to avoid bot detection (0.5-2 seconds recommended)
+- Total workflow time = page loads + sleep delays + command overhead
+
+## License
+
+MIT License - see [LICENSE](../../LICENSE) for details
+
+## Contributing
+
+This plugin is part of the [Dev GOM Plugins](https://github.com/Dev-GOM/claude-code-marketplace) marketplace. Contributions are welcome!
+
+## Support
+
+- 📖 Documentation: [SKILL.md](./skills/SKILL.md)
+- 🐛 Issues: [GitHub Issues](https://github.com/Dev-GOM/claude-code-marketplace/issues)
+- 💬 Discussions: [GitHub Discussions](https://github.com/Dev-GOM/claude-code-marketplace/discussions)
+
+---
+
+**Note**: Browser Pilot is production-ready and actively maintained. Report bugs or request features via GitHub Issues.

@@ -120,17 +120,19 @@ class ChromeBrowser {
         let attempts = 0;
         const maxAttempts = 20; // 10 seconds (20 * 500ms)
         let connected = false;
-        while (attempts < maxAttempts && !connected) {
+        while (attempts < maxAttempts) {
             try {
                 const response = await fetch(`http://localhost:${this.debugPort}/json/version`);
                 if (response.ok) {
                     connected = true;
+                    break;
                 }
             }
             catch (error) {
-                attempts++;
-                await this.sleep(500);
+                // Connection may be refused while browser is starting up
             }
+            attempts++;
+            await this.sleep(500);
         }
         if (!connected) {
             throw new Error('Failed to connect to Chrome within the timeout period (10 seconds).');
