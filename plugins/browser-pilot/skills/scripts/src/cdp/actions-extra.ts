@@ -2,7 +2,7 @@
  * Additional CDP actions - extraction, selection, input, files, page control, navigation, debugging
  */
 
-import { ChromeBrowser } from './browser';
+import { ChromeBrowser, FormattedConsoleMessage } from './browser';
 import { readFileSync } from 'fs';
 
 export interface ActionResult {
@@ -394,7 +394,7 @@ export async function getConsoleMessages(
     : allMessages;
 
   // Format messages for display
-  const formattedMessages = messages.map(msg => ({
+  const formattedMessages: FormattedConsoleMessage[] = messages.map(msg => ({
     level: msg.level,
     text: msg.text,
     timestamp: new Date(msg.timestamp).toISOString(),

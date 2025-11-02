@@ -2,7 +2,27 @@
 
 Dev GOM Plugins 마켓플레이스의 모든 주요 변경사항이 이 파일에 문서화됩니다.
 
-> **버전**: 2.8.3 | **최종 업데이트**: 2025-11-03
+> **버전**: 2.8.4 | **최종 업데이트**: 2025-11-03
+
+---
+
+## [2.8.4] - 2025-11-03
+
+### 개선됨
+- 🔧 **Browser Pilot v0.1.4**: 인터페이스 재사용을 통한 타입 안전성 강화
+  - **FormattedConsoleMessage 인터페이스**: 포맷된 콘솔 메시지 전용 인터페이스 추가
+    - `ConsoleMessage` (내부용, `timestamp: number`)와 `FormattedConsoleMessage` (API용, `timestamp: string`) 분리
+    - 내부 표현과 포맷된 출력 간 타입 불일치 해결
+    - 코드 명확성 향상 및 timestamp 타입 혼동 방지
+  - **`any` 타입 제거**:
+    - `ConsoleMessage.stackTrace`: `any` → `StackTrace`
+    - `LogEntry.stackTrace`: `any` → `StackTrace`
+    - `ExceptionDetails.stackTrace`: `any` → `StackTrace`
+    - `RemoteObject.value`: `any` → `unknown`
+    - `RemoteObject` 인덱스 시그니처: `[key: string]: any` → `[key: string]: unknown`
+  - **타입 재사용**: CLI에서 인라인 타입 대신 `FormattedConsoleMessage` import 및 사용
+  - **더 나은 타입 안전성**: `any` 대신 `unknown` 사용으로 명시적 타입 체크 강제
+  - **유지보수성 향상**: 콘솔 메시지 타입의 단일 진실 공급원
 
 ---
 

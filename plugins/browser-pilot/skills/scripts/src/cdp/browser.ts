@@ -21,13 +21,39 @@ interface Target {
   [key: string]: any;
 }
 
+// CDP Event Supporting Interfaces
+interface StackTrace {
+  callFrames?: Array<{
+    url?: string;
+    lineNumber?: number;
+    columnNumber?: number;
+    functionName?: string;
+  }>;
+}
+
+interface RemoteObject {
+  type?: string;
+  value?: unknown;
+  description?: string;
+  [key: string]: unknown;
+}
+
+// Console Message Interfaces
 export interface ConsoleMessage {
   level: string;
   text: string;
   timestamp: number;
   url?: string;
   lineNumber?: number;
-  stackTrace?: any;
+  stackTrace?: StackTrace;
+}
+
+export interface FormattedConsoleMessage {
+  level: string;
+  text: string;
+  timestamp: string; // ISO string format
+  url?: string;
+  lineNumber?: number;
 }
 
 // CDP Event Payload Interfaces
@@ -37,27 +63,11 @@ interface LogEntry {
   timestamp?: number;
   url?: string;
   lineNumber?: number;
-  stackTrace?: any;
+  stackTrace?: StackTrace;
 }
 
 interface LogEntryAddedPayload {
   entry: LogEntry;
-}
-
-interface RemoteObject {
-  type?: string;
-  value?: any;
-  description?: string;
-  [key: string]: any;
-}
-
-interface StackTrace {
-  callFrames?: Array<{
-    url?: string;
-    lineNumber?: number;
-    columnNumber?: number;
-    functionName?: string;
-  }>;
 }
 
 interface ConsoleAPICalledPayload {
@@ -75,7 +85,7 @@ interface ExceptionDetails {
   timestamp?: number;
   url?: string;
   lineNumber?: number;
-  stackTrace?: any;
+  stackTrace?: StackTrace;
 }
 
 interface ExceptionThrownPayload {
