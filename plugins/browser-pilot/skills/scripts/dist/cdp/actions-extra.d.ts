@@ -60,6 +60,14 @@ export declare function waitFor(browser: ChromeBrowser, selector: string, timeou
 export declare function waitForNetworkIdle(browser: ChromeBrowser, timeout?: number, maxInflight?: number): Promise<ActionResult>;
 /**
  * Get console messages.
+ *
+ * NOTE: This is a placeholder implementation that does not work as expected.
+ * To properly collect console messages, you need to:
+ * 1. Subscribe to Runtime.consoleAPICalled event before page navigation
+ * 2. Collect messages as they arrive in event handler
+ * 3. Return collected messages
+ *
+ * Current implementation always returns empty array.
  */
 export declare function getConsoleMessages(browser: ChromeBrowser, errorOnly?: boolean): Promise<ActionResult>;
 /**

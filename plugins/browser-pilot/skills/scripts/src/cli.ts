@@ -346,9 +346,14 @@ program
   .action(async (options) => {
     const browser = new ChromeBrowser(options.headless);
     try {
-      await browser.connect();
+      try {
+        await browser.connect();
+      } catch {
+        await browser.launch();
+      }
       const result = await actions.pressKey(browser, options.key);
       console.log('Pressed key:', result.key);
+      console.log('Browser will stay open. Use "close" command to close it.');
       process.exit(0);
     } catch (error) {
       console.error('Error:', error);
@@ -366,9 +371,14 @@ program
   .action(async (options) => {
     const browser = new ChromeBrowser(options.headless);
     try {
-      await browser.connect();
+      try {
+        await browser.connect();
+      } catch {
+        await browser.launch();
+      }
       const result = await actions.typeText(browser, options.text, options.delay);
       console.log('Typed:', result.text);
+      console.log('Browser will stay open. Use "close" command to close it.');
       process.exit(0);
     } catch (error) {
       console.error('Error:', error);
@@ -408,9 +418,14 @@ program
   .action(async (options) => {
     const browser = new ChromeBrowser(false);
     try {
-      await browser.connect();
+      try {
+        await browser.connect();
+      } catch {
+        await browser.launch();
+      }
       const result = await actions.reload(browser, options.hard);
       console.log('Page reloaded (hard:', result.hardReload, ')');
+      console.log('Browser will stay open. Use "close" command to close it.');
       process.exit(0);
     } catch (error) {
       console.error('Error:', error);

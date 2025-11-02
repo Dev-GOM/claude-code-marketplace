@@ -45,7 +45,15 @@ cd "${CLAUDE_SKILL_ROOT}/scripts" && npm install && npm run build
 - Output file names for screenshots/PDFs
 - Any specific data to extract or forms to fill
 
-**Important:** Always replace `<target-url>`, `<selector>`, `<output-file>`, and other placeholders with actual values from the user's request.
+**When information is missing or ambiguous:**
+- Use the `AskUserQuestion` tool to provide clear options to the user
+- Offer specific choices rather than open-ended questions
+- Examples:
+  - "Which action?" → Choices: Screenshot, Navigate, Extract text, Fill form
+  - "Headless mode?" → Choices: Yes (faster, no UI), No (visible browser)
+  - "Full page screenshot?" → Choices: Yes (entire page), No (viewport only)
+
+**Important:** Always replace `<target-url>`, `<selector>`, `<output-file>`, and other placeholders with actual values from the user's request or AskUserQuestion responses.
 
 ### Usage
 
@@ -130,98 +138,6 @@ npm run bp:uncheck -- -u "<target-url>" -s "<selector>" --project-root "$OLDPWD"
 
 # Drag - Drag and drop element
 npm run bp:drag -- -u "<target-url>" --from "<source-selector>" --to "<target-selector>" --project-root "$OLDPWD"
-```
-
-**Method 2: Shell scripts**
-```bash
-cd "${CLAUDE_SKILL_ROOT}/bin"
-
-# Windows
-browser-pilot-screenshot.bat -u "https://example.com" -o "page.png"
-browser-pilot-hover.bat -u "https://example.com" -s "button.menu"
-browser-pilot-reload.bat
-browser-pilot-back.bat
-browser-pilot-forward.bat
-
-# Unix/Mac
-./browser-pilot-screenshot.sh -u "https://example.com" -o "page.png"
-./browser-pilot-hover.sh -u "https://example.com" -s "button.menu"
-./browser-pilot-reload.sh
-./browser-pilot-back.sh
-./browser-pilot-forward.sh
-```
-
-All .bat/.sh scripts are now located in the `bin/` folder.
-
-**Method 3: Direct CLI**
-```bash
-node "${CLAUDE_SKILL_ROOT}/scripts/dist/cli.js" screenshot --url "https://example.com" --output "page.png"
-```
-
-Relative paths save to `.browser-pilot/` folder automatically.
-
-## Common Workflows
-
-### Capture Screenshot
-
-```bash
-# Headless mode
-node "${CLAUDE_SKILL_ROOT}/scripts/dist/cli.js" screenshot --url "https://github.com" --output "github.png" --headless --full-page
-
-# Headed mode (visible browser)
-node "${CLAUDE_SKILL_ROOT}/scripts/dist/cli.js" screenshot --url "https://github.com" --output "github.png"
-```
-
-### Extract Text
-
-```bash
-# Specific element
-node "${CLAUDE_SKILL_ROOT}/scripts/dist/cli.js" extract --url "https://example.com/products" --selector "h1" --headless
-
-# Entire body
-node "${CLAUDE_SKILL_ROOT}/scripts/dist/cli.js" extract --url "https://example.com" --headless
-```
-
-### Execute JavaScript
-
-```bash
-# Simple value
-node "${CLAUDE_SKILL_ROOT}/scripts/dist/cli.js" eval --url "https://example.com" --expression "document.title"
-
-# Complex object
-node "${CLAUDE_SKILL_ROOT}/scripts/dist/cli.js" eval --url "https://example.com" --expression "({title: document.title, links: document.querySelectorAll('a').length})"
-```
-
-### Interact with Page
-
-```bash
-# Fill form
-node "${CLAUDE_SKILL_ROOT}/scripts/dist/cli.js" fill --url "https://example.com/login" --selector "#email" --value "user@example.com"
-
-# Click button
-node "${CLAUDE_SKILL_ROOT}/scripts/dist/cli.js" click --url "https://example.com" --selector "button[type='submit']"
-```
-
-## CLI Commands
-
-```bash
-# screenshot - Capture webpage screenshot
-node dist/cli.js screenshot --url <URL> --output <PATH> [--headless] [--full-page]
-
-# navigate - Navigate to URL (keeps browser open)
-node dist/cli.js navigate --url <URL> [--headless]
-
-# extract - Extract text from page
-node dist/cli.js extract --url <URL> [--selector <CSS>] [--headless]
-
-# click - Click element (keeps browser open)
-node dist/cli.js click --url <URL> --selector <CSS> [--headless]
-
-# fill - Fill input field (keeps browser open)
-node dist/cli.js fill --url <URL> --selector <CSS> --value <TEXT> [--headless]
-
-# eval - Execute JavaScript
-node dist/cli.js eval --url <URL> --expression <SCRIPT> [--headless]
 ```
 
 **Options:**
