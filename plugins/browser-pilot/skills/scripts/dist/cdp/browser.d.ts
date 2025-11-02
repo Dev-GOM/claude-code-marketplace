@@ -1,13 +1,28 @@
 /**
  * Chrome browser launcher and connection manager.
  */
+interface StackTrace {
+    callFrames?: Array<{
+        url?: string;
+        lineNumber?: number;
+        columnNumber?: number;
+        functionName?: string;
+    }>;
+}
 export interface ConsoleMessage {
     level: string;
     text: string;
     timestamp: number;
     url?: string;
     lineNumber?: number;
-    stackTrace?: any;
+    stackTrace?: StackTrace;
+}
+export interface FormattedConsoleMessage {
+    level: string;
+    text: string;
+    timestamp: string;
+    url?: string;
+    lineNumber?: number;
 }
 export declare class ChromeBrowser {
     private readonly headless;
@@ -53,4 +68,5 @@ export declare class ChromeBrowser {
      */
     private sleep;
 }
+export {};
 //# sourceMappingURL=browser.d.ts.map

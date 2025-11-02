@@ -2,7 +2,27 @@
 
 All notable changes to the Dev GOM Plugins marketplace will be documented in this file.
 
-> **Version**: 2.8.3 | **Last Updated**: 2025-11-03
+> **Version**: 2.8.4 | **Last Updated**: 2025-11-03
+
+---
+
+## [2.8.4] - 2025-11-03
+
+### Improved
+- 🔧 **Browser Pilot v0.1.4**: Enhanced Type Safety with Proper Interface Reuse
+  - **FormattedConsoleMessage Interface**: Added dedicated interface for formatted console messages
+    - Separates `ConsoleMessage` (internal, `timestamp: number`) from `FormattedConsoleMessage` (API, `timestamp: string`)
+    - Resolves type mismatch between internal representation and formatted output
+    - Improves code clarity and prevents timestamp type confusion
+  - **Eliminated `any` Types**:
+    - `ConsoleMessage.stackTrace`: `any` → `StackTrace`
+    - `LogEntry.stackTrace`: `any` → `StackTrace`
+    - `ExceptionDetails.stackTrace`: `any` → `StackTrace`
+    - `RemoteObject.value`: `any` → `unknown`
+    - `RemoteObject` index signature: `[key: string]: any` → `[key: string]: unknown`
+  - **Type Reuse**: CLI now imports and uses `FormattedConsoleMessage` instead of inline type
+  - **Better Type Safety**: Using `unknown` instead of `any` forces explicit type checking
+  - **Improved Maintainability**: Single source of truth for console message types
 
 ---
 

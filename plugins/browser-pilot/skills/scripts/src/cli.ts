@@ -5,7 +5,7 @@
  */
 
 import { Command } from 'commander';
-import { ChromeBrowser } from './cdp/browser';
+import { ChromeBrowser, FormattedConsoleMessage } from './cdp/browser';
 import * as actions from './cdp/actions';
 
 const program = new Command();
@@ -733,7 +733,7 @@ program
       if (result.messages.length === 0) {
         console.log('No console messages found.');
       } else {
-        result.messages.forEach((msg: { level: string; text: string; timestamp: string; url?: string; lineNumber?: number }) => {
+        result.messages.forEach((msg: FormattedConsoleMessage) => {
           const location = msg.url ? ` (${msg.url}:${msg.lineNumber || '?'})` : '';
           console.log(`[${msg.level.toUpperCase()}]${location} ${msg.text}`);
         });
