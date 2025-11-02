@@ -1,0 +1,24 @@
+{
+  "description": "Chrome DevTools Protocol (CDP) browser automation, web scraping, and crawling",
+  "version": "0.1.0",
+  "author": "Dev GOM",
+  "lastUpdated": "2025-11-03",
+  "hooks": {
+    "SessionStart": [
+      {
+        "description": "Initialize plugin configuration at session start",
+        "priority": 100,
+        "enabled": true,
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/init-config.js",
+            "description": "Creates default configuration file if it doesn't exist",
+            "continueOnError": true,
+            "suppressOutput": true
+          }
+        ]
+      }
+    ]
+  }
+}

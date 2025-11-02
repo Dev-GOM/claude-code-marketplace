@@ -226,6 +226,27 @@
         "optimization",
         "agents"
       ]
+    },
+    {
+      "name": "browser-pilot",
+      "source": "./plugins/browser-pilot",
+      "description": "Chrome DevTools Protocol (CDP) browser automation, web scraping, and crawling",
+      "version": "0.1.0",
+      "author": {
+        "name": "Dev GOM"
+      },
+      "category": "productivity",
+      "homepage": "https://github.com/Dev-GOM/claude-code-marketplace",
+      "keywords": [
+        "browser",
+        "automation",
+        "scraping",
+        "cdp",
+        "chrome",
+        "devtools",
+        "screenshot",
+        "pdf"
+      ]
     }
   ],
   "version": "2.7.0"
