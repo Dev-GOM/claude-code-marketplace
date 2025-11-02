@@ -152,6 +152,12 @@ npm run bp:drag -- -u "<target-url>" --from "<source-selector>" --to "<target-se
 
 CDP maintains `navigator.webdriver = false`, bypassing most anti-bot systems.
 
+**Additional Tips**:
+- Add `sleep` delays (0.5-2 seconds) between commands to mimic human behavior
+- Longer delays for critical actions (login, form submission)
+- Use random delays when automating multiple similar actions
+- Example: `npm run bp:fill ... && sleep 1 && npm run bp:click ...`
+
 Test: `node dist/cli.js screenshot --url "https://bot.sannysoft.com" --output "bot-test.png"`
 
 Expected: All checks **PASS** (green).
@@ -162,7 +168,8 @@ Expected: All checks **PASS** (green).
 2. **Use headed mode for debugging** - Omit `--headless` to see browser window
 3. **Prefer unique selectors** - Use IDs: `#username` > `.class` > `input[name="user"]`
 4. **Relative paths** - Files auto-save to `.browser-pilot/`
-5. **Respect rate limits** - Add delays between requests
+5. **Add human-like delays** - Use `sleep 0.5-2` between commands to avoid bot detection
+6. **Respect rate limits** - Add delays between requests
 
 ## Troubleshooting
 
@@ -274,3 +281,64 @@ npm run bp:fill -- -u "https://example.com/signup" -s "#email" -v "test@example.
 cd "${CLAUDE_SKILL_ROOT}/scripts"
 npm run bp:pdf -- -u "https://docs.example.com" -o "documentation.pdf" --landscape --project-root "$OLDPWD"
 ```
+
+### Multi-Step Workflows
+
+You can chain multiple commands using `&&` to create workflows. The browser stays open between commands, making this efficient.
+
+**Important: Bot Detection Avoidance**
+- Add `sleep` delays between commands to mimic human behavior
+- Recommended delays: 0.5-2 seconds between actions
+- Longer delays for critical actions (login, submission)
+
+**Example 6: Login Workflow**
+> "Log into example.com with my email test@example.com and password mypass123"
+
+```bash
+cd "${CLAUDE_SKILL_ROOT}/scripts"
+npm run bp:navigate -- -u "https://example.com/login" --project-root "$OLDPWD" && \
+sleep 1 && \
+npm run bp:fill -- -s "#email" -v "test@example.com" --project-root "$OLDPWD" && \
+sleep 0.5 && \
+npm run bp:fill -- -s "#password" -v "mypass123" --project-root "$OLDPWD" && \
+sleep 0.5 && \
+npm run bp:click -- -s "button[type='submit']" --project-root "$OLDPWD"
+```
+
+**Example 7: Data Extraction with Screenshot**
+> "Go to github.com, extract the main heading, and take a screenshot"
+
+```bash
+cd "${CLAUDE_SKILL_ROOT}/scripts"
+npm run bp:navigate -- -u "https://github.com" --project-root "$OLDPWD" && \
+sleep 1 && \
+npm run bp:extract -- -s "h1" --project-root "$OLDPWD" && \
+sleep 0.5 && \
+npm run bp:screenshot -- -o "github-page.png" --full-page --project-root "$OLDPWD"
+```
+
+**Example 8: Form Submission Workflow**
+> "Fill out the contact form on example.com/contact with name 'John Doe', email 'john@example.com', message 'Hello', and submit it"
+
+```bash
+cd "${CLAUDE_SKILL_ROOT}/scripts"
+npm run bp:navigate -- -u "https://example.com/contact" --project-root "$OLDPWD" && \
+sleep 1 && \
+npm run bp:fill -- -s "#name" -v "John Doe" --project-root "$OLDPWD" && \
+sleep 0.5 && \
+npm run bp:fill -- -s "#email" -v "john@example.com" --project-root "$OLDPWD" && \
+sleep 0.5 && \
+npm run bp:fill -- -s "#message" -v "Hello" --project-root "$OLDPWD" && \
+sleep 0.5 && \
+npm run bp:click -- -s "button[type='submit']" --project-root "$OLDPWD" && \
+sleep 1 && \
+npm run bp:screenshot -- -o "contact-form-submitted.png" --project-root "$OLDPWD"
+```
+
+**Performance Note**:
+- Browser launches once and stays open (fast)
+- Each command reuses the same browser instance
+- ~100-200ms overhead per command (npm startup)
+- CDP communication is near-instant (milliseconds)
+- Add `sleep` delays to avoid bot detection (0.5-2 seconds recommended)
+- Total workflow time = page loads + sleep delays + command overhead
