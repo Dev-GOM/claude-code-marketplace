@@ -47,7 +47,7 @@ Claude Code 훅 이벤트에 대한 오디오 알림 (사운드 및 볼륨 조�
 ```json
 {
   "soundNotifications": {
-    "soundsFolder": "${CLAUDE_PLUGIN_ROOT}/sounds",
+    "soundsFolder": "~/.claude/sounds/hook-sound-notifications",
     "enabled": true,
     "volume": 0.5,
     "hooks": {
@@ -70,10 +70,11 @@ Claude Code 훅 이벤트에 대한 오디오 알림 (사운드 및 볼륨 조�
 
 - `enabled`: 전역 활성화/비활성화 (기본값: true)
 - `volume`: 전역 볼륨 0.0-1.0 (기본값: 0.5)
-- `soundsFolder`: 사운드 파일 폴더 경로 (플러그인 위치에서 자동 감지)
-  - 자동으로 `${CLAUDE_PLUGIN_ROOT}/sounds`로 설정됨
-  - 절대 경로 또는 상대 경로로 커스터마이징 가능
-  - 기본 사운드 파일이 플러그인에 포함되어 있음
+- `soundsFolder`: 사운드 파일 폴더 경로
+  - **기본값:** `~/.claude/sounds/hook-sound-notifications/` (사용자 홈 폴더)
+  - 사운드 파일이 첫 실행 시 자동으로 이 폴더에 복사됩니다
+  - **플러그인 업데이트 시 안전** - 사용자 커스터마이징이 보존됩니다
+  - 사용자 지정 절대 경로로 변경 가능
 - `hooks.[hookType].enabled`: 특정 훅 활성화/비활성화
 - `hooks.[hookType].soundFile`: 사운드 파일 이름 (soundsFolder 기준 상대 경로)
 - `hooks.[hookType].volume`: 전역 볼륨 재정의
@@ -88,9 +89,30 @@ Claude Code 훅 이벤트에 대한 오디오 알림 (사운드 및 볼륨 조�
 
 ### 커스텀 사운드 파일
 
-플러그인의 `sounds` 폴더에 있는 사운드 파일을 교체하거나, 설정에서 `soundFile` 경로를 업데이트하세요.
+사운드 파일은 사용자 홈 폴더에 저장되며 **플러그인 업데이트 시에도 안전하게 보존**됩니다.
+
+**저장 위치:**
+- **Windows:** `C:\Users\<사용자명>\.claude\sounds\hook-sound-notifications\`
+- **macOS/Linux:** `~/.claude/sounds/hook-sound-notifications/`
+
+**커스터마이징 방법:**
+
+1. 위 사운드 폴더 위치로 이동
+2. 9개의 사운드 파일 중 원하는 파일을 교체:
+   - `session-start.mp3`
+   - `session-end.mp3`
+   - `pre-tool-use.mp3`
+   - `post-tool-use.mp3`
+   - `notification.mp3`
+   - `user-prompt-submit.mp3`
+   - `stop.mp3`
+   - `subagent-stop.mp3`
+   - `pre-compact.mp3`
+3. 커스텀 사운드는 플러그인 업데이트 시에도 유지됩니다
 
 **지원 형식:** MP3, WAV
+
+**참고:** 다른 위치의 사운드를 사용하려면 `.plugin-config/hook-sound-notifications.json`에서 `soundsFolder` 경로를 업데이트하세요.
 
 ### 볼륨 레벨
 
@@ -107,6 +129,15 @@ Claude Code 훅 이벤트에 대한 오디오 알림 (사운드 및 볼륨 조�
 - PostToolUse 훅 활성화 시 불안정성 증가 가능 (기본적으로 비활성화)
 
 ## 변경 이력
+
+### v1.4.0 (2025-11-03)
+- **추가:** 홈 폴더 사운드 마이그레이션 - 사운드가 이제 `~/.claude/sounds/hook-sound-notifications/`에 저장됨
+- **추가:** 첫 실행 시 자동 사운드 파일 복사 (기존 파일 보존)
+- **추가:** OS 감지 래퍼를 통한 크로스 플랫폼 훅 지원 (Windows/macOS/Linux)
+- **추가:** jq 기반 JSON 파싱 및 grep fallback을 사용하는 Unix 사운드 재생 스크립트
+- **변경:** 기본 soundsFolder가 플러그인 폴더에서 사용자 홈 폴더로 변경
+- **수정:** 사용자 사운드 커스터마이징이 이제 플러그인 업데이트 시에도 보존됨
+- **문서:** 홈 폴더 사용 안내를 포함한 상세 커스터마이징 가이드 추가
 
 ### v1.2.0 (2025-10-29)
 - **변경:** Windows 사운드 재생을 PowerShell 스크립트 파일로 변경 (sound-hook.ps1, play-sound.ps1)

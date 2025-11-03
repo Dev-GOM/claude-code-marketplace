@@ -7,6 +7,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
 const { preventDuplicateExecutionOrExit } = require('./utils/duplicate-prevention');
 
 // Prevent duplicate execution
@@ -41,11 +42,102 @@ function getPluginSoundsFolder() {
   return path.join(pluginRoot, 'sounds');
 }
 
+/**
+ * Get user home sounds folder path
+ * Returns ~/.claude/sounds/hook-sound-notifications/
+ * This folder is safe from plugin updates
+ */
+function getHomeSoundsFolder() {
+  const homeDir = os.homedir();
+  return path.join(homeDir, '.claude', 'sounds', 'hook-sound-notifications');
+}
+
+/**
+ * Check if should migrate to home folder
+ * Returns true if:
+ * - No existing soundsFolder configured (new user)
+ * - soundsFolder points to plugin default location (existing user with default)
+ * Returns false if:
+ * - soundsFolder points to custom location (user customization)
+ */
+function shouldMigrateToHomeFolder(existingConfig) {
+  const currentSoundsFolder = existingConfig?.soundNotifications?.soundsFolder;
+
+  // No existing config - migrate
+  if (!currentSoundsFolder) {
+    return true;
+  }
+
+  // Normalize paths for comparison
+  const normalized = path.resolve(currentSoundsFolder);
+  const pluginDefault = path.resolve(getPluginSoundsFolder());
+
+  // Using plugin default - migrate
+  if (normalized === pluginDefault) {
+    return true;
+  }
+
+  // Custom location - keep as is
+  return false;
+}
+
+/**
+ * Copy sound files from plugin folder to home folder
+ * Does not overwrite existing files (preserves user customization)
+ */
+function copySoundsToHomeFolder() {
+  try {
+    const pluginSoundsFolder = getPluginSoundsFolder();
+    const homeSoundsFolder = getHomeSoundsFolder();
+
+    // Create home sounds directory
+    if (!fs.existsSync(homeSoundsFolder)) {
+      fs.mkdirSync(homeSoundsFolder, { recursive: true });
+    }
+
+    // List of sound files to copy
+    const soundFiles = [
+      'session-start.mp3',
+      'session-end.mp3',
+      'pre-tool-use.mp3',
+      'post-tool-use.mp3',
+      'notification.mp3',
+      'user-prompt-submit.mp3',
+      'stop.mp3',
+      'subagent-stop.mp3',
+      'pre-compact.mp3'
+    ];
+
+    let copiedCount = 0;
+
+    soundFiles.forEach(filename => {
+      const sourcePath = path.join(pluginSoundsFolder, filename);
+      const targetPath = path.join(homeSoundsFolder, filename);
+
+      // Only copy if source exists and target doesn't exist
+      if (fs.existsSync(sourcePath) && !fs.existsSync(targetPath)) {
+        fs.copyFileSync(sourcePath, targetPath);
+        copiedCount++;
+      }
+    });
+
+    if (copiedCount > 0) {
+      console.log(`\n🔊 Sound files migrated to home folder: ${homeSoundsFolder}`);
+      console.log(`   ${copiedCount} files copied. Customize them safely - they won't be overwritten on plugin updates.\n`);
+    }
+
+    return true;
+  } catch (error) {
+    // Fail silently - don't block initialization
+    return false;
+  }
+}
+
 // Default configuration
 const defaultConfig = {
   soundNotifications: {
     enabled: true,
-    soundsFolder: getPluginSoundsFolder(),  // Auto-detected plugin sounds folder
+    soundsFolder: getHomeSoundsFolder(),  // User home folder (safe from updates)
     volume: 0.5,  // Global volume (0.0 - 1.0), can be overridden per hook
     hooks: {
       SessionStart: {
@@ -188,11 +280,12 @@ function initializeConfig() {
     }
 
     let currentConfig = null;
+    let existingConfig = null;
 
     // Check if config file exists
     if (fs.existsSync(configPath)) {
       try {
-        const existingConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+        existingConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'));
 
         // If version matches, no migration needed but still update hooks.json
         if (existingConfig._pluginVersion === PLUGIN_VERSION) {
@@ -213,11 +306,23 @@ function initializeConfig() {
             };
           });
 
+          // Determine soundsFolder based on migration logic
+          let soundsFolder;
+          if (shouldMigrateToHomeFolder(existingConfig)) {
+            // Migrate to home folder
+            copySoundsToHomeFolder();
+            soundsFolder = getHomeSoundsFolder();
+          } else {
+            // Keep existing custom path
+            soundsFolder = existingConfig.soundNotifications.soundsFolder;
+          }
+
           const migratedConfig = {
             ...defaultConfig,
             soundNotifications: {
               ...defaultConfig.soundNotifications,
               ...existingConfig.soundNotifications,
+              soundsFolder: soundsFolder,
               hooks: mergedHooks
             },
             _pluginVersion: PLUGIN_VERSION
@@ -228,6 +333,9 @@ function initializeConfig() {
         }
       } catch (error) {
         // If parse fails, create new config
+        // Copy sounds to home folder for new setup
+        copySoundsToHomeFolder();
+
         const newConfig = {
           ...defaultConfig,
           _pluginVersion: PLUGIN_VERSION
@@ -236,7 +344,9 @@ function initializeConfig() {
         currentConfig = newConfig;
       }
     } else {
-      // Create new config file
+      // New user - create config file and copy sounds
+      copySoundsToHomeFolder();
+
       const newConfig = {
         ...defaultConfig,
         _pluginVersion: PLUGIN_VERSION

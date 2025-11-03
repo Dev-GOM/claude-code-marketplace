@@ -2,7 +2,31 @@
 
 All notable changes to the Dev GOM Plugins marketplace will be documented in this file.
 
-> **Version**: 2.8.5 | **Last Updated**: 2025-11-03
+> **Version**: 2.10.0 | **Last Updated**: 2025-11-03
+
+---
+
+## [2.10.0] - 2025-11-03
+
+### Improved
+- 🔊 **Sound Notifications v1.4.0**: Home Folder Migration & Cross-Platform Support
+  - **Home Folder Sound Storage**: Sounds now stored in `~/.claude/sounds/hook-sound-notifications/`
+    - Automatic migration from plugin folder to user home folder
+    - Preserves user customizations across plugin updates
+    - Safe from being overwritten during updates
+  - **Intelligent Migration Logic**:
+    - New users: Sounds automatically copied to home folder
+    - Existing users with default path: Migrated to home folder
+    - Existing users with custom path: Path preserved (no migration)
+  - **Cross-Platform Hook Support**:
+    - Added OS detection wrapper (`sound-hook-wrapper.sh`)
+    - Routes to appropriate handler based on OS (Windows/macOS/Linux)
+    - Unix sound playback with jq-based JSON parsing and grep fallback
+  - **Enhanced Configuration Parsing**:
+    - Reads settings from `.plugin-config/hook-sound-notifications.json`
+    - Respects global and per-hook enabled/disabled states
+    - Volume control support across platforms (where available)
+  - **Documentation**: Added detailed customization guide with home folder instructions
 
 ---
 
