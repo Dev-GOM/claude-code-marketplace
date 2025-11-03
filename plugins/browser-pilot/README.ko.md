@@ -1,6 +1,6 @@
 # Browser Pilot
 
-> **상태**: ✅ 릴리즈 (v0.2.1)
+> **상태**: ✅ 릴리즈 (v0.3.0)
 
 **언어**: [English](README.md) | [한국어](README.ko.md)
 
@@ -17,6 +17,7 @@ Browser Pilot은 Chrome DevTools Protocol (CDP)을 통해 Chrome 브라우저를
 - 📑 웹 페이지에서 PDF 생성
 - 🔗 브라우저 탭 관리 (목록, 전환, 닫기)
 - 🤖 봇 감지 우회 (`navigator.webdriver = false` 유지)
+- ⚛️ **React/프레임워크 호환성** (React synthetic events 정상 발생)
 
 ## 아키텍처
 

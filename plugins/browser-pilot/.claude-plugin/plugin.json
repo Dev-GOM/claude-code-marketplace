@@ -1,7 +1,7 @@
 {
   "name": "browser-pilot",
-  "version": "0.2.1",
-  "description": "Chrome DevTools Protocol (CDP) browser automation, web scraping, and crawling",
+  "version": "0.3.0",
+  "description": "Chrome DevTools Protocol (CDP) browser automation, web scraping, and crawling with React compatibility",
   "author": {
     "name": "Dev GOM",
     "url": "https://github.com/Dev-GOM/claude-code-marketplace"
@@ -17,7 +17,9 @@
     "chrome",
     "devtools",
     "screenshot",
-    "pdf"
+    "pdf",
+    "react",
+    "framework"
   ],
   "skills": [
     "./skills"

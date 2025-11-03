@@ -34,9 +34,7 @@ exports.blockRequest = blockRequest;
 exports.unblockRequests = unblockRequests;
 const fs_1 = require("fs");
 const utils_1 = require("./utils");
-function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
+const helpers_1 = require("./actions/helpers");
 /**
  * Extract data using multiple selectors.
  */
@@ -196,7 +194,7 @@ async function typeText(browser, text, delay = 0) {
             returnByValue: true
         });
         if (delay > 0) {
-            await sleep(delay);
+            await (0, helpers_1.sleep)(delay);
         }
     }
     return { success: true, text };
@@ -292,15 +290,17 @@ async function goForward(browser) {
  * Wait for specified milliseconds.
  */
 async function waitMilliseconds(browser, ms) {
-    await sleep(ms);
+    await (0, helpers_1.sleep)(ms);
     return { success: true, waitedMs: ms };
 }
 /**
  * Wait for element to appear.
  * Supports both CSS selectors and XPath (when selector starts with '//').
  */
-async function waitFor(browser, selector, timeout = 30000) {
-    console.log(`Waiting for: ${selector}`);
+async function waitFor(browser, selector, timeout = 30000, options) {
+    const opts = (0, helpers_1.mergeOptions)(options);
+    if (opts.verbose)
+        console.log(`⏳ Waiting for: ${selector}`);
     const startTime = Date.now();
     while (Date.now() - startTime < timeout) {
         const script = `(function() {
@@ -313,10 +313,15 @@ async function waitFor(browser, selector, timeout = 30000) {
             returnByValue: true
         });
         if (result.result?.value) {
+            if (opts.verbose)
+                console.log(`✅ Element appeared: ${selector}`);
+            (0, helpers_1.checkConsoleErrors)(browser);
             return { success: true, selector };
         }
-        await sleep(100);
+        await (0, helpers_1.sleep)(100);
     }
+    if (opts.verbose)
+        console.log(`❌ Timeout waiting for: ${selector}`);
     throw new Error(`Timeout waiting for: ${selector}`);
 }
 /**
@@ -350,8 +355,10 @@ async function waitForNetworkIdle(browser, timeout = 5000, maxInflight = 0) {
  * Returns console messages that have been collected since the browser connected.
  * Messages are automatically collected when Log domain is enabled during connection.
  */
-async function getConsoleMessages(browser, errorOnly = false) {
-    console.log('Getting console messages...');
+async function getConsoleMessages(browser, errorOnly = false, options) {
+    const opts = (0, helpers_1.mergeOptions)(options);
+    if (opts.verbose)
+        console.log('📋 Getting console messages...');
     // Get all collected messages from browser
     const allMessages = browser.getConsoleMessages();
     // Filter by error level if requested
@@ -366,12 +373,17 @@ async function getConsoleMessages(browser, errorOnly = false) {
         url: msg.url,
         lineNumber: msg.lineNumber
     }));
+    const errorCount = allMessages.filter(msg => msg.level === 'error').length;
+    const warningCount = allMessages.filter(msg => msg.level === 'warning').length;
+    if (opts.verbose) {
+        console.log(`✅ Retrieved ${formattedMessages.length} message(s) (${errorCount} errors, ${warningCount} warnings)`);
+    }
     return {
         success: true,
         messages: formattedMessages,
         count: formattedMessages.length,
-        errorCount: allMessages.filter(msg => msg.level === 'error').length,
-        warningCount: allMessages.filter(msg => msg.level === 'warning').length,
+        errorCount,
+        warningCount,
         logCount: allMessages.filter(msg => msg.level === 'log' || msg.level === 'info').length
     };
 }
@@ -411,7 +423,10 @@ async function getElementProperty(browser, selector, propertyName) {
  * Find element and return its information.
  * Supports both CSS selectors and XPath (when selector starts with '//').
  */
-async function findElement(browser, selector) {
+async function findElement(browser, selector, options) {
+    const opts = (0, helpers_1.mergeOptions)(options);
+    if (opts.verbose)
+        console.log(`🔍 Finding element: ${selector}`);
     const script = `
     (function() {
       const selector = ${JSON.stringify(selector)};
@@ -446,11 +461,16 @@ async function findElement(browser, selector) {
     });
     const elementInfo = result.result?.value;
     if (elementInfo === null) {
+        if (opts.verbose)
+            console.log(`❌ Element not found: ${selector}`);
         return {
             success: false,
             error: `Element not found: ${selector}`
         };
     }
+    if (opts.verbose)
+        console.log(`✅ Found <${elementInfo.tagName}> element`);
+    (0, helpers_1.checkConsoleErrors)(browser);
     return {
         success: true,
         selector,
@@ -479,25 +499,36 @@ async function getAccessibilitySnapshot(browser) {
 /**
  * Get page HTML content.
  */
-async function getContent(browser) {
-    console.log('Getting page HTML content');
+async function getContent(browser, options) {
+    const opts = (0, helpers_1.mergeOptions)(options);
+    if (opts.verbose)
+        console.log('📄 Getting page HTML content');
     const script = `document.documentElement.outerHTML`;
     const result = await browser.sendCommand('Runtime.evaluate', {
         expression: script,
         returnByValue: true
     });
+    const content = result.result?.value || '';
+    if (opts.verbose)
+        console.log(`✅ Retrieved ${content.length} characters of HTML`);
     return {
         success: true,
-        content: result.result?.value || '',
-        length: result.result?.value?.length || 0
+        content,
+        length: content.length
     };
 }
 /**
  * Scroll page or element.
  * Supports both CSS selectors and XPath (when selector starts with '//').
+ * Note: x and y are both optional - you can scroll on just one axis if needed.
  */
-async function scroll(browser, x = 0, y = 0, selector) {
-    console.log(`Scrolling to (${x}, ${y})${selector ? ` on ${selector}` : ''}`);
+async function scroll(browser, options) {
+    const opts = (0, helpers_1.mergeOptions)(options);
+    const x = options?.x ?? 0;
+    const y = options?.y ?? 0;
+    const selector = options?.selector;
+    if (opts.verbose)
+        console.log(`📜 Scrolling to (${x}, ${y})${selector ? ` on ${selector}` : ''}`);
     const script = selector
         ? `
       (function() {
@@ -523,6 +554,9 @@ async function scroll(browser, x = 0, y = 0, selector) {
         expression: script,
         returnByValue: true
     });
+    if (opts.verbose)
+        console.log(`✅ Scrolled successfully`);
+    (0, helpers_1.checkConsoleErrors)(browser);
     return {
         success: true,
         position: result.result?.value
@@ -530,77 +564,112 @@ async function scroll(browser, x = 0, y = 0, selector) {
 }
 /**
  * Drag and drop from one element to another.
+ * Uses CDP mouse events for proper React/framework compatibility.
  */
-async function dragAndDrop(browser, sourceSelector, targetSelector) {
-    console.log(`Dragging ${sourceSelector} to ${targetSelector}`);
+async function dragAndDrop(browser, sourceSelector, targetSelector, options) {
+    const opts = (0, helpers_1.mergeOptions)(options);
+    if (opts.verbose)
+        console.log(`🔍 Dragging ${sourceSelector} to ${targetSelector}`);
+    // Step 1: Get coordinates for both elements
     const script = `
     (function() {
       const sourceSelector = ${JSON.stringify(sourceSelector)};
       const targetSelector = ${JSON.stringify(targetSelector)};
+      ${(0, utils_1.getFindElementScript)()}
 
-      const source = document.querySelector(sourceSelector);
-      const target = document.querySelector(targetSelector);
+      const source = findElement(sourceSelector);
+      const target = findElement(targetSelector);
 
       if (!source) throw new Error('Source element not found: ' + sourceSelector);
       if (!target) throw new Error('Target element not found: ' + targetSelector);
 
+      // Scroll both into view
+      source.scrollIntoView({ block: 'center', inline: 'center', behavior: 'instant' });
       const sourceRect = source.getBoundingClientRect();
+
+      target.scrollIntoView({ block: 'center', inline: 'center', behavior: 'instant' });
       const targetRect = target.getBoundingClientRect();
 
-      // Create and dispatch drag events
-      const dataTransfer = new DataTransfer();
-
-      const dragStart = new DragEvent('dragstart', {
-        bubbles: true,
-        cancelable: true,
-        dataTransfer
-      });
-      source.dispatchEvent(dragStart);
-
-      const dragEnter = new DragEvent('dragenter', {
-        bubbles: true,
-        cancelable: true,
-        dataTransfer
-      });
-      target.dispatchEvent(dragEnter);
-
-      const dragOver = new DragEvent('dragover', {
-        bubbles: true,
-        cancelable: true,
-        dataTransfer
-      });
-      target.dispatchEvent(dragOver);
-
-      const drop = new DragEvent('drop', {
-        bubbles: true,
-        cancelable: true,
-        dataTransfer
-      });
-      target.dispatchEvent(drop);
-
-      const dragEnd = new DragEvent('dragend', {
-        bubbles: true,
-        cancelable: true,
-        dataTransfer
-      });
-      source.dispatchEvent(dragEnd);
-
       return {
-        source: { x: sourceRect.x, y: sourceRect.y },
-        target: { x: targetRect.x, y: targetRect.y }
+        source: {
+          x: sourceRect.left + sourceRect.width / 2,
+          y: sourceRect.top + sourceRect.height / 2,
+          tag: source.tagName,
+          text: source.textContent?.substring(0, 30) || ''
+        },
+        target: {
+          x: targetRect.left + targetRect.width / 2,
+          y: targetRect.top + targetRect.height / 2,
+          tag: target.tagName,
+          text: target.textContent?.substring(0, 30) || ''
+        }
       };
     })()
   `;
-    const result = await browser.sendCommand('Runtime.evaluate', {
-        expression: script,
-        returnByValue: true
-    });
-    return {
-        success: true,
-        sourceSelector,
-        targetSelector,
-        positions: result.result?.value
-    };
+    try {
+        const result = await browser.sendCommand('Runtime.evaluate', {
+            expression: script,
+            returnByValue: true
+        });
+        if (!result.result || !result.result.value) {
+            console.error('❌ Element(s) not found');
+            throw new Error('Could not find source or target element');
+        }
+        const { source, target } = result.result.value;
+        if (opts.verbose) {
+            console.log(`✓ Source: <${source.tag.toLowerCase()}> "${source.text}" at (${Math.round(source.x)}, ${Math.round(source.y)})`);
+            console.log(`✓ Target: <${target.tag.toLowerCase()}> "${target.text}" at (${Math.round(target.x)}, ${Math.round(target.y)})`);
+        }
+        // Step 2: Perform CDP drag operation
+        if (opts.verbose)
+            console.log(`🖱️  Mouse down at source (${Math.round(source.x)}, ${Math.round(source.y)})`);
+        await browser.sendCommand('Input.dispatchMouseEvent', {
+            type: 'mousePressed',
+            button: 'left',
+            clickCount: 1,
+            x: source.x,
+            y: source.y
+        });
+        // Small delay to simulate drag start
+        await (0, helpers_1.sleep)(100);
+        if (opts.verbose)
+            console.log(`🖱️  Dragging to target (${Math.round(target.x)}, ${Math.round(target.y)})`);
+        await browser.sendCommand('Input.dispatchMouseEvent', {
+            type: 'mouseMoved',
+            button: 'left',
+            x: target.x,
+            y: target.y
+        });
+        // Small delay before release
+        await (0, helpers_1.sleep)(100);
+        if (opts.verbose)
+            console.log(`🖱️  Mouse up at target (${Math.round(target.x)}, ${Math.round(target.y)})`);
+        await browser.sendCommand('Input.dispatchMouseEvent', {
+            type: 'mouseReleased',
+            button: 'left',
+            clickCount: 1,
+            x: target.x,
+            y: target.y
+        });
+        if (opts.verbose)
+            console.log(`✅ Drag and drop successful`);
+        (0, helpers_1.checkConsoleErrors)(browser);
+        return {
+            success: true,
+            sourceSelector,
+            targetSelector,
+            source: { x: Math.round(source.x), y: Math.round(source.y) },
+            target: { x: Math.round(target.x), y: Math.round(target.y) }
+        };
+    }
+    catch (error) {
+        if (opts.verbose) {
+            console.error(`❌ Drag and drop failed`);
+            console.error(`   Error: ${error.message}`);
+        }
+        (0, helpers_1.checkConsoleErrors)(browser);
+        throw error;
+    }
 }
 /**
  * Emulate media type or color scheme.

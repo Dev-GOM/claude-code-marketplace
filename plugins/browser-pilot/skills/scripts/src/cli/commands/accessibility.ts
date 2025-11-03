@@ -1,0 +1,29 @@
+import { Command } from 'commander';
+import { ChromeBrowser } from '../../cdp/browser';
+import * as actions from '../../cdp/actions';
+
+export function registerAccessibilityCommands(program: Command) {
+  // Get accessibility snapshot
+  program
+    .command('accessibility')
+    .description('Get accessibility tree snapshot')
+    .option('-u, --url <url>', 'Navigate to URL first')
+    .action(async (options) => {
+      const browser = new ChromeBrowser(false);
+      try {
+        await browser.connect();
+        if (options.url) {
+          await actions.navigate(browser, options.url);
+          await actions.waitForLoad(browser);
+        }
+        const result = await actions.getAccessibilitySnapshot(browser);
+        console.log(`Accessibility nodes: ${result.nodeCount}`);
+        console.log('First 50 nodes:', JSON.stringify(result.nodes, null, 2));
+        console.log('Browser remains open. Use "close" command to close it.');
+        process.exit(0);
+      } catch (error) {
+        console.error('Error:', error);
+        process.exit(1);
+      }
+    });
+}

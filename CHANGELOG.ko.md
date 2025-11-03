@@ -2,7 +2,36 @@
 
 Dev GOM Plugins 마켓플레이스의 모든 주요 변경사항이 이 파일에 문서화됩니다.
 
-> **버전**: 2.10.6 | **최종 업데이트**: 2025-11-03
+> **버전**: 2.10.7 | **최종 업데이트**: 2025-01-04
+
+---
+
+## [2.10.7] - 2025-01-04
+
+### 추가됨
+- ⚛️ **Browser Pilot v0.3.0**: React/프레임워크 호환성
+  - **React Synthetic Event 지원**: 모든 폼 액션이 이제 React synthetic events를 정상적으로 발생시킵니다
+    - `fill`, `check`, `uncheck`, `typeText`, `pressKey`가 CDP 좌표 기반 상호작용 방식으로 변경
+    - React controlled components 및 기타 최신 프레임워크(Vue, Angular, Svelte)와 완벽하게 작동
+    - 비-React 애플리케이션과의 하위 호환성 유지
+  - **CDP Input Domain 마이그레이션**: JavaScript 이벤트 시뮬레이션에서 Chrome DevTools Protocol로 변경
+    - `fill`: JavaScript 값 할당 → CDP click + Input.insertText 방식으로 변경
+    - `check`/`uncheck`: JavaScript 속성 변경 → CDP 마우스 이벤트 방식으로 변경
+    - `typeText`: JavaScript KeyboardEvent → CDP Input.insertText (선택적 지연 지원)로 변경
+    - `pressKey`: JavaScript KeyboardEvent → CDP Input.dispatchKeyEvent로 변경
+  - **모듈형 액션 아키텍처**: actions.ts를 14개의 집중된 모듈로 분할
+    - 전문화된 모듈을 포함하는 `actions/` 디렉토리 생성
+    - capture.ts, cookies.ts, data.ts, debugging.ts, dialogs.ts, emulation.ts, forms.ts, helpers.ts
+    - input.ts, interaction.ts, navigation.ts, network.ts, scroll.ts, tabs.ts, wait.ts
+    - 더 나은 유지보수성과 코드 구성
+  - **포괄적인 로깅**: 전체 47개 액션에 상세 로깅 포함
+    - `ActionOptions` 파라미터에 `verbose: boolean` 추가 (기본값: true)
+    - 총 148개 로깅 구문 (함수당 평균 3.1개)
+    - 모든 액션의 에러 메시지 개선
+  - **기술 세부사항**:
+    - 좌표 기반 상호작용으로 React onChange/onClick 핸들러가 정상 발생
+    - 모든 폼 상호작용이 React 컴포넌트와 상태 동기화 유지
+    - 호환성 깨짐 없음 - 기존 셀렉터 및 파라미터 모두 동일하게 작동
 
 ---
 

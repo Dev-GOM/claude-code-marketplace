@@ -2,7 +2,36 @@
 
 All notable changes to the Dev GOM Plugins marketplace will be documented in this file.
 
-> **Version**: 2.10.6 | **Last Updated**: 2025-11-03
+> **Version**: 2.10.7 | **Last Updated**: 2025-01-04
+
+---
+
+## [2.10.7] - 2025-01-04
+
+### Added
+- ⚛️ **Browser Pilot v0.3.0**: React/Framework Compatibility
+  - **React Synthetic Event Support**: All form actions now properly trigger React synthetic events
+    - `fill`, `check`, `uncheck`, `typeText`, `pressKey` converted to CDP coordinate-based interactions
+    - Works seamlessly with React controlled components and other modern frameworks (Vue, Angular, Svelte)
+    - Maintains backward compatibility with non-React applications
+  - **CDP Input Domain Migration**: Changed from JavaScript event simulation to Chrome DevTools Protocol
+    - `fill`: JavaScript value assignment → CDP click + Input.insertText
+    - `check`/`uncheck`: JavaScript property changes → CDP mouse events
+    - `typeText`: JavaScript KeyboardEvent → CDP Input.insertText (with optional delay)
+    - `pressKey`: JavaScript KeyboardEvent → CDP Input.dispatchKeyEvent
+  - **Modular Action Architecture**: Split actions.ts into 14 focused modules
+    - Created `actions/` directory with specialized modules
+    - capture.ts, cookies.ts, data.ts, debugging.ts, dialogs.ts, emulation.ts, forms.ts, helpers.ts
+    - input.ts, interaction.ts, navigation.ts, network.ts, scroll.ts, tabs.ts, wait.ts
+    - Better maintainability and code organization
+  - **Comprehensive Logging**: All 47 actions now include verbose logging
+    - Added `ActionOptions` parameter with `verbose: boolean` (default: true)
+    - 148 total logging statements (average 3.1 per function)
+    - Enhanced error messages across all actions
+  - **Technical Details**:
+    - Coordinate-based interactions ensure React onChange/onClick handlers are triggered
+    - All form interactions maintain state synchronization with React components
+    - No breaking changes - all existing selectors and parameters remain the same
 
 ---
 

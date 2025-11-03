@@ -1,0 +1,132 @@
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.registerTabsCommands = registerTabsCommands;
+const browser_1 = require("../../cdp/browser");
+const actions = __importStar(require("../../cdp/actions"));
+function registerTabsCommands(program) {
+    // List tabs command
+    program
+        .command('tabs')
+        .description('List all open tabs')
+        .action(async () => {
+        const browser = new browser_1.ChromeBrowser(false);
+        try {
+            await browser.connect();
+            const result = await actions.listTabs(browser);
+            console.log(`Found ${result.count} tabs:`);
+            result.tabs.forEach((tab) => {
+                console.log(`[${tab.index}] ${tab.title} - ${tab.url}`);
+            });
+            process.exit(0);
+        }
+        catch (error) {
+            console.error('Error:', error);
+            process.exit(1);
+        }
+    });
+    // New tab command
+    program
+        .command('new-tab')
+        .description('Open a new tab')
+        .option('-u, --url <url>', 'URL to open', 'about:blank')
+        .action(async (options) => {
+        const browser = new browser_1.ChromeBrowser(false);
+        try {
+            await browser.connect();
+            const result = await actions.newTab(browser, options.url);
+            console.log('New tab opened:', result.targetId);
+            process.exit(0);
+        }
+        catch (error) {
+            console.error('Error:', error);
+            process.exit(1);
+        }
+    });
+    // Close tab command
+    program
+        .command('close-tab')
+        .description('Close a tab by index')
+        .requiredOption('-i, --index <number>', 'Tab index to close', parseInt)
+        .action(async (options) => {
+        const browser = new browser_1.ChromeBrowser(false);
+        try {
+            await browser.connect();
+            const result = await actions.closeTab(browser, undefined, options.index);
+            console.log(result.message);
+            process.exit(0);
+        }
+        catch (error) {
+            console.error('Error:', error);
+            process.exit(1);
+        }
+    });
+    // Switch tab
+    program
+        .command('switch-tab')
+        .description('Switch to a tab by index')
+        .requiredOption('-i, --index <index>', 'Tab index', parseInt)
+        .action(async (options) => {
+        const browser = new browser_1.ChromeBrowser(false);
+        try {
+            await browser.connect();
+            const result = await actions.switchTab(browser, options.index);
+            console.log(result.message);
+            process.exit(0);
+        }
+        catch (error) {
+            console.error('Error:', error);
+            process.exit(1);
+        }
+    });
+    // Close browser command
+    program
+        .command('close')
+        .description('Close the browser')
+        .action(async () => {
+        const browser = new browser_1.ChromeBrowser(false);
+        try {
+            await browser.connect();
+            await browser.close();
+            console.log('✓ Browser closed');
+            process.exit(0);
+        }
+        catch (error) {
+            console.error('Error: Could not connect to browser. Is it running?');
+            process.exit(1);
+        }
+    });
+}
+//# sourceMappingURL=tabs.js.map

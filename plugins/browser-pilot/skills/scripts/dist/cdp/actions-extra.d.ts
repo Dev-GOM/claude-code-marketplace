@@ -2,10 +2,7 @@
  * Additional CDP actions - extraction, selection, input, files, page control, navigation, debugging
  */
 import { ChromeBrowser } from './browser';
-export interface ActionResult {
-    success: boolean;
-    [key: string]: any;
-}
+import { ActionResult, ActionOptions } from './actions/helpers';
 /**
  * Extract data using multiple selectors.
  */
@@ -58,7 +55,7 @@ export declare function waitMilliseconds(browser: ChromeBrowser, ms: number): Pr
  * Wait for element to appear.
  * Supports both CSS selectors and XPath (when selector starts with '//').
  */
-export declare function waitFor(browser: ChromeBrowser, selector: string, timeout?: number): Promise<ActionResult>;
+export declare function waitFor(browser: ChromeBrowser, selector: string, timeout?: number, options?: ActionOptions): Promise<ActionResult>;
 /**
  * Wait for network to be idle.
  */
@@ -69,7 +66,7 @@ export declare function waitForNetworkIdle(browser: ChromeBrowser, timeout?: num
  * Returns console messages that have been collected since the browser connected.
  * Messages are automatically collected when Log domain is enabled during connection.
  */
-export declare function getConsoleMessages(browser: ChromeBrowser, errorOnly?: boolean): Promise<ActionResult>;
+export declare function getConsoleMessages(browser: ChromeBrowser, errorOnly?: boolean, options?: ActionOptions): Promise<ActionResult>;
 /**
  * Get element property value.
  * Supports both CSS selectors and XPath (when selector starts with '//').
@@ -79,7 +76,7 @@ export declare function getElementProperty(browser: ChromeBrowser, selector: str
  * Find element and return its information.
  * Supports both CSS selectors and XPath (when selector starts with '//').
  */
-export declare function findElement(browser: ChromeBrowser, selector: string): Promise<ActionResult>;
+export declare function findElement(browser: ChromeBrowser, selector: string, options?: ActionOptions): Promise<ActionResult>;
 /**
  * Get accessibility tree snapshot.
  */
@@ -87,16 +84,22 @@ export declare function getAccessibilitySnapshot(browser: ChromeBrowser): Promis
 /**
  * Get page HTML content.
  */
-export declare function getContent(browser: ChromeBrowser): Promise<ActionResult>;
+export declare function getContent(browser: ChromeBrowser, options?: ActionOptions): Promise<ActionResult>;
 /**
  * Scroll page or element.
  * Supports both CSS selectors and XPath (when selector starts with '//').
+ * Note: x and y are both optional - you can scroll on just one axis if needed.
  */
-export declare function scroll(browser: ChromeBrowser, x?: number, y?: number, selector?: string): Promise<ActionResult>;
+export declare function scroll(browser: ChromeBrowser, options?: {
+    x?: number;
+    y?: number;
+    selector?: string;
+} & ActionOptions): Promise<ActionResult>;
 /**
  * Drag and drop from one element to another.
+ * Uses CDP mouse events for proper React/framework compatibility.
  */
-export declare function dragAndDrop(browser: ChromeBrowser, sourceSelector: string, targetSelector: string): Promise<ActionResult>;
+export declare function dragAndDrop(browser: ChromeBrowser, sourceSelector: string, targetSelector: string, options?: ActionOptions): Promise<ActionResult>;
 /**
  * Emulate media type or color scheme.
  */
