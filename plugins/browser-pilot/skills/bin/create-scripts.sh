@@ -8,7 +8,7 @@ for cmd in "${COMMANDS[@]}"; do
   cat > "browser-pilot-${cmd}.bat" <<EOF
 @echo off
 REM Browser Pilot $(echo ${cmd^}) Command
-node "%~dp0..\scripts\dist\cli.js" ${cmd} %*
+node "%~dp0..\scripts\dist\cli\cli.js" ${cmd} %*
 EOF
 
   # Create .sh file
@@ -16,7 +16,7 @@ EOF
 #!/bin/bash
 # Browser Pilot $(echo ${cmd^}) Command
 SCRIPT_DIR="\$(cd "\$(dirname "\${BASH_SOURCE[0]}")" && pwd)"
-node "\$SCRIPT_DIR/../scripts/dist/cli.js" ${cmd} "\$@"
+node "\$SCRIPT_DIR/../scripts/dist/cli/cli.js" ${cmd} "\$@"
 EOF
 
   chmod +x "browser-pilot-${cmd}.sh"

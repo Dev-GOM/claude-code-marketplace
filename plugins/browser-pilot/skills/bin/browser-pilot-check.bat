@@ -1,3 +1,3 @@
 @echo off
 REM Browser Pilot Check Command
-node "%~dp0..\scripts\dist\cli.js" check %*
+node "%~dp0..\scripts\dist\cli\cli.js" check %*

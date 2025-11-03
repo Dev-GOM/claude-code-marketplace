@@ -32,7 +32,7 @@ export interface FormattedConsoleMessage {
 }
 export declare class ChromeBrowser {
     private readonly headless;
-    debugPort: number;
+    debugPort: number | null;
     private chromeProcess;
     private client;
     private consoleMessages;

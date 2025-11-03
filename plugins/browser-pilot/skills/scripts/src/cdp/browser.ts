@@ -8,10 +8,10 @@ import { existsSync } from 'fs';
 import { join } from 'path';
 import { CDPClient } from './client';
 import {
-  loadConfig,
-  saveConfig,
-  resetConfig,
-  initializeConfig,
+  getProjectConfig,
+  getProjectPort,
+  updateProjectLastUsed,
+  cleanupProjectIfNeeded,
   isPortAvailable
 } from './config';
 
@@ -94,7 +94,7 @@ interface ExceptionThrownPayload {
 
 export class ChromeBrowser {
   private readonly headless: boolean;
-  public debugPort: number;
+  public debugPort: number | null = null;
   private chromeProcess: ChildProcess | null = null;
   private client: CDPClient | null = null;
   private consoleMessages: ConsoleMessage[] = [];
@@ -102,10 +102,7 @@ export class ChromeBrowser {
 
   constructor(headless = false) {
     this.headless = headless;
-
-    // Load debug port from config
-    const config = loadConfig();
-    this.debugPort = config.debugPort || 9222;
+    // Debug port will be loaded from shared config in launch/connect methods
   }
 
   /**
@@ -158,44 +155,31 @@ export class ChromeBrowser {
    * Connect to already running Chrome instance.
    */
   async connect(): Promise<void> {
-    const config = loadConfig();
+    // Get project port from shared config
+    const port = await getProjectPort();
 
-    // Check if config is initialized and port exists
-    if (config.initialized && config.debugPort) {
-      // Check if the port is in use (browser running)
-      const portAvailable = await isPortAvailable(config.debugPort);
+    // Check if the port is in use (browser running)
+    const portAvailable = await isPortAvailable(port);
 
-      if (!portAvailable) {
-        // Port is in use, browser is running
-        this.debugPort = config.debugPort;
-        console.log(`Connecting to existing Chrome on port ${this.debugPort}...`);
-        await this.connectToPage();
-        return;
-      } else {
-        // Port is available, browser died
-        console.log('Previous browser session not found, resetting config...');
-        resetConfig();
-      }
+    if (!portAvailable) {
+      // Port is in use, browser is running
+      this.debugPort = port;
+      console.log(`Connecting to existing Chrome on port ${this.debugPort}...`);
+      await this.connectToPage();
+      updateProjectLastUsed();
+      return;
     }
 
     // No running browser found
-    throw new Error('No running browser found');
+    throw new Error(`No running browser found on port ${port}`);
   }
 
   /**
    * Launch Chrome in debugging mode.
    */
   async launch(): Promise<void> {
-    // Initialize config and get available port
-    const config = loadConfig();
-
-    if (!config.initialized) {
-      console.log('Initializing browser configuration...');
-      const newConfig = await initializeConfig();
-      this.debugPort = newConfig.debugPort!;
-    } else {
-      this.debugPort = config.debugPort!;
-    }
+    // Get project port from shared config (auto-creates if not exists)
+    this.debugPort = await getProjectPort();
 
     const chromePath = this.getChromePath();
     const args = [
@@ -220,12 +204,8 @@ export class ChromeBrowser {
     // Detach the process so it continues running when Node exits
     this.chromeProcess.unref();
 
-    // Update config with initialization status
-    saveConfig({
-      initialized: true,
-      debugPort: this.debugPort,
-      lastUsed: new Date().toISOString()
-    });
+    // Update last used timestamp
+    updateProjectLastUsed();
 
     // Wait for Chrome to be ready by polling the JSON endpoint
     let attempts = 0;
@@ -378,9 +358,8 @@ export class ChromeBrowser {
       this.client.close();
     }
 
-    // Reset config to uninitialized state
-    resetConfig();
-    console.log('Browser configuration reset');
+    // Clean up project config if autoCleanup is enabled
+    cleanupProjectIfNeeded();
   }
 
   /**

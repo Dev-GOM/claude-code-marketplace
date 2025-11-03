@@ -1,8 +1,8 @@
 {
   "description": "Chrome DevTools Protocol (CDP) browser automation, web scraping, and crawling",
-  "version": "0.2.1",
+  "version": "1.0.0",
   "author": "Dev GOM",
-  "lastUpdated": "2025-11-03",
+  "lastUpdated": "2025-11-04",
   "hooks": {
     "SessionStart": [
       {
@@ -13,9 +13,25 @@
           {
             "type": "command",
             "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/init-config.js",
-            "description": "Creates default configuration file if it doesn't exist",
+            "description": "Registers project in shared configuration and assigns port",
             "continueOnError": true,
-            "suppressOutput": true
+            "suppressOutput": false
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "description": "Clean up plugin configuration at session end",
+        "priority": 100,
+        "enabled": true,
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/cleanup-config.js",
+            "description": "Removes project from shared configuration if autoCleanup enabled",
+            "continueOnError": true,
+            "suppressOutput": false
           }
         ]
       }

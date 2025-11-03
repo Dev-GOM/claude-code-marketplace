@@ -1,4 +1,4 @@
 #!/bin/bash
 # Browser Pilot Select Command
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-node "$SCRIPT_DIR/../scripts/dist/cli.js" select "$@"
+node "$SCRIPT_DIR/../scripts/dist/cli/cli.js" select "$@"

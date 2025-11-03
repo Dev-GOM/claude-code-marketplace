@@ -12,16 +12,14 @@ const client_1 = require("./client");
 const config_1 = require("./config");
 class ChromeBrowser {
     headless;
-    debugPort;
+    debugPort = null;
     chromeProcess = null;
     client = null;
     consoleMessages = [];
     MAX_CONSOLE_MESSAGES = 1000;
     constructor(headless = false) {
         this.headless = headless;
-        // Load debug port from config
-        const config = (0, config_1.loadConfig)();
-        this.debugPort = config.debugPort || 9222;
+        // Debug port will be loaded from shared config in launch/connect methods
     }
     /**
      * Add console message with size limit to prevent memory issues.
@@ -69,41 +67,27 @@ class ChromeBrowser {
      * Connect to already running Chrome instance.
      */
     async connect() {
-        const config = (0, config_1.loadConfig)();
-        // Check if config is initialized and port exists
-        if (config.initialized && config.debugPort) {
-            // Check if the port is in use (browser running)
-            const portAvailable = await (0, config_1.isPortAvailable)(config.debugPort);
-            if (!portAvailable) {
-                // Port is in use, browser is running
-                this.debugPort = config.debugPort;
-                console.log(`Connecting to existing Chrome on port ${this.debugPort}...`);
-                await this.connectToPage();
-                return;
-            }
-            else {
-                // Port is available, browser died
-                console.log('Previous browser session not found, resetting config...');
-                (0, config_1.resetConfig)();
-            }
+        // Get project port from shared config
+        const port = await (0, config_1.getProjectPort)();
+        // Check if the port is in use (browser running)
+        const portAvailable = await (0, config_1.isPortAvailable)(port);
+        if (!portAvailable) {
+            // Port is in use, browser is running
+            this.debugPort = port;
+            console.log(`Connecting to existing Chrome on port ${this.debugPort}...`);
+            await this.connectToPage();
+            (0, config_1.updateProjectLastUsed)();
+            return;
         }
         // No running browser found
-        throw new Error('No running browser found');
+        throw new Error(`No running browser found on port ${port}`);
     }
     /**
      * Launch Chrome in debugging mode.
      */
     async launch() {
-        // Initialize config and get available port
-        const config = (0, config_1.loadConfig)();
-        if (!config.initialized) {
-            console.log('Initializing browser configuration...');
-            const newConfig = await (0, config_1.initializeConfig)();
-            this.debugPort = newConfig.debugPort;
-        }
-        else {
-            this.debugPort = config.debugPort;
-        }
+        // Get project port from shared config (auto-creates if not exists)
+        this.debugPort = await (0, config_1.getProjectPort)();
         const chromePath = this.getChromePath();
         const args = [
             `--remote-debugging-port=${this.debugPort}`,
@@ -122,12 +106,8 @@ class ChromeBrowser {
         });
         // Detach the process so it continues running when Node exits
         this.chromeProcess.unref();
-        // Update config with initialization status
-        (0, config_1.saveConfig)({
-            initialized: true,
-            debugPort: this.debugPort,
-            lastUsed: new Date().toISOString()
-        });
+        // Update last used timestamp
+        (0, config_1.updateProjectLastUsed)();
         // Wait for Chrome to be ready by polling the JSON endpoint
         let attempts = 0;
         const maxAttempts = 20; // 10 seconds (20 * 500ms)
@@ -257,9 +237,8 @@ class ChromeBrowser {
             // Close WebSocket connection
             this.client.close();
         }
-        // Reset config to uninitialized state
-        (0, config_1.resetConfig)();
-        console.log('Browser configuration reset');
+        // Clean up project config if autoCleanup is enabled
+        (0, config_1.cleanupProjectIfNeeded)();
     }
     /**
      * Sleep for specified milliseconds.

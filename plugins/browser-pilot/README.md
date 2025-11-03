@@ -1,6 +1,6 @@
 # Browser Pilot
 
-> **Status**: ✅ Released (v0.3.0)
+> **Status**: ✅ Released (v1.0.0)
 
 **Language**: [English](README.md) | [한국어](README.ko.md)
 
@@ -93,25 +93,25 @@ All commands should be run from `plugins/browser-pilot/skills/scripts`:
 cd plugins/browser-pilot/skills/scripts
 
 # Take a screenshot
-npm run bp:screenshot -- -u "https://example.com" -o "example.png" --headless --full-page --project-root "$OLDPWD"
+npm run bp:screenshot -- -u "https://example.com" -o "example.png" --headless --full-page
 
 # Navigate to a URL
-npm run bp:navigate -- -u "https://github.com" --project-root "$OLDPWD"
+npm run bp:navigate -- -u "https://github.com"
 
 # Extract text from elements
-npm run bp:extract -- -u "https://example.com" -s "h1" --project-root "$OLDPWD"
+npm run bp:extract -- -u "https://example.com" -s "h1"
 
 # Fill a form field
-npm run bp:fill -- -u "https://example.com/login" -s "#email" -v "user@example.com" --project-root "$OLDPWD"
+npm run bp:fill -- -u "https://example.com/login" -s "#email" -v "user@example.com"
 
 # Click an element
-npm run bp:click -- -u "https://example.com" -s "button.login-btn" --project-root "$OLDPWD"
+npm run bp:click -- -u "https://example.com" -s "button.login-btn"
 
 # Generate PDF
-npm run bp:pdf -- -u "https://docs.example.com" -o "documentation.pdf" --project-root "$OLDPWD"
+npm run bp:pdf -- -u "https://docs.example.com" -o "documentation.pdf"
 ```
 
-**Important**: Always include `--project-root "$OLDPWD"` to ensure files are saved to the correct project directory.
+**Note**: Project root is auto-detected from the current working directory. Files are saved to `.browser-pilot/` in your project root.
 
 ### Multi-Step Workflows
 
@@ -122,13 +122,13 @@ cd plugins/browser-pilot/skills/scripts
 
 # Login workflow with human-like delays
 # Note: URL is optional after first navigate - preserves page state!
-npm run bp:navigate -- -u "https://example.com/login" --project-root "$OLDPWD" && \
+npm run bp:navigate -- -u "https://example.com/login" && \
 sleep 1 && \
-npm run bp:fill -- -s "#email" -v "user@example.com" --project-root "$OLDPWD" && \
+npm run bp:fill -- -s "#email" -v "user@example.com" && \
 sleep 0.5 && \
-npm run bp:fill -- -s "#password" -v "mypass123" --project-root "$OLDPWD" && \
+npm run bp:fill -- -s "#password" -v "mypass123" && \
 sleep 0.5 && \
-npm run bp:click -- -s "button[type='submit']" --project-root "$OLDPWD"
+npm run bp:click -- -s "button[type='submit']"
 ```
 
 **New in v0.1.6**: URL parameter (`-u`) is now optional for most commands. When omitted, commands operate on the current page without refreshing, preserving console logs, network data, and form state.
@@ -217,23 +217,44 @@ close            # Close all tabs and exit browser
 
 ## Configuration
 
-### Config File
+### Shared Config File
 
-Location: `.plugin-config/browser-pilot.json`
+**Location**: `{plugin-folder}/skills/browser-pilot-config.json`
+
+The plugin uses a shared configuration system that manages multiple projects:
 
 ```json
 {
-  "initialized": true,
-  "debugPort": 9222,
-  "lastUsed": "2025-11-03T05:00:00.000Z"
+  "projects": {
+    "my-project": {
+      "rootPath": "/path/to/my-project",
+      "port": 9222,
+      "outputDir": ".browser-pilot",
+      "lastUsed": "2025-11-04T12:00:00.000Z",
+      "autoCleanup": false
+    },
+    "another-project": {
+      "rootPath": "/path/to/another-project",
+      "port": 9223,
+      "outputDir": ".browser-pilot",
+      "lastUsed": "2025-11-04T11:00:00.000Z",
+      "autoCleanup": false
+    }
+  }
 }
 ```
+
+**Features:**
+- Automatic project registration via SessionStart hook
+- Unique port allocation per project (9222-9322)
+- Project identification by folder name
+- Optional cleanup via SessionEnd hook (when `autoCleanup: true`)
 
 ### Output Directory
 
 All screenshots and PDFs are automatically saved to:
 - `.browser-pilot/` (in project root)
-- Auto-created with `.gitignore` to exclude generated files
+- Auto-created at session start with `.gitignore` to exclude generated files
 
 ## Example Workflows
 
@@ -245,8 +266,7 @@ npm run bp:screenshot -- \
   -u "https://github.com" \
   -o "github-homepage.png" \
   --headless \
-  --full-page \
-  --project-root "$OLDPWD"
+  --full-page
 ```
 
 ### Form Automation
@@ -255,17 +275,17 @@ npm run bp:screenshot -- \
 cd plugins/browser-pilot/skills/scripts
 
 # Contact form submission with delays
-npm run bp:navigate -- -u "https://example.com/contact" --project-root "$OLDPWD" && \
+npm run bp:navigate -- -u "https://example.com/contact" && \
 sleep 1 && \
-npm run bp:fill -- -s "#name" -v "John Doe" --project-root "$OLDPWD" && \
+npm run bp:fill -- -s "#name" -v "John Doe" && \
 sleep 0.5 && \
-npm run bp:fill -- -s "#email" -v "john@example.com" --project-root "$OLDPWD" && \
+npm run bp:fill -- -s "#email" -v "john@example.com" && \
 sleep 0.5 && \
-npm run bp:fill -- -s "#message" -v "Hello from Browser Pilot!" --project-root "$OLDPWD" && \
+npm run bp:fill -- -s "#message" -v "Hello from Browser Pilot!" && \
 sleep 0.5 && \
-npm run bp:click -- -s "button[type='submit']" --project-root "$OLDPWD" && \
+npm run bp:click -- -s "button[type='submit']" && \
 sleep 1 && \
-npm run bp:screenshot -- -o "contact-submitted.png" --project-root "$OLDPWD"
+npm run bp:screenshot -- -o "contact-submitted.png"
 ```
 
 ### Web Scraping
@@ -275,8 +295,7 @@ npm run bp:screenshot -- -o "contact-submitted.png" --project-root "$OLDPWD"
 npm run bp:extract -- \
   -u "https://news.ycombinator.com" \
   -s "a.storylink" \
-  --all \
-  --project-root "$OLDPWD"
+  --all
 ```
 
 ### PDF Generation
@@ -287,8 +306,7 @@ npm run bp:pdf -- \
   -u "https://docs.example.com" \
   -o "api-docs.pdf" \
   --landscape \
-  --headless \
-  --project-root "$OLDPWD"
+  --headless
 ```
 
 ## Bot Detection Avoidance
@@ -306,8 +324,7 @@ Browser Pilot maintains `navigator.webdriver = false`, bypassing most anti-bot s
 npm run bp:screenshot -- \
   -u "https://bot.sannysoft.com" \
   -o "bot-test.png" \
-  --headless \
-  --project-root "$OLDPWD"
+  --headless
 ```
 
 Expected: All checks **PASS** (green).
@@ -390,35 +407,6 @@ Browser Pilot uses CDP for all browser operations:
 }
 ```
 
-### Project Structure
-
-```
-plugins/browser-pilot/
-├── .claude-plugin/
-│   └── plugin.json              # Plugin metadata
-├── hooks/
-│   ├── hooks.json               # SessionStart hook config
-│   └── scripts/
-│       └── init-config.js       # Auto-initialization script
-├── skills/
-│   ├── SKILL.md                 # Skill documentation
-│   └── scripts/
-│       ├── package.json         # Node.js dependencies
-│       ├── tsconfig.json        # TypeScript config
-│       ├── dist/                # Compiled JavaScript
-│       └── src/
-│           ├── cli.ts           # CLI entry point
-│           ├── cdp/
-│           │   ├── browser.ts   # Chrome launcher
-│           │   ├── client.ts    # CDP WebSocket client
-│           │   ├── actions.ts   # Core CDP actions
-│           │   ├── actions-extra.ts  # Extended actions
-│           │   └── utils.ts     # Utility functions
-│           └── config/
-│               └── manager.ts   # Config management
-└── README.md                    # This file
-```
-
 ## Ethical Usage
 
 Browser Pilot is for **authorized automation only**. Do NOT use for:
@@ -442,39 +430,6 @@ Always respect robots.txt and website terms of service.
 - CDP communication is near-instant (milliseconds)
 - Add `sleep` delays to avoid bot detection (0.5-2 seconds recommended)
 - Total workflow time = initial page load + sleep delays + command overhead
-
-## Changelog
-
-### v0.1.6 (2025-11-03)
-- **Changed**: URL parameter (`-u`) is now **optional** for 10 commands (screenshot, click, fill, extract, select, check, uncheck, hover, upload, drag)
-- **Changed**: `--project-root` is now a **required** parameter for all commands
-- **Improved**: Commands without URL preserve page state (console logs, network data, form inputs)
-- **Fixed**: Prevents unnecessary page refreshes in multi-step workflows
-
-### v0.1.5 (2025-11-03)
-- **Added**: Exported `StackTrace` and `RemoteObject` interfaces for public API
-
-### v0.1.4 (2025-11-03)
-- **Added**: `FormattedConsoleMessage` interface for typed API responses
-- **Changed**: Replaced `any` types with proper TypeScript types
-
-### v0.1.3 (2025-11-03)
-- **Added**: Explicit TypeScript interfaces for CDP event payloads
-
-### v0.1.2 (2025-11-03)
-- **Added**: Console message collection (14 new CLI commands)
-- **Added**: `console`, `console-errors`, `console-clear` commands
-- **Improved**: Browser tab management
-
-### v0.1.1 (2025-11-03)
-- **Fixed**: Cross-platform Chrome detection
-- **Improved**: Error messages and documentation
-
-### v0.1.0 (2025-11-03)
-- Initial release with CDP browser automation
-- Screenshot, PDF generation, web scraping
-- Form filling, element interaction
-- Bot detection bypass
 
 ## License
 

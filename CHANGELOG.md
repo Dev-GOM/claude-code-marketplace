@@ -2,11 +2,32 @@
 
 All notable changes to the Dev GOM Plugins marketplace will be documented in this file.
 
-> **Version**: 2.10.7 | **Last Updated**: 2025-01-04
+> **Version**: 2.11.0 | **Last Updated**: 2025-11-04
 
 ---
 
-## [2.10.7] - 2025-01-04
+## [2.11.0] - 2025-11-04
+
+### Changed
+- 🎉 **Browser Pilot v1.0.0**: First Stable Release - Production Ready
+  - **Breaking Changes**:
+    - **Removed `--project-root` parameter**: Now auto-detected from environment
+    - **Configuration system migration**: Per-project files → shared config
+  - **Shared Configuration System**: Single config manages multiple projects
+    - Multi-project port management (9222-9322 auto-assigned)
+    - Project identification by folder name
+    - Port collision detection and automatic assignment
+  - **Automated Session Management**: SessionStart/SessionEnd hooks
+    - SessionStart: Auto-registers project, assigns port, creates `.browser-pilot/` directory
+    - SessionEnd: Optional cleanup when `autoCleanup: true`
+  - **Modular CLI Architecture**: Reorganized `cli.ts` to `src/cli/cli.ts`
+  - **Documentation Updates**: XPath wildcard examples, shared config docs, architecture diagrams
+  - **Cross-Platform Support**: All path operations use Node.js `path` module
+  - **Files Changed**: 11 files (config.ts, browser.ts, helpers.ts, cli.ts, hooks.json, etc.)
+
+---
+
+## [2.10.7] - 2025-11-03
 
 ### Added
 - ⚛️ **Browser Pilot v0.3.0**: React/Framework Compatibility

@@ -32,6 +32,7 @@ export declare function checkConsoleErrors(browser: ChromeBrowser): void;
 /**
  * Helper: Ensure output path (convert relative to .browser-pilot/).
  * Security: Prevents path traversal attacks and rejects absolute paths.
+ * Uses getOutputDir() from config to get project-specific output directory.
  */
 export declare function ensureOutputPath(path: string): string;
 //# sourceMappingURL=helpers.d.ts.map
