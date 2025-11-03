@@ -14,13 +14,13 @@ program
   .name('cdp-browser')
   .description('Chrome DevTools Protocol browser automation CLI')
   .version('1.0.0')
-  .option('--project-root <path>', 'Project root directory (overrides auto-detection)');
+  .requiredOption('--project-root <path>', 'Project root directory (required for file output paths)');
 
 // Screenshot command
 program
   .command('screenshot')
   .description('Capture screenshot of a webpage')
-  .requiredOption('-u, --url <url>', 'URL to capture')
+  .option('-u, --url <url>', 'URL to capture (optional, uses current page if not specified)')
   .option('-o, --output <path>', 'Output file path', 'screenshot.png')
   .option('--headless', 'Run in headless mode', false)
   .option('--full-page', 'Capture full page', true)
@@ -33,8 +33,10 @@ program
       } catch {
         await browser.launch();
       }
-      await actions.navigate(browser, options.url);
-      await actions.waitForLoad(browser);
+      if (options.url) {
+        await actions.navigate(browser, options.url);
+        await actions.waitForLoad(browser);
+      }
       const result = await actions.screenshot(browser, options.output, options.fullPage);
       console.log('Screenshot saved:', result.path);
       console.log('Browser remains open. Use "close" command to close it.');
@@ -75,7 +77,7 @@ program
 program
   .command('extract')
   .description('Extract text from webpage')
-  .requiredOption('-u, --url <url>', 'URL to extract from')
+  .option('-u, --url <url>', 'URL to extract from (optional, uses current page if not specified)')
   .option('-s, --selector <selector>', 'CSS selector (optional)')
   .option('--headless', 'Run in headless mode', false)
   .action(async (options) => {
@@ -87,8 +89,10 @@ program
       } catch {
         await browser.launch();
       }
-      await actions.navigate(browser, options.url);
-      await actions.waitForLoad(browser);
+      if (options.url) {
+        await actions.navigate(browser, options.url);
+        await actions.waitForLoad(browser);
+      }
       const result = await actions.extractText(browser, options.selector);
       console.log('Extracted text:', result.text);
       console.log('Browser remains open. Use "close" command to close it.');
@@ -103,7 +107,7 @@ program
 program
   .command('click')
   .description('Click an element on the page')
-  .requiredOption('-u, --url <url>', 'URL to navigate to')
+  .option('-u, --url <url>', 'URL to navigate to (optional, uses current page if not specified)')
   .requiredOption('-s, --selector <selector>', 'CSS selector to click')
   .option('--headless', 'Run in headless mode', false)
   .action(async (options) => {
@@ -115,8 +119,10 @@ program
       } catch {
         await browser.launch();
       }
-      await actions.navigate(browser, options.url);
-      await actions.waitForLoad(browser);
+      if (options.url) {
+        await actions.navigate(browser, options.url);
+        await actions.waitForLoad(browser);
+      }
       const result = await actions.click(browser, options.selector);
       console.log('Clicked:', result.selector);
       console.log('Browser will stay open. Use "close" command to close it.');
@@ -131,7 +137,7 @@ program
 program
   .command('fill')
   .description('Fill an input field')
-  .requiredOption('-u, --url <url>', 'URL to navigate to')
+  .option('-u, --url <url>', 'URL to navigate to (optional, uses current page if not specified)')
   .requiredOption('-s, --selector <selector>', 'CSS selector of input field')
   .requiredOption('-v, --value <value>', 'Value to fill')
   .option('--headless', 'Run in headless mode', false)
@@ -144,8 +150,10 @@ program
       } catch {
         await browser.launch();
       }
-      await actions.navigate(browser, options.url);
-      await actions.waitForLoad(browser);
+      if (options.url) {
+        await actions.navigate(browser, options.url);
+        await actions.waitForLoad(browser);
+      }
       const result = await actions.fill(browser, options.selector, options.value);
       console.log('Filled:', result.selector, 'with:', result.value);
       console.log('Browser will stay open. Use "close" command to close it.');
@@ -318,15 +326,17 @@ program
 program
   .command('hover')
   .description('Hover over an element')
-  .requiredOption('-u, --url <url>', 'URL to navigate to')
+  .option('-u, --url <url>', 'URL to navigate to (optional, uses current page if not specified)')
   .requiredOption('-s, --selector <selector>', 'CSS selector to hover')
   .option('--headless', 'Run in headless mode', false)
   .action(async (options) => {
     const browser = new ChromeBrowser(options.headless);
     try {
       try { await browser.connect(); } catch { await browser.launch(); }
-      await actions.navigate(browser, options.url);
-      await actions.waitForLoad(browser);
+      if (options.url) {
+        await actions.navigate(browser, options.url);
+        await actions.waitForLoad(browser);
+      }
       const result = await actions.hover(browser, options.selector);
       console.log('Hovered:', result.selector);
       console.log('Browser will stay open. Use "close" command to close it.');
@@ -390,7 +400,7 @@ program
 program
   .command('upload')
   .description('Upload file to input element')
-  .requiredOption('-u, --url <url>', 'URL to navigate to')
+  .option('-u, --url <url>', 'URL to navigate to (optional, uses current page if not specified)')
   .requiredOption('-s, --selector <selector>', 'CSS selector of file input')
   .requiredOption('-f, --file <path>', 'File path to upload')
   .option('--headless', 'Run in headless mode', false)
@@ -398,8 +408,10 @@ program
     const browser = new ChromeBrowser(options.headless);
     try {
       try { await browser.connect(); } catch { await browser.launch(); }
-      await actions.navigate(browser, options.url);
-      await actions.waitForLoad(browser);
+      if (options.url) {
+        await actions.navigate(browser, options.url);
+        await actions.waitForLoad(browser);
+      }
       const result = await actions.uploadFile(browser, options.selector, options.file);
       console.log('Uploaded:', result.file);
       console.log('Browser will stay open. Use "close" command to close it.');
@@ -536,7 +548,7 @@ program
 program
   .command('select')
   .description('Select option from dropdown')
-  .requiredOption('-u, --url <url>', 'URL to navigate to')
+  .option('-u, --url <url>', 'URL to navigate to (optional, uses current page if not specified)')
   .requiredOption('-s, --selector <selector>', 'CSS selector of select element')
   .requiredOption('-v, --value <value>', 'Option value to select')
   .option('--headless', 'Run in headless mode', false)
@@ -544,8 +556,10 @@ program
     const browser = new ChromeBrowser(options.headless);
     try {
       try { await browser.connect(); } catch { await browser.launch(); }
-      await actions.navigate(browser, options.url);
-      await actions.waitForLoad(browser);
+      if (options.url) {
+        await actions.navigate(browser, options.url);
+        await actions.waitForLoad(browser);
+      }
       const result = await actions.selectOption(browser, options.selector, options.value);
       console.log('Selected:', result.value, 'in', result.selector);
       console.log('Browser will stay open. Use "close" command to close it.');
@@ -560,15 +574,17 @@ program
 program
   .command('check')
   .description('Check a checkbox')
-  .requiredOption('-u, --url <url>', 'URL to navigate to')
+  .option('-u, --url <url>', 'URL to navigate to (optional, uses current page if not specified)')
   .requiredOption('-s, --selector <selector>', 'CSS selector of checkbox')
   .option('--headless', 'Run in headless mode', false)
   .action(async (options) => {
     const browser = new ChromeBrowser(options.headless);
     try {
       try { await browser.connect(); } catch { await browser.launch(); }
-      await actions.navigate(browser, options.url);
-      await actions.waitForLoad(browser);
+      if (options.url) {
+        await actions.navigate(browser, options.url);
+        await actions.waitForLoad(browser);
+      }
       const result = await actions.check(browser, options.selector);
       console.log('Checked:', result.selector);
       console.log('Browser will stay open. Use "close" command to close it.');
@@ -583,15 +599,17 @@ program
 program
   .command('uncheck')
   .description('Uncheck a checkbox')
-  .requiredOption('-u, --url <url>', 'URL to navigate to')
+  .option('-u, --url <url>', 'URL to navigate to (optional, uses current page if not specified)')
   .requiredOption('-s, --selector <selector>', 'CSS selector of checkbox')
   .option('--headless', 'Run in headless mode', false)
   .action(async (options) => {
     const browser = new ChromeBrowser(options.headless);
     try {
       try { await browser.connect(); } catch { await browser.launch(); }
-      await actions.navigate(browser, options.url);
-      await actions.waitForLoad(browser);
+      if (options.url) {
+        await actions.navigate(browser, options.url);
+        await actions.waitForLoad(browser);
+      }
       const result = await actions.uncheck(browser, options.selector);
       console.log('Unchecked:', result.selector);
       console.log('Browser will stay open. Use "close" command to close it.');
@@ -606,7 +624,7 @@ program
 program
   .command('drag')
   .description('Drag and drop element')
-  .requiredOption('-u, --url <url>', 'URL to navigate to')
+  .option('-u, --url <url>', 'URL to navigate to (optional, uses current page if not specified)')
   .requiredOption('--from <selector>', 'Source element selector')
   .requiredOption('--to <selector>', 'Target element selector')
   .option('--headless', 'Run in headless mode', false)
@@ -614,8 +632,10 @@ program
     const browser = new ChromeBrowser(options.headless);
     try {
       try { await browser.connect(); } catch { await browser.launch(); }
-      await actions.navigate(browser, options.url);
-      await actions.waitForLoad(browser);
+      if (options.url) {
+        await actions.navigate(browser, options.url);
+        await actions.waitForLoad(browser);
+      }
       const result = await actions.dragAndDrop(browser, options.from, options.to);
       console.log('Dragged', result.sourceSelector, 'to', result.targetSelector);
       console.log('Browser will stay open. Use "close" command to close it.');

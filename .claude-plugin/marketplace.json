@@ -5,7 +5,7 @@
   },
   "metadata": {
     "description": "Productivity plugins for Claude Code to automate development workflows",
-    "version": "2.10.0",
+    "version": "2.10.1",
     "homepage": "https://github.com/Dev-GOM/claude-code-marketplace"
   },
   "plugins": [
@@ -122,7 +122,7 @@
       "name": "hook-sound-notifications",
       "source": "./plugins/hook-sound-notifications",
       "description": "Audio notifications for Claude Code hook events with customizable sounds and volume control",
-      "version": "1.4.0",
+      "version": "1.4.1",
       "author": {
         "name": "Dev GOM"
       },
@@ -231,7 +231,7 @@
       "name": "browser-pilot",
       "source": "./plugins/browser-pilot",
       "description": "Chrome DevTools Protocol (CDP) browser automation, web scraping, and crawling",
-      "version": "0.1.5",
+      "version": "0.1.6",
       "author": {
         "name": "Dev GOM"
       },

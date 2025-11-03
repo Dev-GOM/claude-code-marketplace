@@ -1,6 +1,6 @@
 {
   "description": "Sound Notifications - Audio alerts for Claude Code hook events",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "author": "Dev GOM",
   "lastUpdated": "2025-11-03",
   "hooks": {
@@ -27,7 +27,7 @@
           {
             "type": "command",
             "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/sound-hook-wrapper.sh -HookType SessionStart",
-            "description": "Plays sound when session starts",
+            "description": "Plays sound when session starts (with lock mechanism)",
             "continueOnError": true,
             "suppressOutput": true
           }
@@ -57,7 +57,7 @@
           {
             "type": "command",
             "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/sound-hook-wrapper.sh -HookType SessionEnd",
-            "description": "Plays sound when session ends",
+            "description": "Plays sound when session ends (with lock mechanism)",
             "continueOnError": true,
             "suppressOutput": true
           }
@@ -74,7 +74,7 @@
           {
             "type": "command",
             "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/sound-hook-wrapper.sh -HookType PreToolUse",
-            "description": "Plays sound before tool execution",
+            "description": "Plays sound before tool execution (with lock mechanism)",
             "continueOnError": true,
             "suppressOutput": true
           }
@@ -91,7 +91,7 @@
           {
             "type": "command",
             "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/sound-hook-wrapper.sh -HookType PostToolUse",
-            "description": "Plays sound after tool execution",
+            "description": "Plays sound after tool execution (with lock mechanism)",
             "continueOnError": true,
             "suppressOutput": true
           }
@@ -107,7 +107,7 @@
           {
             "type": "command",
             "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/sound-hook-wrapper.sh -HookType Notification",
-            "description": "Plays sound when notification occurs",
+            "description": "Plays sound when notification occurs (with lock mechanism)",
             "continueOnError": true,
             "suppressOutput": true
           }
@@ -123,7 +123,7 @@
           {
             "type": "command",
             "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/sound-hook-wrapper.sh -HookType UserPromptSubmit",
-            "description": "Plays sound when user submits a prompt",
+            "description": "Plays sound when user submits a prompt (with lock mechanism)",
             "continueOnError": true,
             "suppressOutput": true
           }
@@ -139,7 +139,7 @@
           {
             "type": "command",
             "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/sound-hook-wrapper.sh -HookType Stop",
-            "description": "Plays sound when agent stops responding",
+            "description": "Plays sound when agent stops responding (with lock mechanism)",
             "continueOnError": true,
             "suppressOutput": true
           }
@@ -155,7 +155,7 @@
           {
             "type": "command",
             "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/sound-hook-wrapper.sh -HookType SubagentStop",
-            "description": "Plays sound when subagent task completes",
+            "description": "Plays sound when subagent task completes (with lock mechanism)",
             "continueOnError": true,
             "suppressOutput": true
           }
@@ -171,7 +171,7 @@
           {
             "type": "command",
             "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/sound-hook-wrapper.sh -HookType PreCompact",
-            "description": "Plays sound before context compaction",
+            "description": "Plays sound before context compaction (with lock mechanism)",
             "continueOnError": true,
             "suppressOutput": true
           }

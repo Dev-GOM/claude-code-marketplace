@@ -6,6 +6,51 @@ param(
     [string]$ConfigPath = ""
 )
 
+# Lock mechanism to prevent duplicate execution
+$lockFile = Join-Path $env:TEMP "claude-sound-$HookType.lock"
+
+# Check if lock exists and process is still running
+if (Test-Path $lockFile) {
+    try {
+        $lockPid = Get-Content $lockFile -ErrorAction SilentlyContinue
+        if ($lockPid) {
+            $process = Get-Process -Id $lockPid -ErrorAction SilentlyContinue
+            if ($process) {
+                # Process still running, exit silently
+                exit 0
+            }
+        }
+    } catch {
+        # Ignore errors, proceed with lock creation
+    }
+    # Stale lock file, remove it
+    Remove-Item $lockFile -ErrorAction SilentlyContinue
+}
+
+# Create lock file with current PID
+try {
+    $PID | Out-File -FilePath $lockFile -Encoding ASCII
+} catch {
+    # If lock creation fails, exit silently
+    exit 0
+}
+
+# Clean up lock on exit
+$cleanupLock = {
+    if (Test-Path $lockFile) {
+        Remove-Item $lockFile -ErrorAction SilentlyContinue
+    }
+}
+
+# Register cleanup handler
+Register-EngineEvent -SourceIdentifier PowerShell.Exiting -Action $cleanupLock | Out-Null
+
+# Ensure cleanup on script exit
+trap {
+    & $cleanupLock
+    break
+}
+
 # Read configuration
 if ($ConfigPath -eq "") {
     # Default: use current working directory (project root when run from hooks)
@@ -60,3 +105,8 @@ $volume = [Math]::Max(0.0, [Math]::Min(1.0, $volume))
 # Call play-sound.ps1
 $playSoundScript = Join-Path $PSScriptRoot "play-sound.ps1"
 & $playSoundScript -SoundPath $soundFile -Volume $volume
+
+# Clean up lock file
+& $cleanupLock
+
+exit 0

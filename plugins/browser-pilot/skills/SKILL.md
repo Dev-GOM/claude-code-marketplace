@@ -185,12 +185,15 @@ npm run bp:disable-interception -- --project-root "$OLDPWD"
 ```
 
 **Options:**
+- `-u, --url` - **Optional** URL to navigate to (if not provided, uses current page)
 - `--headless` - Run without visible browser window (faster)
 - `--full-page` - Capture entire scrollable page (screenshot only)
 - `--output` - Output file path (relative paths save to `.browser-pilot/`)
 - `--selector` - CSS selector for element targeting
 - `--value` - Text value to fill in input
 - `--expression` - JavaScript code to execute
+
+**Important:** URL is now optional for most commands. If omitted, commands operate on the current page without refreshing. This preserves page state (console logs, network data, form inputs, etc.).
 
 ## Bot Detection Avoidance
 
@@ -340,24 +343,33 @@ You can chain multiple commands using `&&` to create workflows. The browser stay
 
 ```bash
 cd "${CLAUDE_SKILL_ROOT}/scripts"
+# Navigate to login page (URL required)
 npm run bp:navigate -- -u "https://example.com/login" --project-root "$OLDPWD" && \
 sleep 1 && \
+# Fill email (no URL - uses current page, no refresh!)
 npm run bp:fill -- -s "#email" -v "test@example.com" --project-root "$OLDPWD" && \
 sleep 0.5 && \
+# Fill password (no URL - uses current page)
 npm run bp:fill -- -s "#password" -v "mypass123" --project-root "$OLDPWD" && \
 sleep 0.5 && \
+# Click submit (no URL - uses current page)
 npm run bp:click -- -s "button[type='submit']" --project-root "$OLDPWD"
 ```
+
+**Note:** Only the first `navigate` command needs `-u`. All subsequent commands operate on the current page without refreshing.
 
 **Example 7: Data Extraction with Screenshot**
 > "Go to github.com, extract the main heading, and take a screenshot"
 
 ```bash
 cd "${CLAUDE_SKILL_ROOT}/scripts"
+# Navigate to GitHub (URL required)
 npm run bp:navigate -- -u "https://github.com" --project-root "$OLDPWD" && \
 sleep 1 && \
+# Extract heading (no URL - uses current page)
 npm run bp:extract -- -s "h1" --project-root "$OLDPWD" && \
 sleep 0.5 && \
+# Screenshot (no URL - uses current page)
 npm run bp:screenshot -- -o "github-page.png" --full-page --project-root "$OLDPWD"
 ```
 
@@ -366,23 +378,30 @@ npm run bp:screenshot -- -o "github-page.png" --full-page --project-root "$OLDPW
 
 ```bash
 cd "${CLAUDE_SKILL_ROOT}/scripts"
+# Navigate to contact page (URL required)
 npm run bp:navigate -- -u "https://example.com/contact" --project-root "$OLDPWD" && \
 sleep 1 && \
+# Fill name (no URL - uses current page)
 npm run bp:fill -- -s "#name" -v "John Doe" --project-root "$OLDPWD" && \
 sleep 0.5 && \
+# Fill email (no URL - uses current page)
 npm run bp:fill -- -s "#email" -v "john@example.com" --project-root "$OLDPWD" && \
 sleep 0.5 && \
+# Fill message (no URL - uses current page)
 npm run bp:fill -- -s "#message" -v "Hello" --project-root "$OLDPWD" && \
 sleep 0.5 && \
+# Submit form (no URL - uses current page)
 npm run bp:click -- -s "button[type='submit']" --project-root "$OLDPWD" && \
 sleep 1 && \
+# Screenshot (no URL - uses current page)
 npm run bp:screenshot -- -o "contact-form-submitted.png" --project-root "$OLDPWD"
 ```
 
 **Performance Note**:
 - Browser launches once and stays open (fast)
 - Each command reuses the same browser instance
+- **No page refresh when URL is omitted** - preserves page state, console logs, network data
 - ~100-200ms overhead per command (npm startup)
 - CDP communication is near-instant (milliseconds)
 - Add `sleep` delays to avoid bot detection (0.5-2 seconds recommended)
-- Total workflow time = page loads + sleep delays + command overhead
+- Total workflow time = initial page load + sleep delays + command overhead (no reload overhead!)
