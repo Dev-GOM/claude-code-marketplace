@@ -1,6 +1,8 @@
 # Browser Pilot
 
-> **Status**: ✅ Released (v0.1.6)
+> **Status**: ✅ Released (v0.2.0)
+
+**Language**: [English](README.md) | [한국어](README.ko.md)
 
 Chrome DevTools Protocol (CDP) based browser automation, web scraping, and crawling - Control Chrome browser programmatically from Claude Code.
 
@@ -33,6 +35,34 @@ Browser Pilot enables direct control of Chrome browser through the Chrome DevToo
 - **TypeScript CLI**: Command-line interface for CDP operations
 - **Chrome Browser**: Runs in headless or headed mode with CDP enabled
 - **WebSocket Communication**: JSON-based command-response protocol
+
+## Using the Skill in Claude Code
+
+This plugin provides a **skill** that Claude can use automatically. You don't need to run commands manually.
+
+### Prerequisites
+
+Before Claude can use this skill:
+
+1. **Build the TypeScript code** (one-time setup):
+   ```bash
+   cd plugins/browser-pilot/skills/scripts
+   npm install
+   npm run build
+   ```
+
+2. **Install Google Chrome**
+   - Chrome will auto-launch when Claude uses the skill
+   - Runs on port 9222 (or next available port)
+
+### How It Works
+
+Once set up, Claude will automatically use this skill when you ask for browser automation tasks:
+- "Take a screenshot of https://example.com"
+- "Extract the title from https://news.ycombinator.com"
+- "Click the login button on https://example.com"
+
+Claude handles all the command execution through the SKILL.md interface - you just describe what you want!
 
 ## Installation
 

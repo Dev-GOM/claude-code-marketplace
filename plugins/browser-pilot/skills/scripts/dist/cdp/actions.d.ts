@@ -17,10 +17,14 @@ export declare function navigate(browser: ChromeBrowser, url: string): Promise<A
 export declare function waitForLoad(browser: ChromeBrowser, timeout?: number): Promise<ActionResult>;
 /**
  * Click element.
+ * Supports both CSS selectors and XPath (when selector starts with '//').
+ * XPath supports indexing: (//button[text()='Click'])[2] selects the 2nd button.
  */
 export declare function click(browser: ChromeBrowser, selector: string): Promise<ActionResult>;
 /**
  * Fill input field.
+ * Supports both CSS selectors and XPath (when selector starts with '//').
+ * XPath supports indexing: (//input[@type='text'])[2] selects the 2nd input.
  */
 export declare function fill(browser: ChromeBrowser, selector: string, value: string): Promise<ActionResult>;
 /**
@@ -33,6 +37,7 @@ export declare function screenshot(browser: ChromeBrowser, outputPath: string, f
 export declare function evaluate(browser: ChromeBrowser, script: string): Promise<ActionResult>;
 /**
  * Extract text from element or body.
+ * Supports both CSS selectors and XPath (when selector starts with '//').
  */
 export declare function extractText(browser: ChromeBrowser, selector?: string): Promise<ActionResult>;
 /**
@@ -69,14 +74,17 @@ export declare function switchTab(browser: ChromeBrowser, targetId?: string, ind
 export declare function closeTab(browser: ChromeBrowser, targetId?: string, index?: number): Promise<ActionResult>;
 /**
  * Hover over element.
+ * Supports both CSS selectors and XPath (when selector starts with '//').
  */
 export declare function hover(browser: ChromeBrowser, selector: string): Promise<ActionResult>;
 /**
  * Focus element.
+ * Supports both CSS selectors and XPath (when selector starts with '//').
  */
 export declare function focus(browser: ChromeBrowser, selector: string): Promise<ActionResult>;
 /**
  * Blur element.
+ * Supports both CSS selectors and XPath (when selector starts with '//').
  */
 export declare function blur(browser: ChromeBrowser, selector: string): Promise<ActionResult>;
 //# sourceMappingURL=actions.d.ts.map

@@ -2,7 +2,35 @@
 
 Dev GOM Plugins 마켓플레이스의 모든 주요 변경사항이 이 파일에 문서화됩니다.
 
-> **버전**: 2.10.4 | **최종 업데이트**: 2025-11-03
+> **버전**: 2.10.5 | **최종 업데이트**: 2025-11-03
+
+---
+
+## [2.10.5] - 2025-11-03
+
+### 추가됨
+- ✨ **Browser Pilot v0.2.0**: 인덱싱을 지원하는 XPath 셀렉터
+  - **XPath 셀렉터 지원**: 강력한 텍스트 기반 요소 선택
+    - 보이는 텍스트로 요소 선택: `//button[contains(text(), 'Submit')]`
+    - 정확한 텍스트로 선택: `//button[text()='Sign In']`
+    - 복잡한 XPath 쿼리: `//div[@class='modal']//button[@type='submit']`
+    - 모든 요소 상호작용 명령어에서 작동 (click, fill, hover, focus, blur 등)
+  - **XPath 인덱싱**: 같은 텍스트를 가진 여러 요소 중 N번째 요소 선택
+    - 문법: `(//xpath-expression)[N]` (N은 1부터 시작)
+    - 예시: `(//button[contains(text(), 'Add to Cart')])[3]`는 3번째 "Add to Cart" 버튼 선택
+    - 중복 요소 중 특정 요소를 선택하는 문제 해결
+  - **코드 품질 개선**: 중앙화된 유틸리티로 리팩토링
+    - utils.ts에 `getFindElementScript()` 생성
+    - actions.ts와 actions-extra.ts의 15개 이상 함수에 적용
+    - 요소 찾기 로직의 단일 진실 공급원 확립
+  - **향상된 문서화**: SKILL.md에 포괄적인 셀렉터 가이드 추가
+    - Selector Types 섹션: CSS vs XPath vs XPath+Indexing
+    - 결정 테이블: 각 셀렉터 타입을 언제 사용해야 하는지
+    - 실용적인 예제 및 문제 해결 팁
+  - **구현 세부사항**:
+    - 인덱싱을 위해 `ORDERED_NODE_SNAPSHOT_TYPE`과 `document.evaluate()` 사용
+    - `(//xpath)[N]` 문법 감지를 위한 정규식 패턴 매칭
+    - 하위 호환성: 기존 CSS 셀렉터는 계속 작동
 
 ---
 
