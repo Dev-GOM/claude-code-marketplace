@@ -268,59 +268,6 @@ npm run bp:disable-interception -- --project-root "$OLDPWD"
 
 **Important:** URL is now optional for most commands. If omitted, commands operate on the current page without refreshing. This preserves page state (console logs, network data, form inputs, etc.).
 
-## React/Framework Compatibility ⚛️
-
-**All form actions now work seamlessly with React and modern frameworks** (Vue, Angular, Svelte).
-
-### What Changed?
-
-Browser Pilot v0.3.0+ uses **coordinate-based CDP interactions** instead of JavaScript DOM manipulation:
-
-| Action | Old Method (v0.2.x) | New Method (v0.3.0+) | Why? |
-|--------|---------------------|----------------------|------|
-| `fill` | `el.value = "text"` | CDP click + Input.insertText | Triggers React onChange |
-| `check`/`uncheck` | `el.checked = true` | CDP mouse events | Triggers React onClick |
-| `typeText` | JavaScript KeyboardEvent | CDP Input.insertText | Triggers React events |
-| `pressKey` | JavaScript KeyboardEvent | CDP Input.dispatchKeyEvent | Proper key simulation |
-
-### Why Does This Matter?
-
-**React Controlled Components** don't respond to direct JavaScript DOM changes:
-
-```jsx
-// This won't work with old method
-<input value={state.email} onChange={(e) => setState({email: e.target.value})} />
-```
-
-**Old method (v0.2.x):**
-```bash
-npm run bp:fill -- -s "#email" -v "test@example.com"
-# ❌ Input shows "test@example.com" but React state remains empty!
-```
-
-**New method (v0.3.0+):**
-```bash
-npm run bp:fill -- -s "#email" -v "test@example.com"
-# ✅ Input shows "test@example.com" AND React state updates correctly!
-```
-
-### Technical Details
-
-- **Coordinate-based interaction**: Finds element center point (x, y) and simulates real mouse/keyboard input
-- **CDP Input domain**: Uses Chrome DevTools Protocol's Input.insertText, Input.dispatchMouseEvent
-- **Event propagation**: Properly triggers React synthetic events (onChange, onClick, onKeyDown)
-- **No breaking changes**: All existing selectors and parameters work the same
-
-### Compatibility
-
-- ✅ React controlled components
-- ✅ Vue v-model bindings
-- ✅ Angular ngModel
-- ✅ Svelte bind:value
-- ✅ Traditional HTML forms (backward compatible)
-
-**No code changes needed** - just update to v0.3.0+!
-
 ## Bot Detection Avoidance
 
 CDP maintains `navigator.webdriver = false`, bypassing most anti-bot systems.
