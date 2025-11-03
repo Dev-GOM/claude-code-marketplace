@@ -69,7 +69,7 @@ export async function click(browser: ChromeBrowser, selector: string): Promise<A
       ${getFindElementScript()}
 
       const el = findElement(selector);
-      if (!el) throw new Error('Element not found');
+      if (!el) throw new Error('Element not found: ' + selector);
       el.click();
       return true;
     })()
@@ -98,7 +98,7 @@ export async function fill(browser: ChromeBrowser, selector: string, value: stri
       ${getFindElementScript()}
 
       const el = findElement(selector);
-      if (!el) throw new Error('Element not found');
+      if (!el) throw new Error('Element not found: ' + selector);
       el.value = value;
       el.dispatchEvent(new Event('input', { bubbles: true }));
       el.dispatchEvent(new Event('change', { bubbles: true }));
@@ -431,7 +431,7 @@ export async function hover(
       const selector = ${JSON.stringify(selector)};
       ${getFindElementScript()}
       const el = findElement(selector);
-      if (!el) throw new Error('Element not found');
+      if (!el) throw new Error('Element not found: ' + selector);
       el.dispatchEvent(new MouseEvent('mouseover', {
         bubbles: true,
         cancelable: true,
@@ -461,7 +461,7 @@ export async function focus(
       const selector = ${JSON.stringify(selector)};
       ${getFindElementScript()}
       const el = findElement(selector);
-      if (!el) throw new Error('Element not found');
+      if (!el) throw new Error('Element not found: ' + selector);
       el.focus();
       return true;
     })()
@@ -487,7 +487,7 @@ export async function blur(
       const selector = ${JSON.stringify(selector)};
       ${getFindElementScript()}
       const el = findElement(selector);
-      if (!el) throw new Error('Element not found');
+      if (!el) throw new Error('Element not found: ' + selector);
       el.blur();
       return true;
     })()

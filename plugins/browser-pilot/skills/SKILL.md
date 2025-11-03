@@ -123,8 +123,10 @@ npm run bp:click -- -s "(//button[@type='submit'])[3]"
 | Element has unique class | CSS `.class` | `.submit-button` |
 | **Text-based selection** | **XPath** | `//button[contains(text(), 'Login')]` |
 | **Multiple same-text elements** | **XPath + Index** | `(//button[text()='Delete'])[2]` |
-| Complex structure | Either | CSS: `div > ul > li:nth-child(3)` <br> XPath: `//div/ul/li[3]` |
+| N-th child element | Either | CSS: `ul > li:nth-child(3)` <br> XPath: `//ul/li[3]` |
 | Partial text match | XPath | `//a[contains(@href, 'checkout')]` |
+
+**Note:** CSS `>` selects direct children only, while XPath `//` searches all descendants. For equivalent behavior, use XPath `/` (single slash) for direct children: `//ul/li` (all descendants) vs `/ul/li` (direct children).
 
 ### Usage
 

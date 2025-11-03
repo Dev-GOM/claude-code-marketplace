@@ -1,6 +1,6 @@
 # Browser Pilot
 
-> **상태**: ✅ 릴리즈 (v0.2.0)
+> **상태**: ✅ 릴리즈 (v0.2.1)
 
 **언어**: [English](README.md) | [한국어](README.ko.md)
 
