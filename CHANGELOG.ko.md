@@ -2,7 +2,30 @@
 
 Dev GOM Plugins 마켓플레이스의 모든 주요 변경사항이 이 파일에 문서화됩니다.
 
-> **버전**: 2.10.1 | **최종 업데이트**: 2025-11-03
+> **버전**: 2.10.3 | **최종 업데이트**: 2025-11-03
+
+---
+
+## [2.10.3] - 2025-11-03
+
+### 수정됨
+- 🔊 **Sound Notifications v1.4.3**: 중요 버그 수정
+  - **PowerShell Lock Cleanup**: try-finally 패턴으로 lock 파일 정리 수정
+    - 모든 종료 경로(정상, 조기 반환, 예외)에서 lock 파일 정리
+    - temp 디렉토리에 오래된 lock 파일이 쌓이는 문제 방지
+  - **Windows Fallback 일관성**: Windows도 Unix처럼 홈 폴더 사용
+    - fallback을 `plugin/sounds`에서 `~/.claude/sounds/hook-sound-notifications`로 변경
+    - 모든 플랫폼에서 일관된 동작 보장
+  - **크로스 플랫폼 설정 호환성**: PowerShell에서 물결표 확장 추가
+    - `~/...` 경로를 가진 설정 파일이 Windows에서도 작동
+    - Unix 동작과 일치하여 이식 가능한 설정 파일 지원
+  - **동적 파일 읽기 강화**: 시스템 파일 필터링 및 확장자 검증
+    - 숨김 파일(.DS_Store, Thumbs.db, desktop.ini) 건너뛰기
+    - 오디오 파일(.mp3, .wav, .ogg, .m4a, .aac, .flac)만 복사
+    - 권한 문제에 대한 에러 처리 개선
+  - **이식성 개선**: `bc`를 `awk`로 교체
+    - 최소 환경(Alpine Linux, minimal Docker)에서도 작동
+    - POSIX 호환, 더 널리 사용 가능
 
 ---
 

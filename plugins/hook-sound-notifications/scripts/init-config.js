@@ -95,18 +95,32 @@ function copySoundsToHomeFolder() {
       fs.mkdirSync(homeSoundsFolder, { recursive: true });
     }
 
-    // List of sound files to copy
-    const soundFiles = [
-      'session-start.mp3',
-      'session-end.mp3',
-      'pre-tool-use.mp3',
-      'post-tool-use.mp3',
-      'notification.mp3',
-      'user-prompt-submit.mp3',
-      'stop.mp3',
-      'subagent-stop.mp3',
-      'pre-compact.mp3'
-    ];
+    // Dynamically read sound files from plugin sounds folder
+    const soundFiles = fs.readdirSync(pluginSoundsFolder).filter(file => {
+      // Skip hidden files and system files
+      if (file.startsWith('.') || file === 'Thumbs.db' || file === 'desktop.ini') {
+        return false;
+      }
+
+      try {
+        const filePath = path.join(pluginSoundsFolder, file);
+        const stat = fs.statSync(filePath);
+
+        // Only include regular files (not directories or symlinks)
+        if (!stat.isFile()) {
+          return false;
+        }
+
+        // Only include audio files
+        const ext = path.extname(file).toLowerCase();
+        const audioExtensions = ['.mp3', '.wav', '.ogg', '.m4a', '.aac', '.flac'];
+        return audioExtensions.includes(ext);
+
+      } catch (error) {
+        // Skip files with permission/access errors
+        return false;
+      }
+    });
 
     let copiedCount = 0;
 

@@ -22,12 +22,8 @@ fi
 OS_TYPE="$(uname -s)"
 
 case "$OS_TYPE" in
-    Darwin*)
-        # macOS
-        bash "${PLUGIN_ROOT}/scripts/sound-hook.sh" "$@"
-        ;;
-    Linux*)
-        # Linux
+    Darwin*|Linux*)
+        # macOS or Linux
         bash "${PLUGIN_ROOT}/scripts/sound-hook.sh" "$@"
         ;;
     CYGWIN*|MINGW*|MSYS*|Windows_NT*)
