@@ -1,6 +1,6 @@
 # Browser Pilot
 
-> **상태**: ✅ 릴리즈 (v0.3.0)
+> **상태**: ✅ 릴리즈 (v1.0.0)
 
 **언어**: [English](README.md) | [한국어](README.ko.md)
 
@@ -93,25 +93,25 @@ Claude Code 세션을 시작하면 플러그인이 자동으로 초기화됩니�
 cd plugins/browser-pilot/skills/scripts
 
 # 스크린샷 캡처
-npm run bp:screenshot -- -u "https://example.com" -o "example.png" --headless --full-page --project-root "$OLDPWD"
+npm run bp:screenshot -- -u "https://example.com" -o "example.png" --headless --full-page
 
 # URL로 이동
-npm run bp:navigate -- -u "https://github.com" --project-root "$OLDPWD"
+npm run bp:navigate -- -u "https://github.com"
 
 # 요소에서 텍스트 추출
-npm run bp:extract -- -u "https://example.com" -s "h1" --project-root "$OLDPWD"
+npm run bp:extract -- -u "https://example.com" -s "h1"
 
 # 폼 필드 채우기
-npm run bp:fill -- -u "https://example.com/login" -s "#email" -v "user@example.com" --project-root "$OLDPWD"
+npm run bp:fill -- -u "https://example.com/login" -s "#email" -v "user@example.com"
 
 # 요소 클릭
-npm run bp:click -- -u "https://example.com" -s "button.login-btn" --project-root "$OLDPWD"
+npm run bp:click -- -u "https://example.com" -s "button.login-btn"
 
 # PDF 생성
-npm run bp:pdf -- -u "https://docs.example.com" -o "documentation.pdf" --project-root "$OLDPWD"
+npm run bp:pdf -- -u "https://docs.example.com" -o "documentation.pdf"
 ```
 
-**중요**: 파일이 올바른 프로젝트 디렉토리에 저장되도록 항상 `--project-root "$OLDPWD"`를 포함하세요.
+**참고**: 프로젝트 루트는 현재 작업 디렉토리에서 자동 감지됩니다. 파일은 프로젝트 루트의 `.browser-pilot/`에 저장됩니다.
 
 ### 멀티 스텝 워크플로우
 
@@ -121,13 +121,13 @@ npm run bp:pdf -- -u "https://docs.example.com" -o "documentation.pdf" --project
 cd plugins/browser-pilot/skills/scripts
 
 # 인간 같은 딜레이를 사용한 로그인 워크플로우
-npm run bp:navigate -- -u "https://example.com/login" --project-root "$OLDPWD" && \
+npm run bp:navigate -- -u "https://example.com/login" && \
 sleep 1 && \
-npm run bp:fill -- -s "#email" -v "user@example.com" --project-root "$OLDPWD" && \
+npm run bp:fill -- -s "#email" -v "user@example.com" && \
 sleep 0.5 && \
-npm run bp:fill -- -s "#password" -v "mypass123" --project-root "$OLDPWD" && \
+npm run bp:fill -- -s "#password" -v "mypass123" && \
 sleep 0.5 && \
-npm run bp:click -- -s "button[type='submit']" --project-root "$OLDPWD"
+npm run bp:click -- -s "button[type='submit']"
 ```
 
 ## 사용 가능한 명령어
@@ -214,23 +214,44 @@ close            # 모든 탭 닫고 브라우저 종료
 
 ## 설정
 
-### 설정 파일
+### 공유 설정 파일
 
-위치: `.plugin-config/browser-pilot.json`
+**위치**: `{plugin-folder}/skills/browser-pilot-config.json`
+
+플러그인은 여러 프로젝트를 관리하는 공유 설정 시스템을 사용합니다:
 
 ```json
 {
-  "initialized": true,
-  "debugPort": 9222,
-  "lastUsed": "2025-11-03T05:00:00.000Z"
+  "projects": {
+    "my-project": {
+      "rootPath": "/path/to/my-project",
+      "port": 9222,
+      "outputDir": ".browser-pilot",
+      "lastUsed": "2025-11-04T12:00:00.000Z",
+      "autoCleanup": false
+    },
+    "another-project": {
+      "rootPath": "/path/to/another-project",
+      "port": 9223,
+      "outputDir": ".browser-pilot",
+      "lastUsed": "2025-11-04T11:00:00.000Z",
+      "autoCleanup": false
+    }
+  }
 }
 ```
+
+**기능:**
+- SessionStart 훅을 통한 자동 프로젝트 등록
+- 프로젝트별 고유 포트 할당 (9222-9322)
+- 폴더 이름으로 프로젝트 식별
+- SessionEnd 훅을 통한 선택적 정리 (`autoCleanup: true`일 때)
 
 ### 출력 디렉토리
 
 모든 스크린샷과 PDF는 자동으로 다음 위치에 저장됩니다:
 - `.browser-pilot/` (프로젝트 루트)
-- 생성된 파일을 제외하는 `.gitignore`와 함께 자동 생성
+- 세션 시작 시 `.gitignore`와 함께 자동 생성되어 생성된 파일 제외
 
 ## 예제 워크플로우
 
@@ -242,8 +263,7 @@ npm run bp:screenshot -- \
   -u "https://github.com" \
   -o "github-homepage.png" \
   --headless \
-  --full-page \
-  --project-root "$OLDPWD"
+  --full-page
 ```
 
 ### 폼 자동화
@@ -252,17 +272,17 @@ npm run bp:screenshot -- \
 cd plugins/browser-pilot/skills/scripts
 
 # 딜레이를 포함한 문의 폼 제출
-npm run bp:navigate -- -u "https://example.com/contact" --project-root "$OLDPWD" && \
+npm run bp:navigate -- -u "https://example.com/contact" && \
 sleep 1 && \
-npm run bp:fill -- -s "#name" -v "홍길동" --project-root "$OLDPWD" && \
+npm run bp:fill -- -s "#name" -v "홍길동" && \
 sleep 0.5 && \
-npm run bp:fill -- -s "#email" -v "hong@example.com" --project-root "$OLDPWD" && \
+npm run bp:fill -- -s "#email" -v "hong@example.com" && \
 sleep 0.5 && \
-npm run bp:fill -- -s "#message" -v "Browser Pilot에서 보냅니다!" --project-root "$OLDPWD" && \
+npm run bp:fill -- -s "#message" -v "Browser Pilot에서 보냅니다!" && \
 sleep 0.5 && \
-npm run bp:click -- -s "button[type='submit']" --project-root "$OLDPWD" && \
+npm run bp:click -- -s "button[type='submit']" && \
 sleep 1 && \
-npm run bp:screenshot -- -o "contact-submitted.png" --project-root "$OLDPWD"
+npm run bp:screenshot -- -o "contact-submitted.png"
 ```
 
 ### 웹 스크래핑
@@ -272,8 +292,7 @@ npm run bp:screenshot -- -o "contact-submitted.png" --project-root "$OLDPWD"
 npm run bp:extract -- \
   -u "https://news.ycombinator.com" \
   -s "a.storylink" \
-  --all \
-  --project-root "$OLDPWD"
+  --all
 ```
 
 ### PDF 생성
@@ -284,8 +303,7 @@ npm run bp:pdf -- \
   -u "https://docs.example.com" \
   -o "api-docs.pdf" \
   --landscape \
-  --headless \
-  --project-root "$OLDPWD"
+  --headless
 ```
 
 ## 봇 감지 우회
@@ -303,8 +321,7 @@ Browser Pilot은 `navigator.webdriver = false`를 유지하여 대부분의 봇 
 npm run bp:screenshot -- \
   -u "https://bot.sannysoft.com" \
   -o "bot-test.png" \
-  --headless \
-  --project-root "$OLDPWD"
+  --headless
 ```
 
 예상 결과: 모든 검사 **PASS** (녹색).
@@ -385,35 +402,6 @@ Browser Pilot은 모든 브라우저 작업에 CDP를 사용합니다:
     "frameId": "frame-id-here"
   }
 }
-```
-
-### 프로젝트 구조
-
-```
-plugins/browser-pilot/
-├── .claude-plugin/
-│   └── plugin.json              # 플러그인 메타데이터
-├── hooks/
-│   ├── hooks.json               # SessionStart 훅 설정
-│   └── scripts/
-│       └── init-config.js       # 자동 초기화 스크립트
-├── skills/
-│   ├── SKILL.md                 # 스킬 문서
-│   └── scripts/
-│       ├── package.json         # Node.js 의존성
-│       ├── tsconfig.json        # TypeScript 설정
-│       ├── dist/                # 컴파일된 JavaScript
-│       └── src/
-│           ├── cli.ts           # CLI 진입점
-│           ├── cdp/
-│           │   ├── browser.ts   # Chrome 런처
-│           │   ├── client.ts    # CDP WebSocket 클라이언트
-│           │   ├── actions.ts   # 핵심 CDP 액션
-│           │   ├── actions-extra.ts  # 확장 액션
-│           │   └── utils.ts     # 유틸리티 함수
-│           └── config/
-│               └── manager.ts   # 설정 관리
-└── README.md                    # 이 파일
 ```
 
 ## 윤리적 사용

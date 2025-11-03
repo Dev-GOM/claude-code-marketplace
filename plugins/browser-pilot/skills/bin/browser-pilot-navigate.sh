@@ -1,4 +1,4 @@
 #!/bin/bash
 # Browser Pilot Navigate Command
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-node "$SCRIPT_DIR/../scripts/dist/cli.js" navigate "$@"
+node "$SCRIPT_DIR/../scripts/dist/cli/cli.js" navigate "$@"

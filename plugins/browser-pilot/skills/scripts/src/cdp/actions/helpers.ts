@@ -5,7 +5,7 @@
 import { ChromeBrowser } from '../browser';
 import { resolve, dirname } from 'path';
 import { mkdirSync, existsSync } from 'fs';
-import { findProjectRoot } from '../utils';
+import { getOutputDir } from '../config';
 
 // ActionResult interface - will be exported from main actions.ts
 interface ActionResult {
@@ -82,6 +82,7 @@ export function checkConsoleErrors(browser: ChromeBrowser): void {
 /**
  * Helper: Ensure output path (convert relative to .browser-pilot/).
  * Security: Prevents path traversal attacks and rejects absolute paths.
+ * Uses getOutputDir() from config to get project-specific output directory.
  */
 export function ensureOutputPath(path: string): string {
   // Reject absolute paths
@@ -89,9 +90,8 @@ export function ensureOutputPath(path: string): string {
     throw new Error('Absolute paths are not allowed. Use relative paths only.');
   }
 
-  // Relative path - save to project root/.browser-pilot/
-  const projectRoot = findProjectRoot();
-  const outputDir = resolve(projectRoot, '.browser-pilot');
+  // Get output directory from project config (auto-creates .browser-pilot/)
+  const outputDir = getOutputDir();
   const absolutePath = resolve(outputDir, path);
 
   // Prevent path traversal attacks
@@ -99,9 +99,10 @@ export function ensureOutputPath(path: string): string {
     throw new Error('Path traversal detected. Files must be within .browser-pilot directory.');
   }
 
-  // Ensure directory exists
-  if (!existsSync(outputDir)) {
-    mkdirSync(outputDir, { recursive: true });
+  // Ensure subdirectory exists (if path includes subdirectories)
+  const dir = dirname(absolutePath);
+  if (!existsSync(dir)) {
+    mkdirSync(dir, { recursive: true });
   }
 
   return absolutePath;

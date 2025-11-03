@@ -1,32 +1,48 @@
 "use strict";
 /**
  * Configuration management for browser debugging port and state.
+ * Uses a shared config file in the plugin folder for multi-project support.
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.loadConfig = loadConfig;
-exports.saveConfig = saveConfig;
-exports.resetConfig = resetConfig;
+exports.getOutputDir = getOutputDir;
+exports.loadSharedConfig = loadSharedConfig;
+exports.saveSharedConfig = saveSharedConfig;
+exports.getProjectConfig = getProjectConfig;
+exports.updateProjectLastUsed = updateProjectLastUsed;
+exports.getProjectPort = getProjectPort;
+exports.cleanupProjectIfNeeded = cleanupProjectIfNeeded;
+exports.setAutoCleanup = setAutoCleanup;
+exports.resetProjectConfig = resetProjectConfig;
+exports.listProjects = listProjects;
 exports.isPortAvailable = isPortAvailable;
 exports.findAvailablePort = findAvailablePort;
-exports.initializeConfig = initializeConfig;
 const fs_1 = require("fs");
 const path_1 = require("path");
 const net_1 = require("net");
 const utils_1 = require("./utils");
 /**
- * Get config file path in user's project root
- * Config is stored in .plugin-config/browser-pilot.json
- * Output files (screenshots, PDFs) go to .browser-pilot/
+ * Get shared config file path in plugin skills folder
+ * Config is stored in: {plugin-folder}/browser-pilot/skills/browser-pilot-config.json
  */
-function getConfigPath() {
+function getSharedConfigPath() {
+    // Get plugin skills directory (3 levels up from dist/cdp/)
+    const skillsDir = (0, path_1.join)(__dirname, '..', '..', '..');
+    return (0, path_1.join)(skillsDir, 'browser-pilot-config.json');
+}
+/**
+ * Get project name from root folder name
+ */
+function getProjectName(projectRoot) {
+    return (0, path_1.basename)(projectRoot);
+}
+/**
+ * Get output directory for the current project
+ * Creates .browser-pilot folder in project root
+ */
+function getOutputDir() {
     const projectRoot = (0, utils_1.findProjectRoot)();
-    const configDir = (0, path_1.join)(projectRoot, '.plugin-config');
     const outputDir = (0, path_1.join)(projectRoot, '.browser-pilot');
-    // Ensure .plugin-config directory exists
-    if (!(0, fs_1.existsSync)(configDir)) {
-        (0, fs_1.mkdirSync)(configDir, { recursive: true });
-    }
-    // Ensure .browser-pilot directory exists for output files
+    // Ensure .browser-pilot directory exists
     if (!(0, fs_1.existsSync)(outputDir)) {
         (0, fs_1.mkdirSync)(outputDir, { recursive: true });
     }
@@ -38,22 +54,20 @@ function getConfigPath() {
 `;
         (0, fs_1.writeFileSync)(gitignorePath, gitignoreContent, 'utf-8');
     }
-    return (0, path_1.join)(configDir, 'browser-pilot.json');
+    return outputDir;
 }
 /**
- * Load configuration from config.json
+ * Load shared configuration from plugin folder
  * Auto-creates default config if not exists
  */
-function loadConfig() {
-    const configPath = getConfigPath();
+function loadSharedConfig() {
+    const configPath = getSharedConfigPath();
     if (!(0, fs_1.existsSync)(configPath)) {
         // Auto-create default config
         const defaultConfig = {
-            initialized: false,
-            debugPort: null,
-            lastUsed: null
+            projects: {}
         };
-        saveConfig(defaultConfig);
+        saveSharedConfig(defaultConfig);
         return defaultConfig;
     }
     try {
@@ -61,34 +75,154 @@ function loadConfig() {
         return JSON.parse(data);
     }
     catch (error) {
-        console.error('Failed to load config:', error);
+        console.error('Failed to load shared config:', error);
         return {
-            initialized: false,
-            debugPort: null,
-            lastUsed: null
+            projects: {}
         };
     }
 }
 /**
- * Save configuration to config.json
+ * Save shared configuration to plugin folder
  */
-function saveConfig(config) {
-    const configPath = getConfigPath();
+function saveSharedConfig(config) {
+    const configPath = getSharedConfigPath();
     try {
         (0, fs_1.writeFileSync)(configPath, JSON.stringify(config, null, 2), 'utf-8');
     }
     catch (error) {
-        console.error('Failed to save config:', error);
+        console.error('Failed to save shared config:', error);
     }
 }
 /**
- * Reset configuration to uninitialized state
+ * Get configuration for current project
+ * Auto-creates with available port if not exists
  */
-function resetConfig() {
-    saveConfig({
-        initialized: false,
-        debugPort: null,
-        lastUsed: null
+async function getProjectConfig() {
+    const projectRoot = (0, utils_1.findProjectRoot)();
+    const projectName = getProjectName(projectRoot);
+    const sharedConfig = loadSharedConfig();
+    // Find existing config by rootPath (in case name changed)
+    const existingEntry = Object.entries(sharedConfig.projects).find(([_, config]) => config.rootPath === projectRoot);
+    if (existingEntry) {
+        const [existingName, config] = existingEntry;
+        // If name changed, update key
+        if (existingName !== projectName) {
+            delete sharedConfig.projects[existingName];
+            sharedConfig.projects[projectName] = config;
+            saveSharedConfig(sharedConfig);
+            console.log(`📝 Updated project name: ${existingName} → ${projectName}`);
+        }
+        return config;
+    }
+    // Check if name already exists (different path)
+    if (sharedConfig.projects[projectName]) {
+        console.warn(`⚠️  Project name "${projectName}" already exists with different path`);
+        console.warn(`   Existing: ${sharedConfig.projects[projectName].rootPath}`);
+        console.warn(`   Current:  ${projectRoot}`);
+        throw new Error(`Project name conflict: "${projectName}"`);
+    }
+    // Create new project config with available port
+    const basePort = parseInt(process.env.CDP_DEBUG_PORT || '9222');
+    // Find next available port that's not used by any project
+    const usedPorts = Object.values(sharedConfig.projects).map(p => p.port);
+    let port = basePort;
+    // Find first available port not in use by other projects
+    while (usedPorts.includes(port) || !(await isPortAvailable(port))) {
+        port++;
+        if (port > basePort + 100) {
+            throw new Error(`No available port found in range ${basePort}-${basePort + 100}`);
+        }
+    }
+    const projectConfig = {
+        rootPath: projectRoot,
+        port,
+        outputDir: '.browser-pilot',
+        lastUsed: new Date().toISOString(),
+        autoCleanup: false // Default to false for safety
+    };
+    // Save new project config
+    sharedConfig.projects[projectName] = projectConfig;
+    saveSharedConfig(sharedConfig);
+    console.log(`📝 Created config for project: ${projectName}`);
+    console.log(`   Path: ${projectRoot}`);
+    console.log(`   Port: ${port}`);
+    return projectConfig;
+}
+/**
+ * Update last used timestamp for current project
+ */
+function updateProjectLastUsed() {
+    const projectRoot = (0, utils_1.findProjectRoot)();
+    const projectName = getProjectName(projectRoot);
+    const sharedConfig = loadSharedConfig();
+    if (sharedConfig.projects[projectName]) {
+        sharedConfig.projects[projectName].lastUsed = new Date().toISOString();
+        saveSharedConfig(sharedConfig);
+    }
+}
+/**
+ * Get debug port for current project
+ */
+async function getProjectPort() {
+    const config = await getProjectConfig();
+    return config.port;
+}
+/**
+ * Clean up project config if autoCleanup is enabled
+ */
+function cleanupProjectIfNeeded() {
+    const projectRoot = (0, utils_1.findProjectRoot)();
+    const projectName = getProjectName(projectRoot);
+    const sharedConfig = loadSharedConfig();
+    const projectConfig = sharedConfig.projects[projectName];
+    if (projectConfig && projectConfig.autoCleanup) {
+        delete sharedConfig.projects[projectName];
+        saveSharedConfig(sharedConfig);
+        console.log(`🗑️  Auto-cleaned config for project: ${projectName}`);
+    }
+}
+/**
+ * Set autoCleanup flag for current project
+ */
+function setAutoCleanup(enabled) {
+    const projectRoot = (0, utils_1.findProjectRoot)();
+    const projectName = getProjectName(projectRoot);
+    const sharedConfig = loadSharedConfig();
+    if (sharedConfig.projects[projectName]) {
+        sharedConfig.projects[projectName].autoCleanup = enabled;
+        saveSharedConfig(sharedConfig);
+        console.log(`${enabled ? '✅' : '❌'} Auto-cleanup ${enabled ? 'enabled' : 'disabled'} for: ${projectName}`);
+    }
+}
+/**
+ * Reset configuration for current project
+ */
+function resetProjectConfig() {
+    const projectRoot = (0, utils_1.findProjectRoot)();
+    const projectName = getProjectName(projectRoot);
+    const sharedConfig = loadSharedConfig();
+    delete sharedConfig.projects[projectName];
+    saveSharedConfig(sharedConfig);
+    console.log(`🗑️  Removed config for project: ${projectName}`);
+}
+/**
+ * List all configured projects
+ */
+function listProjects() {
+    const sharedConfig = loadSharedConfig();
+    const projects = Object.entries(sharedConfig.projects);
+    if (projects.length === 0) {
+        console.log('No projects configured yet.');
+        return;
+    }
+    console.log(`\n📋 Configured Projects (${projects.length}):\n`);
+    projects.forEach(([name, config]) => {
+        console.log(`   ${name}`);
+        console.log(`   ├─ Path: ${config.rootPath}`);
+        console.log(`   ├─ Port: ${config.port}`);
+        console.log(`   ├─ Output: ${config.outputDir}`);
+        console.log(`   ├─ Auto-cleanup: ${config.autoCleanup ? 'Yes' : 'No'}`);
+        console.log(`   └─ Last Used: ${config.lastUsed || 'Never'}\n`);
     });
 }
 /**
@@ -118,19 +252,5 @@ async function findAvailablePort(startPort = 9222, maxAttempts = 10) {
         }
     }
     throw new Error(`No available port found in range ${startPort}-${startPort + maxAttempts - 1}`);
-}
-/**
- * Initialize configuration with an available port
- */
-async function initializeConfig() {
-    const basePort = parseInt(process.env.CDP_DEBUG_PORT || '9222');
-    const debugPort = await findAvailablePort(basePort);
-    const config = {
-        initialized: true,
-        debugPort,
-        lastUsed: new Date().toISOString()
-    };
-    saveConfig(config);
-    return config;
 }
 //# sourceMappingURL=config.js.map

@@ -1,24 +1,62 @@
 /**
  * Configuration management for browser debugging port and state.
+ * Uses a shared config file in the plugin folder for multi-project support.
  */
-export interface BrowserPilotConfig {
-    initialized: boolean;
-    debugPort: number | null;
+export interface ProjectConfig {
+    rootPath: string;
+    port: number;
+    outputDir: string;
     lastUsed: string | null;
+    autoCleanup: boolean;
+}
+export interface SharedBrowserPilotConfig {
+    projects: {
+        [projectName: string]: ProjectConfig;
+    };
 }
 /**
- * Load configuration from config.json
+ * Get output directory for the current project
+ * Creates .browser-pilot folder in project root
+ */
+export declare function getOutputDir(): string;
+/**
+ * Load shared configuration from plugin folder
  * Auto-creates default config if not exists
  */
-export declare function loadConfig(): BrowserPilotConfig;
+export declare function loadSharedConfig(): SharedBrowserPilotConfig;
 /**
- * Save configuration to config.json
+ * Save shared configuration to plugin folder
  */
-export declare function saveConfig(config: BrowserPilotConfig): void;
+export declare function saveSharedConfig(config: SharedBrowserPilotConfig): void;
 /**
- * Reset configuration to uninitialized state
+ * Get configuration for current project
+ * Auto-creates with available port if not exists
  */
-export declare function resetConfig(): void;
+export declare function getProjectConfig(): Promise<ProjectConfig>;
+/**
+ * Update last used timestamp for current project
+ */
+export declare function updateProjectLastUsed(): void;
+/**
+ * Get debug port for current project
+ */
+export declare function getProjectPort(): Promise<number>;
+/**
+ * Clean up project config if autoCleanup is enabled
+ */
+export declare function cleanupProjectIfNeeded(): void;
+/**
+ * Set autoCleanup flag for current project
+ */
+export declare function setAutoCleanup(enabled: boolean): void;
+/**
+ * Reset configuration for current project
+ */
+export declare function resetProjectConfig(): void;
+/**
+ * List all configured projects
+ */
+export declare function listProjects(): void;
 /**
  * Check if a port is available (not in use)
  */
@@ -27,8 +65,4 @@ export declare function isPortAvailable(port: number): Promise<boolean>;
  * Find an available port starting from startPort
  */
 export declare function findAvailablePort(startPort?: number, maxAttempts?: number): Promise<number>;
-/**
- * Initialize configuration with an available port
- */
-export declare function initializeConfig(): Promise<BrowserPilotConfig>;
 //# sourceMappingURL=config.d.ts.map

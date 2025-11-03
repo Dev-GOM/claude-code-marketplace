@@ -10,7 +10,7 @@ exports.checkConsoleErrors = checkConsoleErrors;
 exports.ensureOutputPath = ensureOutputPath;
 const path_1 = require("path");
 const fs_1 = require("fs");
-const utils_1 = require("../utils");
+const config_1 = require("../config");
 /**
  * Default action options
  */
@@ -62,23 +62,24 @@ function checkConsoleErrors(browser) {
 /**
  * Helper: Ensure output path (convert relative to .browser-pilot/).
  * Security: Prevents path traversal attacks and rejects absolute paths.
+ * Uses getOutputDir() from config to get project-specific output directory.
  */
 function ensureOutputPath(path) {
     // Reject absolute paths
     if ((0, path_1.resolve)(path) === path) {
         throw new Error('Absolute paths are not allowed. Use relative paths only.');
     }
-    // Relative path - save to project root/.browser-pilot/
-    const projectRoot = (0, utils_1.findProjectRoot)();
-    const outputDir = (0, path_1.resolve)(projectRoot, '.browser-pilot');
+    // Get output directory from project config (auto-creates .browser-pilot/)
+    const outputDir = (0, config_1.getOutputDir)();
     const absolutePath = (0, path_1.resolve)(outputDir, path);
     // Prevent path traversal attacks
     if (!absolutePath.startsWith(outputDir)) {
         throw new Error('Path traversal detected. Files must be within .browser-pilot directory.');
     }
-    // Ensure directory exists
-    if (!(0, fs_1.existsSync)(outputDir)) {
-        (0, fs_1.mkdirSync)(outputDir, { recursive: true });
+    // Ensure subdirectory exists (if path includes subdirectories)
+    const dir = (0, path_1.dirname)(absolutePath);
+    if (!(0, fs_1.existsSync)(dir)) {
+        (0, fs_1.mkdirSync)(dir, { recursive: true });
     }
     return absolutePath;
 }
