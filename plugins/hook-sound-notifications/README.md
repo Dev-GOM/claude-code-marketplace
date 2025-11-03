@@ -130,6 +130,26 @@ Sound files are stored in your home folder and are **safe from plugin updates**.
 
 ## Changelog
 
+### v1.4.3 (2025-11-03)
+- **Fixed:** PowerShell lock cleanup now uses try-finally (properly cleans up on all exit paths)
+- **Fixed:** Windows fallback soundsFolder now uses home folder (matches Unix behavior)
+- **Added:** Tilde expansion support in PowerShell for cross-platform config compatibility (`~/...` paths)
+- **Enhanced:** Dynamic file reading filters hidden files (.DS_Store, Thumbs.db) and validates audio extensions
+- **Changed:** Replaced `bc` with `awk` for better portability (POSIX compliance, works in minimal environments)
+
+### v1.4.2 (2025-11-03)
+- **Fixed:** sound-hook.sh SOUNDS_FOLDER fallback now uses home folder instead of plugin folder
+- **Added:** Tilde expansion for paths in sound-hook.sh (`~/.claude/sounds/...`)
+- **Fixed:** grep fallback (when jq unavailable) now uses home folder
+- **Enhanced:** init-config.js dynamically reads sound files (no hardcoded list)
+- **Improved:** sound-hook-wrapper.sh combines Darwin/Linux cases (reduces code duplication)
+
+### v1.4.1 (2025-11-03)
+- **Fixed:** Windows path normalization in bash wrapper (C:\Users\... → /c/Users/...)
+- **Added:** Lock mechanism to prevent duplicate hook execution (PID-based)
+- **Enhanced:** Cross-platform compatibility (CYGWIN/MINGW/MSYS/Windows_NT support)
+- **Changed:** All hooks use bash wrapper with lock mechanism
+
 ### v1.4.0 (2025-11-03)
 - **Added:** Home folder sound migration - sounds are now stored in `~/.claude/sounds/hook-sound-notifications/`
 - **Added:** Automatic sound file copying on first run (preserves existing files)
