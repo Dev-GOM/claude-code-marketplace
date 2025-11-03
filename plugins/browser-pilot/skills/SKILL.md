@@ -278,8 +278,11 @@ CDP maintains `navigator.webdriver = false`, bypassing most anti-bot systems.
 - Use random delays when automating multiple similar actions
 - Example: `npm run bp:fill ... && sleep 1 && npm run bp:click ...`
 
-Test: `node dist/cli.js screenshot --url "https://bot.sannysoft.com" --output "bot-test.png"`
-
+**Test bot detection:**
+```bash
+cd "${CLAUDE_SKILL_ROOT}/scripts"
+npm run bp:screenshot -- -u "https://bot.sannysoft.com" -o "bot-test.png" --headless --project-root "$OLDPWD"
+```
 Expected: All checks **PASS** (green).
 
 ## Best Practices
@@ -323,7 +326,7 @@ npm install && npm run build
 - Close existing Chrome instance
 
 **Blank screenshots**
-- Add wait time: `eval --expression "new Promise(r => setTimeout(r, 2000))"`
+- Add wait time: `npm run bp:eval -- -e "new Promise(r => setTimeout(r, 2000))" --project-root "$OLDPWD"`
 
 **Element not found**
 - Verify selector with browser DevTools (F12 → Console):
@@ -341,14 +344,26 @@ npm install && npm run build
 scripts/
 ├── package.json
 ├── tsconfig.json (ES2023)
-├── dist/ (compiled)
-│   └── cli.js
+├── dist/ (compiled JavaScript)
 └── src/
-    ├── cli.ts (commander.js)
-    └── cdp/
-        ├── client.ts (WebSocket CDP)
+    ├── cli.ts (main entry point)
+    ├── cli/commands/ (15 command modules)
+    │   ├── navigation.ts, interaction.ts, forms.ts
+    │   ├── capture.ts, tabs.ts, cookies.ts
+    │   ├── console.ts, network.ts, emulation.ts
+    │   ├── dialogs.ts, scroll.ts, wait.ts
+    │   └── data.ts, focus.ts, accessibility.ts
+    └── cdp/ (Chrome DevTools Protocol)
         ├── browser.ts (Chrome launcher)
-        └── actions.ts (CDP actions)
+        ├── client.ts (WebSocket CDP)
+        ├── config.ts (Configuration)
+        ├── utils.ts (Utilities)
+        └── actions/ (14 action modules)
+            ├── capture.ts, cookies.ts, data.ts
+            ├── debugging.ts, dialogs.ts, emulation.ts
+            ├── forms.ts, helpers.ts, input.ts
+            ├── interaction.ts, navigation.ts, network.ts
+            └── scroll.ts, tabs.ts, wait.ts
 ```
 
 ### How CDP Works
