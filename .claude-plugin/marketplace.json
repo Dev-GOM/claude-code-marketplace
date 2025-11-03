@@ -5,7 +5,7 @@
   },
   "metadata": {
     "description": "Productivity plugins for Claude Code to automate development workflows",
-    "version": "2.10.3",
+    "version": "2.10.4",
     "homepage": "https://github.com/Dev-GOM/claude-code-marketplace"
   },
   "plugins": [
@@ -122,7 +122,7 @@
       "name": "hook-sound-notifications",
       "source": "./plugins/hook-sound-notifications",
       "description": "Audio notifications for Claude Code hook events with customizable sounds and volume control",
-      "version": "1.4.3",
+      "version": "1.4.4",
       "author": {
         "name": "Dev GOM"
       },

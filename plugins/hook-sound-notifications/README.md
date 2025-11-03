@@ -32,9 +32,34 @@ We are actively investigating this issue. If you experience crashes, please disa
   - Prevents Claude Code hook duplication bug
 
 - 🌐 **Cross-platform support**
+  - Requires: Node.js v14+
   - Windows: PowerShell MediaPlayer (volume control supported)
   - macOS: afplay (no volume control)
   - Linux: mpg123 (MP3, volume control) / aplay (WAV)
+
+## Requirements
+
+### Node.js (Required)
+
+This plugin requires **Node.js v14 or higher** to be installed on your system.
+
+**Check if Node.js is installed:**
+```bash
+node --version
+```
+
+If the command fails or shows a version lower than v14, install Node.js:
+
+- **Download:** https://nodejs.org/ (recommended: LTS version)
+- **After installation:**
+  1. Restart your terminal/command prompt
+  2. Restart Claude Code
+  3. The plugin will now work correctly
+
+**Troubleshooting:**
+- If hooks don't play sounds, check Node.js installation: `node --version`
+- Ensure Node.js is in your system PATH
+- On Windows, restart Command Prompt after Node.js installation
 
 ## Installation
 
@@ -129,6 +154,13 @@ Sound files are stored in your home folder and are **safe from plugin updates**.
 - PostToolUse hook may cause increased instability when enabled (disabled by default)
 
 ## Changelog
+
+### v1.4.4 (2025-11-03)
+- **Fixed:** Windows path handling by switching from bash wrapper to Node.js wrapper
+- **Changed:** All hooks now use `sound-hook-executor.js` (Node.js) instead of `sound-hook-wrapper.sh` (bash)
+- **Improved:** Cross-platform compatibility - no longer relies on Git Bash for Windows
+- **Added:** Node.js v14+ requirement explicitly documented
+- **Removed:** `sound-hook-wrapper.sh` (replaced by Node.js executor)
 
 ### v1.4.3 (2025-11-03)
 - **Fixed:** PowerShell lock cleanup now uses try-finally (properly cleans up on all exit paths)

@@ -1,6 +1,6 @@
 {
   "description": "Sound Notifications - Audio alerts for Claude Code hook events",
-  "version": "1.4.3",
+  "version": "1.4.4",
   "author": "Dev GOM",
   "lastUpdated": "2025-11-03",
   "hooks": {
@@ -26,8 +26,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/sound-hook-wrapper.sh -HookType SessionStart",
-            "description": "Plays sound when session starts (with lock mechanism)",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/sound-hook-executor.js -HookType SessionStart",
+            "description": "Plays sound when session starts (Node.js wrapper with lock mechanism)",
             "continueOnError": true,
             "suppressOutput": true
           }
@@ -56,8 +56,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/sound-hook-wrapper.sh -HookType SessionEnd",
-            "description": "Plays sound when session ends (with lock mechanism)",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/sound-hook-executor.js -HookType SessionEnd",
+            "description": "Plays sound when session ends (Node.js wrapper with lock mechanism)",
             "continueOnError": true,
             "suppressOutput": true
           }
@@ -73,8 +73,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/sound-hook-wrapper.sh -HookType PreToolUse",
-            "description": "Plays sound before tool execution (with lock mechanism)",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/sound-hook-executor.js -HookType PreToolUse",
+            "description": "Plays sound before tool execution (Node.js wrapper with lock mechanism)",
             "continueOnError": true,
             "suppressOutput": true
           }
@@ -90,8 +90,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/sound-hook-wrapper.sh -HookType PostToolUse",
-            "description": "Plays sound after tool execution (with lock mechanism)",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/sound-hook-executor.js -HookType PostToolUse",
+            "description": "Plays sound after tool execution (Node.js wrapper with lock mechanism)",
             "continueOnError": true,
             "suppressOutput": true
           }
@@ -106,8 +106,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/sound-hook-wrapper.sh -HookType Notification",
-            "description": "Plays sound when notification occurs (with lock mechanism)",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/sound-hook-executor.js -HookType Notification",
+            "description": "Plays sound when notification occurs (Node.js wrapper with lock mechanism)",
             "continueOnError": true,
             "suppressOutput": true
           }
@@ -122,8 +122,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/sound-hook-wrapper.sh -HookType UserPromptSubmit",
-            "description": "Plays sound when user submits a prompt (with lock mechanism)",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/sound-hook-executor.js -HookType UserPromptSubmit",
+            "description": "Plays sound when user submits a prompt (Node.js wrapper with lock mechanism)",
             "continueOnError": true,
             "suppressOutput": true
           }
@@ -138,8 +138,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/sound-hook-wrapper.sh -HookType Stop",
-            "description": "Plays sound when agent stops responding (with lock mechanism)",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/sound-hook-executor.js -HookType Stop",
+            "description": "Plays sound when agent stops responding (Node.js wrapper with lock mechanism)",
             "continueOnError": true,
             "suppressOutput": true
           }
@@ -154,8 +154,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/sound-hook-wrapper.sh -HookType SubagentStop",
-            "description": "Plays sound when subagent task completes (with lock mechanism)",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/sound-hook-executor.js -HookType SubagentStop",
+            "description": "Plays sound when subagent task completes (Node.js wrapper with lock mechanism)",
             "continueOnError": true,
             "suppressOutput": true
           }
@@ -170,8 +170,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/sound-hook-wrapper.sh -HookType PreCompact",
-            "description": "Plays sound before context compaction (with lock mechanism)",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/sound-hook-executor.js -HookType PreCompact",
+            "description": "Plays sound before context compaction (Node.js wrapper with lock mechanism)",
             "continueOnError": true,
             "suppressOutput": true
           }
