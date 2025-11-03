@@ -28,6 +28,34 @@ if [ -z "$HOOK_TYPE" ]; then
     exit 0
 fi
 
+# Lock mechanism to prevent duplicate execution
+LOCK_FILE="/tmp/claude-sound-${HOOK_TYPE}.lock"
+
+# Check if lock exists and process is still running
+if [ -f "$LOCK_FILE" ]; then
+    LOCK_PID=$(cat "$LOCK_FILE" 2>/dev/null)
+    if [ -n "$LOCK_PID" ]; then
+        # Check if process is still running
+        if kill -0 "$LOCK_PID" 2>/dev/null; then
+            # Process still running, exit silently
+            exit 0
+        fi
+    fi
+    # Stale lock file, remove it
+    rm -f "$LOCK_FILE"
+fi
+
+# Create lock file with current PID
+echo $$ > "$LOCK_FILE" 2>/dev/null || exit 0
+
+# Clean up lock on exit
+cleanup_lock() {
+    rm -f "$LOCK_FILE"
+}
+
+# Register cleanup handler
+trap cleanup_lock EXIT INT TERM
+
 # Determine config path (default: project root .plugin-config)
 if [ -z "$CONFIG_PATH" ]; then
     PROJECT_ROOT="$(pwd)"

@@ -2,7 +2,27 @@
 
 All notable changes to the Dev GOM Plugins marketplace will be documented in this file.
 
-> **Version**: 2.10.0 | **Last Updated**: 2025-11-03
+> **Version**: 2.10.1 | **Last Updated**: 2025-11-03
+
+---
+
+## [2.10.1] - 2025-11-03
+
+### Improved
+- 🔧 **Browser Pilot v0.1.6**: Optional URL Parameters & Page State Preservation
+  - **Optional URL Parameter**: URL (`-u, --url`) is now optional for 10 commands
+    - Commands: `screenshot`, `click`, `fill`, `extract`, `select`, `check`, `uncheck`, `hover`, `upload`, `drag`
+    - When URL is omitted, commands operate on the current page without refreshing
+    - Preserves page state: console logs, network data, form inputs, JavaScript state
+  - **Required Project Root**: `--project-root` is now a required parameter for all commands
+    - Ensures proper file output paths and prevents save errors
+    - Clear error message when not provided
+  - **Multi-Step Workflow Optimization**:
+    - Only first `navigate` command needs URL parameter
+    - Subsequent commands reuse the same page without refresh
+    - Eliminates unnecessary page reloads in automation workflows
+  - **Performance Improvement**: Reduced workflow time by eliminating reload overhead
+  - **Developer Experience**: Simplified command chaining with preserved page state
 
 ---
 

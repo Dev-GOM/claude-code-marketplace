@@ -1,6 +1,6 @@
 # Browser Pilot
 
-> **Status**: ✅ Released (v0.1.0)
+> **Status**: ✅ Released (v0.1.6)
 
 Chrome DevTools Protocol (CDP) based browser automation, web scraping, and crawling - Control Chrome browser programmatically from Claude Code.
 
@@ -90,6 +90,7 @@ Chain commands using `&&` with `sleep` delays to avoid bot detection:
 cd plugins/browser-pilot/skills/scripts
 
 # Login workflow with human-like delays
+# Note: URL is optional after first navigate - preserves page state!
 npm run bp:navigate -- -u "https://example.com/login" --project-root "$OLDPWD" && \
 sleep 1 && \
 npm run bp:fill -- -s "#email" -v "user@example.com" --project-root "$OLDPWD" && \
@@ -98,6 +99,8 @@ npm run bp:fill -- -s "#password" -v "mypass123" --project-root "$OLDPWD" && \
 sleep 0.5 && \
 npm run bp:click -- -s "button[type='submit']" --project-root "$OLDPWD"
 ```
+
+**New in v0.1.6**: URL parameter (`-u`) is now optional for most commands. When omitted, commands operate on the current page without refreshing, preserving console logs, network data, and form state.
 
 ## Available Commands
 
@@ -403,10 +406,44 @@ Always respect robots.txt and website terms of service.
 **Command Chaining**:
 - Browser launches once and stays open (fast)
 - Each command reuses the same browser instance
+- **No page refresh when URL is omitted** (v0.1.6+) - preserves page state
 - ~100-200ms overhead per command (npm startup)
 - CDP communication is near-instant (milliseconds)
 - Add `sleep` delays to avoid bot detection (0.5-2 seconds recommended)
-- Total workflow time = page loads + sleep delays + command overhead
+- Total workflow time = initial page load + sleep delays + command overhead
+
+## Changelog
+
+### v0.1.6 (2025-11-03)
+- **Changed**: URL parameter (`-u`) is now **optional** for 10 commands (screenshot, click, fill, extract, select, check, uncheck, hover, upload, drag)
+- **Changed**: `--project-root` is now a **required** parameter for all commands
+- **Improved**: Commands without URL preserve page state (console logs, network data, form inputs)
+- **Fixed**: Prevents unnecessary page refreshes in multi-step workflows
+
+### v0.1.5 (2025-11-03)
+- **Added**: Exported `StackTrace` and `RemoteObject` interfaces for public API
+
+### v0.1.4 (2025-11-03)
+- **Added**: `FormattedConsoleMessage` interface for typed API responses
+- **Changed**: Replaced `any` types with proper TypeScript types
+
+### v0.1.3 (2025-11-03)
+- **Added**: Explicit TypeScript interfaces for CDP event payloads
+
+### v0.1.2 (2025-11-03)
+- **Added**: Console message collection (14 new CLI commands)
+- **Added**: `console`, `console-errors`, `console-clear` commands
+- **Improved**: Browser tab management
+
+### v0.1.1 (2025-11-03)
+- **Fixed**: Cross-platform Chrome detection
+- **Improved**: Error messages and documentation
+
+### v0.1.0 (2025-11-03)
+- Initial release with CDP browser automation
+- Screenshot, PDF generation, web scraping
+- Form filling, element interaction
+- Bot detection bypass
 
 ## License
 
