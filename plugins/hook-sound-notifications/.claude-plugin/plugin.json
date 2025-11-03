@@ -1,6 +1,6 @@
 {
   "name": "hook-sound-notifications",
-  "version": "1.4.1",
+  "version": "1.4.3",
   "description": "Audio notifications for Claude Code hook events with customizable sounds and volume control",
   "author": {
     "name": "Dev GOM",

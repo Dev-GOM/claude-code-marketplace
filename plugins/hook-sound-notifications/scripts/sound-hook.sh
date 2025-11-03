@@ -82,13 +82,9 @@ if ! command -v jq >/dev/null 2>&1; then
         exit 0
     fi
 
-    # Determine plugin root for sounds
-    PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT}"
-    if [ -z "$PLUGIN_ROOT" ]; then
-        PLUGIN_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-    fi
-
-    SOUNDS_DIR="${PLUGIN_ROOT}/sounds"
+    # Determine sounds directory. Since jq is unavailable, we can't read custom
+    # paths from config. Use the new default home directory path.
+    SOUNDS_DIR="${HOME}/.claude/sounds/hook-sound-notifications"
 
     # Map hook type to sound file (fallback)
     case "$HOOK_TYPE" in
@@ -144,13 +140,12 @@ else
     SOUNDS_FOLDER=$(jq -r '.soundNotifications.soundsFolder // empty' "$CONFIG_PATH")
 
     if [ -z "$SOUNDS_FOLDER" ] || [ "$SOUNDS_FOLDER" = "null" ]; then
-        # Fallback to plugin sounds folder
-        PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT}"
-        if [ -z "$PLUGIN_ROOT" ]; then
-            PLUGIN_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-        fi
-        SOUNDS_FOLDER="${PLUGIN_ROOT}/sounds"
+        # Fallback to correct default: user home sounds folder
+        SOUNDS_FOLDER="${HOME}/.claude/sounds/hook-sound-notifications"
     fi
+
+    # Expand tilde in path if present
+    SOUNDS_FOLDER="${SOUNDS_FOLDER/#\~/$HOME}"
 
     # Get sound file name
     SOUND_FILE_NAME=$(jq -r ".soundNotifications.hooks.${HOOK_TYPE}.soundFile // empty" "$CONFIG_PATH")
@@ -175,8 +170,13 @@ else
     fi
 
     # Convert to ffplay volume (0-100)
-    VOLUME=$(echo "$VOLUME_FLOAT * 100" | bc 2>/dev/null || echo "50")
-    VOLUME=${VOLUME%.*}  # Remove decimal part
+    # Use awk instead of bc (more portable)
+    if command -v awk >/dev/null 2>&1; then
+        VOLUME=$(awk "BEGIN {printf \"%.0f\", $VOLUME_FLOAT * 100}")
+    else
+        # Fallback if awk not available
+        VOLUME=50
+    fi
 fi
 
 # Check if sound file exists
