@@ -1,13 +1,19 @@
 /**
  * Chrome browser launcher and connection manager.
  */
-interface StackTrace {
+export interface StackTrace {
     callFrames?: Array<{
         url?: string;
         lineNumber?: number;
         columnNumber?: number;
         functionName?: string;
     }>;
+}
+export interface RemoteObject {
+    type?: string;
+    value?: unknown;
+    description?: string;
+    [key: string]: unknown;
 }
 export interface ConsoleMessage {
     level: string;
@@ -68,5 +74,4 @@ export declare class ChromeBrowser {
      */
     private sleep;
 }
-export {};
 //# sourceMappingURL=browser.d.ts.map
