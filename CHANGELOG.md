@@ -2,7 +2,29 @@
 
 All notable changes to the Dev GOM Plugins marketplace will be documented in this file.
 
-> **Version**: 2.10.3 | **Last Updated**: 2025-11-03
+> **Version**: 2.10.4 | **Last Updated**: 2025-11-03
+
+---
+
+## [2.10.4] - 2025-11-03
+
+### Fixed
+- 🔊 **Sound Notifications v1.4.4**: Windows Path Handling with Node.js Wrapper
+  - **Windows Path Issue Resolution**: Switched from bash wrapper to Node.js wrapper
+    - Git Bash could not interpret Windows-style paths (`C:\Users\...`) in `${CLAUDE_PLUGIN_ROOT}`
+    - Node.js natively handles Windows paths through built-in `path` module
+    - Eliminates dependency on Git Bash path conversion
+  - **Cross-Platform Compatibility**: Node.js wrapper provides true cross-platform support
+    - Windows: Routes to PowerShell script (`sound-hook.ps1`)
+    - macOS/Linux: Routes to bash script (`sound-hook.sh`)
+    - Consistent behavior across all platforms
+  - **Architecture Change**:
+    - Removed: `sound-hook-wrapper.sh` (bash wrapper)
+    - Added: `sound-hook-executor.js` (Node.js wrapper)
+    - All 9 hooks updated to use Node.js executor
+  - **Requirements**: Node.js v14+ now explicitly documented as a requirement
+    - Installation guide added to README
+    - Troubleshooting section for Node.js setup issues
 
 ---
 

@@ -2,7 +2,29 @@
 
 Dev GOM Plugins 마켓플레이스의 모든 주요 변경사항이 이 파일에 문서화됩니다.
 
-> **버전**: 2.10.3 | **최종 업데이트**: 2025-11-03
+> **버전**: 2.10.4 | **최종 업데이트**: 2025-11-03
+
+---
+
+## [2.10.4] - 2025-11-03
+
+### 수정됨
+- 🔊 **Sound Notifications v1.4.4**: Node.js Wrapper로 Windows 경로 처리 문제 해결
+  - **Windows 경로 문제 해결**: bash 래퍼에서 Node.js 래퍼로 전환
+    - Git Bash가 `${CLAUDE_PLUGIN_ROOT}`의 Windows 스타일 경로(`C:\Users\...`)를 해석할 수 없었음
+    - Node.js는 내장 `path` 모듈을 통해 Windows 경로를 네이티브하게 처리
+    - Git Bash 경로 변환 의존성 제거
+  - **크로스 플랫폼 호환성**: Node.js 래퍼가 진정한 크로스 플랫폼 지원 제공
+    - Windows: PowerShell 스크립트(`sound-hook.ps1`)로 라우팅
+    - macOS/Linux: bash 스크립트(`sound-hook.sh`)로 라우팅
+    - 모든 플랫폼에서 일관된 동작
+  - **아키텍처 변경**:
+    - 제거: `sound-hook-wrapper.sh` (bash 래퍼)
+    - 추가: `sound-hook-executor.js` (Node.js 래퍼)
+    - 9개 모든 훅이 Node.js executor 사용하도록 업데이트
+  - **요구사항**: Node.js v14+ 명시적으로 문서화
+    - README에 설치 가이드 추가
+    - Node.js 설정 문제 해결 섹션 추가
 
 ---
 

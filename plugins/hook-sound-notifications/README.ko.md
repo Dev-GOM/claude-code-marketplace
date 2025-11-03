@@ -32,9 +32,34 @@ Claude Code 훅 이벤트에 대한 오디오 알림 (사운드 및 볼륨 조�
   - Claude Code 훅 중복 실행 버그 방지
 
 - 🌐 **크로스 플랫폼 지원**
+  - 요구사항: Node.js v14+
   - Windows: PowerShell MediaPlayer (볼륨 조절 지원)
   - macOS: afplay (볼륨 조절 미지원)
   - Linux: mpg123 (MP3, 볼륨 지원) / aplay (WAV)
+
+## 요구사항
+
+### Node.js (필수)
+
+이 플러그인은 **Node.js v14 이상**이 시스템에 설치되어 있어야 합니다.
+
+**Node.js 설치 확인:**
+```bash
+node --version
+```
+
+명령어가 실패하거나 v14 미만 버전이 표시되면 Node.js를 설치하세요:
+
+- **다운로드:** https://nodejs.org/ (권장: LTS 버전)
+- **설치 후:**
+  1. 터미널/명령 프롬프트 재시작
+  2. Claude Code 재시작
+  3. 플러그인이 정상적으로 작동합니다
+
+**문제 해결:**
+- 훅 사운드가 재생되지 않으면 Node.js 설치 확인: `node --version`
+- Node.js가 시스템 PATH에 포함되어 있는지 확인
+- Windows에서는 Node.js 설치 후 명령 프롬프트 재시작 필요
 
 ## 설치
 
@@ -129,6 +154,33 @@ Claude Code 훅 이벤트에 대한 오디오 알림 (사운드 및 볼륨 조�
 - PostToolUse 훅 활성화 시 불안정성 증가 가능 (기본적으로 비활성화)
 
 ## 변경 이력
+
+### v1.4.4 (2025-11-03)
+- **수정:** bash 래퍼에서 Node.js 래퍼로 전환하여 Windows 경로 처리 문제 해결
+- **변경:** 모든 훅이 이제 `sound-hook-wrapper.sh` (bash) 대신 `sound-hook-executor.js` (Node.js) 사용
+- **개선:** 크로스 플랫폼 호환성 향상 - Windows에서 Git Bash에 더 이상 의존하지 않음
+- **추가:** Node.js v14+ 요구사항 명시적 문서화
+- **제거:** `sound-hook-wrapper.sh` (Node.js executor로 대체)
+
+### v1.4.3 (2025-11-03)
+- **수정:** PowerShell lock cleanup이 이제 try-finally 사용 (모든 종료 경로에서 정상적으로 정리)
+- **수정:** Windows fallback soundsFolder가 이제 홈 폴더 사용 (Unix와 동작 일치)
+- **추가:** PowerShell에서 틸드 확장 지원 (크로스 플랫폼 config 호환성, `~/...` 경로)
+- **강화:** 동적 파일 읽기 시 숨김 파일(.DS_Store, Thumbs.db) 필터링 및 오디오 확장자 검증
+- **변경:** `bc`를 `awk`로 대체하여 이식성 향상 (POSIX 호환, 최소 환경에서 작동)
+
+### v1.4.2 (2025-11-03)
+- **수정:** sound-hook.sh SOUNDS_FOLDER fallback이 이제 플러그인 폴더 대신 홈 폴더 사용
+- **추가:** sound-hook.sh에서 경로 틸드 확장 (`~/.claude/sounds/...`)
+- **수정:** grep fallback(jq 미설치 시)이 이제 홈 폴더 사용
+- **강화:** init-config.js가 동적으로 사운드 파일 읽기 (하드코딩된 목록 제거)
+- **개선:** sound-hook-wrapper.sh Darwin/Linux 케이스 통합 (코드 중복 감소)
+
+### v1.4.1 (2025-11-03)
+- **수정:** bash 래퍼에서 Windows 경로 정규화 (C:\Users\... → /c/Users/...)
+- **추가:** 중복 훅 실행 방지를 위한 Lock 메커니즘 (PID 기반)
+- **강화:** 크로스 플랫폼 호환성 (CYGWIN/MINGW/MSYS/Windows_NT 지원)
+- **변경:** 모든 훅이 lock 메커니즘을 포함한 bash 래퍼 사용
 
 ### v1.4.0 (2025-11-03)
 - **추가:** 홈 폴더 사운드 마이그레이션 - 사운드가 이제 `~/.claude/sounds/hook-sound-notifications/`에 저장됨
