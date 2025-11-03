@@ -2,7 +2,22 @@
 
 All notable changes to the Dev GOM Plugins marketplace will be documented in this file.
 
-> **Version**: 2.10.5 | **Last Updated**: 2025-11-03
+> **Version**: 2.10.6 | **Last Updated**: 2025-11-03
+
+---
+
+## [2.10.6] - 2025-11-03
+
+### Fixed
+- 🔧 **Browser Pilot v0.2.1**: Improved Error Messages and Documentation
+  - **Enhanced Error Messages**: Added selector information to error messages
+    - Changed from `'Element not found'` to `'Element not found: ' + selector`
+    - Applied to 9 functions across actions.ts and actions-extra.ts
+    - Improves debugging by showing which selector failed
+  - **Documentation Clarity**: Fixed CSS/XPath selector comparison in SKILL.md
+    - Changed "Complex structure" to "N-th child element" for clarity
+    - Added note explaining difference between CSS `>` (direct children) and XPath `//` (all descendants)
+    - Clarified that XPath `/` (single slash) is equivalent to CSS `>` for direct children
 
 ---
 

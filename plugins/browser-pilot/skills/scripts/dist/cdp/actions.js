@@ -89,7 +89,7 @@ async function click(browser, selector) {
       ${(0, utils_1.getFindElementScript)()}
 
       const el = findElement(selector);
-      if (!el) throw new Error('Element not found');
+      if (!el) throw new Error('Element not found: ' + selector);
       el.click();
       return true;
     })()
@@ -114,7 +114,7 @@ async function fill(browser, selector, value) {
       ${(0, utils_1.getFindElementScript)()}
 
       const el = findElement(selector);
-      if (!el) throw new Error('Element not found');
+      if (!el) throw new Error('Element not found: ' + selector);
       el.value = value;
       el.dispatchEvent(new Event('input', { bubbles: true }));
       el.dispatchEvent(new Event('change', { bubbles: true }));
@@ -368,7 +368,7 @@ async function hover(browser, selector) {
       const selector = ${JSON.stringify(selector)};
       ${(0, utils_1.getFindElementScript)()}
       const el = findElement(selector);
-      if (!el) throw new Error('Element not found');
+      if (!el) throw new Error('Element not found: ' + selector);
       el.dispatchEvent(new MouseEvent('mouseover', {
         bubbles: true,
         cancelable: true,
@@ -394,7 +394,7 @@ async function focus(browser, selector) {
       const selector = ${JSON.stringify(selector)};
       ${(0, utils_1.getFindElementScript)()}
       const el = findElement(selector);
-      if (!el) throw new Error('Element not found');
+      if (!el) throw new Error('Element not found: ' + selector);
       el.focus();
       return true;
     })()
@@ -416,7 +416,7 @@ async function blur(browser, selector) {
       const selector = ${JSON.stringify(selector)};
       ${(0, utils_1.getFindElementScript)()}
       const el = findElement(selector);
-      if (!el) throw new Error('Element not found');
+      if (!el) throw new Error('Element not found: ' + selector);
       el.blur();
       return true;
     })()

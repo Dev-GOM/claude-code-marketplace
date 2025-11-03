@@ -66,7 +66,7 @@ export async function selectOption(
       const value = ${JSON.stringify(value)};
       ${getFindElementScript()}
       const el = findElement(selector);
-      if (!el) throw new Error('Element not found');
+      if (!el) throw new Error('Element not found: ' + selector);
       el.value = value;
       el.dispatchEvent(new Event('change', { bubbles: true }));
       return true;
@@ -93,7 +93,7 @@ export async function check(
       const selector = ${JSON.stringify(selector)};
       ${getFindElementScript()}
       const el = findElement(selector);
-      if (!el) throw new Error('Element not found');
+      if (!el) throw new Error('Element not found: ' + selector);
       el.checked = true;
       el.dispatchEvent(new Event('change', { bubbles: true }));
       return true;
@@ -120,7 +120,7 @@ export async function uncheck(
       const selector = ${JSON.stringify(selector)};
       ${getFindElementScript()}
       const el = findElement(selector);
-      if (!el) throw new Error('Element not found');
+      if (!el) throw new Error('Element not found: ' + selector);
       el.checked = false;
       el.dispatchEvent(new Event('change', { bubbles: true }));
       return true;
@@ -241,7 +241,7 @@ export async function uploadFile(
       ${getFindElementScript()}
 
       const el = findElement(selector);
-      if (!el) throw new Error('Element not found');
+      if (!el) throw new Error('Element not found: ' + selector);
       if (el.tagName !== 'INPUT' || el.type !== 'file') {
         throw new Error('Element is not a file input');
       }
@@ -450,7 +450,7 @@ export async function getElementProperty(
       const propertyName = ${JSON.stringify(propertyName)};
       ${getFindElementScript()}
       const el = findElement(selector);
-      if (!el) throw new Error('Element not found');
+      if (!el) throw new Error('Element not found: ' + selector);
       return el[propertyName];
     })()
   `;
@@ -599,7 +599,7 @@ export async function scroll(
         const y = ${JSON.stringify(y)};
         ${getFindElementScript()}
         const el = findElement(selector);
-        if (!el) throw new Error('Element not found');
+        if (!el) throw new Error('Element not found: ' + selector);
         el.scrollTo(x, y);
         return { x: el.scrollLeft, y: el.scrollTop };
       })()
