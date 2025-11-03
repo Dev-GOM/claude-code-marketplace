@@ -3,11 +3,11 @@ name: browser-pilot
 description: |
   Chrome DevTools Protocol (CDP) browser automation, web scraping, crawling. 브라우저 자동화, 웹 스크래핑, 크롤링.
 
-  Features/기능: screenshot 스크린샷, PDF generation PDF생성, web scraping 웹스크래핑, data extraction 데이터추출, form filling 폼작성, login automation 로그인자동화, click/input 클릭/입력, element finder 요소찾기, tab management 탭관리, cookie control 쿠키제어, JavaScript execution JS실행, page navigation 페이지이동, wait for element 요소대기, scroll 스크롤, accessibility tree 접근성트리, console messages 콘솔메시지, network idle 네트워크대기, back/forward 뒤로/앞으로, reload 새로고침, file upload 파일업로드.
+  Features/기능: screenshot 스크린샷, PDF generation PDF생성, web scraping 웹스크래핑, data extraction 데이터추출, form filling 폼작성, login automation 로그인자동화, click/input 클릭/입력, element finder 요소찾기, tab management 탭관리, cookie control 쿠키제어, JavaScript execution JS실행, page navigation 페이지이동, wait for element 요소대기, scroll 스크롤, accessibility tree 접근성트리, console messages 콘솔메시지, network idle 네트워크대기, back/forward 뒤로/앞으로, reload 새로고침, file upload 파일업로드, React compatibility React호환성.
 
   Selectors 셀렉터: CSS selectors (ID, class, attribute), XPath selectors (text-based, structural), XPath indexing (select N-th element with same text). Powerful text-based element selection like "click the 3rd button that says 'Delete'".
 
-  Bot detection bypass 봇감지우회 (navigator.webdriver=false). Auto Chrome connection 자동크롬연결. Headless/headed mode. All browser-pilot MCP features. Only needs websocket-client.
+  Bot detection bypass 봇감지우회 (navigator.webdriver=false). Auto Chrome connection 자동크롬연결. Headless/headed mode. React/framework compatibility React/프레임워크호환성. All browser-pilot MCP features. Only needs websocket-client.
 ---
 
 # browser-pilot (CDP Direct)
@@ -291,9 +291,15 @@ Expected: All checks **PASS** (green).
    - **XPath for text**: Use when selecting by visible text (`//button[contains(text(), 'Submit')]`)
    - **XPath indexing for duplicates**: Use when multiple elements share same text (`(//button[text()='Delete'])[2]`)
 4. **Relative paths** - Files auto-save to `.browser-pilot/`
-5. **Add human-like delays** - Use `sleep 0.5-2` between commands to avoid bot detection
-6. **Respect rate limits** - Add delays between requests
-7. **Test selectors first** - Verify selectors in browser DevTools Console (F12):
+5. **⭐ Chain commands with `&&`** - **ALWAYS prefer chaining multiple actions instead of running them one by one**:
+   - ✅ **Good**: `npm run bp:navigate ... && sleep 1 && npm run bp:fill ... && npm run bp:click ...`
+   - ❌ **Bad**: Running each command separately in different messages
+   - **Why?** Browser stays open, no page refresh, preserves state (console logs, network data, form inputs)
+   - **Example**: Login workflow needs navigate → fill email → fill password → click submit (4 commands chained)
+6. **Add human-like delays** - Use `sleep 0.5-2` between commands to avoid bot detection
+7. **Omit URL after first navigate** - Only first command needs `-u`, rest operate on current page without refresh
+8. **Respect rate limits** - Add delays between requests
+9. **Test selectors first** - Verify selectors in browser DevTools Console (F12):
    - CSS: `document.querySelector('#my-button')`
    - XPath: `$x('//button[text()="Click"]')` (Chrome DevTools shorthand)
 

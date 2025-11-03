@@ -1,6 +1,6 @@
 # Browser Pilot
 
-> **Status**: ✅ Released (v0.2.1)
+> **Status**: ✅ Released (v0.3.0)
 
 **Language**: [English](README.md) | [한국어](README.ko.md)
 
@@ -17,6 +17,7 @@ Browser Pilot enables direct control of Chrome browser through the Chrome DevToo
 - 📑 Generate PDFs from web pages
 - 🔗 Manage browser tabs (list, switch, close)
 - 🤖 Bypass bot detection (maintains `navigator.webdriver = false`)
+- ⚛️ **React/Framework compatibility** (properly triggers React synthetic events)
 
 ## Architecture
 

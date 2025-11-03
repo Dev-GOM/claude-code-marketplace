@@ -203,7 +203,7 @@ program
 program
     .command('eval')
     .description('Execute JavaScript on the page')
-    .requiredOption('-u, --url <url>', 'URL to navigate to')
+    .option('-u, --url <url>', 'URL to navigate to (optional, uses current page if not specified)')
     .requiredOption('-e, --expression <script>', 'JavaScript expression to evaluate')
     .option('--headless', 'Run in headless mode', false)
     .action(async (options) => {
@@ -216,8 +216,10 @@ program
         catch {
             await browser.launch();
         }
-        await actions.navigate(browser, options.url);
-        await actions.waitForLoad(browser);
+        if (options.url) {
+            await actions.navigate(browser, options.url);
+            await actions.waitForLoad(browser);
+        }
         const result = await actions.evaluate(browser, options.expression);
         console.log('Result:', result.result);
         console.log('Browser remains open. Use "close" command to close it.');
@@ -232,7 +234,7 @@ program
 program
     .command('pdf')
     .description('Generate PDF from webpage')
-    .requiredOption('-u, --url <url>', 'URL to generate PDF from')
+    .option('-u, --url <url>', 'URL to navigate to (optional, uses current page if not specified)')
     .option('-o, --output <path>', 'Output file path', 'page.pdf')
     .option('--headless', 'Run in headless mode', false)
     .option('--landscape', 'Use landscape orientation', false)
@@ -246,8 +248,11 @@ program
         catch {
             await browser.launch();
         }
-        await actions.navigate(browser, options.url);
-        await actions.waitForLoad(browser);
+        // Only navigate if URL is provided
+        if (options.url) {
+            await actions.navigate(browser, options.url);
+            await actions.waitForLoad(browser);
+        }
         const result = await actions.generatePdf(browser, options.output, options.landscape);
         console.log('PDF saved:', result.path);
         console.log('Browser remains open. Use "close" command to close it.');
@@ -262,7 +267,7 @@ program
 program
     .command('cookies')
     .description('Get all cookies from webpage')
-    .requiredOption('-u, --url <url>', 'URL to get cookies from')
+    .option('-u, --url <url>', 'URL to navigate to (optional, uses current page if not specified)')
     .option('--headless', 'Run in headless mode', false)
     .action(async (options) => {
     const browser = new browser_1.ChromeBrowser(options.headless);
@@ -274,8 +279,11 @@ program
         catch {
             await browser.launch();
         }
-        await actions.navigate(browser, options.url);
-        await actions.waitForLoad(browser);
+        // Only navigate if URL is provided
+        if (options.url) {
+            await actions.navigate(browser, options.url);
+            await actions.waitForLoad(browser);
+        }
         const result = await actions.getCookies(browser);
         console.log(`Found ${result.count} cookies:`);
         console.log(JSON.stringify(result.cookies, null, 2));
@@ -570,7 +578,11 @@ program
     const browser = new browser_1.ChromeBrowser(false);
     try {
         await browser.connect();
-        const result = await actions.scroll(browser, options.x, options.y, options.selector);
+        const result = await actions.scroll(browser, {
+            x: options.x,
+            y: options.y,
+            selector: options.selector
+        });
         console.log('Scrolled to:', result.position);
         process.exit(0);
     }
@@ -1122,7 +1134,7 @@ program
 });
 // Handle --project-root option before any command action
 program.hook('preAction', (thisCommand, actionCommand) => {
-    const opts = actionCommand.opts();
+    const opts = thisCommand.opts(); // Use thisCommand instead of actionCommand for global options
     if (opts.projectRoot) {
         process.env.CLAUDE_PROJECT_ROOT = opts.projectRoot;
     }
