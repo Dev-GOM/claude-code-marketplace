@@ -2,7 +2,20 @@
 
 Dev GOM Plugins 마켓플레이스의 모든 주요 변경사항이 이 파일에 문서화됩니다.
 
-> **버전**: 2.8.4 | **최종 업데이트**: 2025-11-03
+> **버전**: 2.8.5 | **최종 업데이트**: 2025-11-03
+
+---
+
+## [2.8.5] - 2025-11-03
+
+### 개선됨
+- 🔧 **Browser Pilot v0.1.5**: Public API 타입 Export
+  - **핵심 CDP 인터페이스 공개**: `StackTrace`와 `RemoteObject` 인터페이스를 public으로 변경
+    - `StackTrace`는 이제 `ConsoleMessage` public API의 일부로 접근 가능
+    - `RemoteObject`는 모듈 간 재사용을 위해 export됨
+  - **더 나은 TypeScript API 설계**: 모듈 export 모범 사례 준수
+  - **개발자 경험 향상**: 모듈 사용자가 이러한 타입을 직접 사용 가능
+  - **타입 안전성**: 외부 코드에서 CDP 타입의 타입 안전한 사용 가능
 
 ---
 

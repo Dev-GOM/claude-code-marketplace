@@ -2,7 +2,20 @@
 
 All notable changes to the Dev GOM Plugins marketplace will be documented in this file.
 
-> **Version**: 2.8.4 | **Last Updated**: 2025-11-03
+> **Version**: 2.8.5 | **Last Updated**: 2025-11-03
+
+---
+
+## [2.8.5] - 2025-11-03
+
+### Improved
+- 🔧 **Browser Pilot v0.1.5**: Public API Type Exports
+  - **Exported Core CDP Interfaces**: Made `StackTrace` and `RemoteObject` interfaces public
+    - `StackTrace` is now accessible as part of `ConsoleMessage` public API
+    - `RemoteObject` is exported for reusability across modules
+  - **Better TypeScript API Design**: Follows best practices for module exports
+  - **Enhanced Developer Experience**: Module consumers can now use these types directly
+  - **Type Safety**: Enables type-safe usage of CDP types in external code
 
 ---
 

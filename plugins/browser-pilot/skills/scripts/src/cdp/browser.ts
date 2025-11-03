@@ -22,7 +22,7 @@ interface Target {
 }
 
 // CDP Event Supporting Interfaces
-interface StackTrace {
+export interface StackTrace {
   callFrames?: Array<{
     url?: string;
     lineNumber?: number;
@@ -31,7 +31,7 @@ interface StackTrace {
   }>;
 }
 
-interface RemoteObject {
+export interface RemoteObject {
   type?: string;
   value?: unknown;
   description?: string;
