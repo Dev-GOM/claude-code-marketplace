@@ -47,7 +47,7 @@ Settings are stored in `.plugin-config/hook-sound-notifications.json`:
 ```json
 {
   "soundNotifications": {
-    "soundsFolder": "${CLAUDE_PLUGIN_ROOT}/sounds",
+    "soundsFolder": "~/.claude/sounds/hook-sound-notifications",
     "enabled": true,
     "volume": 0.5,
     "hooks": {
@@ -70,10 +70,11 @@ Settings are stored in `.plugin-config/hook-sound-notifications.json`:
 
 - `enabled`: Global enable/disable (default: true)
 - `volume`: Global volume 0.0-1.0 (default: 0.5)
-- `soundsFolder`: Sound files folder path (auto-detected from plugin location)
-  - Automatically set to `${CLAUDE_PLUGIN_ROOT}/sounds`
-  - Can be customized to use absolute or relative path
-  - Default sounds are included with plugin
+- `soundsFolder`: Sound files folder path
+  - **Default:** `~/.claude/sounds/hook-sound-notifications/` (user home folder)
+  - Sound files are automatically copied to this folder on first run
+  - **Safe from plugin updates** - your customizations are preserved
+  - Can be changed to use a custom absolute path
 - `hooks.[hookType].enabled`: Enable/disable specific hook
 - `hooks.[hookType].soundFile`: Sound file name (relative to soundsFolder)
 - `hooks.[hookType].volume`: Override global volume
@@ -88,9 +89,30 @@ Edit `.plugin-config/hook-sound-notifications.json` and restart Claude Code.
 
 ### Custom Sound Files
 
-Replace sound files in the plugin's `sounds` folder, or update `soundFile` paths in the configuration.
+Sound files are stored in your home folder and are **safe from plugin updates**.
+
+**Location:**
+- **Windows:** `C:\Users\<YourName>\.claude\sounds\hook-sound-notifications\`
+- **macOS/Linux:** `~/.claude/sounds/hook-sound-notifications/`
+
+**How to customize:**
+
+1. Navigate to the sound folder location above
+2. Replace any of the 9 sound files with your own:
+   - `session-start.mp3`
+   - `session-end.mp3`
+   - `pre-tool-use.mp3`
+   - `post-tool-use.mp3`
+   - `notification.mp3`
+   - `user-prompt-submit.mp3`
+   - `stop.mp3`
+   - `subagent-stop.mp3`
+   - `pre-compact.mp3`
+3. Your custom sounds will be preserved across plugin updates
 
 **Supported formats:** MP3, WAV
+
+**Note:** If you want to use sounds from a different location, update the `soundsFolder` path in `.plugin-config/hook-sound-notifications.json`.
 
 ### Volume Levels
 
@@ -107,6 +129,15 @@ Replace sound files in the plugin's `sounds` folder, or update `soundFile` paths
 - PostToolUse hook may cause increased instability when enabled (disabled by default)
 
 ## Changelog
+
+### v1.4.0 (2025-11-03)
+- **Added:** Home folder sound migration - sounds are now stored in `~/.claude/sounds/hook-sound-notifications/`
+- **Added:** Automatic sound file copying on first run (preserves existing files)
+- **Added:** Cross-platform hook support with OS detection wrapper (Windows/macOS/Linux)
+- **Added:** Unix sound playback script with jq-based JSON parsing and grep fallback
+- **Changed:** Default soundsFolder changed from plugin folder to user home folder
+- **Fixed:** User sound customizations are now preserved across plugin updates
+- **Documentation:** Added detailed customization guide with home folder instructions
 
 ### v1.2.0 (2025-10-29)
 - **Changed:** Windows sound playback to PowerShell script files (sound-hook.ps1, play-sound.ps1)
