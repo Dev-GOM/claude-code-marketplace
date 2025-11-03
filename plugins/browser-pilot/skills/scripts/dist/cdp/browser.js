@@ -16,11 +16,22 @@ class ChromeBrowser {
     chromeProcess = null;
     client = null;
     consoleMessages = [];
+    MAX_CONSOLE_MESSAGES = 1000;
     constructor(headless = false) {
         this.headless = headless;
         // Load debug port from config
         const config = (0, config_1.loadConfig)();
         this.debugPort = config.debugPort || 9222;
+    }
+    /**
+     * Add console message with size limit to prevent memory issues.
+     */
+    addConsoleMessage(message) {
+        this.consoleMessages.push(message);
+        // Keep only the most recent messages
+        if (this.consoleMessages.length > this.MAX_CONSOLE_MESSAGES) {
+            this.consoleMessages = this.consoleMessages.slice(-this.MAX_CONSOLE_MESSAGES);
+        }
     }
     /**
      * Find Chrome executable path.
@@ -169,7 +180,7 @@ class ChromeBrowser {
             // Set up console message listeners
             this.client.on('Log.entryAdded', (params) => {
                 const entry = params.entry;
-                this.consoleMessages.push({
+                this.addConsoleMessage({
                     level: entry.level || 'log',
                     text: entry.text || '',
                     timestamp: entry.timestamp || Date.now(),
@@ -182,7 +193,7 @@ class ChromeBrowser {
             this.client.on('Runtime.consoleAPICalled', (params) => {
                 const args = params.args || [];
                 const text = args.map((arg) => arg.value || arg.description || '').join(' ');
-                this.consoleMessages.push({
+                this.addConsoleMessage({
                     level: params.type || 'log',
                     text: text,
                     timestamp: params.timestamp || Date.now(),
@@ -194,7 +205,7 @@ class ChromeBrowser {
             this.client.on('Runtime.exceptionThrown', (params) => {
                 const exception = params.exceptionDetails;
                 const text = exception.exception?.description || exception.text || 'Unknown error';
-                this.consoleMessages.push({
+                this.addConsoleMessage({
                     level: 'error',
                     text: text,
                     timestamp: exception.timestamp || Date.now(),

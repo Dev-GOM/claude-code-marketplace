@@ -88,12 +88,16 @@ export class CDPClient extends EventEmitter {
     return new Promise((resolve, reject) => {
       const currentMessageId = this.messageId;
 
+      const cleanup = () => {
+        this.ws?.removeListener('message', messageHandler);
+      };
+
       const messageHandler = (data: WebSocket.Data) => {
         try {
           const response: CDPResponse = JSON.parse(data.toString());
 
           if (response.id === currentMessageId) {
-            this.ws?.removeListener('message', messageHandler);
+            cleanup();
 
             if (response.error) {
               reject(new Error(`CDP Error: ${JSON.stringify(response.error)}`));
@@ -107,7 +111,13 @@ export class CDPClient extends EventEmitter {
       };
 
       this.ws!.on('message', messageHandler);
-      this.ws!.send(JSON.stringify(message));
+
+      try {
+        this.ws!.send(JSON.stringify(message));
+      } catch (error) {
+        cleanup();
+        reject(error);
+      }
     });
   }
 

@@ -98,6 +98,7 @@ export class ChromeBrowser {
   private chromeProcess: ChildProcess | null = null;
   private client: CDPClient | null = null;
   private consoleMessages: ConsoleMessage[] = [];
+  private readonly MAX_CONSOLE_MESSAGES = 1000;
 
   constructor(headless = false) {
     this.headless = headless;
@@ -105,6 +106,18 @@ export class ChromeBrowser {
     // Load debug port from config
     const config = loadConfig();
     this.debugPort = config.debugPort || 9222;
+  }
+
+  /**
+   * Add console message with size limit to prevent memory issues.
+   */
+  private addConsoleMessage(message: ConsoleMessage): void {
+    this.consoleMessages.push(message);
+
+    // Keep only the most recent messages
+    if (this.consoleMessages.length > this.MAX_CONSOLE_MESSAGES) {
+      this.consoleMessages = this.consoleMessages.slice(-this.MAX_CONSOLE_MESSAGES);
+    }
   }
 
   /**
@@ -275,7 +288,7 @@ export class ChromeBrowser {
       // Set up console message listeners
       this.client.on('Log.entryAdded', (params: LogEntryAddedPayload) => {
         const entry = params.entry;
-        this.consoleMessages.push({
+        this.addConsoleMessage({
           level: entry.level || 'log',
           text: entry.text || '',
           timestamp: entry.timestamp || Date.now(),
@@ -290,7 +303,7 @@ export class ChromeBrowser {
         const args = params.args || [];
         const text = args.map((arg: RemoteObject) => arg.value || arg.description || '').join(' ');
 
-        this.consoleMessages.push({
+        this.addConsoleMessage({
           level: params.type || 'log',
           text: text,
           timestamp: params.timestamp || Date.now(),
@@ -304,7 +317,7 @@ export class ChromeBrowser {
         const exception = params.exceptionDetails;
         const text = exception.exception?.description || exception.text || 'Unknown error';
 
-        this.consoleMessages.push({
+        this.addConsoleMessage({
           level: 'error',
           text: text,
           timestamp: exception.timestamp || Date.now(),

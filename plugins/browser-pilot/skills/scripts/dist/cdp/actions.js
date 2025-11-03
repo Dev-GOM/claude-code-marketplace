@@ -78,14 +78,18 @@ async function waitForLoad(browser, timeout = 30000) {
 }
 /**
  * Click element.
+ * Supports both CSS selectors and XPath (when selector starts with '//').
+ * XPath supports indexing: (//button[text()='Click'])[2] selects the 2nd button.
  */
 async function click(browser, selector) {
     console.log(`Clicking: ${selector}`);
     const script = `
     (function() {
       const selector = ${JSON.stringify(selector)};
-      const el = document.querySelector(selector);
-      if (!el) throw new Error('Element not found: ' + selector);
+      ${(0, utils_1.getFindElementScript)()}
+
+      const el = findElement(selector);
+      if (!el) throw new Error('Element not found');
       el.click();
       return true;
     })()
@@ -98,6 +102,8 @@ async function click(browser, selector) {
 }
 /**
  * Fill input field.
+ * Supports both CSS selectors and XPath (when selector starts with '//').
+ * XPath supports indexing: (//input[@type='text'])[2] selects the 2nd input.
  */
 async function fill(browser, selector, value) {
     console.log(`Filling ${selector} with: ${value}`);
@@ -105,8 +111,10 @@ async function fill(browser, selector, value) {
     (function() {
       const selector = ${JSON.stringify(selector)};
       const value = ${JSON.stringify(value)};
-      const el = document.querySelector(selector);
-      if (!el) throw new Error('Element not found: ' + selector);
+      ${(0, utils_1.getFindElementScript)()}
+
+      const el = findElement(selector);
+      if (!el) throw new Error('Element not found');
       el.value = value;
       el.dispatchEvent(new Event('input', { bubbles: true }));
       el.dispatchEvent(new Event('change', { bubbles: true }));
@@ -165,10 +173,15 @@ async function evaluate(browser, script) {
 }
 /**
  * Extract text from element or body.
+ * Supports both CSS selectors and XPath (when selector starts with '//').
  */
 async function extractText(browser, selector) {
     const script = selector
-        ? `(function() { const selector = ${JSON.stringify(selector)}; return document.querySelector(selector)?.textContent || ''; })()`
+        ? `(function() {
+        const selector = ${JSON.stringify(selector)};
+        ${(0, utils_1.getFindElementScript)()}
+        return findElement(selector)?.textContent || '';
+      })()`
         : `document.body.textContent || ''`;
     const result = await browser.sendCommand('Runtime.evaluate', {
         expression: script,
@@ -346,14 +359,16 @@ async function closeTab(browser, targetId, index) {
 }
 /**
  * Hover over element.
+ * Supports both CSS selectors and XPath (when selector starts with '//').
  */
 async function hover(browser, selector) {
     console.log(`Hovering: ${selector}`);
     const script = `
     (function() {
       const selector = ${JSON.stringify(selector)};
-      const el = document.querySelector(selector);
-      if (!el) throw new Error('Element not found: ' + selector);
+      ${(0, utils_1.getFindElementScript)()}
+      const el = findElement(selector);
+      if (!el) throw new Error('Element not found');
       el.dispatchEvent(new MouseEvent('mouseover', {
         bubbles: true,
         cancelable: true,
@@ -370,14 +385,16 @@ async function hover(browser, selector) {
 }
 /**
  * Focus element.
+ * Supports both CSS selectors and XPath (when selector starts with '//').
  */
 async function focus(browser, selector) {
     console.log(`Focusing: ${selector}`);
     const script = `
     (function() {
       const selector = ${JSON.stringify(selector)};
-      const el = document.querySelector(selector);
-      if (!el) throw new Error('Element not found: ' + selector);
+      ${(0, utils_1.getFindElementScript)()}
+      const el = findElement(selector);
+      if (!el) throw new Error('Element not found');
       el.focus();
       return true;
     })()
@@ -390,14 +407,16 @@ async function focus(browser, selector) {
 }
 /**
  * Blur element.
+ * Supports both CSS selectors and XPath (when selector starts with '//').
  */
 async function blur(browser, selector) {
     console.log(`Blurring: ${selector}`);
     const script = `
     (function() {
       const selector = ${JSON.stringify(selector)};
-      const el = document.querySelector(selector);
-      if (!el) throw new Error('Element not found: ' + selector);
+      ${(0, utils_1.getFindElementScript)()}
+      const el = findElement(selector);
+      if (!el) throw new Error('Element not found');
       el.blur();
       return true;
     })()
@@ -411,16 +430,21 @@ async function blur(browser, selector) {
 // findProjectRoot() is now imported from './utils'
 /**
  * Helper: Ensure output path (convert relative to .browser-pilot/).
+ * Security: Prevents path traversal attacks and rejects absolute paths.
  */
 function ensureOutputPath(path) {
+    // Reject absolute paths
     if ((0, path_1.resolve)(path) === path) {
-        // Already absolute
-        return path;
+        throw new Error('Absolute paths are not allowed. Use relative paths only.');
     }
     // Relative path - save to project root/.browser-pilot/
     const projectRoot = (0, utils_1.findProjectRoot)();
     const outputDir = (0, path_1.resolve)(projectRoot, '.browser-pilot');
     const absolutePath = (0, path_1.resolve)(outputDir, path);
+    // Prevent path traversal attacks
+    if (!absolutePath.startsWith(outputDir)) {
+        throw new Error('Path traversal detected. Files must be within .browser-pilot directory.');
+    }
     // Ensure directory exists
     if (!(0, fs_2.existsSync)(outputDir)) {
         (0, fs_2.mkdirSync)(outputDir, { recursive: true });

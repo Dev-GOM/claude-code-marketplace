@@ -3,7 +3,8 @@
  */
 
 import { ChromeBrowser, FormattedConsoleMessage } from './browser';
-import { readFileSync } from 'fs';
+import { readFileSync, statSync } from 'fs';
+import { getFindElementScript } from './utils';
 
 export interface ActionResult {
   success: boolean;
@@ -51,6 +52,7 @@ export async function extractData(
 
 /**
  * Select option from dropdown.
+ * Supports both CSS selectors and XPath (when selector starts with '//').
  */
 export async function selectOption(
   browser: ChromeBrowser,
@@ -62,8 +64,9 @@ export async function selectOption(
     (function() {
       const selector = ${JSON.stringify(selector)};
       const value = ${JSON.stringify(value)};
-      const el = document.querySelector(selector);
-      if (!el) throw new Error('Element not found: ' + selector);
+      ${getFindElementScript()}
+      const el = findElement(selector);
+      if (!el) throw new Error('Element not found');
       el.value = value;
       el.dispatchEvent(new Event('change', { bubbles: true }));
       return true;
@@ -78,6 +81,7 @@ export async function selectOption(
 
 /**
  * Check checkbox.
+ * Supports both CSS selectors and XPath (when selector starts with '//').
  */
 export async function check(
   browser: ChromeBrowser,
@@ -87,8 +91,9 @@ export async function check(
   const script = `
     (function() {
       const selector = ${JSON.stringify(selector)};
-      const el = document.querySelector(selector);
-      if (!el) throw new Error('Element not found: ' + selector);
+      ${getFindElementScript()}
+      const el = findElement(selector);
+      if (!el) throw new Error('Element not found');
       el.checked = true;
       el.dispatchEvent(new Event('change', { bubbles: true }));
       return true;
@@ -103,6 +108,7 @@ export async function check(
 
 /**
  * Uncheck checkbox.
+ * Supports both CSS selectors and XPath (when selector starts with '//').
  */
 export async function uncheck(
   browser: ChromeBrowser,
@@ -112,8 +118,9 @@ export async function uncheck(
   const script = `
     (function() {
       const selector = ${JSON.stringify(selector)};
-      const el = document.querySelector(selector);
-      if (!el) throw new Error('Element not found: ' + selector);
+      ${getFindElementScript()}
+      const el = findElement(selector);
+      if (!el) throw new Error('Element not found');
       el.checked = false;
       el.dispatchEvent(new Event('change', { bubbles: true }));
       return true;
@@ -205,6 +212,7 @@ export async function typeText(
 
 /**
  * Upload file to input element.
+ * Supports both CSS selectors and XPath (when selector starts with '//').
  */
 export async function uploadFile(
   browser: ChromeBrowser,
@@ -212,6 +220,14 @@ export async function uploadFile(
   filePath: string
 ): Promise<ActionResult> {
   console.log(`Uploading file ${filePath} to: ${selector}`);
+
+  // File size validation (10MB limit)
+  const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+  const stats = statSync(filePath);
+
+  if (stats.size > MAX_FILE_SIZE) {
+    throw new Error(`File too large: ${stats.size} bytes (max: ${MAX_FILE_SIZE} bytes = 10MB)`);
+  }
 
   const fileData = readFileSync(filePath, 'base64');
   const fileName = filePath.split(/[/\\]/).pop() || 'file';
@@ -222,8 +238,10 @@ export async function uploadFile(
       const fileData = ${JSON.stringify(fileData)};
       const fileName = ${JSON.stringify(fileName)};
 
-      const el = document.querySelector(selector);
-      if (!el) throw new Error('Element not found: ' + selector);
+      ${getFindElementScript()}
+
+      const el = findElement(selector);
+      if (!el) throw new Error('Element not found');
       if (el.tagName !== 'INPUT' || el.type !== 'file') {
         throw new Error('Element is not a file input');
       }
@@ -313,6 +331,7 @@ export async function waitMilliseconds(
 
 /**
  * Wait for element to appear.
+ * Supports both CSS selectors and XPath (when selector starts with '//').
  */
 export async function waitFor(
   browser: ChromeBrowser,
@@ -323,7 +342,11 @@ export async function waitFor(
 
   const startTime = Date.now();
   while (Date.now() - startTime < timeout) {
-    const script = `(function() { const selector = ${JSON.stringify(selector)}; return document.querySelector(selector) !== null; })()`;
+    const script = `(function() {
+      const selector = ${JSON.stringify(selector)};
+      ${getFindElementScript()}
+      return findElement(selector) !== null;
+    })()`;
     const result = await browser.sendCommand('Runtime.evaluate', {
       expression: script,
       returnByValue: true
@@ -414,6 +437,7 @@ export async function getConsoleMessages(
 
 /**
  * Get element property value.
+ * Supports both CSS selectors and XPath (when selector starts with '//').
  */
 export async function getElementProperty(
   browser: ChromeBrowser,
@@ -424,8 +448,9 @@ export async function getElementProperty(
     (function() {
       const selector = ${JSON.stringify(selector)};
       const propertyName = ${JSON.stringify(propertyName)};
-      const el = document.querySelector(selector);
-      if (!el) throw new Error('Element not found: ' + selector);
+      ${getFindElementScript()}
+      const el = findElement(selector);
+      if (!el) throw new Error('Element not found');
       return el[propertyName];
     })()
   `;
@@ -452,6 +477,7 @@ export async function getElementProperty(
 
 /**
  * Find element and return its information.
+ * Supports both CSS selectors and XPath (when selector starts with '//').
  */
 export async function findElement(
   browser: ChromeBrowser,
@@ -460,7 +486,8 @@ export async function findElement(
   const script = `
     (function() {
       const selector = ${JSON.stringify(selector)};
-      const el = document.querySelector(selector);
+      ${getFindElementScript()}
+      const el = findElement(selector);
       if (!el) return null;
 
       const rect = el.getBoundingClientRect();
@@ -554,6 +581,7 @@ export async function getContent(browser: ChromeBrowser): Promise<ActionResult> 
 
 /**
  * Scroll page or element.
+ * Supports both CSS selectors and XPath (when selector starts with '//').
  */
 export async function scroll(
   browser: ChromeBrowser,
@@ -569,8 +597,9 @@ export async function scroll(
         const selector = ${JSON.stringify(selector)};
         const x = ${JSON.stringify(x)};
         const y = ${JSON.stringify(y)};
-        const el = document.querySelector(selector);
-        if (!el) throw new Error('Element not found: ' + selector);
+        ${getFindElementScript()}
+        const el = findElement(selector);
+        if (!el) throw new Error('Element not found');
         el.scrollTo(x, y);
         return { x: el.scrollLeft, y: el.scrollTop };
       })()
@@ -721,7 +750,7 @@ export async function handleDialog(
     enabled: false
   });
 
-  // Note: CDP doesn't have a way to pre-register dialog handlers like Playwright
+  // Note: CDP doesn't have a way to pre-register dialog handlers
   // This returns a handler configuration that should be used with Page.javascriptDialogOpening event
 
   return {

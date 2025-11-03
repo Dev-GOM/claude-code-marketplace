@@ -36,7 +36,12 @@ export declare class ChromeBrowser {
     private chromeProcess;
     private client;
     private consoleMessages;
+    private readonly MAX_CONSOLE_MESSAGES;
     constructor(headless?: boolean);
+    /**
+     * Add console message with size limit to prevent memory issues.
+     */
+    private addConsoleMessage;
     /**
      * Find Chrome executable path.
      */

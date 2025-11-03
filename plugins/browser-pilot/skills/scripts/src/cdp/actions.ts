@@ -6,7 +6,7 @@ import { ChromeBrowser } from './browser';
 import { writeFileSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { mkdirSync, existsSync } from 'fs';
-import { findProjectRoot } from './utils';
+import { findProjectRoot, getFindElementScript } from './utils';
 
 // Re-export all extra functions
 export * from './actions-extra';
@@ -57,6 +57,8 @@ export async function waitForLoad(browser: ChromeBrowser, timeout = 30000): Prom
 
 /**
  * Click element.
+ * Supports both CSS selectors and XPath (when selector starts with '//').
+ * XPath supports indexing: (//button[text()='Click'])[2] selects the 2nd button.
  */
 export async function click(browser: ChromeBrowser, selector: string): Promise<ActionResult> {
   console.log(`Clicking: ${selector}`);
@@ -64,8 +66,10 @@ export async function click(browser: ChromeBrowser, selector: string): Promise<A
   const script = `
     (function() {
       const selector = ${JSON.stringify(selector)};
-      const el = document.querySelector(selector);
-      if (!el) throw new Error('Element not found: ' + selector);
+      ${getFindElementScript()}
+
+      const el = findElement(selector);
+      if (!el) throw new Error('Element not found');
       el.click();
       return true;
     })()
@@ -81,6 +85,8 @@ export async function click(browser: ChromeBrowser, selector: string): Promise<A
 
 /**
  * Fill input field.
+ * Supports both CSS selectors and XPath (when selector starts with '//').
+ * XPath supports indexing: (//input[@type='text'])[2] selects the 2nd input.
  */
 export async function fill(browser: ChromeBrowser, selector: string, value: string): Promise<ActionResult> {
   console.log(`Filling ${selector} with: ${value}`);
@@ -89,8 +95,10 @@ export async function fill(browser: ChromeBrowser, selector: string, value: stri
     (function() {
       const selector = ${JSON.stringify(selector)};
       const value = ${JSON.stringify(value)};
-      const el = document.querySelector(selector);
-      if (!el) throw new Error('Element not found: ' + selector);
+      ${getFindElementScript()}
+
+      const el = findElement(selector);
+      if (!el) throw new Error('Element not found');
       el.value = value;
       el.dispatchEvent(new Event('input', { bubbles: true }));
       el.dispatchEvent(new Event('change', { bubbles: true }));
@@ -167,10 +175,15 @@ export async function evaluate(browser: ChromeBrowser, script: string): Promise<
 
 /**
  * Extract text from element or body.
+ * Supports both CSS selectors and XPath (when selector starts with '//').
  */
 export async function extractText(browser: ChromeBrowser, selector?: string): Promise<ActionResult> {
   const script = selector
-    ? `(function() { const selector = ${JSON.stringify(selector)}; return document.querySelector(selector)?.textContent || ''; })()`
+    ? `(function() {
+        const selector = ${JSON.stringify(selector)};
+        ${getFindElementScript()}
+        return findElement(selector)?.textContent || '';
+      })()`
     : `document.body.textContent || ''`;
 
   const result = await browser.sendCommand('Runtime.evaluate', {
@@ -406,6 +419,7 @@ export async function closeTab(
 
 /**
  * Hover over element.
+ * Supports both CSS selectors and XPath (when selector starts with '//').
  */
 export async function hover(
   browser: ChromeBrowser,
@@ -415,8 +429,9 @@ export async function hover(
   const script = `
     (function() {
       const selector = ${JSON.stringify(selector)};
-      const el = document.querySelector(selector);
-      if (!el) throw new Error('Element not found: ' + selector);
+      ${getFindElementScript()}
+      const el = findElement(selector);
+      if (!el) throw new Error('Element not found');
       el.dispatchEvent(new MouseEvent('mouseover', {
         bubbles: true,
         cancelable: true,
@@ -434,6 +449,7 @@ export async function hover(
 
 /**
  * Focus element.
+ * Supports both CSS selectors and XPath (when selector starts with '//').
  */
 export async function focus(
   browser: ChromeBrowser,
@@ -443,8 +459,9 @@ export async function focus(
   const script = `
     (function() {
       const selector = ${JSON.stringify(selector)};
-      const el = document.querySelector(selector);
-      if (!el) throw new Error('Element not found: ' + selector);
+      ${getFindElementScript()}
+      const el = findElement(selector);
+      if (!el) throw new Error('Element not found');
       el.focus();
       return true;
     })()
@@ -458,6 +475,7 @@ export async function focus(
 
 /**
  * Blur element.
+ * Supports both CSS selectors and XPath (when selector starts with '//').
  */
 export async function blur(
   browser: ChromeBrowser,
@@ -467,8 +485,9 @@ export async function blur(
   const script = `
     (function() {
       const selector = ${JSON.stringify(selector)};
-      const el = document.querySelector(selector);
-      if (!el) throw new Error('Element not found: ' + selector);
+      ${getFindElementScript()}
+      const el = findElement(selector);
+      if (!el) throw new Error('Element not found');
       el.blur();
       return true;
     })()
@@ -484,17 +503,23 @@ export async function blur(
 
 /**
  * Helper: Ensure output path (convert relative to .browser-pilot/).
+ * Security: Prevents path traversal attacks and rejects absolute paths.
  */
 function ensureOutputPath(path: string): string {
+  // Reject absolute paths
   if (resolve(path) === path) {
-    // Already absolute
-    return path;
+    throw new Error('Absolute paths are not allowed. Use relative paths only.');
   }
 
   // Relative path - save to project root/.browser-pilot/
   const projectRoot = findProjectRoot();
   const outputDir = resolve(projectRoot, '.browser-pilot');
   const absolutePath = resolve(outputDir, path);
+
+  // Prevent path traversal attacks
+  if (!absolutePath.startsWith(outputDir)) {
+    throw new Error('Path traversal detected. Files must be within .browser-pilot directory.');
+  }
 
   // Ensure directory exists
   if (!existsSync(outputDir)) {

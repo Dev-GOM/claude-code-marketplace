@@ -12,14 +12,17 @@ export interface ActionResult {
 export declare function extractData(browser: ChromeBrowser, selectors: Record<string, string>): Promise<ActionResult>;
 /**
  * Select option from dropdown.
+ * Supports both CSS selectors and XPath (when selector starts with '//').
  */
 export declare function selectOption(browser: ChromeBrowser, selector: string, value: string): Promise<ActionResult>;
 /**
  * Check checkbox.
+ * Supports both CSS selectors and XPath (when selector starts with '//').
  */
 export declare function check(browser: ChromeBrowser, selector: string): Promise<ActionResult>;
 /**
  * Uncheck checkbox.
+ * Supports both CSS selectors and XPath (when selector starts with '//').
  */
 export declare function uncheck(browser: ChromeBrowser, selector: string): Promise<ActionResult>;
 /**
@@ -32,6 +35,7 @@ export declare function pressKey(browser: ChromeBrowser, key: string): Promise<A
 export declare function typeText(browser: ChromeBrowser, text: string, delay?: number): Promise<ActionResult>;
 /**
  * Upload file to input element.
+ * Supports both CSS selectors and XPath (when selector starts with '//').
  */
 export declare function uploadFile(browser: ChromeBrowser, selector: string, filePath: string): Promise<ActionResult>;
 /**
@@ -52,6 +56,7 @@ export declare function goForward(browser: ChromeBrowser): Promise<ActionResult>
 export declare function waitMilliseconds(browser: ChromeBrowser, ms: number): Promise<ActionResult>;
 /**
  * Wait for element to appear.
+ * Supports both CSS selectors and XPath (when selector starts with '//').
  */
 export declare function waitFor(browser: ChromeBrowser, selector: string, timeout?: number): Promise<ActionResult>;
 /**
@@ -67,10 +72,12 @@ export declare function waitForNetworkIdle(browser: ChromeBrowser, timeout?: num
 export declare function getConsoleMessages(browser: ChromeBrowser, errorOnly?: boolean): Promise<ActionResult>;
 /**
  * Get element property value.
+ * Supports both CSS selectors and XPath (when selector starts with '//').
  */
 export declare function getElementProperty(browser: ChromeBrowser, selector: string, propertyName: string): Promise<ActionResult>;
 /**
  * Find element and return its information.
+ * Supports both CSS selectors and XPath (when selector starts with '//').
  */
 export declare function findElement(browser: ChromeBrowser, selector: string): Promise<ActionResult>;
 /**
@@ -83,6 +90,7 @@ export declare function getAccessibilitySnapshot(browser: ChromeBrowser): Promis
 export declare function getContent(browser: ChromeBrowser): Promise<ActionResult>;
 /**
  * Scroll page or element.
+ * Supports both CSS selectors and XPath (when selector starts with '//').
  */
 export declare function scroll(browser: ChromeBrowser, x?: number, y?: number, selector?: string): Promise<ActionResult>;
 /**

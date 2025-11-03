@@ -5,6 +5,8 @@ description: |
 
   Features/기능: screenshot 스크린샷, PDF generation PDF생성, web scraping 웹스크래핑, data extraction 데이터추출, form filling 폼작성, login automation 로그인자동화, click/input 클릭/입력, element finder 요소찾기, tab management 탭관리, cookie control 쿠키제어, JavaScript execution JS실행, page navigation 페이지이동, wait for element 요소대기, scroll 스크롤, accessibility tree 접근성트리, console messages 콘솔메시지, network idle 네트워크대기, back/forward 뒤로/앞으로, reload 새로고침, file upload 파일업로드.
 
+  Selectors 셀렉터: CSS selectors (ID, class, attribute), XPath selectors (text-based, structural), XPath indexing (select N-th element with same text). Powerful text-based element selection like "click the 3rd button that says 'Delete'".
+
   Bot detection bypass 봇감지우회 (navigator.webdriver=false). Auto Chrome connection 자동크롬연결. Headless/headed mode. All browser-pilot MCP features. Only needs websocket-client.
 ---
 
@@ -54,6 +56,75 @@ cd "${CLAUDE_SKILL_ROOT}/scripts" && npm install && npm run build
   - "Full page screenshot?" → Choices: Yes (entire page), No (viewport only)
 
 **Important:** Always replace `<target-url>`, `<selector>`, `<output-file>`, and other placeholders with actual values from the user's request or AskUserQuestion responses.
+
+### Selector Types
+
+Browser Pilot supports **three types of selectors** for element targeting:
+
+#### 1. CSS Selectors (Default)
+Standard CSS selector syntax:
+```bash
+# By ID
+npm run bp:click -- -s "#login-button"
+
+# By class
+npm run bp:click -- -s ".submit-btn"
+
+# By attribute
+npm run bp:fill -- -s "input[name='email']"
+
+# Complex selector
+npm run bp:click -- -s "div.container > button.primary"
+```
+
+#### 2. XPath Selectors
+XPath provides powerful text-based and structural element selection:
+```bash
+# By text content (most useful!)
+npm run bp:click -- -s "//button[contains(text(), 'Submit')]"
+
+# By exact text
+npm run bp:click -- -s "//button[text()='Sign In']"
+
+# By attribute
+npm run bp:fill -- -s "//input[@type='email']"
+
+# Complex path
+npm run bp:click -- -s "//div[@class='modal']//button[@type='submit']"
+
+# Parent-child relationship
+npm run bp:click -- -s "//h1[contains(text(), 'Welcome')]/following-sibling::button"
+```
+
+#### 3. XPath with Indexing ⭐ (Selecting N-th Element)
+When multiple elements have the same text/attributes, use indexing to select specific ones:
+
+```bash
+# Select 1st "Add to Cart" button
+npm run bp:click -- -s "(//button[contains(text(), 'Add to Cart')])[1]"
+
+# Select 3rd "Add to Cart" button
+npm run bp:click -- -s "(//button[contains(text(), 'Add to Cart')])[3]"
+
+# Select 5th input field
+npm run bp:fill -- -s "(//input[@type='text'])[5]" -v "value"
+
+# Select last submit button (if you know there are 3)
+npm run bp:click -- -s "(//button[@type='submit'])[3]"
+```
+
+**Syntax:** `(//xpath-expression)[N]` where N is 1-based (1 = first, 2 = second, etc.)
+
+#### When to Use Each Type?
+
+| Scenario | Recommended Selector | Example |
+|----------|---------------------|---------|
+| Element has unique ID | CSS `#id` | `#login-btn` |
+| Element has unique class | CSS `.class` | `.submit-button` |
+| **Text-based selection** | **XPath** | `//button[contains(text(), 'Login')]` |
+| **Multiple same-text elements** | **XPath + Index** | `(//button[text()='Delete'])[2]` |
+| Complex structure | Either | CSS: `div > ul > li:nth-child(3)` <br> XPath: `//div/ul/li[3]` |
+| Partial text match | XPath | `//a[contains(@href, 'checkout')]` |
 
 ### Usage
 
@@ -189,7 +260,7 @@ npm run bp:disable-interception -- --project-root "$OLDPWD"
 - `--headless` - Run without visible browser window (faster)
 - `--full-page` - Capture entire scrollable page (screenshot only)
 - `--output` - Output file path (relative paths save to `.browser-pilot/`)
-- `--selector` - CSS selector for element targeting
+- `--selector` - CSS selector or XPath for element targeting (supports indexing: `(//xpath)[N]`)
 - `--value` - Text value to fill in input
 - `--expression` - JavaScript code to execute
 
@@ -213,10 +284,16 @@ Expected: All checks **PASS** (green).
 
 1. **Build once** - Run `npm run build` in scripts/ before first use
 2. **Use headed mode for debugging** - Omit `--headless` to see browser window
-3. **Prefer unique selectors** - Use IDs: `#username` > `.class` > `input[name="user"]`
+3. **Choose the right selector type**:
+   - **CSS for structure**: Use when element has unique ID/class (`#login-btn`, `.submit`)
+   - **XPath for text**: Use when selecting by visible text (`//button[contains(text(), 'Submit')]`)
+   - **XPath indexing for duplicates**: Use when multiple elements share same text (`(//button[text()='Delete'])[2]`)
 4. **Relative paths** - Files auto-save to `.browser-pilot/`
 5. **Add human-like delays** - Use `sleep 0.5-2` between commands to avoid bot detection
 6. **Respect rate limits** - Add delays between requests
+7. **Test selectors first** - Verify selectors in browser DevTools Console (F12):
+   - CSS: `document.querySelector('#my-button')`
+   - XPath: `$x('//button[text()="Click"]')` (Chrome DevTools shorthand)
 
 ## Troubleshooting
 
@@ -241,8 +318,12 @@ npm install && npm run build
 - Add wait time: `eval --expression "new Promise(r => setTimeout(r, 2000))"`
 
 **Element not found**
-- Verify selector with browser DevTools (F12)
-- Use specific selectors: `#id` > `.class` > `tag`
+- Verify selector with browser DevTools (F12 → Console):
+  - CSS: `document.querySelector('your-selector')`
+  - XPath: `$x('//your/xpath')` (shorthand in Chrome DevTools)
+- For text-based selection, use XPath: `//button[contains(text(), 'Button Text')]`
+- For multiple same-text elements, use XPath indexing: `(//button[text()='Delete'])[2]`
+- Wait for page load: Add `sleep 1` before interacting with dynamic content
 
 ## Technical Details
 
@@ -313,6 +394,15 @@ cd "${CLAUDE_SKILL_ROOT}/scripts"
 npm run bp:click -- -u "https://example.com/login" -s "button.login-btn" --project-root "$OLDPWD"
 ```
 
+**Example 3b: User Request (XPath)**
+> "Click the button that says 'Sign In'"
+
+```bash
+cd "${CLAUDE_SKILL_ROOT}/scripts"
+# Use XPath to find button by text content
+npm run bp:click -- -u "https://example.com/login" -s "//button[contains(text(), 'Sign In')]" --project-root "$OLDPWD"
+```
+
 **Example 4: User Request**
 > "Fill in the email field with test@example.com on the signup page"
 
@@ -373,7 +463,21 @@ sleep 0.5 && \
 npm run bp:screenshot -- -o "github-page.png" --full-page --project-root "$OLDPWD"
 ```
 
-**Example 8: Form Submission Workflow**
+**Example 8: Multiple Elements with Same Text (XPath Indexing)**
+> "Click the 3rd 'Add to Cart' button on the product listing page"
+
+```bash
+cd "${CLAUDE_SKILL_ROOT}/scripts"
+# Navigate to product page
+npm run bp:navigate -- -u "https://shop.example.com/products" --project-root "$OLDPWD" && \
+sleep 1 && \
+# Use XPath indexing to select the 3rd button with text "Add to Cart"
+npm run bp:click -- -s "(//button[contains(text(), 'Add to Cart')])[3]" --project-root "$OLDPWD"
+```
+
+**Note:** When multiple elements share the same text, use XPath indexing `(//xpath)[N]` to select the N-th element. Standard CSS selectors cannot easily select elements by text content.
+
+**Example 9: Form Submission Workflow**
 > "Fill out the contact form on example.com/contact with name 'John Doe', email 'john@example.com', message 'Hello', and submit it"
 
 ```bash

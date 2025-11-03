@@ -2,7 +2,35 @@
 
 All notable changes to the Dev GOM Plugins marketplace will be documented in this file.
 
-> **Version**: 2.10.4 | **Last Updated**: 2025-11-03
+> **Version**: 2.10.5 | **Last Updated**: 2025-11-03
+
+---
+
+## [2.10.5] - 2025-11-03
+
+### Added
+- ✨ **Browser Pilot v0.2.0**: XPath Selector Support with Indexing
+  - **XPath Selector Support**: Powerful text-based element selection
+    - Select elements by visible text: `//button[contains(text(), 'Submit')]`
+    - Select by exact text: `//button[text()='Sign In']`
+    - Complex XPath queries: `//div[@class='modal']//button[@type='submit']`
+    - Works with all element interaction commands (click, fill, hover, focus, blur, etc.)
+  - **XPath Indexing**: Select N-th element when multiple elements share the same text
+    - Syntax: `(//xpath-expression)[N]` where N is 1-based
+    - Example: `(//button[contains(text(), 'Add to Cart')])[3]` selects the 3rd "Add to Cart" button
+    - Solves the problem of selecting specific elements among duplicates
+  - **Code Quality Improvements**: Refactored to centralized utility
+    - Created `getFindElementScript()` in utils.ts
+    - Applied to 15+ functions across actions.ts and actions-extra.ts
+    - Single source of truth for element finding logic
+  - **Enhanced Documentation**: Updated SKILL.md with comprehensive selector guide
+    - Selector Types section: CSS vs XPath vs XPath+Indexing
+    - Decision table: when to use each selector type
+    - Practical examples and troubleshooting tips
+  - **Implementation Details**:
+    - Uses `document.evaluate()` with `ORDERED_NODE_SNAPSHOT_TYPE` for indexing
+    - Regex pattern matching to detect `(//xpath)[N]` syntax
+    - Backward compatible: existing CSS selectors continue to work
 
 ---
 

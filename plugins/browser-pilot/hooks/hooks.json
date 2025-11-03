@@ -1,6 +1,6 @@
 {
   "description": "Chrome DevTools Protocol (CDP) browser automation, web scraping, and crawling",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "author": "Dev GOM",
   "lastUpdated": "2025-11-03",
   "hooks": {
