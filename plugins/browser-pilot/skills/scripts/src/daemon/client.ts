@@ -14,7 +14,8 @@ import {
   IPCError,
   IPCErrorCodes,
   SOCKET_PATH_PREFIX,
-  DEFAULT_TIMEOUT
+  DEFAULT_TIMEOUT,
+  getProjectSocketName
 } from './protocol';
 import { logger } from '../utils/logger';
 
@@ -34,16 +35,15 @@ export class IPCClient {
   }
 
   /**
-   * Get socket path (platform-specific)
+   * Get socket path (platform-specific, project-unique)
    */
   private getSocketPath(outputDir: string): string {
     if (process.platform === 'win32') {
-      // Windows: need to find the named pipe from PID
-      // For now, we'll use a fixed name pattern
-      // In production, we should read the PID file and construct the pipe name
-      return `\\\\.\\pipe\\${SOCKET_PATH_PREFIX}`;
+      // Windows: project-specific named pipe
+      const socketName = getProjectSocketName();
+      return `\\\\.\\pipe\\${socketName}`;
     } else {
-      // Unix domain socket
+      // Unix domain socket (already project-specific via outputDir)
       return join(outputDir, `${SOCKET_PATH_PREFIX}.sock`);
     }
   }

@@ -17,7 +17,8 @@ import {
   IPCErrorCodes,
   SOCKET_PATH_PREFIX,
   PID_FILENAME,
-  IDLE_SHUTDOWN_TIMEOUT
+  IDLE_SHUTDOWN_TIMEOUT,
+  getProjectSocketName
 } from './protocol';
 import { MapManager } from './map-manager';
 import { logger } from '../utils/logger';
@@ -46,14 +47,15 @@ export class DaemonServer {
   }
 
   /**
-   * Get socket path (platform-specific)
+   * Get socket path (platform-specific, project-unique)
    */
   private getSocketPath(): string {
     if (process.platform === 'win32') {
-      // Windows named pipe (no PID - must match client)
-      return `\\\\.\\pipe\\${SOCKET_PATH_PREFIX}`;
+      // Windows: project-specific named pipe
+      const socketName = getProjectSocketName();
+      return `\\\\.\\pipe\\${socketName}`;
     } else {
-      // Unix domain socket
+      // Unix domain socket (already project-specific via outputDir)
       return join(this.outputDir, `${SOCKET_PATH_PREFIX}.sock`);
     }
   }

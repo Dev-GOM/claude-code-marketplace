@@ -176,6 +176,22 @@ export const DEFAULT_TIMEOUT = 30000; // 30 seconds
 export const IDLE_SHUTDOWN_TIMEOUT = 1800000; // 30 minutes
 
 /**
+ * Get project-specific socket name
+ * Uses project folder name to create unique socket for each project
+ */
+export function getProjectSocketName(): string {
+  const { basename } = require('path');
+  const { findProjectRoot } = require('../cdp/config');
+
+  const projectRoot = findProjectRoot();
+  const projectName = basename(projectRoot)
+    .replace(/[^a-zA-Z0-9_-]/g, '-')  // Replace special chars with hyphen
+    .toLowerCase();
+
+  return `${SOCKET_PATH_PREFIX}-${projectName}`;
+}
+
+/**
  * Protocol errors
  */
 

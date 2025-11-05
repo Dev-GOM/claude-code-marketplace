@@ -251,8 +251,22 @@ function initializeLocalScripts(projectRoot) {
     fs.copyFileSync(path.join(pluginScriptsPath, 'package.json'), path.join(localSkillsPath, 'package.json'));
     fs.copyFileSync(path.join(pluginScriptsPath, 'tsconfig.json'), path.join(localSkillsPath, 'tsconfig.json'));
 
+    // Clean dist and node_modules for fresh install
+    const distPath = path.join(localSkillsPath, 'dist');
+    const nodeModulesPath = path.join(localSkillsPath, 'node_modules');
+
+    if (fs.existsSync(distPath)) {
+      logger.log('Removing old dist folder...');
+      fs.rmSync(distPath, { recursive: true, force: true });
+    }
+
+    if (fs.existsSync(nodeModulesPath)) {
+      logger.log('Removing old node_modules folder...');
+      fs.rmSync(nodeModulesPath, { recursive: true, force: true });
+    }
+
     // Install dependencies and build
-    logger.log('Installing dependencies...');
+    logger.log('Installing dependencies (clean install)...');
     execSync('npm install', { cwd: localSkillsPath, stdio: 'inherit' });
 
     logger.log('Building scripts...');
