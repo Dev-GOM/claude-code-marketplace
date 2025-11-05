@@ -16,7 +16,8 @@ import {
   MapQueryResult,
   MapGenerateParams,
   MapGenerateResult,
-  MapStatusResult
+  MapStatusResult,
+  getProjectSocketName
 } from './protocol';
 import { logger } from '../utils/logger';
 import { TIMING, DAEMON } from '../constants';
@@ -33,12 +34,15 @@ export class DaemonManager {
   }
 
   /**
-   * Get socket path (platform-specific)
+   * Get socket path (platform-specific, project-unique)
    */
   private getSocketPath(): string {
     if (process.platform === 'win32') {
-      return `\\\\.\\pipe\\${SOCKET_PATH_PREFIX}`;
+      // Windows: project-specific named pipe
+      const socketName = getProjectSocketName();
+      return `\\\\.\\pipe\\${socketName}`;
     } else {
+      // Unix domain socket (already project-specific via outputDir)
       return join(this.outputDir, `${SOCKET_PATH_PREFIX}.sock`);
     }
   }
