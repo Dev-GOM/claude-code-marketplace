@@ -1,6 +1,6 @@
 # Browser Pilot
 
-> **Status**: ✅ Released (v1.0.0)
+> **Status**: ✅ Released (v1.4.0)
 
 **Language**: [English](README.md) | [한국어](README.ko.md)
 
@@ -433,7 +433,7 @@ Always respect robots.txt and website terms of service.
 
 ## License
 
-MIT License - see [LICENSE](../../LICENSE) for details
+Apache License 2.0 - see [LICENSE](../../LICENSE) and [NOTICE](../../NOTICE) for details
 
 ## Contributing
 

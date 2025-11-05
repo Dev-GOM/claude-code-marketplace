@@ -40,7 +40,7 @@ function registerNetworkCommands(program) {
     // Block URL command
     program
         .command('block-url')
-        .description('Block network requests matching URL pattern')
+        .description('Block network requests matching a URL pattern (e.g., "*.jpg", "*ads*", "*analytics*")')
         .requiredOption('-p, --pattern <pattern>', 'URL pattern to block (e.g., "*.jpg", "*ads*")')
         .action(async (options) => {
         const browser = new browser_1.ChromeBrowser(false);
@@ -58,7 +58,7 @@ function registerNetworkCommands(program) {
     // Unblock URLs command
     program
         .command('unblock-urls')
-        .description('Unblock all network requests')
+        .description('Remove all network request blocks and allow all URLs to load')
         .action(async () => {
         const browser = new browser_1.ChromeBrowser(false);
         try {
@@ -75,7 +75,7 @@ function registerNetworkCommands(program) {
     // Enable request interception
     program
         .command('enable-interception')
-        .description('Enable network request interception')
+        .description('Enable network request interception for monitoring and modifying HTTP requests')
         .action(async () => {
         const browser = new browser_1.ChromeBrowser(false);
         try {
@@ -94,7 +94,7 @@ function registerNetworkCommands(program) {
     // Disable request interception
     program
         .command('disable-interception')
-        .description('Disable network request interception')
+        .description('Disable network request interception and return to normal browsing mode')
         .action(async () => {
         const browser = new browser_1.ChromeBrowser(false);
         try {

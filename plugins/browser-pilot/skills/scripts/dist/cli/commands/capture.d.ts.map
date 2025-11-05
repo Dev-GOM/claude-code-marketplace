@@ -1,1 +1,1 @@
-{"version":3,"file":"capture.d.ts","sourceRoot":"","sources":["../../../src/cli/commands/capture.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,OAAO,EAAE,MAAM,WAAW,CAAC;AAIpC,wBAAgB,uBAAuB,CAAC,OAAO,EAAE,OAAO,QA+DvD"}
+{"version":3,"file":"capture.d.ts","sourceRoot":"","sources":["../../../src/cli/commands/capture.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,OAAO,EAAE,MAAM,WAAW,CAAC;AAGpC,wBAAgB,uBAAuB,CAAC,OAAO,EAAE,OAAO,QAqEvD"}

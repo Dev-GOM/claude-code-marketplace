@@ -4,7 +4,8 @@
 
 import { ChromeBrowser, FormattedConsoleMessage } from '../browser';
 import { getFindElementScript } from '../utils';
-import { ActionResult, ActionOptions, mergeOptions, checkConsoleErrors } from './helpers';
+import { ActionResult, ActionOptions, mergeOptions, checkErrors, RuntimeEvaluateResult } from './helpers';
+import { logger } from '../../utils/logger';
 
 /**
  * Get console messages.
@@ -19,7 +20,7 @@ export async function getConsoleMessages(
 ): Promise<ActionResult> {
   const opts = mergeOptions(options);
 
-  if (opts.verbose) console.log('📋 Getting console messages...');
+  if (opts.verbose) logger.info('📋 Getting console messages...');
 
   // Get all collected messages from browser
   const allMessages = browser.getConsoleMessages();
@@ -42,7 +43,7 @@ export async function getConsoleMessages(
   const warningCount = allMessages.filter(msg => msg.level === 'warning').length;
 
   if (opts.verbose) {
-    console.log(`✅ Retrieved ${formattedMessages.length} message(s) (${errorCount} errors, ${warningCount} warnings)`);
+    logger.info(`✅ Retrieved ${formattedMessages.length} message(s) (${errorCount} errors, ${warningCount} warnings)`);
   }
 
   return {
@@ -64,21 +65,24 @@ export async function getAccessibilitySnapshot(
 ): Promise<ActionResult> {
   const opts = mergeOptions(options);
 
-  if (opts.verbose) console.log('♿ Getting accessibility snapshot...');
+  if (opts.verbose) logger.info('♿ Getting accessibility snapshot...');
 
   try {
     await browser.sendCommand('Accessibility.enable');
-    const result = await browser.sendCommand('Accessibility.getFullAXTree');
+    const result = await browser.sendCommand<{ nodes: unknown[] }>('Accessibility.getFullAXTree');
 
     const nodes = result.nodes || [];
 
-    const formattedNodes = nodes.slice(0, 50).map((node: any) => ({
-      role: node.role?.value,
-      name: node.name?.value,
-      description: node.description?.value
-    }));
+    const formattedNodes = nodes.slice(0, 50).map((node: unknown) => {
+      const n = node as { role?: { value?: string }; name?: { value?: string }; description?: { value?: string } };
+      return {
+        role: n.role?.value,
+        name: n.name?.value,
+        description: n.description?.value
+      };
+    });
 
-    if (opts.verbose) console.log(`✅ Retrieved ${nodes.length} accessibility nodes (showing first 50)`);
+    if (opts.verbose) logger.info(`✅ Retrieved ${nodes.length} accessibility nodes (showing first 50)`);
 
     return {
       success: true,
@@ -86,10 +90,9 @@ export async function getAccessibilitySnapshot(
       nodes: formattedNodes
     };
 
-  } catch (error: any) {
+  } catch (error) {
     if (opts.verbose) {
-      console.error(`❌ Get accessibility snapshot failed`);
-      console.error(`   Error: ${error.message}`);
+      logger.error(`❌ Get accessibility snapshot failed`, error);
     }
     throw error;
   }
@@ -106,7 +109,7 @@ export async function findElement(
 ): Promise<ActionResult> {
   const opts = mergeOptions(options);
 
-  if (opts.verbose) console.log(`🔍 Finding element: ${selector}`);
+  if (opts.verbose) logger.info(`🔍 Finding element: ${selector}`);
   const script = `
     (function() {
       const selector = ${JSON.stringify(selector)};
@@ -136,23 +139,23 @@ export async function findElement(
     })()
   `;
 
-  const result = await browser.sendCommand('Runtime.evaluate', {
+  const result = await browser.sendCommand<RuntimeEvaluateResult>('Runtime.evaluate', {
     expression: script,
     returnByValue: true
   });
 
-  const elementInfo = result.result?.value;
+  const elementInfo = result.result?.value as { tagName?: string; id?: string; className?: string; attributes?: Record<string, string> } | null | undefined;
 
-  if (elementInfo === null) {
-    if (opts.verbose) console.log(`❌ Element not found: ${selector}`);
+  if (!elementInfo) {
+    if (opts.verbose) logger.info(`❌ Element not found: ${selector}`);
     return {
       success: false,
       error: `Element not found: ${selector}`
     };
   }
 
-  if (opts.verbose) console.log(`✅ Found <${elementInfo.tagName}> element`);
-  checkConsoleErrors(browser);
+  if (opts.verbose) logger.info(`✅ Found <${elementInfo.tagName}> element`);
+  checkErrors(browser, opts.logLevel);
 
   return {
     success: true,

@@ -4,7 +4,8 @@
 
 import { ChromeBrowser } from '../browser';
 import { getFindElementScript } from '../utils';
-import { ActionResult, ActionOptions, mergeOptions, checkConsoleErrors } from './helpers';
+import { ActionResult, ActionOptions, mergeOptions, checkErrors, RuntimeEvaluateResult } from './helpers';
+import { logger } from '../../utils/logger';
 
 /**
  * Evaluate JavaScript.
@@ -16,15 +17,15 @@ export async function evaluate(
 ): Promise<ActionResult> {
   const opts = mergeOptions(options);
 
-  if (opts.verbose) console.log(`⚙️  Evaluating JavaScript...`);
+  if (opts.verbose) logger.info(`⚙️  Evaluating JavaScript...`);
 
-  const result = await browser.sendCommand('Runtime.evaluate', {
+  const result = await browser.sendCommand<RuntimeEvaluateResult>('Runtime.evaluate', {
     expression: script,
     returnByValue: true
   });
 
-  if (opts.verbose) console.log(`✅ Evaluation complete`);
-  checkConsoleErrors(browser);
+  if (opts.verbose) logger.info(`✅ Evaluation complete`);
+  checkErrors(browser, opts.logLevel);
 
   return { success: true, result: result.result?.value };
 }
@@ -42,9 +43,9 @@ export async function extractText(
 
   if (opts.verbose) {
     if (selector) {
-      console.log(`📝 Extracting text from: ${selector}`);
+      logger.info(`📝 Extracting text from: ${selector}`);
     } else {
-      console.log(`📝 Extracting text from page body`);
+      logger.info(`📝 Extracting text from page body`);
     }
   }
   const script = selector
@@ -55,14 +56,14 @@ export async function extractText(
       })()`
     : `document.body.textContent || ''`;
 
-  const result = await browser.sendCommand('Runtime.evaluate', {
+  const result = await browser.sendCommand<RuntimeEvaluateResult>('Runtime.evaluate', {
     expression: script,
     returnByValue: true
   });
 
-  const text = result.result?.value || '';
-  if (opts.verbose) console.log(`✅ Extracted ${text.length} characters`);
-  checkConsoleErrors(browser);
+  const text = (result.result?.value as string) || '';
+  if (opts.verbose) logger.info(`✅ Extracted ${text.length} characters`);
+  checkErrors(browser, opts.logLevel);
 
   return { success: true, text };
 }
@@ -77,9 +78,9 @@ export async function extractData(
 ): Promise<ActionResult> {
   const opts = mergeOptions(options);
 
-  if (opts.verbose) console.log(`📊 Extracting data with ${Object.keys(selectors).length} selectors`);
+  if (opts.verbose) logger.info(`📊 Extracting data with ${Object.keys(selectors).length} selectors`);
 
-  const data: Record<string, any> = {};
+  const data: Record<string, unknown> = {};
 
   for (const [key, selector] of Object.entries(selectors)) {
     try {
@@ -92,18 +93,19 @@ export async function extractData(
           return Array.from(elements).map(el => el.innerText);
         })()
       `;
-      const result = await browser.sendCommand('Runtime.evaluate', {
+      const result = await browser.sendCommand<RuntimeEvaluateResult>('Runtime.evaluate', {
         expression: script,
         returnByValue: true
       });
       data[key] = result.result?.value;
     } catch (error) {
-      data[key] = `Error: ${error}`;
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      data[key] = `Error: ${errorMessage}`;
     }
   }
 
-  if (opts.verbose) console.log(`✅ Extracted data for ${Object.keys(data).length} keys`);
-  checkConsoleErrors(browser);
+  if (opts.verbose) logger.info(`✅ Extracted data for ${Object.keys(data).length} keys`);
+  checkErrors(browser, opts.logLevel);
 
   return { success: true, data };
 }
@@ -117,17 +119,17 @@ export async function getContent(
 ): Promise<ActionResult> {
   const opts = mergeOptions(options);
 
-  if (opts.verbose) console.log('📄 Getting page HTML content');
+  if (opts.verbose) logger.info('📄 Getting page HTML content');
 
   const script = `document.documentElement.outerHTML`;
 
-  const result = await browser.sendCommand('Runtime.evaluate', {
+  const result = await browser.sendCommand<RuntimeEvaluateResult>('Runtime.evaluate', {
     expression: script,
     returnByValue: true
   });
 
-  const content = result.result?.value || '';
-  if (opts.verbose) console.log(`✅ Retrieved ${content.length} characters of HTML`);
+  const content = (result.result?.value as string) || '';
+  if (opts.verbose) logger.info(`✅ Retrieved ${content.length} characters of HTML`);
 
   return {
     success: true,
@@ -148,7 +150,7 @@ export async function getElementProperty(
 ): Promise<ActionResult> {
   const opts = mergeOptions(options);
 
-  if (opts.verbose) console.log(`🔍 Getting property '${propertyName}' from: ${selector}`);
+  if (opts.verbose) logger.info(`🔍 Getting property '${propertyName}' from: ${selector}`);
 
   const script = `
     (function() {
@@ -162,24 +164,27 @@ export async function getElementProperty(
   `;
 
   try {
-    const result = await browser.sendCommand('Runtime.evaluate', {
+    const result = await browser.sendCommand<RuntimeEvaluateResult>('Runtime.evaluate', {
       expression: script,
       returnByValue: true
     });
 
     if (result.exceptionDetails) {
+      const errorMsg = result.exceptionDetails.exception?.description ||
+                       result.exceptionDetails.text ||
+                       'Unknown error';
       if (opts.verbose) {
-        console.error(`❌ Get property failed: ${selector}`);
-        console.error(`   Error: ${result.exceptionDetails.exception.description}`);
+        logger.error(`❌ Get property failed: ${selector}`);
+        logger.error(`   Error: ${errorMsg}`);
       }
       return {
         success: false,
-        error: result.exceptionDetails.exception.description
+        error: errorMsg
       };
     }
 
-    if (opts.verbose) console.log(`✅ Property '${propertyName}': ${result.result?.value}`);
-    checkConsoleErrors(browser);
+    if (opts.verbose) logger.info(`✅ Property '${propertyName}': ${result.result?.value}`);
+    checkErrors(browser, opts.logLevel);
 
     return {
       success: true,
@@ -188,12 +193,13 @@ export async function getElementProperty(
       value: result.result?.value
     };
 
-  } catch (error: any) {
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
     if (opts.verbose) {
-      console.error(`❌ Get property failed: ${selector}`);
-      console.error(`   Error: ${error.message}`);
+      logger.error(`❌ Get property failed: ${selector}`);
+      logger.error(`   Error: ${errorMessage}`);
     }
-    checkConsoleErrors(browser);
+    checkErrors(browser, opts.logLevel);
     throw error;
   }
 }

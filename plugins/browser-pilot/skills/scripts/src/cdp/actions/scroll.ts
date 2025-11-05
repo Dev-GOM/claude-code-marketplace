@@ -4,7 +4,8 @@
 
 import { ChromeBrowser } from '../browser';
 import { getFindElementScript } from '../utils';
-import { ActionResult, ActionOptions, mergeOptions, checkConsoleErrors } from './helpers';
+import { ActionResult, ActionOptions, mergeOptions, checkErrors, RuntimeEvaluateResult } from './helpers';
+import { logger } from '../../utils/logger';
 
 /**
  * Scroll page or element.
@@ -20,7 +21,7 @@ export async function scroll(
   const y = options?.y ?? 0;
   const selector = options?.selector;
 
-  if (opts.verbose) console.log(`📜 Scrolling to (${x}, ${y})${selector ? ` on ${selector}` : ''}`);
+  if (opts.verbose) logger.info(`📜 Scrolling to (${x}, ${y})${selector ? ` on ${selector}` : ''}`);
 
   const script = selector
     ? `
@@ -45,25 +46,26 @@ export async function scroll(
     `;
 
   try {
-    const result = await browser.sendCommand('Runtime.evaluate', {
+    const result = await browser.sendCommand<RuntimeEvaluateResult>('Runtime.evaluate', {
       expression: script,
       returnByValue: true
     });
 
-    if (opts.verbose) console.log(`✅ Scrolled successfully`);
-    checkConsoleErrors(browser);
+    if (opts.verbose) logger.info(`✅ Scrolled successfully`);
+    checkErrors(browser, opts.logLevel);
 
     return {
       success: true,
       position: result.result?.value
     };
 
-  } catch (error: any) {
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
     if (opts.verbose) {
-      console.error(`❌ Scroll failed`);
-      console.error(`   Error: ${error.message}`);
+      logger.error(`❌ Scroll failed`);
+      logger.error(`   Error: ${errorMessage}`);
     }
-    checkConsoleErrors(browser);
+    checkErrors(browser, opts.logLevel);
     throw error;
   }
 }

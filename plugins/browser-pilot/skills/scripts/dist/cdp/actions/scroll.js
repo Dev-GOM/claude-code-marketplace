@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.scroll = scroll;
 const utils_1 = require("../utils");
 const helpers_1 = require("./helpers");
+const logger_1 = require("../../utils/logger");
 /**
  * Scroll page or element.
  * Supports both CSS selectors and XPath (when selector starts with '//').
@@ -17,7 +18,7 @@ async function scroll(browser, options) {
     const y = options?.y ?? 0;
     const selector = options?.selector;
     if (opts.verbose)
-        console.log(`📜 Scrolling to (${x}, ${y})${selector ? ` on ${selector}` : ''}`);
+        logger_1.logger.info(`📜 Scrolling to (${x}, ${y})${selector ? ` on ${selector}` : ''}`);
     const script = selector
         ? `
       (function() {
@@ -45,19 +46,20 @@ async function scroll(browser, options) {
             returnByValue: true
         });
         if (opts.verbose)
-            console.log(`✅ Scrolled successfully`);
-        (0, helpers_1.checkConsoleErrors)(browser);
+            logger_1.logger.info(`✅ Scrolled successfully`);
+        (0, helpers_1.checkErrors)(browser, opts.logLevel);
         return {
             success: true,
             position: result.result?.value
         };
     }
     catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
         if (opts.verbose) {
-            console.error(`❌ Scroll failed`);
-            console.error(`   Error: ${error.message}`);
+            logger_1.logger.error(`❌ Scroll failed`);
+            logger_1.logger.error(`   Error: ${errorMessage}`);
         }
-        (0, helpers_1.checkConsoleErrors)(browser);
+        (0, helpers_1.checkErrors)(browser, opts.logLevel);
         throw error;
     }
 }

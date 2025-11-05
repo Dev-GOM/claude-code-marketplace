@@ -40,7 +40,7 @@ function registerEmulationCommands(program) {
     // Emulate media command
     program
         .command('emulate-media')
-        .description('Emulate media type or color scheme')
+        .description('Emulate media type (screen/print) or color scheme (light/dark/no-preference) for testing responsive designs and dark mode')
         .option('-m, --media <type>', 'Media type: screen or print')
         .option('-c, --color-scheme <scheme>', 'Color scheme: light, dark, or no-preference')
         .action(async (options) => {

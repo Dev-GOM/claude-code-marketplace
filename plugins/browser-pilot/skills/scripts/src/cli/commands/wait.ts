@@ -6,7 +6,7 @@ export function registerWaitCommands(program: Command) {
   // Wait for element command
   program
     .command('wait')
-    .description('Wait for element to appear')
+    .description('Wait for a specific element to appear in the DOM using a CSS selector with optional timeout')
     .requiredOption('-s, --selector <selector>', 'CSS selector to wait for')
     .option('-t, --timeout <ms>', 'Timeout in milliseconds', parseInt, 30000)
     .action(async (options) => {
@@ -25,7 +25,7 @@ export function registerWaitCommands(program: Command) {
   // Wait milliseconds
   program
     .command('sleep')
-    .description('Wait for specified milliseconds')
+    .description('Pause execution for a specified duration in milliseconds (useful for waiting between actions or for animations to complete)')
     .requiredOption('-t, --time <ms>', 'Milliseconds to wait', parseInt)
     .action(async (options) => {
       const browser = new ChromeBrowser(false);
@@ -44,7 +44,7 @@ export function registerWaitCommands(program: Command) {
   // Wait for network idle
   program
     .command('wait-idle')
-    .description('Wait for network to be idle')
+    .description('Wait for all network requests to complete and the page to become idle (useful after navigation or dynamic content loading)')
     .option('-t, --timeout <ms>', 'Timeout in milliseconds', parseInt, 5000)
     .action(async (options) => {
       const browser = new ChromeBrowser(false);

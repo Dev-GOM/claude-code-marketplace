@@ -3,7 +3,9 @@
  */
 
 import { readFileSync, existsSync } from 'fs';
-import { join } from 'path';
+import { join, normalize, resolve } from 'path';
+import { logger } from '../utils/logger';
+import { TIMING } from '../constants';
 
 interface ProjectConfig {
   rootPath: string;
@@ -41,29 +43,39 @@ function loadSharedConfig(): SharedBrowserPilotConfig {
   try {
     const data = readFileSync(configPath, 'utf-8');
     return JSON.parse(data);
-  } catch (error) {
+  } catch (_error) {
     return { projects: {} };
   }
+}
+
+/**
+ * Compare two paths for equality (cross-platform, case-insensitive on Windows)
+ */
+function pathsEqual(path1: string, path2: string): boolean {
+  return normalize(resolve(path1)).toLowerCase() ===
+         normalize(resolve(path2)).toLowerCase();
 }
 
 /**
  * Get project root directory.
  *
  * Strategy (in order of priority):
- * 1. CLAUDE_PROJECT_ROOT environment variable
+ * 1. CLAUDE_PROJECT_DIR environment variable
  * 2. Shared config file (if running from scripts folder)
- * 3. process.cwd() (fallback)
+ * 3. process.cwd() (when running from project root via wrapper)
  */
 export function findProjectRoot(): string {
   // 1. Environment variable has highest priority
-  if (process.env.CLAUDE_PROJECT_ROOT) {
-    return process.env.CLAUDE_PROJECT_ROOT;
+  if (process.env.CLAUDE_PROJECT_DIR) {
+    return process.env.CLAUDE_PROJECT_DIR;
   }
 
   const cwd = process.cwd();
 
   // 2. If running from scripts folder, check shared config
-  if (cwd.includes('browser-pilot') && cwd.includes('scripts')) {
+  // More robust check: compare exact path (cross-platform, case-insensitive)
+  const scriptsDir = join(__dirname, '..', '..');
+  if (pathsEqual(cwd, scriptsDir)) {
     try {
       const config = loadSharedConfig();
       const projects = Object.values(config.projects);
@@ -74,18 +86,20 @@ export function findProjectRoot(): string {
       } else if (projects.length > 1) {
         // Multiple projects: use the most recently used one
         const sorted = projects.sort((a, b) => {
-          const aTime = a.lastUsed ? new Date(a.lastUsed).getTime() : 0;
-          const bTime = b.lastUsed ? new Date(b.lastUsed).getTime() : 0;
-          return bTime - aTime;
+          // Handle invalid dates: treat as 0 to ensure predictable sorting
+          const aTime = new Date(a.lastUsed || 0).getTime();
+          const bTime = new Date(b.lastUsed || 0).getTime();
+          return (isNaN(bTime) ? 0 : bTime) - (isNaN(aTime) ? 0 : aTime);
         });
         return sorted[0].rootPath;
       }
     } catch (error) {
-      // If config loading fails, fall through to cwd
+      // If config loading fails, fall through to using cwd
+      logger.warn(`Could not load shared config: ${error}`);
     }
   }
 
-  // 3. Fallback to current working directory
+  // 3. Default to current working directory (wrapper execution from project root)
   return cwd;
 }
 
@@ -136,4 +150,18 @@ export function getFindElementScript(): string {
       }
     }
   `;
+}
+
+/**
+ * Human-like random delay to avoid bot detection
+ * @param minMs Minimum delay in milliseconds (default: ACTION_DELAY_MEDIUM * 3)
+ * @param maxMs Maximum delay in milliseconds (default: ACTION_DELAY_LONG + ACTION_DELAY_MEDIUM * 3)
+ * @returns Promise that resolves after the delay
+ */
+export function humanDelay(
+  minMs: number = TIMING.ACTION_DELAY_MEDIUM * 3,
+  maxMs: number = TIMING.ACTION_DELAY_LONG + TIMING.ACTION_DELAY_MEDIUM * 3
+): Promise<void> {
+  const delayMs = Math.floor(Math.random() * (maxMs - minMs + 1)) + minMs;
+  return new Promise(resolve => setTimeout(resolve, delayMs));
 }

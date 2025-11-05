@@ -8,16 +8,18 @@ exports.listTabs = listTabs;
 exports.switchTab = switchTab;
 exports.closeTab = closeTab;
 const helpers_1 = require("./helpers");
+const logger_1 = require("../../utils/logger");
+const constants_1 = require("../../constants");
 /**
  * Create new tab.
  */
 async function newTab(browser, url = 'about:blank', options) {
     const opts = (0, helpers_1.mergeOptions)(options);
     if (opts.verbose)
-        console.log(`📑 Opening new tab: ${url}`);
+        logger_1.logger.info(`📑 Opening new tab: ${url}`);
     const result = await browser.sendCommand('Target.createTarget', { url });
     if (opts.verbose)
-        console.log(`✅ New tab created`);
+        logger_1.logger.info(`✅ New tab created`);
     return {
         success: true,
         targetId: result.targetId,
@@ -30,9 +32,9 @@ async function newTab(browser, url = 'about:blank', options) {
 async function listTabs(browser, options) {
     const opts = (0, helpers_1.mergeOptions)(options);
     if (opts.verbose)
-        console.log(`📑 Listing all tabs...`);
+        logger_1.logger.info(`📑 Listing all tabs...`);
     const debugPort = browser.debugPort;
-    const response = await fetch(`http://localhost:${debugPort}/json`);
+    const response = await fetch(`http://${constants_1.CDP.LOCALHOST}:${debugPort}/json`);
     const targets = await response.json();
     const pageTabs = targets
         .filter((t) => t.type === 'page')
@@ -43,7 +45,7 @@ async function listTabs(browser, options) {
         title: t.title
     }));
     if (opts.verbose)
-        console.log(`✅ Found ${pageTabs.length} tab(s)`);
+        logger_1.logger.info(`✅ Found ${pageTabs.length} tab(s)`);
     return {
         success: true,
         tabs: pageTabs,
@@ -57,17 +59,17 @@ async function switchTab(browser, targetId, index, options) {
     const opts = (0, helpers_1.mergeOptions)(options);
     if (opts.verbose) {
         if (targetId) {
-            console.log(`📑 Switching to tab: ${targetId}`);
+            logger_1.logger.info(`📑 Switching to tab: ${targetId}`);
         }
         else if (index !== undefined) {
-            console.log(`📑 Switching to tab index: ${index}`);
+            logger_1.logger.info(`📑 Switching to tab index: ${index}`);
         }
     }
     const debugPort = browser.debugPort;
-    const response = await fetch(`http://localhost:${debugPort}/json`);
+    const response = await fetch(`http://${constants_1.CDP.LOCALHOST}:${debugPort}/json`);
     const targets = await response.json();
     const pageTabs = targets.filter((t) => t.type === 'page');
-    let target = null;
+    let target = undefined;
     if (targetId) {
         target = pageTabs.find((t) => t.id === targetId);
     }
@@ -76,12 +78,12 @@ async function switchTab(browser, targetId, index, options) {
     }
     if (!target) {
         if (opts.verbose)
-            console.log(`❌ Target not found`);
+            logger_1.logger.info(`❌ Target not found`);
         return { success: false, error: 'Target not found' };
     }
     await browser.sendCommand('Target.activateTarget', { targetId: target.id });
     if (opts.verbose)
-        console.log(`✅ Switched to tab: ${target.title}`);
+        logger_1.logger.info(`✅ Switched to tab: ${target.title}`);
     return {
         success: true,
         targetId: target.id,
@@ -96,17 +98,17 @@ async function closeTab(browser, targetId, index, options) {
     const opts = (0, helpers_1.mergeOptions)(options);
     if (opts.verbose) {
         if (targetId) {
-            console.log(`📑 Closing tab: ${targetId}`);
+            logger_1.logger.info(`📑 Closing tab: ${targetId}`);
         }
         else if (index !== undefined) {
-            console.log(`📑 Closing tab index: ${index}`);
+            logger_1.logger.info(`📑 Closing tab index: ${index}`);
         }
     }
     const debugPort = browser.debugPort;
-    const response = await fetch(`http://localhost:${debugPort}/json`);
+    const response = await fetch(`http://${constants_1.CDP.LOCALHOST}:${debugPort}/json`);
     const targets = await response.json();
     const pageTabs = targets.filter((t) => t.type === 'page');
-    let target = null;
+    let target = undefined;
     if (targetId) {
         target = pageTabs.find((t) => t.id === targetId);
     }
@@ -115,12 +117,12 @@ async function closeTab(browser, targetId, index, options) {
     }
     if (!target) {
         if (opts.verbose)
-            console.log(`❌ Target not found`);
+            logger_1.logger.info(`❌ Target not found`);
         return { success: false, error: 'Target not found' };
     }
     await browser.sendCommand('Target.closeTarget', { targetId: target.id });
     if (opts.verbose)
-        console.log(`✅ Closed tab: ${target.title}`);
+        logger_1.logger.info(`✅ Closed tab: ${target.title}`);
     return {
         success: true,
         targetId: target.id,

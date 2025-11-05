@@ -1,1 +1,1 @@
-{"version":3,"file":"tabs.d.ts","sourceRoot":"","sources":["../../../src/cli/commands/tabs.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,OAAO,EAAE,MAAM,WAAW,CAAC;AAIpC,wBAAgB,oBAAoB,CAAC,OAAO,EAAE,OAAO,QA2FpD"}
+{"version":3,"file":"tabs.d.ts","sourceRoot":"","sources":["../../../src/cli/commands/tabs.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,OAAO,EAAE,MAAM,WAAW,CAAC;AAKpC,wBAAgB,oBAAoB,CAAC,OAAO,EAAE,OAAO,QAgHpD"}

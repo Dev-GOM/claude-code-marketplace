@@ -1,28 +1,25 @@
 import { Command } from 'commander';
-import { ChromeBrowser } from '../../cdp/browser';
-import * as actions from '../../cdp/actions';
+import { executeViaDaemon } from '../daemon-helper';
 
 export function registerNavigationCommands(program: Command) {
   // Navigate command
   program
     .command('navigate')
-    .description('Navigate to a URL')
+    .description('Navigate to a URL (requires -u/--url)')
     .requiredOption('-u, --url <url>', 'URL to navigate to')
     .option('--headless', 'Run in headless mode', false)
     .action(async (options) => {
-      const browser = new ChromeBrowser(options.headless);
       try {
-        // Try to connect to existing browser first, launch new one if failed
-        try {
-          await browser.connect();
-        } catch {
-          await browser.launch();
+        const response = await executeViaDaemon('navigate', { url: options.url });
+
+        if (response.success) {
+          console.log('Navigated to:', options.url);
+          console.log('Browser will stay open. Use "daemon-stop" to close it.');
+        } else {
+          console.error('Navigation failed:', response.error);
         }
-        const result = await actions.navigate(browser, options.url);
-        await actions.waitForLoad(browser);
-        console.log('Navigated to:', result.url);
-        console.log('Browser will stay open. Use "close" command to close it.');
-        process.exit(0);
+
+        process.exit(response.success ? 0 : 1);
       } catch (error) {
         console.error('Error:', error);
         process.exit(1);
@@ -32,18 +29,23 @@ export function registerNavigationCommands(program: Command) {
   // Go back command
   program
     .command('back')
-    .description('Navigate back in history')
+    .description('Navigate back in browser history')
     .action(async () => {
-      const browser = new ChromeBrowser(false);
       try {
-        await browser.connect();
-        const result = await actions.goBack(browser);
-        if (result.success) {
-          console.log('Navigated back to:', result.url);
+        const response = await executeViaDaemon('back', {});
+
+        if (response.success) {
+          const data = response.data as { success: boolean; url?: string; error?: string };
+          if (data.success) {
+            console.log('Navigated back to:', data.url);
+          } else {
+            console.log(data.error);
+          }
         } else {
-          console.log(result.error);
+          console.error('Back navigation failed:', response.error);
         }
-        process.exit(0);
+
+        process.exit(response.success ? 0 : 1);
       } catch (error) {
         console.error('Error:', error);
         process.exit(1);
@@ -55,16 +57,21 @@ export function registerNavigationCommands(program: Command) {
     .command('forward')
     .description('Navigate forward in history')
     .action(async () => {
-      const browser = new ChromeBrowser(false);
       try {
-        await browser.connect();
-        const result = await actions.goForward(browser);
-        if (result.success) {
-          console.log('Navigated forward to:', result.url);
+        const response = await executeViaDaemon('forward', {});
+
+        if (response.success) {
+          const data = response.data as { success: boolean; url?: string; error?: string };
+          if (data.success) {
+            console.log('Navigated forward to:', data.url);
+          } else {
+            console.log(data.error);
+          }
         } else {
-          console.log(result.error);
+          console.error('Forward navigation failed:', response.error);
         }
-        process.exit(0);
+
+        process.exit(response.success ? 0 : 1);
       } catch (error) {
         console.error('Error:', error);
         process.exit(1);
@@ -77,17 +84,18 @@ export function registerNavigationCommands(program: Command) {
     .description('Reload the current page')
     .option('--hard', 'Hard reload (ignore cache)', false)
     .action(async (options) => {
-      const browser = new ChromeBrowser(false);
       try {
-        try {
-          await browser.connect();
-        } catch {
-          await browser.launch();
+        const response = await executeViaDaemon('reload', { hard: options.hard });
+
+        if (response.success) {
+          const data = response.data as { success: boolean; hardReload: boolean };
+          console.log('Page reloaded (hard:', data.hardReload, ')');
+          console.log('Browser will stay open. Use "daemon-stop" to close it.');
+        } else {
+          console.error('Reload failed:', response.error);
         }
-        const result = await actions.reload(browser, options.hard);
-        console.log('Page reloaded (hard:', result.hardReload, ')');
-        console.log('Browser will stay open. Use "close" command to close it.');
-        process.exit(0);
+
+        process.exit(response.success ? 0 : 1);
       } catch (error) {
         console.error('Error:', error);
         process.exit(1);

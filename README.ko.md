@@ -1,6 +1,6 @@
 # Claude Code 플러그인
 
-> **버전**: 2.11.0 | **최종 업데이트**: 2025-11-04
+> **버전**: 2.12.0 | **최종 업데이트**: 2025-01-06
 >
 > **언어**: [English](README.md) | [한국어](README.ko.md)
 >
@@ -449,7 +449,7 @@ WebSocket을 통해 Unity Editor를 프로그래밍 방식으로 제어 - GameOb
 
 ## 라이선스
 
-MIT 라이선스 - 프로젝트에 자유롭게 사용하고 수정하세요.
+Apache License 2.0 - 자세한 내용은 [LICENSE](LICENSE)와 [NOTICE](NOTICE)를 참조하세요.
 
 ## 크레딧
 

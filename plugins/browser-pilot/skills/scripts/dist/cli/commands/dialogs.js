@@ -40,7 +40,7 @@ function registerDialogsCommands(program) {
     // Dialog response command
     program
         .command('dialog')
-        .description('Respond to JavaScript dialog (alert/confirm/prompt)')
+        .description('Respond to JavaScript dialogs (alert/confirm/prompt) by accepting, dismissing, or entering text for prompts')
         .option('-a, --accept', 'Accept dialog (default: true)', true)
         .option('-d, --dismiss', 'Dismiss dialog')
         .option('-t, --text <text>', 'Text for prompt dialog')

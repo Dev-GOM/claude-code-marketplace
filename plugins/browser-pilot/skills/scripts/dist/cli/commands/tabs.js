@@ -36,18 +36,20 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.registerTabsCommands = registerTabsCommands;
 const browser_1 = require("../../cdp/browser");
 const actions = __importStar(require("../../cdp/actions"));
+const manager_1 = require("../../daemon/manager");
 function registerTabsCommands(program) {
     // List tabs command
     program
         .command('tabs')
-        .description('List all open tabs')
+        .description('List all open tabs with their index numbers, titles, and URLs')
         .action(async () => {
         const browser = new browser_1.ChromeBrowser(false);
         try {
             await browser.connect();
             const result = await actions.listTabs(browser);
+            const tabs = result.tabs;
             console.log(`Found ${result.count} tabs:`);
-            result.tabs.forEach((tab) => {
+            tabs.forEach((tab) => {
                 console.log(`[${tab.index}] ${tab.title} - ${tab.url}`);
             });
             process.exit(0);
@@ -60,7 +62,7 @@ function registerTabsCommands(program) {
     // New tab command
     program
         .command('new-tab')
-        .description('Open a new tab')
+        .description('Open a new tab in the browser (optionally navigate to a specific URL with -u)')
         .option('-u, --url <url>', 'URL to open', 'about:blank')
         .action(async (options) => {
         const browser = new browser_1.ChromeBrowser(false);
@@ -78,7 +80,7 @@ function registerTabsCommands(program) {
     // Close tab command
     program
         .command('close-tab')
-        .description('Close a tab by index')
+        .description('Close a specific tab by its index number (use "tabs" command to see index numbers)')
         .requiredOption('-i, --index <number>', 'Tab index to close', parseInt)
         .action(async (options) => {
         const browser = new browser_1.ChromeBrowser(false);
@@ -96,7 +98,7 @@ function registerTabsCommands(program) {
     // Switch tab
     program
         .command('switch-tab')
-        .description('Switch to a tab by index')
+        .description('Switch to a different tab by its index number (use "tabs" command to see index numbers)')
         .requiredOption('-i, --index <index>', 'Tab index', parseInt)
         .action(async (options) => {
         const browser = new browser_1.ChromeBrowser(false);
@@ -114,17 +116,34 @@ function registerTabsCommands(program) {
     // Close browser command
     program
         .command('close')
-        .description('Close the browser')
+        .description('Close the browser completely and stop the daemon process')
         .action(async () => {
         const browser = new browser_1.ChromeBrowser(false);
+        const daemonManager = new manager_1.DaemonManager();
         try {
+            // Close browser first
             await browser.connect();
             await browser.close();
             console.log('✓ Browser closed');
+            // Then stop daemon
+            if (daemonManager.isRunning()) {
+                await daemonManager.stop({ verbose: true });
+                console.log('✓ Daemon stopped');
+            }
             process.exit(0);
         }
         catch (error) {
-            console.error('Error: Could not connect to browser. Is it running?');
+            // Try to stop daemon even if browser close failed
+            try {
+                if (daemonManager.isRunning()) {
+                    await daemonManager.stop({ verbose: true });
+                    console.log('✓ Daemon stopped');
+                }
+            }
+            catch (daemonError) {
+                console.error('Warning: Could not stop daemon:', daemonError);
+            }
+            console.error('Error:', error);
             process.exit(1);
         }
     });

@@ -1,12 +1,13 @@
 import { Command } from 'commander';
 import { ChromeBrowser } from '../../cdp/browser';
 import * as actions from '../../cdp/actions';
+import { executeViaDaemon } from '../daemon-helper';
 
 export function registerDataCommands(program: Command) {
   // Extract text command
   program
     .command('extract')
-    .description('Extract text from webpage')
+    .description('Extract text from element (use -s for selector)')
     .option('-u, --url <url>', 'URL to extract from (optional, uses current page if not specified)')
     .option('-s, --selector <selector>', 'CSS selector (optional)')
     .option('--headless', 'Run in headless mode', false)
@@ -36,27 +37,29 @@ export function registerDataCommands(program: Command) {
   // Evaluate command
   program
     .command('eval')
-    .description('Execute JavaScript on the page')
+    .description('Execute JavaScript on page (requires -e/--expression)')
     .option('-u, --url <url>', 'URL to navigate to (optional, uses current page if not specified)')
     .requiredOption('-e, --expression <script>', 'JavaScript expression to evaluate')
     .option('--headless', 'Run in headless mode', false)
     .action(async (options) => {
-      const browser = new ChromeBrowser(options.headless);
       try {
-        // Try to connect to existing browser first, launch new one if failed
-        try {
-          await browser.connect();
-        } catch {
-          await browser.launch();
-        }
+        // Navigate if URL provided
         if (options.url) {
-          await actions.navigate(browser, options.url);
-          await actions.waitForLoad(browser);
+          await executeViaDaemon('navigate', { url: options.url });
         }
-        const result = await actions.evaluate(browser, options.expression);
-        console.log('Result:', result.result);
-        console.log('Browser remains open. Use "close" command to close it.');
-        process.exit(0);
+
+        // Execute JavaScript
+        const response = await executeViaDaemon('eval', { expression: options.expression });
+
+        if (response.success) {
+          const data = response.data as { result: unknown };
+          console.log('Result:', data.result);
+          console.log('Browser will stay open. Use "daemon-stop" to close it.');
+        } else {
+          console.error('Eval failed:', response.error);
+        }
+
+        process.exit(response.success ? 0 : 1);
       } catch (error) {
         console.error('Error:', error);
         process.exit(1);
@@ -84,7 +87,7 @@ export function registerDataCommands(program: Command) {
   // Extract data
   program
     .command('extract-data')
-    .description('Extract data using multiple selectors')
+    .description('Extract data using multiple selectors (requires -s/--selectors)')
     .requiredOption('-s, --selectors <json>', 'JSON object of key-selector pairs')
     .option('-u, --url <url>', 'Navigate to URL first')
     .action(async (options) => {
@@ -109,7 +112,7 @@ export function registerDataCommands(program: Command) {
   // Find element
   program
     .command('find')
-    .description('Find element and return its information')
+    .description('Find element and return info (requires -s/--selector)')
     .requiredOption('-s, --selector <selector>', 'CSS selector')
     .option('-u, --url <url>', 'Navigate to URL first')
     .action(async (options) => {
@@ -133,7 +136,7 @@ export function registerDataCommands(program: Command) {
   // Get element property
   program
     .command('get-property')
-    .description('Get element property value')
+    .description('Get element property value (requires -s and -p)')
     .requiredOption('-s, --selector <selector>', 'CSS selector')
     .requiredOption('-p, --property <property>', 'Property name')
     .option('-u, --url <url>', 'Navigate to URL first')

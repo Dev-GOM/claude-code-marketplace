@@ -1,33 +1,34 @@
 import { Command } from 'commander';
-import { ChromeBrowser } from '../../cdp/browser';
-import * as actions from '../../cdp/actions';
+import { executeViaDaemon } from '../daemon-helper';
 
 export function registerCaptureCommands(program: Command) {
   // Screenshot command
   program
     .command('screenshot')
-    .description('Capture screenshot of a webpage')
+    .description('Capture screenshot of webpage (saved to .browser-pilot/screenshots/)')
     .option('-u, --url <url>', 'URL to capture (optional, uses current page if not specified)')
     .option('-o, --output <path>', 'Output file path', 'screenshot.png')
     .option('--headless', 'Run in headless mode', false)
     .option('--full-page', 'Capture full page', true)
     .action(async (options) => {
-      const browser = new ChromeBrowser(options.headless);
       try {
-        // Try to connect to existing browser first, launch new one if failed
-        try {
-          await browser.connect();
-        } catch {
-          await browser.launch();
-        }
+        // Navigate if URL provided
         if (options.url) {
-          await actions.navigate(browser, options.url);
-          await actions.waitForLoad(browser);
+          await executeViaDaemon('navigate', { url: options.url });
         }
-        const result = await actions.screenshot(browser, options.output, options.fullPage);
-        console.log('Screenshot saved:', result.path);
-        console.log('Browser remains open. Use "close" command to close it.');
-        process.exit(0);
+
+        // Take screenshot
+        const response = await executeViaDaemon('screenshot', { filename: options.output });
+
+        if (response.success) {
+          const data = response.data as { success: boolean; path: string };
+          console.log('Screenshot saved:', data.path);
+          console.log('Browser will stay open. Use "daemon-stop" to close it.');
+        } else {
+          console.error('Screenshot failed:', response.error);
+        }
+
+        process.exit(response.success ? 0 : 1);
       } catch (error) {
         console.error('Error:', error);
         process.exit(1);
@@ -37,29 +38,33 @@ export function registerCaptureCommands(program: Command) {
   // Generate PDF command
   program
     .command('pdf')
-    .description('Generate PDF from webpage')
+    .description('Generate PDF from webpage (saved to .browser-pilot/pdfs/)')
     .option('-u, --url <url>', 'URL to navigate to (optional, uses current page if not specified)')
     .option('-o, --output <path>', 'Output file path', 'page.pdf')
     .option('--headless', 'Run in headless mode', false)
     .option('--landscape', 'Use landscape orientation', false)
     .action(async (options) => {
-      const browser = new ChromeBrowser(options.headless);
       try {
-        // Try to connect to existing browser first, launch new one if failed
-        try {
-          await browser.connect();
-        } catch {
-          await browser.launch();
-        }
-        // Only navigate if URL is provided
+        // Navigate if URL provided
         if (options.url) {
-          await actions.navigate(browser, options.url);
-          await actions.waitForLoad(browser);
+          await executeViaDaemon('navigate', { url: options.url });
         }
-        const result = await actions.generatePdf(browser, options.output, options.landscape);
-        console.log('PDF saved:', result.path);
-        console.log('Browser remains open. Use "close" command to close it.');
-        process.exit(0);
+
+        // Generate PDF
+        const response = await executeViaDaemon('pdf', {
+          filename: options.output,
+          landscape: options.landscape
+        });
+
+        if (response.success) {
+          const data = response.data as { success: boolean; path: string };
+          console.log('PDF saved:', data.path);
+          console.log('Browser will stay open. Use "daemon-stop" to close it.');
+        } else {
+          console.error('PDF generation failed:', response.error);
+        }
+
+        process.exit(response.success ? 0 : 1);
       } catch (error) {
         console.error('Error:', error);
         process.exit(1);

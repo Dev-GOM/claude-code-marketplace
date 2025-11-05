@@ -1,6 +1,6 @@
 # Claude Code Plugins
 
-> **Version**: 2.11.0 | **Last Updated**: 2025-11-04
+> **Version**: 2.12.0 | **Last Updated**: 2025-01-06
 >
 > **Language**: [English](README.md) | [한국어](README.ko.md)
 >
@@ -449,7 +449,7 @@ Feel free to customize these plugins for your needs:
 
 ## License
 
-MIT License - feel free to use and modify for your projects.
+Apache License 2.0 - see [LICENSE](LICENSE) and [NOTICE](NOTICE) for details.
 
 ## Credits
 

@@ -3,7 +3,8 @@
  */
 
 import { ChromeBrowser } from '../browser';
-import { ActionResult, ActionOptions, mergeOptions } from './helpers';
+import { ActionResult, ActionOptions, mergeOptions, RuntimeEvaluateResult } from './helpers';
+import { logger } from '../../utils/logger';
 
 /**
  * Handle JavaScript dialogs (alert, confirm, prompt).
@@ -18,7 +19,7 @@ export async function handleDialog(
   const opts = mergeOptions(options);
 
   if (opts.verbose) {
-    console.log(`💬 Setting up dialog handler - accept: ${accept}, promptText: ${promptText || 'none'}`);
+    logger.info(`💬 Setting up dialog handler - accept: ${accept}, promptText: ${promptText || 'none'}`);
   }
 
   try {
@@ -33,7 +34,7 @@ export async function handleDialog(
     // Note: CDP doesn't have a way to pre-register dialog handlers
     // This returns a handler configuration that should be used with Page.javascriptDialogOpening event
 
-    if (opts.verbose) console.log(`✅ Dialog handler configured`);
+    if (opts.verbose) logger.info(`✅ Dialog handler configured`);
 
     return {
       success: true,
@@ -42,10 +43,14 @@ export async function handleDialog(
       note: 'Dialog handler configured. Use getDialogMessage() to check for dialogs.'
     };
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (opts.verbose) {
-      console.error(`❌ Dialog handler setup failed`);
-      console.error(`   Error: ${error.message}`);
+      logger.error(`❌ Dialog handler setup failed`);
+      if (error instanceof Error) {
+        logger.error(`   Error: ${error.message}`);
+      } else {
+        logger.error(`   Error: ${String(error)}`);
+      }
     }
     throw error;
   }
@@ -61,7 +66,7 @@ export async function getDialogMessage(
 ): Promise<ActionResult> {
   const opts = mergeOptions(options);
 
-  if (opts.verbose) console.log(`💬 Checking for dialog...`);
+  if (opts.verbose) logger.info(`💬 Checking for dialog...`);
 
   // This function is a placeholder for dialog detection
   // In real CDP usage, you'd listen for Page.javascriptDialogOpening events
@@ -78,7 +83,7 @@ export async function getDialogMessage(
     })()
   `;
 
-  const result = await browser.sendCommand('Runtime.evaluate', {
+  const result = await browser.sendCommand<RuntimeEvaluateResult>('Runtime.evaluate', {
     expression: script,
     returnByValue: true
   });
@@ -86,7 +91,7 @@ export async function getDialogMessage(
   const dialogActive = result.result?.value !== null;
 
   if (opts.verbose) {
-    console.log(dialogActive ? `⚠️  Dialog is active` : `✅ No dialog active`);
+    logger.info(dialogActive ? `⚠️  Dialog is active` : `✅ No dialog active`);
   }
 
   return {
@@ -106,7 +111,7 @@ export async function respondToDialog(
 ): Promise<ActionResult> {
   const opts = mergeOptions(options);
 
-  if (opts.verbose) console.log(`💬 Responding to dialog - accept: ${accept}`);
+  if (opts.verbose) logger.info(`💬 Responding to dialog - accept: ${accept}`);
 
   try {
     await browser.sendCommand('Page.handleJavaScriptDialog', {
@@ -114,7 +119,7 @@ export async function respondToDialog(
       promptText: promptText || ''
     });
 
-    if (opts.verbose) console.log(`✅ Dialog ${accept ? 'accepted' : 'dismissed'}`);
+    if (opts.verbose) logger.info(`✅ Dialog ${accept ? 'accepted' : 'dismissed'}`);
 
     return {
       success: true,
@@ -122,10 +127,14 @@ export async function respondToDialog(
       promptText: promptText || null
     };
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (opts.verbose) {
-      console.error(`❌ Respond to dialog failed`);
-      console.error(`   Error: ${error.message}`);
+      logger.error(`❌ Respond to dialog failed`);
+      if (error instanceof Error) {
+        logger.error(`   Error: ${error.message}`);
+      } else {
+        logger.error(`   Error: ${String(error)}`);
+      }
     }
     throw error;
   }

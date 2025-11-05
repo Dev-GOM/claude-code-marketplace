@@ -1,11 +1,3 @@
 {
-  "projects": {
-    "scripts": {
-      "rootPath": "D:\\Work\\claude-code-marketplace\\plugins\\browser-pilot\\skills\\scripts",
-      "port": 9224,
-      "outputDir": ".browser-pilot",
-      "lastUsed": "2025-11-03T17:45:48.477Z",
-      "autoCleanup": false
-    }
-  }
+  "projects": {}
 }

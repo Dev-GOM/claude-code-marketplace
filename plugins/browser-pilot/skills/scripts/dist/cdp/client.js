@@ -25,19 +25,21 @@ class CDPClient extends events_1.EventEmitter {
             this.ws = new ws_1.default(this.wsUrl);
             this.ws.on('open', () => {
                 // Set up global message handler for CDP events
-                this.ws.on('message', (data) => {
-                    try {
-                        const message = JSON.parse(data.toString());
-                        // CDP events don't have 'id' field, only 'method' and 'params'
-                        if (!message.id && message.method) {
-                            this.emit('event', message);
-                            this.emit(message.method, message.params);
+                if (this.ws) {
+                    this.ws.on('message', (data) => {
+                        try {
+                            const message = JSON.parse(data.toString());
+                            // CDP events don't have 'id' field, only 'method' and 'params'
+                            if (!message.id && message.method) {
+                                this.emit('event', message);
+                                this.emit(message.method, message.params);
+                            }
                         }
-                    }
-                    catch (error) {
-                        // Ignore parse errors
-                    }
-                });
+                        catch (_error) {
+                            // Ignore parse errors
+                        }
+                    });
+                }
                 resolve();
             });
             this.ws.on('error', (error) => {
@@ -72,14 +74,18 @@ class CDPClient extends events_1.EventEmitter {
                             reject(new Error(`CDP Error: ${JSON.stringify(response.error)}`));
                         }
                         else {
-                            resolve(response.result || {});
+                            resolve((response.result || {}));
                         }
                     }
                 }
-                catch (error) {
+                catch (_error) {
                     // Ignore parse errors for other messages
                 }
             };
+            if (!this.ws) {
+                reject(new Error('WebSocket connection lost'));
+                return;
+            }
             this.ws.on('message', messageHandler);
             try {
                 this.ws.send(JSON.stringify(message));
@@ -98,7 +104,7 @@ class CDPClient extends events_1.EventEmitter {
             try {
                 this.ws.close();
             }
-            catch (error) {
+            catch (_error) {
                 // Ignore close errors
             }
             this.ws = null;

@@ -4,21 +4,26 @@
 
 import { ChromeBrowser } from '../browser';
 import { getFindElementScript } from '../utils';
-import { ActionResult, ActionOptions, mergeOptions, checkConsoleErrors, sleep } from './helpers';
+import { ActionResult, ActionOptions, mergeOptions, waitForActionComplete, sleep, RuntimeEvaluateResult, SELECTOR_RETRY_CONFIG } from './helpers';
+import { findSelectorWithFallback } from '../map/query-map';
+import { existsSync } from 'fs';
+import { join } from 'path';
+import { logger } from '../../utils/logger';
+import { TIMING } from '../../constants';
 
 /**
- * Click element.
+ * Click element core logic (without retry).
  * Supports both CSS selectors and XPath (when selector starts with '//').
  * XPath supports indexing: (//button[text()='Click'])[2] selects the 2nd button.
  */
-export async function click(
+async function clickCore(
   browser: ChromeBrowser,
   selector: string,
   options?: ActionOptions
 ): Promise<ActionResult> {
   const opts = mergeOptions(options);
 
-  if (opts.verbose) console.log(`🔍 Finding element: ${selector}`);
+  if (opts.verbose) logger.info(`🔍 Finding element: ${selector}`);
 
   // Step 1: Find element and scroll into view
   const script = `
@@ -45,27 +50,27 @@ export async function click(
   `;
 
   try {
-    const result = await browser.sendCommand('Runtime.evaluate', {
+    const result = await browser.sendCommand<RuntimeEvaluateResult>('Runtime.evaluate', {
       expression: script,
       returnByValue: true
     });
 
     if (!result.result || !result.result.value) {
-      console.error('❌ Element not found or error occurred');
+      logger.error('❌ Element not found or error occurred');
       if (result.exceptionDetails) {
-        console.error('Error:', result.exceptionDetails.exception?.description || result.exceptionDetails.text);
+        logger.error('Error:', result.exceptionDetails.exception?.description || result.exceptionDetails.text);
       }
       throw new Error(`Element not found: ${selector}`);
     }
 
-    const { x, y, tag, text, visible } = result.result.value;
+    const { x, y, tag, text, visible } = result.result.value as { x: number; y: number; tag: string; text: string; visible: boolean };
     if (opts.verbose) {
-      console.log(`✓ Element found: <${tag.toLowerCase()}> "${text}"`);
-      console.log(`  Position: (${Math.round(x)}, ${Math.round(y)}), Visible: ${visible}`);
+      logger.info(`✓ Element found: <${tag.toLowerCase()}> "${text}"`);
+      logger.info(`  Position: (${Math.round(x)}, ${Math.round(y)}), Visible: ${visible}`);
     }
 
     // Step 2: Dispatch CDP mouse events (Puppeteer way)
-    if (opts.verbose) console.log(`🖱️  Mouse down at (${Math.round(x)}, ${Math.round(y)})`);
+    if (opts.verbose) logger.info(`🖱️  Mouse down at (${Math.round(x)}, ${Math.round(y)})`);
     await browser.sendCommand('Input.dispatchMouseEvent', {
       type: 'mousePressed',
       button: 'left',
@@ -74,7 +79,7 @@ export async function click(
       y
     });
 
-    if (opts.verbose) console.log(`🖱️  Mouse up at (${Math.round(x)}, ${Math.round(y)})`);
+    if (opts.verbose) logger.info(`🖱️  Mouse up at (${Math.round(x)}, ${Math.round(y)})`);
     await browser.sendCommand('Input.dispatchMouseEvent', {
       type: 'mouseReleased',
       button: 'left',
@@ -83,10 +88,10 @@ export async function click(
       y
     });
 
-    if (opts.verbose) console.log(`✅ Clicked: ${selector}`);
+    if (opts.verbose) logger.info(`✅ Clicked: ${selector}`);
 
-    // Check for console errors after click
-    checkConsoleErrors(browser);
+    // Wait for navigation and check errors
+    await waitForActionComplete(browser, opts);
 
     return {
       success: true,
@@ -95,23 +100,119 @@ export async function click(
       element: { tag, text }
     };
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (opts.verbose) {
-      console.error(`❌ Click failed: ${selector}`);
-      console.error(`   Error: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      logger.error(`❌ Click failed: ${selector}`);
+      logger.error(`   Error: ${errorMessage}`);
     }
-    checkConsoleErrors(browser);
+    await waitForActionComplete(browser, opts);
     throw error;
   }
 }
 
 /**
- * Fill input field.
+ * Click element with automatic retry using interaction map fallback.
+ * Supports both CSS selectors and XPath (when selector starts with '//').
+ * XPath supports indexing: (//button[text()='Click'])[2] selects the 2nd button.
+ *
+ * On failure, attempts to find alternative selectors from interaction map and retries.
+ */
+export async function click(
+  browser: ChromeBrowser,
+  selector: string,
+  options?: ActionOptions
+): Promise<ActionResult> {
+  const opts = mergeOptions(options);
+
+  try {
+    // First attempt with provided selector
+    return await clickCore(browser, selector, options);
+  } catch (error: unknown) {
+    // Check if map file exists
+    const mapPath = join(process.cwd(), SELECTOR_RETRY_CONFIG.MAP_FOLDER, SELECTOR_RETRY_CONFIG.MAP_FILENAME);
+
+    if (!existsSync(mapPath)) {
+      if (opts.verbose) {
+        logger.info('⚠️  No interaction map found for fallback. Rethrowing error.');
+      }
+      throw error;
+    }
+
+    if (opts.verbose) {
+      logger.info('🔄 Attempting to find alternative selectors from map...');
+    }
+
+    // Try to find alternative selectors
+    let fallbackResult: { selector: string; alternatives: string[] } | null = null;
+
+    try {
+      // If original selector looks like an ID, try querying by ID
+      if (selector.startsWith('#')) {
+        const id = selector.slice(1);
+        fallbackResult = findSelectorWithFallback(mapPath, { id });
+      }
+      // If selector contains text in XPath format, extract and search
+      else if (selector.includes('contains(text()')) {
+        const textMatch = selector.match(/contains\(text\(\),\s*['"](.+?)['"]\)/);
+        if (textMatch && textMatch[1]) {
+          fallbackResult = findSelectorWithFallback(mapPath, { text: textMatch[1] });
+        }
+      }
+    } catch (mapError: unknown) {
+      if (opts.verbose) {
+        const mapErrorMessage = mapError instanceof Error ? mapError.message : String(mapError);
+        logger.info(`⚠️  Map query failed: ${mapErrorMessage}`);
+      }
+      throw error; // Rethrow original error
+    }
+
+    if (!fallbackResult || fallbackResult.alternatives.length === 0) {
+      if (opts.verbose) {
+        logger.info('⚠️  No alternative selectors found in map.');
+      }
+      throw error; // Rethrow original error
+    }
+
+    // Try alternative selectors (limit to MAX_ATTEMPTS - 1, since we already tried once)
+    const maxRetries = Math.min(
+      fallbackResult.alternatives.length,
+      SELECTOR_RETRY_CONFIG.MAX_ATTEMPTS - 1
+    );
+
+    for (let i = 0; i < maxRetries; i++) {
+      const altSelector = fallbackResult.alternatives[i];
+
+      if (opts.verbose) {
+        logger.info(`🔄 Retry ${i + 1}/${maxRetries} with selector: ${altSelector}`);
+      }
+
+      try {
+        return await clickCore(browser, altSelector, options);
+      } catch (_retryError: unknown) {
+        if (i === maxRetries - 1) {
+          // Last retry failed, throw original error
+          if (opts.verbose) {
+            logger.info('❌ All retry attempts exhausted.');
+          }
+          throw error;
+        }
+        // Continue to next alternative
+      }
+    }
+
+    // Should not reach here, but throw original error as fallback
+    throw error;
+  }
+}
+
+/**
+ * Fill input field core logic (without retry).
  * Supports both CSS selectors and XPath (when selector starts with '//').
  * XPath supports indexing: (//input[@type='text'])[2] selects the 2nd input.
  * Uses CDP click + insertText for proper React compatibility.
  */
-export async function fill(
+async function fillCore(
   browser: ChromeBrowser,
   selector: string,
   value: string,
@@ -120,8 +221,8 @@ export async function fill(
   const opts = mergeOptions(options);
 
   if (opts.verbose) {
-    console.log(`✍️  Filling input: ${selector}`);
-    console.log(`   Value: "${value}"`);
+    logger.info(`✍️  Filling input: ${selector}`);
+    logger.info(`   Value: "${value}"`);
   }
 
   // Step 1: Find element, get coordinates, and clear existing value
@@ -153,28 +254,28 @@ export async function fill(
   `;
 
   try {
-    const result = await browser.sendCommand('Runtime.evaluate', {
+    const result = await browser.sendCommand<RuntimeEvaluateResult>('Runtime.evaluate', {
       expression: script,
       returnByValue: true
     });
 
     if (!result.result || !result.result.value) {
-      console.error('❌ Element not found or error occurred');
+      logger.error('❌ Element not found or error occurred');
       if (result.exceptionDetails) {
-        console.error('Error:', result.exceptionDetails.exception?.description || result.exceptionDetails.text);
+        logger.error('Error:', result.exceptionDetails.exception?.description || result.exceptionDetails.text);
       }
       throw new Error(`Element not found: ${selector}`);
     }
 
-    const { x, y, tag, type } = result.result.value;
+    const { x, y, tag, type } = result.result.value as { x: number; y: number; tag: string; type: string };
 
     if (opts.verbose) {
-      console.log(`✓ Element found: <${tag.toLowerCase()} type="${type}">`);
-      console.log(`  Position: (${Math.round(x)}, ${Math.round(y)})`);
+      logger.info(`✓ Element found: <${tag.toLowerCase()} type="${type}">`);
+      logger.info(`  Position: (${Math.round(x)}, ${Math.round(y)})`);
     }
 
     // Step 2: Click to focus
-    if (opts.verbose) console.log(`🖱️  Clicking to focus...`);
+    if (opts.verbose) logger.info(`🖱️  Clicking to focus...`);
 
     await browser.sendCommand('Input.dispatchMouseEvent', {
       type: 'mousePressed',
@@ -193,26 +294,130 @@ export async function fill(
     });
 
     // Small delay to ensure focus
-    await sleep(50);
+    await sleep(TIMING.ACTION_DELAY_SHORT);
 
     // Step 3: Insert text using CDP
-    if (opts.verbose) console.log(`⌨️  Inserting text: "${value}"`);
+    if (opts.verbose) logger.info(`⌨️  Inserting text: "${value}"`);
 
     await browser.sendCommand('Input.insertText', {
       text: value
     });
 
-    if (opts.verbose) console.log(`✅ Fill successful`);
-    checkConsoleErrors(browser);
+    if (opts.verbose) logger.info(`✅ Fill successful`);
+
+    // Wait for navigation and check errors
+    await waitForActionComplete(browser, opts);
 
     return { success: true, selector, value };
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (opts.verbose) {
-      console.error(`❌ Fill failed: ${selector}`);
-      console.error(`   Error: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      logger.error(`❌ Fill failed: ${selector}`);
+      logger.error(`   Error: ${errorMessage}`);
     }
-    checkConsoleErrors(browser);
+    await waitForActionComplete(browser, opts);
+    throw error;
+  }
+}
+
+/**
+ * Fill input field with automatic retry using interaction map fallback.
+ * Supports both CSS selectors and XPath (when selector starts with '//').
+ * XPath supports indexing: (//input[@type='text'])[2] selects the 2nd input.
+ * Uses CDP click + insertText for proper React compatibility.
+ *
+ * On failure, attempts to find alternative selectors from interaction map and retries.
+ */
+export async function fill(
+  browser: ChromeBrowser,
+  selector: string,
+  value: string,
+  options?: ActionOptions
+): Promise<ActionResult> {
+  const opts = mergeOptions(options);
+
+  try {
+    // First attempt with provided selector
+    return await fillCore(browser, selector, value, options);
+  } catch (error: unknown) {
+    // Check if map file exists
+    const mapPath = join(process.cwd(), SELECTOR_RETRY_CONFIG.MAP_FOLDER, SELECTOR_RETRY_CONFIG.MAP_FILENAME);
+
+    if (!existsSync(mapPath)) {
+      if (opts.verbose) {
+        logger.info('⚠️  No interaction map found for fallback. Rethrowing error.');
+      }
+      throw error;
+    }
+
+    if (opts.verbose) {
+      logger.info('🔄 Attempting to find alternative selectors from map...');
+    }
+
+    // Try to find alternative selectors
+    let fallbackResult: { selector: string; alternatives: string[] } | null = null;
+
+    try {
+      // If original selector looks like an ID, try querying by ID
+      if (selector.startsWith('#')) {
+        const id = selector.slice(1);
+        fallbackResult = findSelectorWithFallback(mapPath, { id });
+      }
+      // If selector contains text in XPath format, extract and search
+      else if (selector.includes('contains(text()')) {
+        const textMatch = selector.match(/contains\(text\(\),\s*['"](.+?)['"]\)/);
+        if (textMatch && textMatch[1]) {
+          fallbackResult = findSelectorWithFallback(mapPath, { text: textMatch[1] });
+        }
+      }
+      // For input fields, try to find by type
+      else if (selector.includes('input')) {
+        fallbackResult = findSelectorWithFallback(mapPath, { type: 'input' });
+      }
+    } catch (mapError: unknown) {
+      if (opts.verbose) {
+        const mapErrorMessage = mapError instanceof Error ? mapError.message : String(mapError);
+        logger.info(`⚠️  Map query failed: ${mapErrorMessage}`);
+      }
+      throw error; // Rethrow original error
+    }
+
+    if (!fallbackResult || fallbackResult.alternatives.length === 0) {
+      if (opts.verbose) {
+        logger.info('⚠️  No alternative selectors found in map.');
+      }
+      throw error; // Rethrow original error
+    }
+
+    // Try alternative selectors (limit to MAX_ATTEMPTS - 1, since we already tried once)
+    const maxRetries = Math.min(
+      fallbackResult.alternatives.length,
+      SELECTOR_RETRY_CONFIG.MAX_ATTEMPTS - 1
+    );
+
+    for (let i = 0; i < maxRetries; i++) {
+      const altSelector = fallbackResult.alternatives[i];
+
+      if (opts.verbose) {
+        logger.info(`🔄 Retry ${i + 1}/${maxRetries} with selector: ${altSelector}`);
+      }
+
+      try {
+        return await fillCore(browser, altSelector, value, options);
+      } catch (_retryError: unknown) {
+        if (i === maxRetries - 1) {
+          // Last retry failed, throw original error
+          if (opts.verbose) {
+            logger.info('❌ All retry attempts exhausted.');
+          }
+          throw error;
+        }
+        // Continue to next alternative
+      }
+    }
+
+    // Should not reach here, but throw original error as fallback
     throw error;
   }
 }
@@ -229,7 +434,7 @@ export async function hover(
 ): Promise<ActionResult> {
   const opts = mergeOptions(options);
 
-  if (opts.verbose) console.log(`🔍 Hovering: ${selector}`);
+  if (opts.verbose) logger.info(`🔍 Hovering: ${selector}`);
 
   // Step 1: Find element and scroll into view
   const script = `
@@ -256,24 +461,24 @@ export async function hover(
   `;
 
   try {
-    const result = await browser.sendCommand('Runtime.evaluate', {
+    const result = await browser.sendCommand<RuntimeEvaluateResult>('Runtime.evaluate', {
       expression: script,
       returnByValue: true
     });
 
     if (!result.result || !result.result.value) {
-      console.error('❌ Element not found or error occurred');
+      logger.error('❌ Element not found or error occurred');
       if (result.exceptionDetails) {
-        console.error('Error:', result.exceptionDetails.exception?.description || result.exceptionDetails.text);
+        logger.error('Error:', result.exceptionDetails.exception?.description || result.exceptionDetails.text);
       }
       throw new Error(`Element not found: ${selector}`);
     }
 
-    const { x, y, tag, text, visible } = result.result.value;
+    const { x, y, tag, text, visible } = result.result.value as { x: number; y: number; tag: string; text: string; visible: boolean };
     if (opts.verbose) {
-      console.log(`✓ Element found: <${tag.toLowerCase()}> "${text}"`);
-      console.log(`  Position: (${Math.round(x)}, ${Math.round(y)}), Visible: ${visible}`);
-      console.log(`🖱️  Moving mouse to (${Math.round(x)}, ${Math.round(y)})`);
+      logger.info(`✓ Element found: <${tag.toLowerCase()}> "${text}"`);
+      logger.info(`  Position: (${Math.round(x)}, ${Math.round(y)}), Visible: ${visible}`);
+      logger.info(`🖱️  Moving mouse to (${Math.round(x)}, ${Math.round(y)})`);
     }
 
     // Step 2: Dispatch CDP mouse move event
@@ -283,8 +488,8 @@ export async function hover(
       y
     });
 
-    if (opts.verbose) console.log(`✅ Hover successful`);
-    checkConsoleErrors(browser);
+    if (opts.verbose) logger.info(`✅ Hover successful`);
+    await waitForActionComplete(browser, opts);
 
     return {
       success: true,
@@ -293,12 +498,16 @@ export async function hover(
       element: { tag, text }
     };
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (opts.verbose) {
-      console.error(`❌ Hover failed: ${selector}`);
-      console.error(`   Error: ${error.message}`);
+      logger.error(`❌ Hover failed: ${selector}`);
+      if (error instanceof Error) {
+        logger.error(`   Error: ${error.message}`);
+      } else {
+        logger.error(`   Error: ${String(error)}`);
+      }
     }
-    checkConsoleErrors(browser);
+    await waitForActionComplete(browser, opts);
     throw error;
   }
 }
@@ -314,7 +523,7 @@ export async function focus(
 ): Promise<ActionResult> {
   const opts = mergeOptions(options);
 
-  if (opts.verbose) console.log(`🔍 Focusing: ${selector}`);
+  if (opts.verbose) logger.info(`🔍 Focusing: ${selector}`);
   const script = `
     (function() {
       const selector = ${JSON.stringify(selector)};
@@ -330,8 +539,8 @@ export async function focus(
     returnByValue: true
   });
 
-  if (opts.verbose) console.log(`✅ Focus successful`);
-  checkConsoleErrors(browser);
+  if (opts.verbose) logger.info(`✅ Focus successful`);
+  await waitForActionComplete(browser, opts);
 
   return { success: true, selector };
 }
@@ -347,7 +556,7 @@ export async function blur(
 ): Promise<ActionResult> {
   const opts = mergeOptions(options);
 
-  if (opts.verbose) console.log(`🔍 Blurring: ${selector}`);
+  if (opts.verbose) logger.info(`🔍 Blurring: ${selector}`);
   const script = `
     (function() {
       const selector = ${JSON.stringify(selector)};
@@ -363,8 +572,8 @@ export async function blur(
     returnByValue: true
   });
 
-  if (opts.verbose) console.log(`✅ Blur successful`);
-  checkConsoleErrors(browser);
+  if (opts.verbose) logger.info(`✅ Blur successful`);
+  await waitForActionComplete(browser, opts);
 
   return { success: true, selector };
 }
@@ -381,7 +590,7 @@ export async function dragAndDrop(
 ): Promise<ActionResult> {
   const opts = mergeOptions(options);
 
-  if (opts.verbose) console.log(`🔍 Dragging ${sourceSelector} to ${targetSelector}`);
+  if (opts.verbose) logger.info(`🔍 Dragging ${sourceSelector} to ${targetSelector}`);
 
   // Step 1: Get coordinates for both elements
   const script = `
@@ -421,25 +630,28 @@ export async function dragAndDrop(
   `;
 
   try {
-    const result = await browser.sendCommand('Runtime.evaluate', {
+    const result = await browser.sendCommand<RuntimeEvaluateResult>('Runtime.evaluate', {
       expression: script,
       returnByValue: true
     });
 
     if (!result.result || !result.result.value) {
-      console.error('❌ Element(s) not found');
+      logger.error('❌ Element(s) not found');
       throw new Error('Could not find source or target element');
     }
 
-    const { source, target } = result.result.value;
+    const { source, target } = result.result.value as {
+      source: { x: number; y: number; tag: string; text: string };
+      target: { x: number; y: number; tag: string; text: string };
+    };
 
     if (opts.verbose) {
-      console.log(`✓ Source: <${source.tag.toLowerCase()}> "${source.text}" at (${Math.round(source.x)}, ${Math.round(source.y)})`);
-      console.log(`✓ Target: <${target.tag.toLowerCase()}> "${target.text}" at (${Math.round(target.x)}, ${Math.round(target.y)})`);
+      logger.info(`✓ Source: <${source.tag.toLowerCase()}> "${source.text}" at (${Math.round(source.x)}, ${Math.round(source.y)})`);
+      logger.info(`✓ Target: <${target.tag.toLowerCase()}> "${target.text}" at (${Math.round(target.x)}, ${Math.round(target.y)})`);
     }
 
     // Step 2: Perform CDP drag operation
-    if (opts.verbose) console.log(`🖱️  Mouse down at source (${Math.round(source.x)}, ${Math.round(source.y)})`);
+    if (opts.verbose) logger.info(`🖱️  Mouse down at source (${Math.round(source.x)}, ${Math.round(source.y)})`);
 
     await browser.sendCommand('Input.dispatchMouseEvent', {
       type: 'mousePressed',
@@ -450,9 +662,9 @@ export async function dragAndDrop(
     });
 
     // Small delay to simulate drag start
-    await sleep(100);
+    await sleep(TIMING.ACTION_DELAY_MEDIUM);
 
-    if (opts.verbose) console.log(`🖱️  Dragging to target (${Math.round(target.x)}, ${Math.round(target.y)})`);
+    if (opts.verbose) logger.info(`🖱️  Dragging to target (${Math.round(target.x)}, ${Math.round(target.y)})`);
 
     await browser.sendCommand('Input.dispatchMouseEvent', {
       type: 'mouseMoved',
@@ -462,9 +674,9 @@ export async function dragAndDrop(
     });
 
     // Small delay before release
-    await sleep(100);
+    await sleep(TIMING.ACTION_DELAY_MEDIUM);
 
-    if (opts.verbose) console.log(`🖱️  Mouse up at target (${Math.round(target.x)}, ${Math.round(target.y)})`);
+    if (opts.verbose) logger.info(`🖱️  Mouse up at target (${Math.round(target.x)}, ${Math.round(target.y)})`);
 
     await browser.sendCommand('Input.dispatchMouseEvent', {
       type: 'mouseReleased',
@@ -474,8 +686,8 @@ export async function dragAndDrop(
       y: target.y
     });
 
-    if (opts.verbose) console.log(`✅ Drag and drop successful`);
-    checkConsoleErrors(browser);
+    if (opts.verbose) logger.info(`✅ Drag and drop successful`);
+    await waitForActionComplete(browser, opts);
 
     return {
       success: true,
@@ -485,12 +697,16 @@ export async function dragAndDrop(
       target: { x: Math.round(target.x), y: Math.round(target.y) }
     };
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (opts.verbose) {
-      console.error(`❌ Drag and drop failed`);
-      console.error(`   Error: ${error.message}`);
+      logger.error(`❌ Drag and drop failed`);
+      if (error instanceof Error) {
+        logger.error(`   Error: ${error.message}`);
+      } else {
+        logger.error(`   Error: ${String(error)}`);
+      }
     }
-    checkConsoleErrors(browser);
+    await waitForActionComplete(browser, opts);
     throw error;
   }
 }

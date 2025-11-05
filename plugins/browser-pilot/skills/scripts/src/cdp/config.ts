@@ -7,6 +7,8 @@ import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
 import { join, basename } from 'path';
 import { createServer } from 'net';
 import { findProjectRoot } from './utils';
+import { CDP, FS } from '../constants';
+import { logger } from '../utils/logger';
 
 export interface ProjectConfig {
   rootPath: string;
@@ -45,7 +47,7 @@ function getProjectName(projectRoot: string): string {
  */
 export function getOutputDir(): string {
   const projectRoot = findProjectRoot();
-  const outputDir = join(projectRoot, '.browser-pilot');
+  const outputDir = join(projectRoot, FS.OUTPUT_DIR);
 
   // Ensure .browser-pilot directory exists
   if (!existsSync(outputDir)) {
@@ -55,10 +57,7 @@ export function getOutputDir(): string {
   // Always ensure .gitignore exists in .browser-pilot
   const gitignorePath = join(outputDir, '.gitignore');
   if (!existsSync(gitignorePath)) {
-    const gitignoreContent = `# Browser Pilot generated files
-*
-`;
-    writeFileSync(gitignorePath, gitignoreContent, 'utf-8');
+    writeFileSync(gitignorePath, FS.GITIGNORE_CONTENT, 'utf-8');
   }
 
   return outputDir;
@@ -84,7 +83,9 @@ export function loadSharedConfig(): SharedBrowserPilotConfig {
     const data = readFileSync(configPath, 'utf-8');
     return JSON.parse(data);
   } catch (error) {
-    console.error('Failed to load shared config:', error);
+    logger.error('Failed to load shared config', error);
+    logger.warn('Returning empty config - existing project settings may be lost');
+    logger.warn(`Config path: ${configPath}`);
     return {
       projects: {}
     };
@@ -100,7 +101,9 @@ export function saveSharedConfig(config: SharedBrowserPilotConfig): void {
   try {
     writeFileSync(configPath, JSON.stringify(config, null, 2), 'utf-8');
   } catch (error) {
-    console.error('Failed to save shared config:', error);
+    logger.error('Failed to save shared config', error);
+    logger.warn(`Config path: ${configPath}`);
+    throw new Error('Configuration save failed. Please check file permissions.');
   }
 }
 
@@ -126,7 +129,7 @@ export async function getProjectConfig(): Promise<ProjectConfig> {
       delete sharedConfig.projects[existingName];
       sharedConfig.projects[projectName] = config;
       saveSharedConfig(sharedConfig);
-      console.log(`📝 Updated project name: ${existingName} → ${projectName}`);
+      logger.info(`📝 Updated project name: ${existingName} → ${projectName}`);
     }
 
     return config;
@@ -134,14 +137,14 @@ export async function getProjectConfig(): Promise<ProjectConfig> {
 
   // Check if name already exists (different path)
   if (sharedConfig.projects[projectName]) {
-    console.warn(`⚠️  Project name "${projectName}" already exists with different path`);
-    console.warn(`   Existing: ${sharedConfig.projects[projectName].rootPath}`);
-    console.warn(`   Current:  ${projectRoot}`);
+    logger.warn(`⚠️  Project name "${projectName}" already exists with different path`);
+    logger.warn(`   Existing: ${sharedConfig.projects[projectName].rootPath}`);
+    logger.warn(`   Current:  ${projectRoot}`);
     throw new Error(`Project name conflict: "${projectName}"`);
   }
 
   // Create new project config with available port
-  const basePort = parseInt(process.env.CDP_DEBUG_PORT || '9222');
+  const basePort = parseInt(process.env.CDP_DEBUG_PORT || String(CDP.DEFAULT_PORT));
 
   // Find next available port that's not used by any project
   const usedPorts = Object.values(sharedConfig.projects).map(p => p.port);
@@ -150,15 +153,15 @@ export async function getProjectConfig(): Promise<ProjectConfig> {
   // Find first available port not in use by other projects
   while (usedPorts.includes(port) || !(await isPortAvailable(port))) {
     port++;
-    if (port > basePort + 100) {
-      throw new Error(`No available port found in range ${basePort}-${basePort + 100}`);
+    if (port > basePort + CDP.PORT_RANGE_MAX) {
+      throw new Error(`No available port found in range ${basePort}-${basePort + CDP.PORT_RANGE_MAX}`);
     }
   }
 
   const projectConfig: ProjectConfig = {
     rootPath: projectRoot,
     port,
-    outputDir: '.browser-pilot',
+    outputDir: FS.OUTPUT_DIR,
     lastUsed: new Date().toISOString(),
     autoCleanup: false  // Default to false for safety
   };
@@ -167,9 +170,9 @@ export async function getProjectConfig(): Promise<ProjectConfig> {
   sharedConfig.projects[projectName] = projectConfig;
   saveSharedConfig(sharedConfig);
 
-  console.log(`📝 Created config for project: ${projectName}`);
-  console.log(`   Path: ${projectRoot}`);
-  console.log(`   Port: ${port}`);
+  logger.info(`📝 Created config for project: ${projectName}`);
+  logger.info(`   Path: ${projectRoot}`);
+  logger.info(`   Port: ${port}`);
 
   return projectConfig;
 }
@@ -208,7 +211,7 @@ export function cleanupProjectIfNeeded(): void {
   if (projectConfig && projectConfig.autoCleanup) {
     delete sharedConfig.projects[projectName];
     saveSharedConfig(sharedConfig);
-    console.log(`🗑️  Auto-cleaned config for project: ${projectName}`);
+    logger.info(`🗑️  Auto-cleaned config for project: ${projectName}`);
   }
 }
 
@@ -223,7 +226,7 @@ export function setAutoCleanup(enabled: boolean): void {
   if (sharedConfig.projects[projectName]) {
     sharedConfig.projects[projectName].autoCleanup = enabled;
     saveSharedConfig(sharedConfig);
-    console.log(`${enabled ? '✅' : '❌'} Auto-cleanup ${enabled ? 'enabled' : 'disabled'} for: ${projectName}`);
+    logger.info(`${enabled ? '✅' : '❌'} Auto-cleanup ${enabled ? 'enabled' : 'disabled'} for: ${projectName}`);
   }
 }
 
@@ -238,7 +241,7 @@ export function resetProjectConfig(): void {
   delete sharedConfig.projects[projectName];
   saveSharedConfig(sharedConfig);
 
-  console.log(`🗑️  Removed config for project: ${projectName}`);
+  logger.info(`🗑️  Removed config for project: ${projectName}`);
 }
 
 /**
@@ -249,18 +252,18 @@ export function listProjects(): void {
   const projects = Object.entries(sharedConfig.projects);
 
   if (projects.length === 0) {
-    console.log('No projects configured yet.');
+    logger.info('No projects configured yet.');
     return;
   }
 
-  console.log(`\n📋 Configured Projects (${projects.length}):\n`);
+  logger.info(`\n📋 Configured Projects (${projects.length}):\n`);
   projects.forEach(([name, config]) => {
-    console.log(`   ${name}`);
-    console.log(`   ├─ Path: ${config.rootPath}`);
-    console.log(`   ├─ Port: ${config.port}`);
-    console.log(`   ├─ Output: ${config.outputDir}`);
-    console.log(`   ├─ Auto-cleanup: ${config.autoCleanup ? 'Yes' : 'No'}`);
-    console.log(`   └─ Last Used: ${config.lastUsed || 'Never'}\n`);
+    logger.info(`   ${name}`);
+    logger.info(`   ├─ Path: ${config.rootPath}`);
+    logger.info(`   ├─ Port: ${config.port}`);
+    logger.info(`   ├─ Output: ${config.outputDir}`);
+    logger.info(`   ├─ Auto-cleanup: ${config.autoCleanup ? 'Yes' : 'No'}`);
+    logger.info(`   └─ Last Used: ${config.lastUsed || 'Never'}\n`);
   });
 }
 
@@ -281,14 +284,14 @@ export async function isPortAvailable(port: number): Promise<boolean> {
     });
 
     // Listen on 127.0.0.1 specifically (same as Chrome)
-    server.listen(port, '127.0.0.1');
+    server.listen(port, CDP.LOCALHOST);
   });
 }
 
 /**
  * Find an available port starting from startPort
  */
-export async function findAvailablePort(startPort = 9222, maxAttempts = 10): Promise<number> {
+export async function findAvailablePort(startPort = CDP.DEFAULT_PORT, maxAttempts = 10): Promise<number> {
   for (let port = startPort; port < startPort + maxAttempts; port++) {
     if (await isPortAvailable(port)) {
       return port;

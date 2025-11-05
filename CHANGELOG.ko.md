@@ -2,7 +2,48 @@
 
 Dev GOM Plugins 마켓플레이스의 모든 주요 변경사항이 이 파일에 문서화됩니다.
 
-> **버전**: 2.11.0 | **최종 업데이트**: 2025-11-04
+> **버전**: 2.12.0 | **최종 업데이트**: 2025-01-06
+
+---
+
+## [2.12.0] - 2025-01-06
+
+### 변경됨
+- 🎉 **Browser Pilot v1.4.0**: 향상된 문서화 및 Smart Mode 강조
+  - **주요 변경**: skill-creator 가이드라인에 따라 SKILL.md를 914 단어로 간소화 (1,504 단어에서 축소)
+  - **문서 재구성**: 상세 내용을 `references/` 폴더로 이동 (progressive disclosure)
+    - `references/commands-reference.md`: 모든 옵션을 포함한 전체 명령어 목록
+    - `references/interaction-map.md`: Smart Mode 시스템 및 쿼리 API
+    - `references/selector-guide.md`: 셀렉터 전략 및 모범 사례
+  - **Smart Mode 강조**: 이제 Direct Mode보다 우선적으로 권장됨
+    - 모든 섹션에서 Smart Mode를 먼저 표시하도록 문서 재정렬
+    - Smart Mode에 "Recommended" 라벨 및 🌟 이모지 추가
+    - 별점이 포함된 비교 표 업데이트 (Smart Mode: ⭐⭐⭐⭐⭐, Direct Mode: ⭐⭐)
+    - Direct Mode 설명을 "고유 ID 전용 대체 수단"으로 변경
+  - **따옴표 규칙 명확화**: 단일 및 체인 명령어에 대한 명시적 문서화
+    - 단일 단어에는 따옴표 불필요: `--text Login`, `--text Submit`
+    - 공백 포함 시 따옴표 사용: `--text "Sign In"`, `--text "Email Address"`
+    - Smart Mode 및 Chain Mode 예제 모두에 적용
+  - **CLI 도움말 시스템 강화**: 전체 18개 명령어 파일 (52개 이상 명령어) 개선
+    - 옵션 설명이 포함된 상세한 설명 추가
+    - 더 나은 매개변수 문서화 (필수 vs 선택사항)
+    - 모든 명령어에 일관된 도움말 형식 적용
+  - **체인 명령어 개선**: 명확한 예제를 포함한 향상된 설명
+    - 형식: `chain <cmd1> [opts1] <cmd2> [opts2] ...`
+    - 예제: `chain navigate -u http://example.com click --text Submit screenshot -o result.png`
+    - 자동 맵 동기화 및 인간 같은 딜레이 (300-800ms)
+  - **문서화 모범 사례**: 모든 파일에 적용
+    - SKILL.md와 references/ 간 중복 내용 제거
+    - 각 괄호를 사용한 플레이스홀더 형식 표준화 (`<url>`, `<login-url>`)
+    - 공개 문서에서 개인 프로젝트 예제 제거
+    - Progressive disclosure: 필요할 때만 상세 문서 로드
+
+### 수정됨
+- 📝 **Browser Pilot v1.4.0**: 문서 일관성 및 명확성
+  - 예제에서 일관되지 않은 따옴표 사용 수정 (불필요한 따옴표 제거)
+  - 모든 플레이스홀더를 각 괄호 형식으로 표준화
+  - 모든 참조 파일에서 Smart Mode 문서 통일
+  - 단일 모드 따옴표 규칙이 이제 체인 모드와 일관됨
 
 ---
 

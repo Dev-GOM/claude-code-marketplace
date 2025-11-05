@@ -20,15 +20,21 @@ import { registerWaitCommands } from './commands/wait';
 import { registerDataCommands } from './commands/data';
 import { registerFocusCommands } from './commands/focus';
 import { registerAccessibilityCommands } from './commands/accessibility';
+import { registerDaemonCommands } from './commands/daemon';
+import { registerChainCommands } from './commands/chain';
+import { registerQueryCommands } from './commands/query';
 
 const program = new Command();
 
 program
   .name('cdp-browser')
   .description('Chrome DevTools Protocol browser automation CLI')
-  .version('1.0.0');
+  .version('1.0.0')
+  .addHelpText('after', '\nTip: Use "<command> --help" to see detailed options for each command.\nExample: cdp-browser navigate --help');
 
 // Register all command groups
+registerDaemonCommands(program); // Daemon management first
+registerChainCommands(program); // Chain mode for sequential execution
 registerNavigationCommands(program);
 registerInteractionCommands(program);
 registerFormsCommands(program);
@@ -44,6 +50,7 @@ registerWaitCommands(program);
 registerDataCommands(program);
 registerFocusCommands(program);
 registerAccessibilityCommands(program);
+registerQueryCommands(program); // Query interaction map
 
 // Parse command line arguments
 program.parse();

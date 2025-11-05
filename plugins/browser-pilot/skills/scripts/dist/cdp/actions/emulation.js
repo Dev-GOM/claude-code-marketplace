@@ -5,13 +5,14 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.emulateMedia = emulateMedia;
 const helpers_1 = require("./helpers");
+const logger_1 = require("../../utils/logger");
 /**
  * Emulate media type or color scheme.
  */
 async function emulateMedia(browser, mediaType, colorScheme, options) {
     const opts = (0, helpers_1.mergeOptions)(options);
     if (opts.verbose) {
-        console.log(`🎨 Emulating media - type: ${mediaType || 'none'}, colorScheme: ${colorScheme || 'none'}`);
+        logger_1.logger.info(`🎨 Emulating media - type: ${mediaType || 'none'}, colorScheme: ${colorScheme || 'none'}`);
     }
     try {
         await browser.sendCommand('Emulation.setEmulatedMedia', {
@@ -22,7 +23,7 @@ async function emulateMedia(browser, mediaType, colorScheme, options) {
                 }] : []
         });
         if (opts.verbose)
-            console.log(`✅ Media emulation set`);
+            logger_1.logger.info(`✅ Media emulation set`);
         return {
             success: true,
             mediaType: mediaType || null,
@@ -31,8 +32,13 @@ async function emulateMedia(browser, mediaType, colorScheme, options) {
     }
     catch (error) {
         if (opts.verbose) {
-            console.error(`❌ Emulate media failed`);
-            console.error(`   Error: ${error.message}`);
+            logger_1.logger.error(`❌ Emulate media failed`);
+            if (error instanceof Error) {
+                logger_1.logger.error(`   Error: ${error.message}`);
+            }
+            else {
+                logger_1.logger.error(`   Error: ${String(error)}`);
+            }
         }
         throw error;
     }

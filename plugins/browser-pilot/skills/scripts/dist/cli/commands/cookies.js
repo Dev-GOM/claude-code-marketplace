@@ -40,7 +40,7 @@ function registerCookiesCommands(program) {
     // Get cookies command
     program
         .command('cookies')
-        .description('Get all cookies from webpage')
+        .description('Retrieve all cookies from the current page (or navigate to a URL first with -u)')
         .option('-u, --url <url>', 'URL to navigate to (optional, uses current page if not specified)')
         .option('--headless', 'Run in headless mode', false)
         .action(async (options) => {
@@ -72,7 +72,7 @@ function registerCookiesCommands(program) {
     // Set cookie
     program
         .command('set-cookie')
-        .description('Set a cookie')
+        .description('Set a cookie with specified name and value (supports domain, path, secure, and httpOnly options)')
         .requiredOption('-n, --name <name>', 'Cookie name')
         .requiredOption('-v, --value <value>', 'Cookie value')
         .option('-d, --domain <domain>', 'Cookie domain')
@@ -96,7 +96,7 @@ function registerCookiesCommands(program) {
     // Delete cookies
     program
         .command('delete-cookies')
-        .description('Delete cookies by name')
+        .description('Delete cookies by name (deletes all cookies if no name is specified with -n)')
         .option('-n, --name <name>', 'Cookie name to delete (deletes all if not specified)')
         .option('-u, --url <url>', 'Navigate to URL first')
         .action(async (options) => {

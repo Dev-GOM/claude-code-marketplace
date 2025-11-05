@@ -4,16 +4,20 @@
 import { ChromeBrowser } from '../browser';
 import { ActionResult, ActionOptions } from './helpers';
 /**
- * Click element.
+ * Click element with automatic retry using interaction map fallback.
  * Supports both CSS selectors and XPath (when selector starts with '//').
  * XPath supports indexing: (//button[text()='Click'])[2] selects the 2nd button.
+ *
+ * On failure, attempts to find alternative selectors from interaction map and retries.
  */
 export declare function click(browser: ChromeBrowser, selector: string, options?: ActionOptions): Promise<ActionResult>;
 /**
- * Fill input field.
+ * Fill input field with automatic retry using interaction map fallback.
  * Supports both CSS selectors and XPath (when selector starts with '//').
  * XPath supports indexing: (//input[@type='text'])[2] selects the 2nd input.
  * Uses CDP click + insertText for proper React compatibility.
+ *
+ * On failure, attempts to find alternative selectors from interaction map and retries.
  */
 export declare function fill(browser: ChromeBrowser, selector: string, value: string, options?: ActionOptions): Promise<ActionResult>;
 /**

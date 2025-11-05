@@ -8,12 +8,12 @@ import { EventEmitter } from 'events';
 export interface CDPMessage {
   id: number;
   method: string;
-  params?: Record<string, any>;
+  params?: unknown;
 }
 
 export interface CDPResponse {
   id: number;
-  result?: Record<string, any>;
+  result?: unknown;
   error?: {
     code: number;
     message: string;
@@ -22,7 +22,7 @@ export interface CDPResponse {
 
 export interface CDPEvent {
   method: string;
-  params?: Record<string, any>;
+  params?: unknown;
 }
 
 export class CDPClient extends EventEmitter {
@@ -44,19 +44,21 @@ export class CDPClient extends EventEmitter {
 
       this.ws.on('open', () => {
         // Set up global message handler for CDP events
-        this.ws!.on('message', (data: WebSocket.Data) => {
-          try {
-            const message = JSON.parse(data.toString());
+        if (this.ws) {
+          this.ws.on('message', (data: WebSocket.Data) => {
+            try {
+              const message = JSON.parse(data.toString());
 
-            // CDP events don't have 'id' field, only 'method' and 'params'
-            if (!message.id && message.method) {
-              this.emit('event', message as CDPEvent);
-              this.emit(message.method, message.params);
+              // CDP events don't have 'id' field, only 'method' and 'params'
+              if (!message.id && message.method) {
+                this.emit('event', message as CDPEvent);
+                this.emit(message.method, message.params);
+              }
+            } catch (_error) {
+              // Ignore parse errors
             }
-          } catch (error) {
-            // Ignore parse errors
-          }
-        });
+          });
+        }
 
         resolve();
       });
@@ -70,10 +72,10 @@ export class CDPClient extends EventEmitter {
   /**
    * Send CDP command and wait for response.
    */
-  async sendCommand(
+  async sendCommand<T = Record<string, unknown>>(
     method: string,
-    params?: Record<string, any>
-  ): Promise<Record<string, any>> {
+    params?: unknown
+  ): Promise<T> {
     if (!this.ws) {
       throw new Error('Not connected to Chrome');
     }
@@ -102,18 +104,23 @@ export class CDPClient extends EventEmitter {
             if (response.error) {
               reject(new Error(`CDP Error: ${JSON.stringify(response.error)}`));
             } else {
-              resolve(response.result || {});
+              resolve((response.result || {}) as T);
             }
           }
-        } catch (error) {
+        } catch (_error) {
           // Ignore parse errors for other messages
         }
       };
 
-      this.ws!.on('message', messageHandler);
+      if (!this.ws) {
+        reject(new Error('WebSocket connection lost'));
+        return;
+      }
+
+      this.ws.on('message', messageHandler);
 
       try {
-        this.ws!.send(JSON.stringify(message));
+        this.ws.send(JSON.stringify(message));
       } catch (error) {
         cleanup();
         reject(error);
@@ -128,7 +135,7 @@ export class CDPClient extends EventEmitter {
     if (this.ws) {
       try {
         this.ws.close();
-      } catch (error) {
+      } catch (_error) {
         // Ignore close errors
       }
       this.ws = null;

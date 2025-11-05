@@ -2,7 +2,48 @@
 
 All notable changes to the Dev GOM Plugins marketplace will be documented in this file.
 
-> **Version**: 2.11.0 | **Last Updated**: 2025-11-04
+> **Version**: 2.12.0 | **Last Updated**: 2025-01-06
+
+---
+
+## [2.12.0] - 2025-01-06
+
+### Changed
+- 🎉 **Browser Pilot v1.4.0**: Enhanced Documentation and Smart Mode Emphasis
+  - **BREAKING**: Simplified SKILL.md to 914 words (from 1,504 words) following skill-creator guidelines
+  - **Documentation Reorganization**: Moved detailed content to `references/` folder (progressive disclosure)
+    - `references/commands-reference.md`: Complete command list with all options
+    - `references/interaction-map.md`: Smart Mode system and query API
+    - `references/selector-guide.md`: Selector strategies and best practices
+  - **Smart Mode Emphasis**: Now prominently recommended over Direct Mode
+    - Reordered documentation to show Smart Mode first in all sections
+    - Added "Recommended" labels and 🌟 emoji for Smart Mode
+    - Updated comparison tables with star ratings (Smart Mode: ⭐⭐⭐⭐⭐, Direct Mode: ⭐⭐)
+    - Changed Direct Mode description to "fallback for unique IDs only"
+  - **Quote Rules Clarification**: Explicit documentation for single and chain commands
+    - No quotes for single words: `--text Login`, `--text Submit`
+    - Quotes when spaces: `--text "Sign In"`, `--text "Email Address"`
+    - Applied to both Smart Mode and Chain Mode examples
+  - **CLI Help System Enhancement**: All 18 command files (52+ commands) improved
+    - Added detailed descriptions with option explanations
+    - Better parameter documentation (required vs optional)
+    - Consistent help format across all commands
+  - **Chain Command Improvements**: Enhanced description with clear examples
+    - Format: `chain <cmd1> [opts1] <cmd2> [opts2] ...`
+    - Example: `chain navigate -u http://example.com click --text Submit screenshot -o result.png`
+    - Automatic map synchronization and human-like delays (300-800ms)
+  - **Documentation Best Practices**: Applied throughout all files
+    - Removed duplicated content between SKILL.md and references/
+    - Standardized placeholder formats with angle brackets (`<url>`, `<login-url>`)
+    - Removed personal project examples from public documentation
+    - Progressive disclosure: load detailed docs only when needed
+
+### Fixed
+- 📝 **Browser Pilot v1.4.0**: Documentation consistency and clarity
+  - Fixed inconsistent quote usage in examples (removed unnecessary quotes)
+  - Standardized all placeholders to angle bracket format
+  - Unified Smart Mode documentation across all reference files
+  - Single mode quote rules now consistent with chain mode
 
 ---
 
