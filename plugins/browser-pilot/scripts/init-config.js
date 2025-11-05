@@ -231,69 +231,29 @@ function initializeLocalScripts(projectRoot) {
 
   logger.log('Updating local scripts to v' + pluginVersion + '...');
 
-  // Backup existing scripts if they exist
-  const backupPath = localSkillsPath + '.backup';
+  // Remove existing scripts if they exist
   if (fs.existsSync(localSkillsPath)) {
-    if (fs.existsSync(backupPath)) {
-      fs.rmSync(backupPath, { recursive: true, force: true });
-    }
-    fs.renameSync(localSkillsPath, backupPath);
-    logger.log('Created backup at: ' + backupPath);
+    logger.log('Removing old scripts...');
+    fs.rmSync(localSkillsPath, { recursive: true, force: true });
   }
 
-  try {
-    // Create directory
-    fs.mkdirSync(localSkillsPath, { recursive: true });
+  // Create directory
+  fs.mkdirSync(localSkillsPath, { recursive: true });
 
-    // Copy source files
-    logger.log('Copying source files...');
-    fs.cpSync(path.join(pluginScriptsPath, 'src'), path.join(localSkillsPath, 'src'), { recursive: true });
-    fs.copyFileSync(path.join(pluginScriptsPath, 'package.json'), path.join(localSkillsPath, 'package.json'));
-    fs.copyFileSync(path.join(pluginScriptsPath, 'tsconfig.json'), path.join(localSkillsPath, 'tsconfig.json'));
+  // Copy source files
+  logger.log('Copying source files...');
+  fs.cpSync(path.join(pluginScriptsPath, 'src'), path.join(localSkillsPath, 'src'), { recursive: true });
+  fs.copyFileSync(path.join(pluginScriptsPath, 'package.json'), path.join(localSkillsPath, 'package.json'));
+  fs.copyFileSync(path.join(pluginScriptsPath, 'tsconfig.json'), path.join(localSkillsPath, 'tsconfig.json'));
 
-    // Clean dist and node_modules for fresh install
-    const distPath = path.join(localSkillsPath, 'dist');
-    const nodeModulesPath = path.join(localSkillsPath, 'node_modules');
+  // Install dependencies and build
+  logger.log('Installing dependencies...');
+  execSync('npm install', { cwd: localSkillsPath, stdio: 'inherit' });
 
-    if (fs.existsSync(distPath)) {
-      logger.log('Removing old dist folder...');
-      fs.rmSync(distPath, { recursive: true, force: true });
-    }
+  logger.log('Building scripts...');
+  execSync('npm run build', { cwd: localSkillsPath, stdio: 'inherit' });
 
-    if (fs.existsSync(nodeModulesPath)) {
-      logger.log('Removing old node_modules folder...');
-      fs.rmSync(nodeModulesPath, { recursive: true, force: true });
-    }
-
-    // Install dependencies and build
-    logger.log('Installing dependencies (clean install)...');
-    execSync('npm install', { cwd: localSkillsPath, stdio: 'inherit' });
-
-    logger.log('Building scripts...');
-    execSync('npm run build', { cwd: localSkillsPath, stdio: 'inherit' });
-
-    // Success - remove backup
-    if (fs.existsSync(backupPath)) {
-      fs.rmSync(backupPath, { recursive: true, force: true });
-      logger.log('Removed backup');
-    }
-
-    logger.log('✅ Local scripts initialized successfully (v' + pluginVersion + ')');
-  } catch (error) {
-    logger.error('Failed to initialize local scripts: ' + error.message);
-
-    // Restore from backup
-    if (fs.existsSync(backupPath)) {
-      logger.log('Restoring from backup...');
-      if (fs.existsSync(localSkillsPath)) {
-        fs.rmSync(localSkillsPath, { recursive: true, force: true });
-      }
-      fs.renameSync(backupPath, localSkillsPath);
-      logger.log('✅ Restored from backup');
-    }
-
-    throw error;
-  }
+  logger.log('✅ Local scripts initialized successfully (v' + pluginVersion + ')');
 }
 
 /**
