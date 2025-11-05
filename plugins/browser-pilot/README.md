@@ -4,38 +4,44 @@
 
 **Language**: [English](README.md) | [한국어](README.ko.md)
 
-Chrome DevTools Protocol (CDP) based browser automation, web scraping, and crawling - Control Chrome browser programmatically from Claude Code.
+Chrome DevTools Protocol (CDP) based browser automation, web scraping, and crawling with **daemon-based architecture** and **Smart Mode** for reliable element targeting.
 
 ## Overview
 
-Browser Pilot enables direct control of Chrome browser through the Chrome DevTools Protocol (CDP), similar to how Selenium or Puppeteer works but with a CLI-first approach. This plugin allows you to:
+Browser Pilot provides intelligent browser automation through Chrome DevTools Protocol (CDP) with a **daemon-based architecture** that maintains persistent browser connections. Features **Smart Mode** with automatic Interaction Map generation for text-based element search, eliminating brittle CSS selectors.
 
-- 📸 Capture screenshots (viewport or full-page)
-- 🌐 Navigate to URLs and interact with pages
-- 🖱️ Click elements, fill forms, and press keys
-- 📄 Extract text content and scrape data
-- 📑 Generate PDFs from web pages
-- 🔗 Manage browser tabs (list, switch, close)
-- 🤖 Bypass bot detection (maintains `navigator.webdriver = false`)
-- ⚛️ **React/Framework compatibility** (properly triggers React synthetic events)
+**Key Features:**
+
+- 🤖 **Smart Mode** - Text-based element search with automatic selector generation
+- 🔄 **Daemon Architecture** - Persistent CDP connection for instant command execution
+- 📸 **Screenshot Capture** - Viewport or full-page screenshots
+- 🌐 **Navigation & Interaction** - URL navigation, click, fill, type, scroll
+- 📄 **Data Extraction** - Text content, console logs, cookies, accessibility tree
+- 📑 **PDF Generation** - Convert web pages to PDFs
+- 🔗 **Tab Management** - List, switch, close tabs programmatically
+- 🤖 **Bot Detection Bypass** - Maintains `navigator.webdriver = false`
+- ⚛️ **React/Framework Compatibility** - Properly triggers React synthetic events
+- ⛓️ **Chain Mode** - Execute multiple commands in a single workflow
 
 ## Architecture
 
 ```
-┌─────────────────┐    Chrome DevTools Protocol    ┌──────────────────────┐
-│  Claude Code    │◄──────────────────────────────►│   Chrome Browser     │
-│  (TypeScript)   │      WebSocket (Port 9222+)    │   (CDP Server)       │
-│                 │                                 │                      │
-│  - CLI Client   │                                 │  - Headless Mode     │
-│  - Commands     │                                 │  - Tab Management    │
-│  - Config Mgmt  │                                 │  - DevTools API      │
-└─────────────────┘                                 └──────────────────────┘
+┌─────────────────┐                    ┌──────────────────┐    CDP     ┌──────────────────────┐
+│  Claude Code    │  IPC Commands      │  Daemon Server   │◄──────────►│   Chrome Browser     │
+│  (CLI Client)   │───────────────────►│  (Background)    │ WebSocket  │   (CDP Server)       │
+│                 │                    │                  │ Port 9222+ │                      │
+│  - User Request │                    │  - CDP Client    │            │  - Headless/Headed   │
+│  - Command Parse│                    │  - Map Generator │            │  - Tab Management    │
+│  - Result Output│                    │  - Auto-restart  │            │  - DevTools API      │
+└─────────────────┘                    └──────────────────┘            └──────────────────────┘
 ```
 
 **Key Components:**
-- **TypeScript CLI**: Command-line interface for CDP operations
+- **Daemon Server**: Background process maintaining persistent CDP connection
+- **CLI Client**: Fast command execution via IPC communication with daemon
+- **Interaction Map**: Auto-generated JSON map of interactive elements for Smart Mode
 - **Chrome Browser**: Runs in headless or headed mode with CDP enabled
-- **WebSocket Communication**: JSON-based command-response protocol
+- **Auto-Management**: Daemon starts on first command, stops at session end (30-min timeout)
 
 ## Using the Skill in Claude Code
 
@@ -62,6 +68,8 @@ Once set up, Claude will automatically use this skill when you ask for browser a
 - "Take a screenshot of https://example.com"
 - "Extract the title from https://news.ycombinator.com"
 - "Click the login button on https://example.com"
+- "Run browser tests"
+- "Load browser-pilot skill to test login functionality"
 
 Claude handles all the command execution through the SKILL.md interface - you just describe what you want!
 
@@ -85,135 +93,150 @@ The plugin will auto-initialize when you start a Claude Code session (via Sessio
 
 ## Quick Start
 
-### Basic Usage
+### Smart Mode (Recommended)
 
-All commands should be run from `plugins/browser-pilot/skills/scripts`:
-
-```bash
-cd plugins/browser-pilot/skills/scripts
-
-# Take a screenshot
-npm run bp:screenshot -- -u "https://example.com" -o "example.png" --headless --full-page
-
-# Navigate to a URL
-npm run bp:navigate -- -u "https://github.com"
-
-# Extract text from elements
-npm run bp:extract -- -u "https://example.com" -s "h1"
-
-# Fill a form field
-npm run bp:fill -- -u "https://example.com/login" -s "#email" -v "user@example.com"
-
-# Click an element
-npm run bp:click -- -u "https://example.com" -s "button.login-btn"
-
-# Generate PDF
-npm run bp:pdf -- -u "https://docs.example.com" -o "documentation.pdf"
-```
-
-**Note**: Project root is auto-detected from the current working directory. Files are saved to `.browser-pilot/` in your project root.
-
-### Multi-Step Workflows
-
-Chain commands using `&&` with `sleep` delays to avoid bot detection:
+Text-based element search with automatic selector generation - more reliable than CSS selectors:
 
 ```bash
-cd plugins/browser-pilot/skills/scripts
+# Navigate to a page
+node .browser-pilot/bp navigate -u "https://example.com/login"
 
-# Login workflow with human-like delays
-# Note: URL is optional after first navigate - preserves page state!
-npm run bp:navigate -- -u "https://example.com/login" && \
-sleep 1 && \
-npm run bp:fill -- -s "#email" -v "user@example.com" && \
-sleep 0.5 && \
-npm run bp:fill -- -s "#password" -v "mypass123" && \
-sleep 0.5 && \
-npm run bp:click -- -s "button[type='submit']"
+# Click using text content (no quotes for single words)
+node .browser-pilot/bp click --text Login --type button
+
+# Fill form using text labels (quotes when text contains spaces)
+node .browser-pilot/bp fill --text "Email Address" -v "user@example.com"
+node .browser-pilot/bp fill --text Password -v "mypass123"
+
+# Handle duplicate elements with indexing (click 2nd Delete button)
+node .browser-pilot/bp click --text Delete --index 2
+
+# Take screenshot
+node .browser-pilot/bp screenshot -o "login-page.png"
 ```
 
-**New in v0.1.6**: URL parameter (`-u`) is now optional for most commands. When omitted, commands operate on the current page without refreshing, preserving console logs, network data, and form state.
+### Chain Mode (Multiple Commands)
+
+Execute multiple commands in a single workflow:
+
+```bash
+# Login workflow
+node .browser-pilot/bp chain \
+  navigate -u "https://example.com/login" \
+  fill --text Email -v "user@example.com" \
+  fill --text Password -v "mypass123" \
+  click --text Login \
+  screenshot -o "logged-in.png"
+
+# Scraping workflow
+node .browser-pilot/bp chain \
+  navigate -u "https://example.com" \
+  wait -s ".content-loaded" \
+  extract -s ".product-title" \
+  screenshot -o "products.png"
+```
+
+### Direct Mode (CSS Selectors)
+
+For unique IDs or when Smart Mode is unavailable:
+
+```bash
+# Using CSS selectors
+node .browser-pilot/bp click -s "#login-button"
+node .browser-pilot/bp fill -s "input[name='email']" -v "user@example.com"
+node .browser-pilot/bp extract -s "h1.page-title"
+```
+
+**Note**: Files are saved to `.browser-pilot/` in your project root. Daemon auto-starts on first command and stops at session end.
 
 ## Available Commands
 
-### Core Commands
+All commands use the wrapper script: `node .browser-pilot/bp <command> [options]`
+
+Use `--help` for detailed options: `node .browser-pilot/bp <command> --help`
+
+### Navigation Commands
 
 ```bash
-# Launch browser
-launch           # Start Chrome in headless or headed mode
-  --headless     # Run without UI (default: false)
-
-# Navigate
-navigate         # Go to URL
-  -u, --url      # Target URL (required)
-
-# Screenshot
-screenshot       # Capture page screenshot
-  -u, --url      # Target URL (optional if browser already open)
-  -o, --output   # Output filename (saves to .browser-pilot/)
-  --full-page    # Capture entire page (default: viewport only)
-  --headless     # Run in headless mode
-
-# PDF Generation
-pdf              # Generate PDF from page
-  -u, --url      # Target URL (optional if browser already open)
-  -o, --output   # Output filename (saves to .browser-pilot/)
-  --landscape    # Use landscape orientation
-  --headless     # Run in headless mode
+navigate -u <url>              # Navigate to URL
+back                           # Go back in history
+forward                        # Go forward in history
+reload                         # Reload current page
 ```
 
-### Interaction Commands
+### Interaction Commands (Smart Mode)
 
 ```bash
-# Click
-click            # Click element by selector
-  -u, --url      # Target URL (optional)
-  -s, --selector # CSS selector (required)
+# Text-based search (recommended)
+click --text <text> [options]  # Click element by text
+  --type <type>                # Filter by element type (button, link, input, etc.)
+  --index <n>                  # Select n-th match (for duplicates)
+  --viewport-only              # Only search visible elements
 
-# Fill Form
-fill             # Fill input field
-  -u, --url      # Target URL (optional)
-  -s, --selector # CSS selector (required)
-  -v, --value    # Text to fill (required)
+fill --text <text> -v <value>  # Fill input by label text
+  --type <type>                # Filter by input type
+  --index <n>                  # Select n-th match
 
-# Type Text
-type             # Type text in active element
-  --text         # Text to type (required)
-
-# Press Key
-press            # Press keyboard key
-  --key          # Key name (Enter, Tab, Escape, etc.)
-
-# Extract Content
-extract          # Extract text from elements
-  -u, --url      # Target URL (optional)
-  -s, --selector # CSS selector (required)
-  --all          # Extract all matching elements (default: first only)
-
-# Execute JavaScript
-eval             # Execute JavaScript in page context
-  -u, --url      # Target URL (optional)
-  --expression   # JavaScript code to execute (required)
+# Direct selector (fallback)
+click -s <selector>            # Click by CSS selector
+fill -s <selector> -v <value>  # Fill by CSS selector
 ```
 
-### Tab Management
+### Capture Commands
 
 ```bash
-# List tabs
-list-tabs        # Show all open tabs with IDs and titles
+screenshot -o <filename>       # Capture screenshot
+  --full-page                  # Capture entire page (default: viewport)
 
-# Switch tab
-switch-tab       # Switch to specific tab
-  --id           # Tab ID (from list-tabs)
-  --index        # Or tab index (0-based)
-
-# Close tab
-close-tab        # Close specific tab
-  --id           # Tab ID (from list-tabs)
-  --index        # Or tab index (0-based)
-
-# Close browser
-close            # Close all tabs and exit browser
+pdf -o <filename>              # Generate PDF
+  --landscape                  # Use landscape orientation
 ```
+
+### Data Extraction
+
+```bash
+extract -s <selector>          # Extract text from elements
+  --all                        # Extract all matches (default: first)
+
+content                        # Get full page text content
+console                        # Get console messages
+cookies                        # Get cookies
+```
+
+### Chain Mode
+
+```bash
+chain <cmd1> <cmd2> ...        # Execute multiple commands
+  --timeout <ms>               # Map wait timeout (default: 10000)
+  --delay <ms>                 # Fixed delay between commands
+```
+
+### Query Commands
+
+```bash
+query --text <text>            # Find elements in Interaction Map
+query --list-types             # List all element types
+map-status                     # Check map status
+regen-map                      # Force regenerate map
+```
+
+### Other Commands
+
+```bash
+wait -s <selector> -t <ms>     # Wait for element
+scroll -s <selector>           # Scroll to element
+eval -e <expression>           # Execute JavaScript
+tabs                           # List all tabs
+```
+
+### Daemon Management
+
+```bash
+daemon-status                  # Check daemon status
+daemon-stop                    # Stop daemon manually
+```
+
+For complete command reference, see [references/commands-reference.md](./skills/references/commands-reference.md)
 
 ## Configuration
 
@@ -258,86 +281,95 @@ All screenshots and PDFs are automatically saved to:
 
 ## Example Workflows
 
+### Login Workflow (Smart Mode + Chain)
+
+```bash
+# Complete login workflow using text-based search
+node .browser-pilot/bp chain \
+  navigate -u "https://example.com/login" \
+  fill --text Email -v "user@example.com" \
+  fill --text Password -v "mypass123" \
+  click --text "Sign In" --type button \
+  screenshot -o "logged-in.png"
+```
+
 ### Screenshot Capture
 
 ```bash
-# Full-page screenshot in headless mode
-npm run bp:screenshot -- \
-  -u "https://github.com" \
-  -o "github-homepage.png" \
-  --headless \
-  --full-page
+# Full-page screenshot
+node .browser-pilot/bp chain \
+  navigate -u "https://github.com" \
+  screenshot -o "github-homepage.png" --full-page
 ```
 
-### Form Automation
+### Form Automation (Smart Mode)
 
 ```bash
-cd plugins/browser-pilot/skills/scripts
-
-# Contact form submission with delays
-npm run bp:navigate -- -u "https://example.com/contact" && \
-sleep 1 && \
-npm run bp:fill -- -s "#name" -v "John Doe" && \
-sleep 0.5 && \
-npm run bp:fill -- -s "#email" -v "john@example.com" && \
-sleep 0.5 && \
-npm run bp:fill -- -s "#message" -v "Hello from Browser Pilot!" && \
-sleep 0.5 && \
-npm run bp:click -- -s "button[type='submit']" && \
-sleep 1 && \
-npm run bp:screenshot -- -o "contact-submitted.png"
+# Contact form submission using text labels
+node .browser-pilot/bp chain \
+  navigate -u "https://example.com/contact" \
+  fill --text "Your Name" -v "John Doe" \
+  fill --text "Email Address" -v "john@example.com" \
+  fill --text Message -v "Hello from Browser Pilot!" \
+  click --text Submit --type button \
+  screenshot -o "contact-submitted.png"
 ```
 
 ### Web Scraping
 
 ```bash
-# Extract all h1 headings from a page
-npm run bp:extract -- \
-  -u "https://news.ycombinator.com" \
-  -s "a.storylink" \
-  --all
+# Extract multiple elements
+node .browser-pilot/bp chain \
+  navigate -u "https://news.ycombinator.com" \
+  extract -s "a.storylink" --all
 ```
 
 ### PDF Generation
 
 ```bash
-# Generate landscape PDF of documentation
-npm run bp:pdf -- \
-  -u "https://docs.example.com" \
-  -o "api-docs.pdf" \
-  --landscape \
-  --headless
+# Generate landscape PDF
+node .browser-pilot/bp chain \
+  navigate -u "https://docs.example.com" \
+  pdf -o "api-docs.pdf" --landscape
+```
+
+### Query Interaction Map
+
+```bash
+# Find specific elements
+node .browser-pilot/bp query --text "Login"
+node .browser-pilot/bp query --list-types
+
+# Check map status
+node .browser-pilot/bp map-status
 ```
 
 ## Bot Detection Avoidance
 
-Browser Pilot maintains `navigator.webdriver = false`, bypassing most anti-bot systems.
+Browser Pilot maintains `navigator.webdriver = false` and properly triggers React synthetic events, bypassing most anti-bot systems.
 
-**Additional Tips**:
-- Add `sleep` delays (0.5-2 seconds) between commands to mimic human behavior
-- Longer delays for critical actions (login, form submission)
-- Use random delays when automating multiple similar actions
-- Example: `npm run bp:fill ... && sleep 1 && npm run bp:click ...`
+**Chain Mode automatically adds 300-800ms random delays** between commands to mimic human behavior.
 
 **Test Bot Detection**:
 ```bash
-npm run bp:screenshot -- \
-  -u "https://bot.sannysoft.com" \
-  -o "bot-test.png" \
-  --headless
+node .browser-pilot/bp chain \
+  navigate -u "https://bot.sannysoft.com" \
+  screenshot -o "bot-test.png"
 ```
 
 Expected: All checks **PASS** (green).
 
 ## Best Practices
 
-1. **Build once** - Run `npm run build` before first use
-2. **Use headed mode for debugging** - Omit `--headless` to see browser window
-3. **Prefer unique selectors** - Use IDs: `#username` > `.class` > `input[name="user"]`
-4. **Relative paths** - Files auto-save to `.browser-pilot/`
-5. **Add human-like delays** - Use `sleep 0.5-2` between commands to avoid bot detection
-6. **Respect rate limits** - Add delays between requests
-7. **Close browser when done** - Use `npm run bp:close` to free resources
+1. **🌟 Use Smart Mode by default** - Text-based search (`--text Login`) is more stable than CSS selectors
+2. **Use Chain Mode for workflows** - Automatic delays and streamlined execution
+3. **Daemon auto-manages** - No manual start/stop needed
+4. **Prefer text-based search** - More resilient to UI changes than CSS selectors
+5. **Handle duplicates with indexing** - `--index 2` for the 2nd matching element
+6. **Filter by type for precision** - `--type button` narrows results
+7. **Verify visibility** - `--viewport-only` ensures element is on screen
+8. **Check console on errors** - `node .browser-pilot/bp console` for debugging
+9. **Use `--help` for guidance** - `node .browser-pilot/bp <command> --help`
 
 ## Troubleshooting
 
@@ -439,12 +471,20 @@ Apache License 2.0 - see [LICENSE](../../LICENSE) and [NOTICE](../../NOTICE) for
 
 This plugin is part of the [Dev GOM Plugins](https://github.com/Dev-GOM/claude-code-marketplace) marketplace. Contributions are welcome!
 
+## Documentation
+
+- 📖 **Quick Reference**: [SKILL.md](./skills/SKILL.md) - Concise guide for Claude Code
+- 📚 **Detailed Guides**:
+  - [Command Reference](./skills/references/commands-reference.md) - All 52+ commands with examples
+  - [Selector Guide](./skills/references/selector-guide.md) - Smart Mode strategies and best practices
+  - [Interaction Map](./skills/references/interaction-map.md) - Map system details and query API
+
 ## Support
 
-- 📖 Documentation: [SKILL.md](./skills/SKILL.md)
-- 🐛 Issues: [GitHub Issues](https://github.com/Dev-GOM/claude-code-marketplace/issues)
-- 💬 Discussions: [GitHub Discussions](https://github.com/Dev-GOM/claude-code-marketplace/discussions)
+- 🐛 **Issues**: [GitHub Issues](https://github.com/Dev-GOM/claude-code-marketplace/issues)
+- 💬 **Discussions**: [GitHub Discussions](https://github.com/Dev-GOM/claude-code-marketplace/discussions)
+- 🔧 **Development Guide**: [CLAUDE.md](./CLAUDE.md) - Plugin development guidelines
 
 ---
 
-**Note**: Browser Pilot is production-ready and actively maintained. Report bugs or request features via GitHub Issues.
+**Note**: Browser Pilot v1.4.0 is production-ready and actively maintained. Report bugs or request features via GitHub Issues.

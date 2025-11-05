@@ -4,38 +4,44 @@
 
 **언어**: [English](README.md) | [한국어](README.ko.md)
 
-Chrome DevTools Protocol (CDP) 기반 브라우저 자동화, 웹 스크래핑, 크롤링 - Claude Code에서 Chrome 브라우저를 프로그래밍 방식으로 제어합니다.
+**데몬 기반 아키텍처**와 **스마트 모드**를 갖춘 Chrome DevTools Protocol (CDP) 기반 브라우저 자동화, 웹 스크래핑, 크롤링.
 
 ## 개요
 
-Browser Pilot은 Chrome DevTools Protocol (CDP)을 통해 Chrome 브라우저를 직접 제어할 수 있게 합니다. Selenium이나 Puppeteer와 유사하지만 CLI 우선 접근 방식을 사용합니다. 이 플러그인으로 다음을 할 수 있습니다:
+Browser Pilot은 지속적인 브라우저 연결을 유지하는 **데몬 기반 아키텍처**를 통해 Chrome DevTools Protocol (CDP)로 지능형 브라우저 자동화를 제공합니다. 텍스트 기반 요소 검색을 위한 자동 Interaction Map 생성 기능을 갖춘 **스마트 모드**로 취약한 CSS 셀렉터를 제거합니다.
 
-- 📸 스크린샷 캡처 (뷰포트 또는 전체 페이지)
-- 🌐 URL 탐색 및 페이지 상호작용
-- 🖱️ 요소 클릭, 폼 작성, 키 입력
-- 📄 텍스트 콘텐츠 추출 및 데이터 스크래핑
-- 📑 웹 페이지에서 PDF 생성
-- 🔗 브라우저 탭 관리 (목록, 전환, 닫기)
-- 🤖 봇 감지 우회 (`navigator.webdriver = false` 유지)
-- ⚛️ **React/프레임워크 호환성** (React synthetic events 정상 발생)
+**주요 기능:**
+
+- 🤖 **스마트 모드** - 자동 셀렉터 생성을 통한 텍스트 기반 요소 검색
+- 🔄 **데몬 아키텍처** - 즉각적인 명령 실행을 위한 지속적 CDP 연결
+- 📸 **스크린샷 캡처** - 뷰포트 또는 전체 페이지 스크린샷
+- 🌐 **탐색 및 상호작용** - URL 탐색, 클릭, 입력, 타이핑, 스크롤
+- 📄 **데이터 추출** - 텍스트 콘텐츠, 콘솔 로그, 쿠키, 접근성 트리
+- 📑 **PDF 생성** - 웹 페이지를 PDF로 변환
+- 🔗 **탭 관리** - 프로그래밍 방식으로 탭 목록, 전환, 닫기
+- 🤖 **봇 감지 우회** - `navigator.webdriver = false` 유지
+- ⚛️ **React/프레임워크 호환성** - React synthetic events 정상 발생
+- ⛓️ **체인 모드** - 단일 워크플로우에서 여러 명령 실행
 
 ## 아키텍처
 
 ```
-┌─────────────────┐    Chrome DevTools Protocol    ┌──────────────────────┐
-│  Claude Code    │◄──────────────────────────────►│   Chrome Browser     │
-│  (TypeScript)   │    WebSocket (포트 9222+)      │   (CDP Server)       │
-│                 │                                 │                      │
-│  - CLI Client   │                                 │  - Headless Mode     │
-│  - Commands     │                                 │  - Tab Management    │
-│  - Config Mgmt  │                                 │  - DevTools API      │
-└─────────────────┘                                 └──────────────────────┘
+┌─────────────────┐                    ┌──────────────────┐    CDP     ┌──────────────────────┐
+│  Claude Code    │  IPC 명령          │  데몬 서버        │◄──────────►│   Chrome Browser     │
+│  (CLI Client)   │───────────────────►│  (백그라운드)     │ WebSocket  │   (CDP Server)       │
+│                 │                    │                  │ 포트 9222+ │                      │
+│  - 사용자 요청   │                    │  - CDP Client    │            │  - Headless/Headed   │
+│  - 명령어 파싱   │                    │  - Map Generator │            │  - Tab Management    │
+│  - 결과 출력     │                    │  - Auto-restart  │            │  - DevTools API      │
+└─────────────────┘                    └──────────────────┘            └──────────────────────┘
 ```
 
 **주요 구성 요소:**
-- **TypeScript CLI**: CDP 작업을 위한 커맨드라인 인터페이스
-- **Chrome Browser**: CDP가 활성화된 headless 또는 headed 모드로 실행
-- **WebSocket Communication**: JSON 기반 명령-응답 프로토콜
+- **데몬 서버**: 지속적인 CDP 연결을 유지하는 백그라운드 프로세스
+- **CLI 클라이언트**: 데몬과의 IPC 통신을 통한 빠른 명령 실행
+- **Interaction Map**: 스마트 모드를 위한 자동 생성 대화형 요소 JSON 맵
+- **Chrome 브라우저**: CDP가 활성화된 headless 또는 headed 모드 실행
+- **자동 관리**: 첫 명령어에서 데몬 시작, 세션 종료 시 중지 (30분 타임아웃)
 
 ## Claude Code에서 스킬 사용하기
 
@@ -62,6 +68,8 @@ Claude가 이 스킬을 사용하기 전에:
 - "https://example.com 의 스크린샷을 찍어줘"
 - "https://news.ycombinator.com 에서 제목을 추출해줘"
 - "https://example.com 의 로그인 버튼을 클릭해줘"
+- "브라우저 테스트 진행"
+- "브라우저 파일럿 스킬을 로드하여 로그인 기능을 테스트"
 
 Claude가 SKILL.md 인터페이스를 통해 모든 명령 실행을 처리합니다 - 원하는 것만 설명하면 됩니다!
 
@@ -85,132 +93,150 @@ Claude Code 세션을 시작하면 플러그인이 자동으로 초기화됩니�
 
 ## 빠른 시작
 
-### 기본 사용법
+### 스마트 모드 (권장)
 
-모든 명령어는 `plugins/browser-pilot/skills/scripts`에서 실행해야 합니다:
+자동 셀렉터 생성을 통한 텍스트 기반 요소 검색 - CSS 셀렉터보다 안정적:
 
 ```bash
-cd plugins/browser-pilot/skills/scripts
+# 페이지 탐색
+node .browser-pilot/bp navigate -u "https://example.com/login"
+
+# 텍스트 콘텐츠로 클릭 (단어가 하나면 따옴표 불필요)
+node .browser-pilot/bp click --text Login --type button
+
+# 텍스트 라벨로 폼 채우기 (공백이 있으면 따옴표 사용)
+node .browser-pilot/bp fill --text "Email Address" -v "user@example.com"
+node .browser-pilot/bp fill --text Password -v "mypass123"
+
+# 인덱싱으로 중복 요소 처리 (2번째 Delete 버튼 클릭)
+node .browser-pilot/bp click --text Delete --index 2
 
 # 스크린샷 캡처
-npm run bp:screenshot -- -u "https://example.com" -o "example.png" --headless --full-page
-
-# URL로 이동
-npm run bp:navigate -- -u "https://github.com"
-
-# 요소에서 텍스트 추출
-npm run bp:extract -- -u "https://example.com" -s "h1"
-
-# 폼 필드 채우기
-npm run bp:fill -- -u "https://example.com/login" -s "#email" -v "user@example.com"
-
-# 요소 클릭
-npm run bp:click -- -u "https://example.com" -s "button.login-btn"
-
-# PDF 생성
-npm run bp:pdf -- -u "https://docs.example.com" -o "documentation.pdf"
+node .browser-pilot/bp screenshot -o "login-page.png"
 ```
 
-**참고**: 프로젝트 루트는 현재 작업 디렉토리에서 자동 감지됩니다. 파일은 프로젝트 루트의 `.browser-pilot/`에 저장됩니다.
+### 체인 모드 (다중 명령어)
 
-### 멀티 스텝 워크플로우
-
-봇 감지를 피하기 위해 `&&`로 명령을 체이닝하고 `sleep` 딜레이를 추가하세요:
+단일 워크플로우에서 여러 명령 실행:
 
 ```bash
-cd plugins/browser-pilot/skills/scripts
+# 로그인 워크플로우
+node .browser-pilot/bp chain \
+  navigate -u "https://example.com/login" \
+  fill --text Email -v "user@example.com" \
+  fill --text Password -v "mypass123" \
+  click --text Login \
+  screenshot -o "logged-in.png"
 
-# 인간 같은 딜레이를 사용한 로그인 워크플로우
-npm run bp:navigate -- -u "https://example.com/login" && \
-sleep 1 && \
-npm run bp:fill -- -s "#email" -v "user@example.com" && \
-sleep 0.5 && \
-npm run bp:fill -- -s "#password" -v "mypass123" && \
-sleep 0.5 && \
-npm run bp:click -- -s "button[type='submit']"
+# 스크래핑 워크플로우
+node .browser-pilot/bp chain \
+  navigate -u "https://example.com" \
+  wait -s ".content-loaded" \
+  extract -s ".product-title" \
+  screenshot -o "products.png"
 ```
+
+### 다이렉트 모드 (CSS 셀렉터)
+
+고유 ID가 있거나 스마트 모드를 사용할 수 없을 때:
+
+```bash
+# CSS 셀렉터 사용
+node .browser-pilot/bp click -s "#login-button"
+node .browser-pilot/bp fill -s "input[name='email']" -v "user@example.com"
+node .browser-pilot/bp extract -s "h1.page-title"
+```
+
+**참고**: 파일은 프로젝트 루트의 `.browser-pilot/`에 저장됩니다. 데몬은 첫 명령어에서 자동 시작되고 세션 종료 시 중지됩니다.
 
 ## 사용 가능한 명령어
 
-### 핵심 명령어
+모든 명령어는 래퍼 스크립트를 사용: `node .browser-pilot/bp <명령어> [옵션]`
+
+상세 옵션은 `--help` 사용: `node .browser-pilot/bp <명령어> --help`
+
+### 탐색 명령어
 
 ```bash
-# 브라우저 실행
-launch           # Headless 또는 headed 모드로 Chrome 시작
-  --headless     # UI 없이 실행 (기본값: false)
-
-# 탐색
-navigate         # URL로 이동
-  -u, --url      # 대상 URL (필수)
-
-# 스크린샷
-screenshot       # 페이지 스크린샷 캡처
-  -u, --url      # 대상 URL (브라우저가 이미 열려있으면 선택사항)
-  -o, --output   # 출력 파일명 (.browser-pilot/에 저장)
-  --full-page    # 전체 페이지 캡처 (기본값: 뷰포트만)
-  --headless     # Headless 모드로 실행
-
-# PDF 생성
-pdf              # 페이지에서 PDF 생성
-  -u, --url      # 대상 URL (브라우저가 이미 열려있으면 선택사항)
-  -o, --output   # 출력 파일명 (.browser-pilot/에 저장)
-  --landscape    # 가로 방향 사용
-  --headless     # Headless 모드로 실행
+navigate -u <url>              # URL로 이동
+back                           # 뒤로 가기
+forward                        # 앞으로 가기
+reload                         # 현재 페이지 새로고침
 ```
 
-### 상호작용 명령어
+### 상호작용 명령어 (스마트 모드)
 
 ```bash
-# 클릭
-click            # 셀렉터로 요소 클릭
-  -u, --url      # 대상 URL (선택사항)
-  -s, --selector # CSS 셀렉터 (필수)
+# 텍스트 기반 검색 (권장)
+click --text <text> [옵션]     # 텍스트로 요소 클릭
+  --type <type>                # 요소 타입으로 필터링 (button, link, input 등)
+  --index <n>                  # n번째 일치 항목 선택 (중복 시)
+  --viewport-only              # 보이는 요소만 검색
 
-# 폼 채우기
-fill             # 입력 필드 채우기
-  -u, --url      # 대상 URL (선택사항)
-  -s, --selector # CSS 셀렉터 (필수)
-  -v, --value    # 채울 텍스트 (필수)
+fill --text <text> -v <값>     # 라벨 텍스트로 입력 필드 채우기
+  --type <type>                # 입력 타입으로 필터링
+  --index <n>                  # n번째 일치 항목 선택
 
-# 텍스트 입력
-type             # 활성 요소에 텍스트 입력
-  --text         # 입력할 텍스트 (필수)
-
-# 키 누르기
-press            # 키보드 키 누르기
-  --key          # 키 이름 (Enter, Tab, Escape 등)
-
-# 콘텐츠 추출
-extract          # 요소에서 텍스트 추출
-  -u, --url      # 대상 URL (선택사항)
-  -s, --selector # CSS 셀렉터 (필수)
-  --all          # 일치하는 모든 요소 추출 (기본값: 첫 번째만)
-
-# JavaScript 실행
-eval             # 페이지 컨텍스트에서 JavaScript 실행
-  -u, --url      # 대상 URL (선택사항)
-  --expression   # 실행할 JavaScript 코드 (필수)
+# 다이렉트 셀렉터 (대체)
+click -s <selector>            # CSS 셀렉터로 클릭
+fill -s <selector> -v <값>     # CSS 셀렉터로 채우기
 ```
 
-### 탭 관리
+### 캡처 명령어
 
 ```bash
-# 탭 목록
-list-tabs        # ID와 제목이 포함된 모든 열린 탭 표시
+screenshot -o <파일명>         # 스크린샷 캡처
+  --full-page                  # 전체 페이지 캡처 (기본값: 뷰포트)
 
-# 탭 전환
-switch-tab       # 특정 탭으로 전환
-  --id           # 탭 ID (list-tabs에서 확인)
-  --index        # 또는 탭 인덱스 (0부터 시작)
-
-# 탭 닫기
-close-tab        # 특정 탭 닫기
-  --id           # 탭 ID (list-tabs에서 확인)
-  --index        # 또는 탭 인덱스 (0부터 시작)
-
-# 브라우저 닫기
-close            # 모든 탭 닫고 브라우저 종료
+pdf -o <파일명>                # PDF 생성
+  --landscape                  # 가로 방향 사용
 ```
+
+### 데이터 추출
+
+```bash
+extract -s <selector>          # 요소에서 텍스트 추출
+  --all                        # 모든 일치 항목 추출 (기본값: 첫 번째)
+
+content                        # 전체 페이지 텍스트 콘텐츠 가져오기
+console                        # 콘솔 메시지 가져오기
+cookies                        # 쿠키 가져오기
+```
+
+### 체인 모드
+
+```bash
+chain <cmd1> <cmd2> ...        # 여러 명령 실행
+  --timeout <ms>               # 맵 대기 타임아웃 (기본값: 10000)
+  --delay <ms>                 # 명령 사이 고정 딜레이
+```
+
+### 쿼리 명령어
+
+```bash
+query --text <text>            # Interaction Map에서 요소 찾기
+query --list-types             # 모든 요소 타입 나열
+map-status                     # 맵 상태 확인
+regen-map                      # 맵 강제 재생성
+```
+
+### 기타 명령어
+
+```bash
+wait -s <selector> -t <ms>     # 요소 대기
+scroll -s <selector>           # 요소로 스크롤
+eval -e <expression>           # JavaScript 실행
+tabs                           # 모든 탭 나열
+```
+
+### 데몬 관리
+
+```bash
+daemon-status                  # 데몬 상태 확인
+daemon-stop                    # 데몬 수동 중지
+```
+
+전체 명령어 레퍼런스는 [references/commands-reference.md](./skills/references/commands-reference.md) 참조
 
 ## 설정
 
@@ -255,86 +281,95 @@ close            # 모든 탭 닫고 브라우저 종료
 
 ## 예제 워크플로우
 
+### 로그인 워크플로우 (스마트 모드 + 체인)
+
+```bash
+# 텍스트 기반 검색을 사용한 완전한 로그인 워크플로우
+node .browser-pilot/bp chain \
+  navigate -u "https://example.com/login" \
+  fill --text Email -v "user@example.com" \
+  fill --text Password -v "mypass123" \
+  click --text "로그인" --type button \
+  screenshot -o "logged-in.png"
+```
+
 ### 스크린샷 캡처
 
 ```bash
-# Headless 모드에서 전체 페이지 스크린샷
-npm run bp:screenshot -- \
-  -u "https://github.com" \
-  -o "github-homepage.png" \
-  --headless \
-  --full-page
+# 전체 페이지 스크린샷
+node .browser-pilot/bp chain \
+  navigate -u "https://github.com" \
+  screenshot -o "github-homepage.png" --full-page
 ```
 
-### 폼 자동화
+### 폼 자동화 (스마트 모드)
 
 ```bash
-cd plugins/browser-pilot/skills/scripts
-
-# 딜레이를 포함한 문의 폼 제출
-npm run bp:navigate -- -u "https://example.com/contact" && \
-sleep 1 && \
-npm run bp:fill -- -s "#name" -v "홍길동" && \
-sleep 0.5 && \
-npm run bp:fill -- -s "#email" -v "hong@example.com" && \
-sleep 0.5 && \
-npm run bp:fill -- -s "#message" -v "Browser Pilot에서 보냅니다!" && \
-sleep 0.5 && \
-npm run bp:click -- -s "button[type='submit']" && \
-sleep 1 && \
-npm run bp:screenshot -- -o "contact-submitted.png"
+# 텍스트 라벨을 사용한 문의 폼 제출
+node .browser-pilot/bp chain \
+  navigate -u "https://example.com/contact" \
+  fill --text "이름" -v "홍길동" \
+  fill --text "이메일 주소" -v "hong@example.com" \
+  fill --text 메시지 -v "Browser Pilot에서 보냅니다!" \
+  click --text 제출 --type button \
+  screenshot -o "contact-submitted.png"
 ```
 
 ### 웹 스크래핑
 
 ```bash
-# 페이지에서 모든 h1 제목 추출
-npm run bp:extract -- \
-  -u "https://news.ycombinator.com" \
-  -s "a.storylink" \
-  --all
+# 여러 요소 추출
+node .browser-pilot/bp chain \
+  navigate -u "https://news.ycombinator.com" \
+  extract -s "a.storylink" --all
 ```
 
 ### PDF 생성
 
 ```bash
-# 문서의 가로 방향 PDF 생성
-npm run bp:pdf -- \
-  -u "https://docs.example.com" \
-  -o "api-docs.pdf" \
-  --landscape \
-  --headless
+# 가로 방향 PDF 생성
+node .browser-pilot/bp chain \
+  navigate -u "https://docs.example.com" \
+  pdf -o "api-docs.pdf" --landscape
+```
+
+### Interaction Map 쿼리
+
+```bash
+# 특정 요소 찾기
+node .browser-pilot/bp query --text "로그인"
+node .browser-pilot/bp query --list-types
+
+# 맵 상태 확인
+node .browser-pilot/bp map-status
 ```
 
 ## 봇 감지 우회
 
-Browser Pilot은 `navigator.webdriver = false`를 유지하여 대부분의 봇 방지 시스템을 우회합니다.
+Browser Pilot은 `navigator.webdriver = false`를 유지하고 React synthetic events를 적절히 발생시켜 대부분의 봇 방지 시스템을 우회합니다.
 
-**추가 팁**:
-- 인간 행동을 모방하기 위해 명령 사이에 `sleep` 딜레이 (0.5-2초) 추가
-- 중요한 작업(로그인, 폼 제출)에는 더 긴 딜레이 사용
-- 여러 유사한 작업을 자동화할 때는 랜덤 딜레이 사용
-- 예시: `npm run bp:fill ... && sleep 1 && npm run bp:click ...`
+**체인 모드는 자동으로 300-800ms 랜덤 딜레이를 추가**하여 인간 행동을 모방합니다.
 
 **봇 감지 테스트**:
 ```bash
-npm run bp:screenshot -- \
-  -u "https://bot.sannysoft.com" \
-  -o "bot-test.png" \
-  --headless
+node .browser-pilot/bp chain \
+  navigate -u "https://bot.sannysoft.com" \
+  screenshot -o "bot-test.png"
 ```
 
 예상 결과: 모든 검사 **PASS** (녹색).
 
 ## 모범 사례
 
-1. **한 번 빌드** - 첫 사용 전에 `npm run build` 실행
-2. **디버깅에는 headed 모드 사용** - 브라우저 창을 보려면 `--headless` 생략
-3. **고유한 셀렉터 선호** - ID 사용: `#username` > `.class` > `input[name="user"]`
-4. **상대 경로** - 파일은 자동으로 `.browser-pilot/`에 저장
-5. **인간 같은 딜레이 추가** - 봇 감지를 피하기 위해 명령 사이에 `sleep 0.5-2` 사용
-6. **속도 제한 준수** - 요청 사이에 딜레이 추가
-7. **작업 완료 후 브라우저 닫기** - 리소스 해제를 위해 `npm run bp:close` 사용
+1. **🌟 기본적으로 스마트 모드 사용** - 텍스트 기반 검색 (`--text 로그인`)이 CSS 셀렉터보다 안정적
+2. **워크플로우에는 체인 모드 사용** - 자동 딜레이 및 간소화된 실행
+3. **데몬 자동 관리** - 수동 시작/중지 불필요
+4. **텍스트 기반 검색 선호** - UI 변경에 CSS 셀렉터보다 탄력적
+5. **인덱싱으로 중복 처리** - 2번째 일치 요소에 `--index 2` 사용
+6. **타입으로 정밀 필터링** - `--type button`으로 결과 좁히기
+7. **가시성 확인** - `--viewport-only`로 화면에 있는 요소 확인
+8. **오류 시 콘솔 확인** - 디버깅을 위해 `node .browser-pilot/bp console` 사용
+9. **가이드를 위해 `--help` 사용** - `node .browser-pilot/bp <명령어> --help`
 
 ## 문제 해결
 
@@ -435,12 +470,20 @@ Apache License 2.0 - 자세한 내용은 [LICENSE](../../LICENSE)와 [NOTICE](..
 
 이 플러그인은 [Dev GOM Plugins](https://github.com/Dev-GOM/claude-code-marketplace) 마켓플레이스의 일부입니다. 기여를 환영합니다!
 
+## 문서
+
+- 📖 **빠른 참조**: [SKILL.md](./skills/SKILL.md) - Claude Code용 간결한 가이드
+- 📚 **상세 가이드**:
+  - [명령어 레퍼런스](./skills/references/commands-reference.md) - 예제를 포함한 모든 52+ 명령어
+  - [셀렉터 가이드](./skills/references/selector-guide.md) - 스마트 모드 전략 및 모범 사례
+  - [Interaction Map](./skills/references/interaction-map.md) - 맵 시스템 상세 정보 및 쿼리 API
+
 ## 지원
 
-- 📖 문서: [SKILL.md](./skills/SKILL.md)
-- 🐛 이슈: [GitHub Issues](https://github.com/Dev-GOM/claude-code-marketplace/issues)
-- 💬 토론: [GitHub Discussions](https://github.com/Dev-GOM/claude-code-marketplace/discussions)
+- 🐛 **이슈**: [GitHub Issues](https://github.com/Dev-GOM/claude-code-marketplace/issues)
+- 💬 **토론**: [GitHub Discussions](https://github.com/Dev-GOM/claude-code-marketplace/discussions)
+- 🔧 **개발 가이드**: [CLAUDE.md](./CLAUDE.md) - 플러그인 개발 가이드라인
 
 ---
 
-**참고**: Browser Pilot은 프로덕션 준비가 완료되었으며 적극적으로 유지 관리됩니다. GitHub Issues를 통해 버그를 보고하거나 기능을 요청하세요.
+**참고**: Browser Pilot v1.4.0은 프로덕션 준비가 완료되었으며 적극적으로 유지 관리됩니다. GitHub Issues를 통해 버그를 보고하거나 기능을 요청하세요.
