@@ -8,8 +8,7 @@ import { join } from 'path';
 import { existsSync, unlinkSync, writeFileSync } from 'fs';
 import { ChromeBrowser } from '../cdp/browser';
 import { getOutputDir } from '../cdp/config';
-import * as actions from '../cdp/actions';
-import { SELECTOR_RETRY_CONFIG, RuntimeEvaluateResult } from '../cdp/actions/helpers';
+import { RuntimeEvaluateResult } from '../cdp/actions/helpers';
 import { waitForDomStable } from '../cdp/actions/wait';
 import {
   IPCRequest,
@@ -18,29 +17,12 @@ import {
   IPCErrorCodes,
   SOCKET_PATH_PREFIX,
   PID_FILENAME,
-  IDLE_SHUTDOWN_TIMEOUT,
-  DaemonState,
-  MapQueryParams,
-  MapGenerateParams,
-  MapQueryResult,
-  MapStatusResult,
-  MapGenerateResult
+  IDLE_SHUTDOWN_TIMEOUT
 } from './protocol';
 import { MapManager } from './map-manager';
-import { queryMap, loadMap, listTypes, listTexts } from '../cdp/map/query-map';
 import { logger } from '../utils/logger';
 import { TIME_CONVERSION } from '../constants';
-
-/**
- * Page change tracking for automatic waiting
- */
-interface PageChangeTracker {
-  urlBefore: string;
-  urlAfter: string | null;
-  navigationDetected: boolean;
-  domChangeDetected: boolean;
-  networkActive: boolean;
-}
+import * as handlers from './handlers';
 
 export class DaemonServer {
   private server: Server | null = null;
@@ -53,8 +35,6 @@ export class DaemonServer {
   private startTime: number = Date.now();
   private isShuttingDown: boolean = false;
   private mapManager: MapManager | null = null;
-  private pageChangeTracker: PageChangeTracker | null = null;
-  private actionInProgress: boolean = false;
   private pendingNetworkRequests: Set<string> = new Set();
   private mapGenerationInProgress: boolean = false;
 
@@ -515,71 +495,93 @@ export class DaemonServer {
     try {
       let result: unknown;
 
+      // Create handler context
+      const context: handlers.HandlerContext = {
+        browser: this.browser,
+        mapManager: this.mapManager || undefined,
+        outputDir: this.outputDir
+      };
+
       switch (request.command) {
+        // Navigation commands
         case 'navigate':
-          result = await this.handleNavigate(request.params);
+          result = await handlers.handleNavigate(context, request.params);
           break;
-
         case 'back':
-          result = await this.handleBack(request.params);
+          result = await handlers.handleBack(context, request.params);
           break;
-
         case 'forward':
-          result = await this.handleForward(request.params);
+          result = await handlers.handleForward(context, request.params);
           break;
-
         case 'reload':
-          result = await this.handleReload(request.params);
+          result = await handlers.handleReload(context, request.params);
           break;
 
+        // Interaction commands
         case 'click':
-          result = await this.handleClick(request.params);
+          result = await handlers.handleClick(context, request.params);
           break;
-
         case 'fill':
-          result = await this.handleFill(request.params);
+          result = await handlers.handleFill(context, request.params);
+          break;
+        case 'hover':
+          result = await handlers.handleHover(context, request.params);
+          break;
+        case 'press':
+          result = await handlers.handlePress(context, request.params);
+          break;
+        case 'type':
+          result = await handlers.handleType(context, request.params);
           break;
 
-        case 'scroll':
-          result = await this.handleScroll(request.params);
-          break;
-
-        case 'eval':
-          result = await this.handleEval(request.params);
-          break;
-
+        // Capture commands
         case 'screenshot':
-          result = await this.handleScreenshot(request.params);
+          result = await handlers.handleScreenshot(context, request.params);
           break;
-
         case 'pdf':
-          result = await this.handlePdf(request.params);
+          result = await handlers.handlePdf(context, request.params);
           break;
 
-        case 'console':
-          result = await this.handleConsole(request.params);
+        // Data commands
+        case 'extract':
+          result = await handlers.handleExtract(context, request.params);
+          break;
+        case 'content':
+          result = await handlers.handleContent(context, request.params);
+          break;
+        case 'find':
+          result = await handlers.handleFind(context, request.params);
+          break;
+        case 'eval':
+          result = await handlers.handleEval(context, request.params);
           break;
 
-        case 'wait':
-          result = await this.handleWait(request.params);
-          break;
-
-        case 'status':
-          result = await this.handleStatus();
-          break;
-
+        // Map commands
         case 'query-map':
-          result = await this.handleQueryMap(request.params);
+          result = await handlers.handleQueryMap(context, request.params);
           break;
-
         case 'generate-map':
-          result = await this.handleGenerateMap(request.params);
+          result = await handlers.handleGenerateMap(context, request.params);
           break;
-
         case 'get-map-status':
-          result = await this.handleGetMapStatus(request.params);
+          result = await handlers.handleGetMapStatus(context, request.params);
           break;
 
+        // Utility commands
+        case 'scroll':
+          result = await handlers.handleScroll(context, request.params);
+          break;
+        case 'wait':
+          result = await handlers.handleWait(context, request.params);
+          break;
+        case 'console':
+          result = await handlers.handleConsole(context, request.params);
+          break;
+        case 'status':
+          result = await handlers.handleStatus(context, request.params, this.startTime, this.lastActivity);
+          break;
+
+        // Daemon management
         case 'shutdown':
           setImmediate(() => this.shutdown());
           result = { message: 'Daemon shutting down...' };
@@ -605,373 +607,6 @@ export class DaemonServer {
     }
   }
 
-  /**
-   * Helper methods for action tracking
-   */
-
-  /**
-   * Get current URL from browser
-   */
-  private async getCurrentUrl(): Promise<string> {
-    if (!this.browser) return 'unknown';
-    try {
-      const result = await this.browser.sendCommand<{ result: { value: string } }>(
-        'Runtime.evaluate',
-        { expression: 'window.location.href', returnByValue: true }
-      );
-      return result.result?.value || 'unknown';
-    } catch {
-      return 'unknown';
-    }
-  }
-
-  /**
-   * Execute action with automatic state tracking
-   */
-  private async executeActionWithTracking<T>(
-    actionFn: () => Promise<T>
-  ): Promise<{ result: T; tracker: PageChangeTracker }> {
-    // Capture state before action
-    const urlBefore = await this.getCurrentUrl();
-
-    this.actionInProgress = true;
-    this.pageChangeTracker = {
-      urlBefore,
-      urlAfter: null,
-      navigationDetected: false,
-      domChangeDetected: false,
-      networkActive: false
-    };
-
-    try {
-      // Execute action
-      const result = await actionFn();
-
-      // Capture state after action
-      const urlAfter = await this.getCurrentUrl();
-      this.pageChangeTracker.urlAfter = urlAfter;
-      this.pageChangeTracker.navigationDetected = urlBefore !== urlAfter;
-
-      return { result, tracker: this.pageChangeTracker };
-    } finally {
-      this.actionInProgress = false;
-    }
-  }
-
-  /**
-   * Wait for map to be ready for a specific URL
-   */
-  private async waitForMapReady(expectedUrl: string, _timeout: number): Promise<void> {
-    logger.debug(`⏳ Waiting for map generation (URL: ${expectedUrl})...`);
-
-    // 1. Check if map exists and has correct URL
-    const mapStatus = await this.handleGetMapStatus({}) as MapStatusResult;
-
-    if (!mapStatus.exists || mapStatus.url !== expectedUrl) {
-      // Map doesn't exist or has wrong URL - generate new map
-      logger.debug(`🔨 Generating new map for: ${expectedUrl}`);
-      if (this.mapManager && this.browser) {
-        await this.mapManager.generateMapDebounced(this.browser, false);
-      }
-      // Above await completes only when map generation is fully done
-    }
-
-    logger.debug(`✅ Map ready for: ${expectedUrl}`);
-  }
-
-  /**
-   * Command handlers
-   */
-
-  private async handleNavigate(params: Record<string, unknown>): Promise<unknown> {
-    if (!this.browser) throw new Error('Browser not connected');
-    const url = params.url as string;
-    const result = await actions.navigate(this.browser, url);
-
-    // Navigation always changes URL, wait for map
-    logger.info(`🔄 Navigating to: ${url}`);
-    await this.waitForMapReady(url, 10000);
-
-    return result;
-  }
-
-  private async handleBack(_params: Record<string, unknown>): Promise<unknown> {
-    if (!this.browser) throw new Error('Browser not connected');
-    const result = await actions.goBack(this.browser);
-
-    // Get new URL after navigation
-    const newUrl = await this.getCurrentUrl();
-    logger.info(`🔄 Navigated back to: ${newUrl}`);
-    await this.waitForMapReady(newUrl, 10000);
-
-    return result;
-  }
-
-  private async handleForward(_params: Record<string, unknown>): Promise<unknown> {
-    if (!this.browser) throw new Error('Browser not connected');
-    const result = await actions.goForward(this.browser);
-
-    // Get new URL after navigation
-    const newUrl = await this.getCurrentUrl();
-    logger.info(`🔄 Navigated forward to: ${newUrl}`);
-    await this.waitForMapReady(newUrl, 10000);
-
-    return result;
-  }
-
-  private async handleReload(params: Record<string, unknown>): Promise<unknown> {
-    if (!this.browser) throw new Error('Browser not connected');
-    const hard = params.hard as boolean | undefined;
-
-    // Get current URL before reload
-    const currentUrl = await this.getCurrentUrl();
-    const result = await actions.reload(this.browser, hard || false);
-
-    // Reload stays on same URL, wait for map
-    logger.info(`🔄 Reloading page: ${currentUrl}`);
-    await this.waitForMapReady(currentUrl, 10000);
-
-    return result;
-  }
-
-  private async handleClick(params: Record<string, unknown>): Promise<unknown> {
-    if (!this.browser) throw new Error('Browser not connected');
-    let selector = params.selector as string | undefined;
-
-    // Smart Mode: if text provided, query map
-    if (params.text && !selector) {
-      const { findSelector } = await import('../cdp/map/query-map');
-      const { SELECTOR_RETRY_CONFIG } = await import('../cdp/actions/helpers');
-      const { getOutputDir } = await import('../cdp/config');
-      const path = await import('path');
-
-      const mapPath = path.join(getOutputDir(), SELECTOR_RETRY_CONFIG.MAP_FILENAME);
-      logger.debug(`🔍 Smart Mode: querying map at ${mapPath} for text="${params.text}"`);
-
-      const foundSelector = findSelector(mapPath, {
-        text: params.text as string,
-        index: params.index as number | undefined,
-        type: params.type as string | undefined,
-        viewportOnly: params.viewportOnly as boolean | undefined
-      });
-
-      if (!foundSelector) {
-        logger.error(`❌ findSelector returned null for text="${params.text}"`);
-        throw new Error(`Element not found in map: "${params.text}"`);
-      }
-
-      logger.debug(`✓ Found selector: ${foundSelector}`);
-      selector = foundSelector;
-    }
-
-    if (!selector) {
-      throw new Error('No selector provided');
-    }
-
-    // Execute with tracking
-    const browser = this.browser;
-    const { result, tracker } = await this.executeActionWithTracking(
-      () => actions.click(browser, selector)
-    );
-
-    // Always regenerate map after click (DOM may have changed, URL may or may not change)
-    logger.debug(`🔄 Regenerating map after click (URL: ${tracker.urlBefore} → ${tracker.urlAfter})`);
-    if (this.mapManager && this.browser) {
-      await this.mapManager.generateMapDebounced(this.browser, false);
-    }
-
-    return result;
-  }
-
-  private async handleFill(params: Record<string, unknown>): Promise<unknown> {
-    if (!this.browser) throw new Error('Browser not connected');
-    const selector = params.selector as string;
-    const value = params.value as string;
-
-    // Execute with tracking
-    const browser = this.browser;
-    const { result, tracker } = await this.executeActionWithTracking(
-      () => actions.fill(browser, selector, value)
-    );
-
-    // Always regenerate map after fill (DOM may have changed, URL may or may not change)
-    logger.debug(`🔄 Regenerating map after fill (URL: ${tracker.urlBefore} → ${tracker.urlAfter})`);
-    if (this.mapManager && this.browser) {
-      await this.mapManager.generateMapDebounced(this.browser, false);
-    }
-
-    return result;
-  }
-
-  private async handleScroll(params: Record<string, unknown>): Promise<unknown> {
-    if (!this.browser) throw new Error('Browser not connected');
-    const x = params.x as number;
-    const y = params.y as number;
-    return actions.scroll(this.browser, { x, y });
-  }
-
-  private async handleEval(params: Record<string, unknown>): Promise<unknown> {
-    if (!this.browser) throw new Error('Browser not connected');
-    const expression = params.expression as string;
-    return actions.evaluate(this.browser, expression);
-  }
-
-  private async handleScreenshot(params: Record<string, unknown>): Promise<unknown> {
-    if (!this.browser) throw new Error('Browser not connected');
-    const filename = params.filename as string | undefined;
-    return actions.screenshot(this.browser, filename || 'screenshot.png');
-  }
-
-  private async handlePdf(params: Record<string, unknown>): Promise<unknown> {
-    if (!this.browser) throw new Error('Browser not connected');
-    const filename = params.filename as string | undefined;
-    const landscape = params.landscape as boolean | undefined;
-    return actions.generatePdf(this.browser, filename || 'page.pdf', landscape || false);
-  }
-
-  private async handleConsole(params: Record<string, unknown>): Promise<unknown> {
-    if (!this.browser) throw new Error('Browser not connected');
-    const errorsOnly = params.errorsOnly as boolean | undefined;
-    const result = await actions.getConsoleMessages(this.browser, errorsOnly);
-
-    if (params.clear) {
-      this.browser.clearConsoleMessages();
-    }
-
-    return result;
-  }
-
-  private async handleWait(params: Record<string, unknown>): Promise<unknown> {
-    if (!this.browser) throw new Error('Browser not connected');
-    const duration = params.duration as number | undefined;
-    if (duration) {
-      // Simple sleep implementation
-      await new Promise(resolve => setTimeout(resolve, duration));
-      return { success: true, duration };
-    } else {
-      return actions.waitForLoad(this.browser);
-    }
-  }
-
-  private async handleStatus(): Promise<DaemonState> {
-    if (!this.browser) throw new Error('Browser not connected');
-    const currentUrl = await this.browser.sendCommand<{ result: { value: string } }>('Runtime.evaluate', {
-      expression: 'window.location.href',
-      returnByValue: true
-    });
-
-    return {
-      connected: true,
-      currentUrl: currentUrl.result?.value || null,
-      targetId: null, // CDP client doesn't expose targetId directly
-      debugPort: this.browser.debugPort,
-      consoleMessageCount: this.browser.getConsoleMessages().length,
-      networkErrorCount: this.browser.getNetworkErrors().length,
-      uptime: Date.now() - this.startTime,
-      lastActivity: this.lastActivity
-    };
-  }
-
-  private async handleQueryMap(params: Record<string, unknown>): Promise<MapQueryResult> {
-    const queryParams = params as MapQueryParams;
-
-    // Load map
-    const mapPath = join(this.outputDir, SELECTOR_RETRY_CONFIG.MAP_FILENAME);
-    const map = loadMap(mapPath);
-
-    // Handle listTypes request
-    if (queryParams.listTypes) {
-      const types = listTypes(map);
-      return {
-        count: Object.keys(types).length,
-        results: [],
-        types,
-        total: map.statistics.total
-      };
-    }
-
-    // Handle listTexts request
-    if (queryParams.listTexts) {
-      const texts = listTexts(map, {
-        type: queryParams.type,
-        limit: queryParams.limit,
-        offset: queryParams.offset
-      });
-      return {
-        count: texts.length,
-        results: [],
-        texts,
-        total: Object.keys(map.indexes.byText).length
-      };
-    }
-
-    // Regular query
-    const allResults = queryMap(map, { ...queryParams, limit: 0 }); // Get all for total count
-    const results = queryMap(map, queryParams); // Get paginated results
-
-    if (results.length === 0 && !queryParams.listTypes && !queryParams.listTexts) {
-      throw new Error('No elements found matching query criteria');
-    }
-
-    // Return all results in MapQueryResult format
-    return {
-      count: results.length,
-      results: results.map(result => ({
-        selector: result.selector,
-        alternatives: result.alternatives,
-        element: {
-          tag: result.element.tag,
-          text: result.element.text,
-          position: result.element.position
-        }
-      })),
-      total: allResults.length
-    };
-  }
-
-  private async handleGenerateMap(params: Record<string, unknown>): Promise<MapGenerateResult> {
-    if (!this.browser) throw new Error('Browser not connected');
-    if (!this.mapManager) throw new Error('MapManager not initialized');
-
-    const generateParams = params as MapGenerateParams;
-    const force = generateParams.force ?? false;
-
-    // Get current URL before generation
-    const urlResult = await this.browser.sendCommand<{ result: { value: string } }>('Runtime.evaluate', {
-      expression: 'window.location.href',
-      returnByValue: true
-    });
-    const currentUrl = urlResult.result?.value || 'unknown';
-
-    // Check if we can use cache
-    const cached = !force && this.mapManager.isCacheValid(currentUrl);
-
-    // Generate map
-    const map = await this.mapManager.generateMap(this.browser, force);
-
-    return {
-      success: true,
-      url: map.url,
-      elementCount: map.statistics.total,
-      timestamp: map.timestamp,
-      cached
-    };
-  }
-
-  private async handleGetMapStatus(_params: Record<string, unknown>): Promise<MapStatusResult> {
-    if (!this.browser) throw new Error('Browser not connected');
-    if (!this.mapManager) throw new Error('MapManager not initialized');
-
-    // Get current URL
-    const urlResult = await this.browser.sendCommand<{ result: { value: string } }>('Runtime.evaluate', {
-      expression: 'window.location.href',
-      returnByValue: true
-    });
-    const currentUrl = urlResult.result?.value || 'unknown';
-
-    // Get map status
-    return this.mapManager.getMapStatus(currentUrl);
-  }
 
   /**
    * Graceful shutdown

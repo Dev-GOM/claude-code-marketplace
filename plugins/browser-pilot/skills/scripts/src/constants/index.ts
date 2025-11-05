@@ -24,6 +24,8 @@ export const CDP = {
 /**
  * 파일 시스템 관련 상수
  * @property OUTPUT_DIR - 출력 디렉토리 (.browser-pilot)
+ * @property SCREENSHOTS_DIR - 스크린샷 디렉토리 (screenshots)
+ * @property PDFS_DIR - PDF 디렉토리 (pdfs)
  * @property INTERACTION_MAP_FILE - Interaction Map 파일명
  * @property MAP_CACHE_FILE - Map 캐시 파일명
  * @property DAEMON_PID_FILE - 데몬 PID 파일명
@@ -32,6 +34,8 @@ export const CDP = {
  */
 export const FS = {
   OUTPUT_DIR: '.browser-pilot',
+  SCREENSHOTS_DIR: 'screenshots',
+  PDFS_DIR: 'pdfs',
   INTERACTION_MAP_FILE: 'interaction-map.json',
   MAP_CACHE_FILE: 'map-cache.json',
   DAEMON_PID_FILE: 'daemon.pid',

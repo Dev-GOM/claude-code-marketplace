@@ -6,7 +6,7 @@ function registerCaptureCommands(program) {
     // Screenshot command
     program
         .command('screenshot')
-        .description('Capture screenshot of a webpage')
+        .description('Capture screenshot of webpage (saved to .browser-pilot/screenshots/)')
         .option('-u, --url <url>', 'URL to capture (optional, uses current page if not specified)')
         .option('-o, --output <path>', 'Output file path', 'screenshot.png')
         .option('--headless', 'Run in headless mode', false)
@@ -37,7 +37,7 @@ function registerCaptureCommands(program) {
     // Generate PDF command
     program
         .command('pdf')
-        .description('Generate PDF from webpage')
+        .description('Generate PDF from webpage (saved to .browser-pilot/pdfs/)')
         .option('-u, --url <url>', 'URL to navigate to (optional, uses current page if not specified)')
         .option('-o, --output <path>', 'Output file path', 'page.pdf')
         .option('--headless', 'Run in headless mode', false)

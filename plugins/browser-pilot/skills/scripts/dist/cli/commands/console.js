@@ -7,7 +7,7 @@ function registerConsoleCommands(program) {
     // Get console messages
     program
         .command('console')
-        .description('Get console messages from the page')
+        .description('Retrieve console messages from the page (use --errors-only to filter error messages only)')
         .option('-u, --url <url>', 'Navigate to URL before getting console messages')
         .option('-e, --errors-only', 'Show only error messages', false)
         .action(async (options) => {

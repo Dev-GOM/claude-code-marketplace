@@ -9,7 +9,7 @@ export function registerDaemonCommands(program: Command) {
   // Start daemon
   program
     .command('daemon-start')
-    .description('Start the Browser Pilot daemon')
+    .description('Start Browser Pilot daemon (persistent background browser)')
     .option('-q, --quiet', 'Suppress output')
     .action(async (options) => {
       const manager = new DaemonManager();
@@ -25,7 +25,7 @@ export function registerDaemonCommands(program: Command) {
   // Stop daemon
   program
     .command('daemon-stop')
-    .description('Stop the Browser Pilot daemon')
+    .description('Stop Browser Pilot daemon and close browser')
     .option('-q, --quiet', 'Suppress output')
     .option('-f, --force', 'Force kill the daemon')
     .action(async (options) => {
@@ -42,7 +42,7 @@ export function registerDaemonCommands(program: Command) {
   // Restart daemon
   program
     .command('daemon-restart')
-    .description('Restart the Browser Pilot daemon')
+    .description('Restart Browser Pilot daemon')
     .option('-q, --quiet', 'Suppress output')
     .action(async (options) => {
       const manager = new DaemonManager();
@@ -58,7 +58,7 @@ export function registerDaemonCommands(program: Command) {
   // Daemon status
   program
     .command('daemon-status')
-    .description('Check Browser Pilot daemon status')
+    .description('Check daemon status and browser info')
     .option('-q, --quiet', 'Suppress output')
     .action(async (options) => {
       const manager = new DaemonManager();
@@ -74,7 +74,7 @@ export function registerDaemonCommands(program: Command) {
   // Query interaction map
   program
     .command('daemon-query-map')
-    .description('Query interaction map for elements')
+    .description('Query interaction map by text, type, or ID')
     .option('-t, --text <text>', 'Search by text content')
     .option('-T, --type <type>', 'Filter by element type (button, link, input, etc)')
     .option('-i, --index <number>', 'Select nth match (1-based)', parseInt)
@@ -102,7 +102,7 @@ export function registerDaemonCommands(program: Command) {
   // Generate interaction map
   program
     .command('daemon-generate-map')
-    .description('Generate interaction map for current page')
+    .description('Generate interaction map for current page (use -f to force)')
     .option('-f, --force', 'Force regeneration (ignore cache)')
     .option('-q, --quiet', 'Suppress output')
     .action(async (options) => {
@@ -122,7 +122,7 @@ export function registerDaemonCommands(program: Command) {
   // Get map status
   program
     .command('daemon-map-status')
-    .description('Get interaction map status')
+    .description('Get interaction map status (URL, element count, cache)')
     .option('-q, --quiet', 'Suppress output')
     .action(async (options) => {
       const manager = new DaemonManager();

@@ -40,7 +40,7 @@ function registerFormsCommands(program) {
     // Select option command
     program
         .command('select')
-        .description('Select option from dropdown')
+        .description('Select option from dropdown (requires -s and -v)')
         .option('-u, --url <url>', 'URL to navigate to (optional, uses current page if not specified)')
         .requiredOption('-s, --selector <selector>', 'CSS selector of select element')
         .requiredOption('-v, --value <value>', 'Option value to select')
@@ -71,7 +71,7 @@ function registerFormsCommands(program) {
     // Check checkbox command
     program
         .command('check')
-        .description('Check a checkbox')
+        .description('Check a checkbox (requires -s/--selector)')
         .option('-u, --url <url>', 'URL to navigate to (optional, uses current page if not specified)')
         .requiredOption('-s, --selector <selector>', 'CSS selector of checkbox')
         .option('--headless', 'Run in headless mode', false)
@@ -101,7 +101,7 @@ function registerFormsCommands(program) {
     // Uncheck checkbox command
     program
         .command('uncheck')
-        .description('Uncheck a checkbox')
+        .description('Uncheck a checkbox (requires -s/--selector)')
         .option('-u, --url <url>', 'URL to navigate to (optional, uses current page if not specified)')
         .requiredOption('-s, --selector <selector>', 'CSS selector of checkbox')
         .option('--headless', 'Run in headless mode', false)

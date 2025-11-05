@@ -7,7 +7,7 @@ export function registerAccessibilityCommands(program: Command) {
   // Get accessibility snapshot
   program
     .command('accessibility')
-    .description('Get accessibility tree snapshot')
+    .description('Get accessibility tree snapshot (ARIA roles, labels, and screen reader info)')
     .option('-u, --url <url>', 'Navigate to URL first')
     .action(async (options) => {
       const browser = new ChromeBrowser(false);

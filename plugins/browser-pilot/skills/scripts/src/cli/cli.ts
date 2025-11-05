@@ -29,7 +29,8 @@ const program = new Command();
 program
   .name('cdp-browser')
   .description('Chrome DevTools Protocol browser automation CLI')
-  .version('1.0.0');
+  .version('1.0.0')
+  .addHelpText('after', '\nTip: Use "<command> --help" to see detailed options for each command.\nExample: cdp-browser navigate --help');
 
 // Register all command groups
 registerDaemonCommands(program); // Daemon management first

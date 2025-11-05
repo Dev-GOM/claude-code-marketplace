@@ -5,7 +5,7 @@ export function registerQueryCommands(program: Command) {
   // Query interaction map
   program
     .command('query')
-    .description('Query the interaction map for elements')
+    .description('Search interaction map for elements (by text, type, or ID with pagination support)')
     .option('-t, --text <text>', 'Search by text content')
     .option('--type <type>', 'Filter by element type (button, input, etc.)')
     .option('-i, --index <number>', 'Select nth match (1-based)', parseInt)
@@ -133,7 +133,7 @@ export function registerQueryCommands(program: Command) {
   // Get map status
   program
     .command('map-status')
-    .description('Get current interaction map status')
+    .description('Check interaction map status (URL, element count, cache validity, timestamp)')
     .action(async () => {
       try {
         const response = await executeViaDaemon('get-map-status', {});
@@ -171,7 +171,7 @@ export function registerQueryCommands(program: Command) {
   // Force regenerate map
   program
     .command('regen-map')
-    .description('Force regenerate the interaction map')
+    .description('Force rebuild interaction map (use when page content changes or map is stale)')
     .action(async () => {
       try {
         console.log('Regenerating interaction map...');

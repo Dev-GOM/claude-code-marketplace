@@ -40,7 +40,7 @@ function registerFocusCommands(program) {
     // Focus element
     program
         .command('focus')
-        .description('Focus on an element')
+        .description('Set focus on a specific element (for keyboard input)')
         .requiredOption('-s, --selector <selector>', 'CSS selector')
         .option('-u, --url <url>', 'Navigate to URL first')
         .action(async (options) => {
@@ -64,7 +64,7 @@ function registerFocusCommands(program) {
     // Blur element
     program
         .command('blur')
-        .description('Remove focus from an element')
+        .description('Remove focus from an element (deactivate active element)')
         .requiredOption('-s, --selector <selector>', 'CSS selector')
         .option('-u, --url <url>', 'Navigate to URL first')
         .action(async (options) => {

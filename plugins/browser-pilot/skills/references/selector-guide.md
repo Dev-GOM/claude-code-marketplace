@@ -188,13 +188,15 @@ node .browser-pilot/bp click --text "Login" --type button
 
 **Chain mode (Direct):**
 ```bash
-node .browser-pilot/bp chain navigate -u "<login-url>" fill -s "#email" -v "user@example.com" fill -s "#password" -v "secret" click -s "#login-btn"
+node .browser-pilot/bp chain navigate -u <url> fill -s #email -v <email> fill -s #password -v <password> click -s #login-btn
 ```
 
-**Chain mode (Smart):**
+**Chain mode (Smart - recommended):**
 ```bash
-node .browser-pilot/bp chain navigate -u "<login-url>" fill --text "Email" -v "user@example.com" fill --text "Password" -v "secret" click --text "Login" --type button
+node .browser-pilot/bp chain navigate -u <url> fill --text Email -v <email> fill --text Password -v <password> click --text Login --type button
 ```
+
+**Note:** Chain mode auto-waits for map generation after navigation and adds human-like delays between commands.
 
 ### Clicking Nth Item
 

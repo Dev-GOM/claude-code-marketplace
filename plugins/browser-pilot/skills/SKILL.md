@@ -30,21 +30,31 @@ Use browser-pilot when tasks involve:
 
 Chrome must be installed. Local scripts initialize automatically on session start (no manual setup required).
 
+## Getting Help
+
+All commands support `--help` for detailed options:
+
+```bash
+# See all available commands
+node .browser-pilot/bp --help
+
+# Get help for specific command
+node .browser-pilot/bp <command> --help
+```
+
 ## Architecture
 
-**Daemon-based design** for optimal performance:
-- Background daemon maintains persistent CDP connection to Chrome
-- CLI commands communicate via IPC (Unix socket/Named pipe)
-- Console messages and network errors collected continuously
-- Auto-clear on navigation, auto-start on first command
-- Auto-shutdown after 30 minutes of inactivity
+**Daemon-based design:**
+- Background daemon maintains persistent CDP connection
+- CLI commands communicate via IPC
+- Auto-starts on first command, stops at session end
+- 30-minute inactivity timeout
 
-**Interaction Map System** for reliable element targeting:
-- Auto-generates JSON map of all interactive elements on page load
-- Supports text-based search with automatic selector generation
-- Handles duplicate elements with indexing
-- Falls back to alternative selectors on failure
-- Cache expires after 10 minutes
+**Interaction Map System:**
+- Auto-generates JSON map of interactive elements on page load
+- Enables text-based search with automatic selector generation
+- Handles duplicates with indexing
+- 10-minute cache with auto-regeneration
 
 ## Core Workflow
 
@@ -57,167 +67,95 @@ From user's request, identify:
 - Output file names (for screenshots/PDFs)
 - Data to extract or forms to fill
 
-When information is missing or ambiguous, use AskUserQuestion tool to provide clear options.
+When information is missing or ambiguous, use AskUserQuestion tool.
 
 ### 2. Execute Commands
 
-All commands use the CLI wrapper script `.browser-pilot/bp` which forwards to project-local scripts. Replace placeholders (`<target-url>`, `<selector>`, etc.) with actual values.
-
-#### Single Command Execution
+All commands use `.browser-pilot/bp` wrapper script. Replace placeholders with actual values.
 
 **Navigation:**
 ```bash
-node .browser-pilot/bp navigate -u "<url>"
+node .browser-pilot/bp navigate -u <url>
 node .browser-pilot/bp back
 node .browser-pilot/bp forward
 node .browser-pilot/bp reload
 ```
 
-**Interaction (Direct Mode):**
+**Interaction (Smart Mode - Recommended):**
 ```bash
-node .browser-pilot/bp click -s "#login-button"
-node .browser-pilot/bp fill -s "input[name='email']" -v "test@example.com"
-node .browser-pilot/bp hover -s ".menu-item"
-```
+# Text-based element search (map auto-generated)
+# No quotes for single words
+node .browser-pilot/bp click --text Login --type button
+node .browser-pilot/bp fill --text Email -v <value>
 
-**Interaction (Smart Mode - recommended):**
-```bash
-# Text-based element search (map auto-generated on page load)
-node .browser-pilot/bp click --text "Login" --type button
+# Use quotes when text contains spaces
+node .browser-pilot/bp click --text "Sign In" --type button
+node .browser-pilot/bp fill --text "Email Address" -v <value>
 
 # Handle duplicates with indexing
-node .browser-pilot/bp click --text "Delete" --index 2 --type button
+node .browser-pilot/bp click --text Delete --index 2
 
 # Filter visible elements only
-node .browser-pilot/bp click --text "Submit" --viewport-only
+node .browser-pilot/bp click --text Submit --viewport-only
 ```
+
+**Interaction (Direct Mode - fallback for unique IDs):**
+```bash
+node .browser-pilot/bp click -s "#login-button"
+node .browser-pilot/bp fill -s "input[name='email']" -v <value>
+```
+
+**Capture:**
+```bash
+# Screenshots saved to .browser-pilot/screenshots/
+node .browser-pilot/bp screenshot -o <filename>.png
+
+# PDFs saved to .browser-pilot/pdfs/
+node .browser-pilot/bp pdf -o <filename>.pdf
+```
+
+**Chain Mode (multiple commands):**
+```bash
+# Basic chain (no quotes needed for single words)
+node .browser-pilot/bp chain navigate -u <url> click --text Submit extract -s .result
+
+# With spaces (quotes required)
+node .browser-pilot/bp chain navigate -u <url> click --text "Sign In" fill --text Email -v <email>
+
+# Login workflow
+node .browser-pilot/bp chain navigate -u <url> fill --text Email -v <email> fill --text Password -v <password> click --text Login
+
+# Screenshot workflow
+node .browser-pilot/bp chain navigate -u <url> wait -s .content-loaded screenshot -o result.png
+```
+
+**Chain-specific options:**
+- `--timeout <ms>`: Map wait timeout after navigation (default: 10000ms)
+- `--delay <ms>`: Fixed delay between commands (overrides random 300-800ms)
 
 **Data Extraction:**
 ```bash
-node .browser-pilot/bp extract -s ".result"
+node .browser-pilot/bp extract -s <selector>
 node .browser-pilot/bp content
 node .browser-pilot/bp console
 node .browser-pilot/bp cookies
 ```
 
-**Capture:**
-```bash
-node .browser-pilot/bp screenshot -o "page.png" --full-page
-node .browser-pilot/bp pdf -o "page.pdf"
-```
-
 **Other Actions:**
 ```bash
-node .browser-pilot/bp wait -s ".content-loaded" -t 3000
-node .browser-pilot/bp scroll -s ".element"
-node .browser-pilot/bp eval -e "document.title"
-node .browser-pilot/bp upload -s "input[type=file]" -f "file.txt"
+node .browser-pilot/bp wait -s <selector> -t <timeout-ms>
+node .browser-pilot/bp scroll -s <selector>
+node .browser-pilot/bp eval -e <javascript-expression>
 ```
 
-#### Chain Mode
-
-Execute multiple commands sequentially in a single call:
+### 3. Query Interaction Map (when needed)
 
 ```bash
-# Basic chain: navigate → click → extract
-node .browser-pilot/bp chain navigate -u "<url>" click --text "Submit" extract -s ".result"
-
-# Login workflow
-node .browser-pilot/bp chain navigate -u "<login-url>" fill --text "Email" -v "user@example.com" fill --text "Password" -v "secret" click --text "Login"
-
-# Screenshot workflow with navigation
-node .browser-pilot/bp chain navigate -u "<url>" wait -s ".content-loaded" -t 3000 screenshot -o "page.png"
-```
-
-Chain mode stops if any command fails. Each command executes after the previous one completes.
-
-### 3. Selector Syntax
-
-**CSS Selectors** (for elements with unique IDs/classes):
-- By ID: `#login-button`
-- By class: `.submit-btn`
-- By attribute: `input[name='email']`
-- Complex: `div.container > button.primary`
-
-**XPath Selectors** (for text-based or structural selection):
-- By text (wildcard `*`): `//*[contains(text(), 'Submit')]`
-- By exact text: `//*[text()='Sign In']`
-- By attribute: `//*[@type='email']`
-- With indexing: `(//*[contains(text(), 'Delete')])[2]`
-
-**Smart Mode Options** (recommended for reliability):
-- `--text <text>`: Search by text content
-- `--index <number>`: Select N-th match (1-based)
-- `--type <type>`: Filter by element type (button, input, etc.)
-- `--viewport-only`: Only search visible elements
-
-## Smart Mode Workflow
-
-Smart Mode eliminates brittle selectors by using text-based element search with automatic selector generation from interaction maps.
-
-### When to Use Smart Mode
-
-Use Smart Mode when:
-- Elements lack unique IDs or stable classes
-- Need to select "the 2nd Delete button" or similar
-- Selectors frequently break due to UI changes
-- Working with dynamically generated content
-
-### Smart Mode Steps
-
-1. **Navigate to target page** (map generates automatically):
-```bash
-node .browser-pilot/bp navigate -u "<target-url>"
-```
-
-2. **Execute actions with text-based search**:
-```bash
-# Click first "Add to Cart" button
-node .browser-pilot/bp click --text "Add to Cart" --index 1
-
-# Click visible "Delete" buttons only
-node .browser-pilot/bp click --text "Delete" --viewport-only --type button
-
-# Fill input by label text
-node .browser-pilot/bp fill --text "Username" -v "testuser"
-```
-
-### Interaction Map
-
-Maps are auto-generated on page load and stored in `.browser-pilot/interaction-map.json` with:
-- **Key-value structure**: Direct ID access (`elements[id]`)
-- **Indexes**: Fast lookup by text, type, or visibility
-- **Multiple selectors**: byText (XPath), byId, byCSS, byRole, byAriaLabel
-- **Smart priority**: byId > byText(indexed) > byCSS > byRole
-- **10-minute cache**: Automatically regenerates after expiration
-
-Map regenerates automatically on navigation or after 10-minute cache expiration.
-
-#### Querying the Map
-
-Explore the interaction map to find elements:
-
-```bash
-# List all element types with counts
+# List all element types
 node .browser-pilot/bp query --list-types
 
-# List all text contents (default: 20 items)
-node .browser-pilot/bp query --list-texts
-
-# List button text contents only
-node .browser-pilot/bp query --list-texts --type button
-
 # Find elements by text
-node .browser-pilot/bp query --text "Submit"
-
-# Find all buttons (paginated, default 20)
-node .browser-pilot/bp query --type button
-
-# Show all buttons with detailed info
-node .browser-pilot/bp query --type button --limit 0 --verbose
-
-# Pagination
-node .browser-pilot/bp query --type button --limit 10 --offset 20
+node .browser-pilot/bp query --text <text>
 
 # Check map status
 node .browser-pilot/bp map-status
@@ -226,41 +164,32 @@ node .browser-pilot/bp map-status
 node .browser-pilot/bp regen-map
 ```
 
-## Daemon Management
-
-Daemon starts automatically on first command and stops automatically at session end or when idle for 30 minutes. Manual control:
-
-```bash
-# Start daemon (optional, auto-starts)
-node .browser-pilot/bp daemon-start
-
-# Check status
-node .browser-pilot/bp daemon-status
-
-# Restart daemon
-node .browser-pilot/bp daemon-restart
-
-# Stop daemon
-node .browser-pilot/bp daemon-stop
-```
-
 ## Best Practices
 
-1. **Use Smart Mode for reliability**: Text-based search is more stable than CSS selectors
+1. **🌟 Use Smart Mode by default**: Text-based search (`--text`) is more stable than CSS selectors
+   - Recommended: `click --text Login`
+   - Fallback: `click -s #login-btn` (only for unique IDs)
+
 2. **Maps auto-generate**: No manual map generation needed, happens on page load
-3. **Prefer text-based XPath with wildcards**: `//*[contains(text(), '...')]` works across frameworks
-4. **Use indexing for duplicates**: `--index 2` selects 2nd match
-5. **Filter by type**: `--type button` narrows search results
-6. **Verify element visibility**: `--viewport-only` ensures element is on screen
+
+3. **Handle duplicates with indexing**: `--index 2` selects 2nd match when multiple elements have same text
+
+4. **Filter by type for precision**: `--type button` narrows search results
+
+5. **Verify element visibility**: `--viewport-only` ensures element is on screen
+
+6. **Use Chain Mode for workflows**: Execute multiple commands in sequence for complex automation
+
 7. **Check console for errors**: `node .browser-pilot/bp console` after actions fail
-8. **Let daemon auto-manage**: Automatically starts on first command, stops at session end
-9. **Use Chain Mode for workflows**: Execute multiple commands in sequence for complex tasks
+
+8. **Let daemon auto-manage**: Starts on first command, stops at session end
 
 ## References
 
-Detailed documentation available in `references/` folder:
-- `references/interaction-map.md`: Interaction Map system architecture and auto-generation
-- `references/commands-reference.md`: Complete command reference with all options
-- `references/selector-guide.md`: Advanced selector strategies and examples
+Detailed documentation in `references/` folder (load as needed):
 
-Load references as needed for detailed information about specific features.
+- **`references/commands-reference.md`**: Complete command list with all options and examples
+- **`references/interaction-map.md`**: Smart Mode system, map structure, and query API
+- **`references/selector-guide.md`**: Selector strategies, best practices, and troubleshooting
+
+Load references when user needs detailed information about specific features, advanced usage patterns, or troubleshooting guidance.

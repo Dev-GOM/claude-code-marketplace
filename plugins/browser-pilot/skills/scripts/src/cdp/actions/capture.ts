@@ -4,10 +4,11 @@
 
 import { ChromeBrowser } from '../browser';
 import { writeFileSync } from 'fs';
-import { dirname } from 'path';
+import { dirname, join } from 'path';
 import { mkdirSync, existsSync } from 'fs';
 import { ActionResult, ActionOptions, mergeOptions, ensureOutputPath } from './helpers';
 import { logger } from '../../utils/logger';
+import { FS } from '../../constants';
 
 // CDP Types for Page domain
 interface LayoutMetrics {
@@ -53,16 +54,23 @@ const PDF_DEFAULT_MARGIN = 0.4;       // inches
 
 /**
  * Take screenshot.
+ * @param browser - ChromeBrowser instance
+ * @param filename - Screenshot filename (automatically saved to .browser-pilot/screenshots/)
+ * @param fullPage - Capture full page or viewport only
+ * @param options - Action options
  */
 export async function screenshot(
   browser: ChromeBrowser,
-  outputPath: string,
+  filename: string,
   fullPage = true,
   options?: ActionOptions
 ): Promise<ActionResult> {
   const opts = mergeOptions(options);
 
-  if (opts.verbose) logger.info(`📸 Taking screenshot: ${outputPath}`);
+  // Construct path within screenshots folder
+  const screenshotPath = join(FS.SCREENSHOTS_DIR, filename);
+
+  if (opts.verbose) logger.info(`📸 Taking screenshot: ${screenshotPath}`);
 
   // Enable Page domain
   await browser.sendCommand('Page.enable');
@@ -89,8 +97,8 @@ export async function screenshot(
   // Decode and save
   const imageData = Buffer.from(result.data, 'base64');
 
-  // Ensure output directory exists
-  const absolutePath = ensureOutputPath(outputPath);
+  // Ensure output directory exists (creates .browser-pilot/screenshots/ if needed)
+  const absolutePath = ensureOutputPath(screenshotPath);
   const dir = dirname(absolutePath);
   if (!existsSync(dir)) {
     mkdirSync(dir, { recursive: true });
@@ -105,17 +113,25 @@ export async function screenshot(
 
 /**
  * Generate PDF from current page.
+ * @param browser - ChromeBrowser instance
+ * @param filename - PDF filename (automatically saved to .browser-pilot/pdfs/)
+ * @param landscape - Use landscape orientation
+ * @param printBackground - Print background graphics
+ * @param options - Action options
  */
 export async function generatePdf(
   browser: ChromeBrowser,
-  outputPath: string,
+  filename: string,
   landscape = false,
   printBackground = true,
   options?: ActionOptions
 ): Promise<ActionResult> {
   const opts = mergeOptions(options);
 
-  if (opts.verbose) logger.info(`📄 Generating PDF: ${outputPath}`);
+  // Construct path within pdfs folder
+  const pdfPath = join(FS.PDFS_DIR, filename);
+
+  if (opts.verbose) logger.info(`📄 Generating PDF: ${pdfPath}`);
 
   await browser.sendCommand('Page.enable');
 
@@ -133,7 +149,8 @@ export async function generatePdf(
   const result = await browser.sendCommand<PDFResult>('Page.printToPDF', params);
   const pdfData = Buffer.from(result.data, 'base64');
 
-  const absolutePath = ensureOutputPath(outputPath);
+  // Ensure output directory exists (creates .browser-pilot/pdfs/ if needed)
+  const absolutePath = ensureOutputPath(pdfPath);
   writeFileSync(absolutePath, pdfData);
 
   if (opts.verbose) logger.info(`✅ PDF saved: ${absolutePath}`);

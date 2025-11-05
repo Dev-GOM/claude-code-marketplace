@@ -6,7 +6,7 @@ function registerNavigationCommands(program) {
     // Navigate command
     program
         .command('navigate')
-        .description('Navigate to a URL')
+        .description('Navigate to a URL (requires -u/--url)')
         .requiredOption('-u, --url <url>', 'URL to navigate to')
         .option('--headless', 'Run in headless mode', false)
         .action(async (options) => {
@@ -29,7 +29,7 @@ function registerNavigationCommands(program) {
     // Go back command
     program
         .command('back')
-        .description('Navigate back in history')
+        .description('Navigate back in browser history')
         .action(async () => {
         try {
             const response = await (0, daemon_helper_1.executeViaDaemon)('back', {});

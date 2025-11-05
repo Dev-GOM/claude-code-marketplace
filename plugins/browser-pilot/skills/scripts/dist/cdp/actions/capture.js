@@ -10,17 +10,24 @@ const path_1 = require("path");
 const fs_2 = require("fs");
 const helpers_1 = require("./helpers");
 const logger_1 = require("../../utils/logger");
+const constants_1 = require("../../constants");
 // PDF Constants
 const PDF_PAPER_LETTER_WIDTH = 8.5; // inches
 const PDF_PAPER_LETTER_HEIGHT = 11.0; // inches
 const PDF_DEFAULT_MARGIN = 0.4; // inches
 /**
  * Take screenshot.
+ * @param browser - ChromeBrowser instance
+ * @param filename - Screenshot filename (automatically saved to .browser-pilot/screenshots/)
+ * @param fullPage - Capture full page or viewport only
+ * @param options - Action options
  */
-async function screenshot(browser, outputPath, fullPage = true, options) {
+async function screenshot(browser, filename, fullPage = true, options) {
     const opts = (0, helpers_1.mergeOptions)(options);
+    // Construct path within screenshots folder
+    const screenshotPath = (0, path_1.join)(constants_1.FS.SCREENSHOTS_DIR, filename);
     if (opts.verbose)
-        logger_1.logger.info(`📸 Taking screenshot: ${outputPath}`);
+        logger_1.logger.info(`📸 Taking screenshot: ${screenshotPath}`);
     // Enable Page domain
     await browser.sendCommand('Page.enable');
     let params = {};
@@ -41,8 +48,8 @@ async function screenshot(browser, outputPath, fullPage = true, options) {
     const result = await browser.sendCommand('Page.captureScreenshot', params);
     // Decode and save
     const imageData = Buffer.from(result.data, 'base64');
-    // Ensure output directory exists
-    const absolutePath = (0, helpers_1.ensureOutputPath)(outputPath);
+    // Ensure output directory exists (creates .browser-pilot/screenshots/ if needed)
+    const absolutePath = (0, helpers_1.ensureOutputPath)(screenshotPath);
     const dir = (0, path_1.dirname)(absolutePath);
     if (!(0, fs_2.existsSync)(dir)) {
         (0, fs_2.mkdirSync)(dir, { recursive: true });
@@ -54,11 +61,18 @@ async function screenshot(browser, outputPath, fullPage = true, options) {
 }
 /**
  * Generate PDF from current page.
+ * @param browser - ChromeBrowser instance
+ * @param filename - PDF filename (automatically saved to .browser-pilot/pdfs/)
+ * @param landscape - Use landscape orientation
+ * @param printBackground - Print background graphics
+ * @param options - Action options
  */
-async function generatePdf(browser, outputPath, landscape = false, printBackground = true, options) {
+async function generatePdf(browser, filename, landscape = false, printBackground = true, options) {
     const opts = (0, helpers_1.mergeOptions)(options);
+    // Construct path within pdfs folder
+    const pdfPath = (0, path_1.join)(constants_1.FS.PDFS_DIR, filename);
     if (opts.verbose)
-        logger_1.logger.info(`📄 Generating PDF: ${outputPath}`);
+        logger_1.logger.info(`📄 Generating PDF: ${pdfPath}`);
     await browser.sendCommand('Page.enable');
     const params = {
         printBackground,
@@ -72,7 +86,8 @@ async function generatePdf(browser, outputPath, landscape = false, printBackgrou
     };
     const result = await browser.sendCommand('Page.printToPDF', params);
     const pdfData = Buffer.from(result.data, 'base64');
-    const absolutePath = (0, helpers_1.ensureOutputPath)(outputPath);
+    // Ensure output directory exists (creates .browser-pilot/pdfs/ if needed)
+    const absolutePath = (0, helpers_1.ensureOutputPath)(pdfPath);
     (0, fs_1.writeFileSync)(absolutePath, pdfData);
     if (opts.verbose)
         logger_1.logger.info(`✅ PDF saved: ${absolutePath}`);

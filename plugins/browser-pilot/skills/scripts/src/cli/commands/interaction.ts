@@ -9,7 +9,7 @@ export function registerInteractionCommands(program: Command) {
   // Click command
   program
     .command('click')
-    .description('Click an element on the page')
+    .description('Click an element (use -s for selector or --text for smart mode)')
     .option('-u, --url <url>', 'URL to navigate to (optional, uses current page if not specified)')
     .option('-s, --selector <selector>', 'CSS selector to click (direct mode)')
     .option('--text <text>', 'Text content to search for (smart mode)')
@@ -79,7 +79,7 @@ export function registerInteractionCommands(program: Command) {
   // Fill command
   program
     .command('fill')
-    .description('Fill an input field')
+    .description('Fill an input field (requires -v/--value)')
     .option('-u, --url <url>', 'URL to navigate to (optional, uses current page if not specified)')
     .option('-s, --selector <selector>', 'CSS selector of input field (direct mode)')
     .option('--label <label>', 'Label or placeholder text to search for (smart mode)')
@@ -143,45 +143,88 @@ export function registerInteractionCommands(program: Command) {
       }
     });
 
-  // Hover command (not implemented in server yet, skip for now)
+  // Hover command
   program
     .command('hover')
-    .description('Hover over an element')
+    .description('Hover over an element (requires -s/--selector)')
     .option('-u, --url <url>', 'URL to navigate to (optional, uses current page if not specified)')
     .requiredOption('-s, --selector <selector>', 'CSS selector to hover')
     .option('--headless', 'Run in headless mode', false)
-    .action(async () => {
-      console.error('Hover command not yet implemented in daemon mode');
-      process.exit(1);
+    .action(async (options) => {
+      try {
+        if (options.url) {
+          await executeViaDaemon('navigate', { url: options.url, waitForLoad: true });
+        }
+
+        const response = await executeViaDaemon('hover', { selector: options.selector });
+
+        if (response.success) {
+          console.log('✓ Hovered over:', options.selector);
+          console.log('Browser will stay open. Use "daemon-stop" to close it.');
+        } else {
+          console.error('❌ Hover failed:', response.error);
+        }
+        process.exit(response.success ? 0 : 1);
+      } catch (error) {
+        console.error('Error:', error);
+        process.exit(1);
+      }
     });
 
-  // Press key command (not implemented in server yet, skip for now)
+  // Press key command
   program
     .command('press')
-    .description('Press a keyboard key')
+    .description('Press a keyboard key (requires -k/--key, e.g., Enter, Tab, Escape)')
     .requiredOption('-k, --key <key>', 'Key to press (e.g., Enter, Tab, Escape)')
     .option('--headless', 'Run in headless mode', false)
-    .action(async () => {
-      console.error('Press command not yet implemented in daemon mode');
-      process.exit(1);
+    .action(async (options) => {
+      try {
+        const response = await executeViaDaemon('press', { key: options.key });
+
+        if (response.success) {
+          console.log('✓ Pressed key:', options.key);
+          console.log('Browser will stay open. Use "daemon-stop" to close it.');
+        } else {
+          console.error('❌ Press failed:', response.error);
+        }
+        process.exit(response.success ? 0 : 1);
+      } catch (error) {
+        console.error('Error:', error);
+        process.exit(1);
+      }
     });
 
-  // Type text command (not implemented in server yet, skip for now)
+  // Type text command
   program
     .command('type')
-    .description('Type text character by character')
+    .description('Type text character by character (requires -t/--text)')
     .requiredOption('-t, --text <text>', 'Text to type')
     .option('-d, --delay <ms>', 'Delay between characters (ms)', parseInt, 0)
     .option('--headless', 'Run in headless mode', false)
-    .action(async () => {
-      console.error('Type command not yet implemented in daemon mode');
-      process.exit(1);
+    .action(async (options) => {
+      try {
+        const response = await executeViaDaemon('type', {
+          text: options.text,
+          delay: options.delay
+        });
+
+        if (response.success) {
+          console.log('✓ Typed text:', options.text);
+          console.log('Browser will stay open. Use "daemon-stop" to close it.');
+        } else {
+          console.error('❌ Type failed:', response.error);
+        }
+        process.exit(response.success ? 0 : 1);
+      } catch (error) {
+        console.error('Error:', error);
+        process.exit(1);
+      }
     });
 
   // Upload file command (not implemented in server yet, skip for now)
   program
     .command('upload')
-    .description('Upload file to input element')
+    .description('Upload file to input element (requires -s/--selector and -f/--file)')
     .option('-u, --url <url>', 'URL to navigate to (optional, uses current page if not specified)')
     .requiredOption('-s, --selector <selector>', 'CSS selector of file input')
     .requiredOption('-f, --file <path>', 'File path to upload')
@@ -194,7 +237,7 @@ export function registerInteractionCommands(program: Command) {
   // Drag and drop command (not implemented in server yet, skip for now)
   program
     .command('drag')
-    .description('Drag and drop element')
+    .description('Drag and drop element (requires --from and --to selectors)')
     .option('-u, --url <url>', 'URL to navigate to (optional, uses current page if not specified)')
     .requiredOption('--from <selector>', 'Source element selector')
     .requiredOption('--to <selector>', 'Target element selector')

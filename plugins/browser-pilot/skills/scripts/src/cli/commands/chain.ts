@@ -222,9 +222,16 @@ function convertParamsForDaemon(command: string, params: Record<string, unknown>
 export function registerChainCommands(program: Command) {
   program
     .command('chain [args...]')
-    .description('Execute multiple commands sequentially')
-    .option('--timeout <ms>', 'Timeout for waiting map ready (ms)', parseInt, 10000)
-    .option('--delay <ms>', 'Delay between commands (ms), overrides random delay', parseInt)
+    .description('Execute multiple commands in sequence with automatic map synchronization\n' +
+      '  Format: chain <cmd1> [opts1] <cmd2> [opts2] ...\n' +
+      '  Examples:\n' +
+      '    • No quotes: chain navigate -u http://example.com click --text Submit screenshot -o result.png\n' +
+      '    • With quotes (when values have spaces): chain click --text "Sign In" fill -s #email -v "user@example.com"\n' +
+      '  • Supports Smart Mode (--text) for click/fill commands\n' +
+      '  • Auto-waits for page load and map generation after navigation\n' +
+      '  • Adds random human-like delay (300-800ms) between commands')
+    .option('--timeout <ms>', 'Timeout for waiting map ready after navigation (default: 10000ms)', parseInt, 10000)
+    .option('--delay <ms>', 'Fixed delay between commands in milliseconds (overrides random 300-800ms delay)', parseInt)
     .allowUnknownOption()
     .action(async (args: string[] = [], options, _cmd) => {
       try {

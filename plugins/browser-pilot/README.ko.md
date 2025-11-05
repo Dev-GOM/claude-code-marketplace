@@ -1,6 +1,6 @@
 # Browser Pilot
 
-> **상태**: ✅ 릴리즈 (v1.0.0)
+> **상태**: ✅ 릴리즈 (v1.4.0)
 
 **언어**: [English](README.md) | [한국어](README.ko.md)
 
@@ -429,7 +429,7 @@ Browser Pilot은 **승인된 자동화 전용**입니다. 다음 용도로 사�
 
 ## 라이선스
 
-MIT License - 자세한 내용은 [LICENSE](../../LICENSE) 참조
+Apache License 2.0 - 자세한 내용은 [LICENSE](../../LICENSE)와 [NOTICE](../../NOTICE) 참조
 
 ## 기여
 

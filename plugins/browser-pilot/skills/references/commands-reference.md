@@ -49,13 +49,7 @@ node .browser-pilot/bp reload
 
 **click** - Click an element
 
-Direct Mode:
-```bash
-node .browser-pilot/bp click -s "<selector>"
-node .browser-pilot/bp click -u "<url>" -s "<selector>"
-```
-
-Smart Mode:
+Smart Mode (Recommended):
 ```bash
 node .browser-pilot/bp click --text "<text>" [options]
 
@@ -65,16 +59,22 @@ Options:
   --type <type>          Element type filter (button, input, etc.)
   --viewport-only        Only search visible elements
   --verify               Verify action success
+
+Examples:
+  node .browser-pilot/bp click --text Submit
+  node .browser-pilot/bp click --text "Sign In" --type button
+  node .browser-pilot/bp click --text Delete --index 2
+```
+
+Direct Mode (fallback for unique IDs):
+```bash
+node .browser-pilot/bp click -s "<selector>"
+node .browser-pilot/bp click -u "<url>" -s "<selector>"
 ```
 
 **fill** - Fill input field
 
-Direct Mode:
-```bash
-node .browser-pilot/bp fill -s "<selector>" -v "<value>"
-```
-
-Smart Mode:
+Smart Mode (Recommended):
 ```bash
 node .browser-pilot/bp fill --text "<label>" -v "<value>" [options]
 
@@ -83,6 +83,15 @@ Options:
   --type <type>          Input type filter (default: input)
   --viewport-only        Only search visible elements
   --verify               Verify action success
+
+Examples:
+  node .browser-pilot/bp fill --text Email -v user@example.com
+  node .browser-pilot/bp fill --text Password -v secret --type input-password
+```
+
+Direct Mode (fallback for unique IDs):
+```bash
+node .browser-pilot/bp fill -s "<selector>" -v "<value>"
 ```
 
 **hover** - Hover over element
@@ -131,26 +140,34 @@ node .browser-pilot/bp cookies
 
 ### Capture Commands
 
-**screenshot** - Capture screenshot
+**screenshot** - Capture screenshot (saved to `.browser-pilot/screenshots/`)
 ```bash
-node .browser-pilot/bp screenshot -o "<output-file>.png" [options]
+node .browser-pilot/bp screenshot -o "<filename>.png" [options]
 
 Options:
   -u, --url <url>        URL to capture (optional)
-  -o, --output <path>    Output file path
+  -o, --output <path>    Output filename (saved to .browser-pilot/screenshots/)
   --full-page            Capture full page (default: true)
   --headless             Run in headless mode
+
+Example:
+  node .browser-pilot/bp screenshot -o result.png --full-page
+  # Saves to: .browser-pilot/screenshots/result.png
 ```
 
-**pdf** - Generate PDF
+**pdf** - Generate PDF (saved to `.browser-pilot/pdfs/`)
 ```bash
-node .browser-pilot/bp pdf -o "<output-file>.pdf" [options]
+node .browser-pilot/bp pdf -o "<filename>.pdf" [options]
 
 Options:
   -u, --url <url>        URL to capture (optional)
-  -o, --output <path>    Output file path
+  -o, --output <path>    Output filename (saved to .browser-pilot/pdfs/)
   --landscape            Landscape orientation
   --headless             Run in headless mode
+
+Example:
+  node .browser-pilot/bp pdf -o document.pdf --landscape
+  # Saves to: .browser-pilot/pdfs/document.pdf
 ```
 
 ### Tab Management Commands
@@ -253,28 +270,51 @@ node .browser-pilot/bp regen-map
 
 ## Chain Mode
 
-Execute multiple commands sequentially in a single call:
+Execute multiple commands sequentially in a single call with automatic map synchronization.
 
+**Syntax:**
 ```bash
-node .browser-pilot/bp chain <command1> <args1> <command2> <args2> ...
+node .browser-pilot/bp chain <command1> [args1] <command2> [args2] ...
 ```
+
+**Key Features:**
+- Auto-waits for page load and map generation after navigation
+- Supports Smart Mode (--text) for reliable element targeting
+- Adds random human-like delay (300-800ms) between commands
+- Stops execution if any command fails
+- Each command executes after the previous one completes
+
+**Chain-specific Options:**
+```bash
+--timeout <ms>    Timeout for waiting map ready after navigation (default: 10000ms)
+--delay <ms>      Fixed delay between commands (overrides random 300-800ms delay)
+```
+
+**Quote Rules:**
+- No quotes needed when values have no spaces
+- Use quotes when values contain spaces
 
 **Examples:**
+
 ```bash
-# Basic chain: navigate → click → extract
-node .browser-pilot/bp chain navigate -u "<url>" click --text "Submit" extract -s ".result"
+# Basic chain (no quotes needed)
+node .browser-pilot/bp chain navigate -u <url> click --text Submit extract -s .result
 
-# Login workflow
-node .browser-pilot/bp chain navigate -u "<login-url>" fill -s "#email" -v "user@example.com" fill -s "#password" -v "secret" click -s "#login-btn"
+# With spaces (quotes required)
+node .browser-pilot/bp chain navigate -u <url> click --text "Sign In" fill -s #email -v "user@example.com"
 
-# Smart mode workflow
-node .browser-pilot/bp chain navigate -u "<url>" click --text "Login" --type button fill --text "Email" -v "user@example.com" fill --text "Password" -v "secret" click --text "Submit" --verify
+# Login workflow with Smart Mode
+node .browser-pilot/bp chain navigate -u <url> fill --text Email -v <email> fill --text Password -v <password> click --text Login
 
-# Screenshot workflow with navigation
-node .browser-pilot/bp chain navigate -u "<url>" wait -s ".content-loaded" -t 3000 screenshot -o "page.png"
+# Multi-step workflow with Korean text
+node .browser-pilot/bp chain navigate -u <url> click --text "메인 메뉴" click --text "설정 변경" click --text "저장"
+
+# Screenshot workflow
+node .browser-pilot/bp chain navigate -u <url> wait -s .content-loaded screenshot -o result.png
+
+# Custom timing
+node .browser-pilot/bp chain --timeout 15000 --delay 1000 navigate -u <url> click --text Submit
 ```
-
-Chain mode stops if any command fails. Each command executes after the previous one completes.
 
 ## Daemon Commands
 
@@ -309,14 +349,22 @@ Most commands support:
 
 ## Smart Mode vs Direct Mode
 
-| Feature | Direct Mode | Smart Mode |
-|---------|-------------|------------|
-| Selector | CSS or XPath | Text content |
-| Reliability | Low (brittle) | High (stable) |
-| Duplicates | Manual indexing | Auto indexing |
-| Map Required | No | Yes (auto-generated) |
-| Speed | Fast | Slightly slower |
-| Best For | Unique IDs/classes | Text-based UI |
+**🌟 Recommendation: Use Smart Mode by default for better reliability**
+
+| Feature | Smart Mode (Recommended) | Direct Mode |
+|---------|--------------------------|-------------|
+| Selector | Text content | CSS or XPath |
+| Reliability | ⭐⭐⭐⭐⭐ High (stable) | ⭐⭐ Low (brittle) |
+| Duplicates | Auto indexing | Manual indexing |
+| Map Required | Yes (auto-generated) | No |
+| Speed | Medium | Fast |
+| Best For | Most cases, text-based UI | Unique IDs only |
+| Maintenance | Low (text rarely changes) | High (selectors break often) |
+
+**When to use Direct Mode:**
+- Element has a unique, stable ID (e.g., `#user-profile-button`)
+- Performance-critical operations requiring maximum speed
+- Element has no visible text content
 
 ## Exit Codes
 

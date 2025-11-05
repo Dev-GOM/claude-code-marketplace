@@ -7,7 +7,7 @@ export function registerTabsCommands(program: Command) {
   // List tabs command
   program
     .command('tabs')
-    .description('List all open tabs')
+    .description('List all open tabs with their index numbers, titles, and URLs')
     .action(async () => {
       const browser = new ChromeBrowser(false);
       try {
@@ -28,7 +28,7 @@ export function registerTabsCommands(program: Command) {
   // New tab command
   program
     .command('new-tab')
-    .description('Open a new tab')
+    .description('Open a new tab in the browser (optionally navigate to a specific URL with -u)')
     .option('-u, --url <url>', 'URL to open', 'about:blank')
     .action(async (options) => {
       const browser = new ChromeBrowser(false);
@@ -46,7 +46,7 @@ export function registerTabsCommands(program: Command) {
   // Close tab command
   program
     .command('close-tab')
-    .description('Close a tab by index')
+    .description('Close a specific tab by its index number (use "tabs" command to see index numbers)')
     .requiredOption('-i, --index <number>', 'Tab index to close', parseInt)
     .action(async (options) => {
       const browser = new ChromeBrowser(false);
@@ -64,7 +64,7 @@ export function registerTabsCommands(program: Command) {
   // Switch tab
   program
     .command('switch-tab')
-    .description('Switch to a tab by index')
+    .description('Switch to a different tab by its index number (use "tabs" command to see index numbers)')
     .requiredOption('-i, --index <index>', 'Tab index', parseInt)
     .action(async (options) => {
       const browser = new ChromeBrowser(false);
@@ -82,7 +82,7 @@ export function registerTabsCommands(program: Command) {
   // Close browser command
   program
     .command('close')
-    .description('Close the browser and stop daemon')
+    .description('Close the browser completely and stop the daemon process')
     .action(async () => {
       const browser = new ChromeBrowser(false);
       const daemonManager = new DaemonManager();

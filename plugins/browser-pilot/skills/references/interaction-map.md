@@ -401,13 +401,16 @@ npm run bp:daemon-send -- --command MAP_QUERY --params '{"text":"Submit","type":
 
 ## Future Enhancements
 
-Current status (v1.0.0):
+Current status (v1.3.0):
 - ✓ Automatic map generation on page load
 - ✓ Daemon-level map caching and management
 - ✓ Action verification with automatic retry
 - ✓ URL-based cache validation
+- ✓ Chain mode with automatic map synchronization
+- ✓ Handler architecture refactoring for maintainability
 
 Planned improvements:
 - Visual map inspector tool
 - Map diff for debugging selector changes
 - Performance metrics and optimization
+- Additional daemon commands (wait-idle, sleep)

@@ -41,7 +41,7 @@ function registerDataCommands(program) {
     // Extract text command
     program
         .command('extract')
-        .description('Extract text from webpage')
+        .description('Extract text from element (use -s for selector)')
         .option('-u, --url <url>', 'URL to extract from (optional, uses current page if not specified)')
         .option('-s, --selector <selector>', 'CSS selector (optional)')
         .option('--headless', 'Run in headless mode', false)
@@ -72,7 +72,7 @@ function registerDataCommands(program) {
     // Evaluate command
     program
         .command('eval')
-        .description('Execute JavaScript on the page')
+        .description('Execute JavaScript on page (requires -e/--expression)')
         .option('-u, --url <url>', 'URL to navigate to (optional, uses current page if not specified)')
         .requiredOption('-e, --expression <script>', 'JavaScript expression to evaluate')
         .option('--headless', 'Run in headless mode', false)
@@ -120,7 +120,7 @@ function registerDataCommands(program) {
     // Extract data
     program
         .command('extract-data')
-        .description('Extract data using multiple selectors')
+        .description('Extract data using multiple selectors (requires -s/--selectors)')
         .requiredOption('-s, --selectors <json>', 'JSON object of key-selector pairs')
         .option('-u, --url <url>', 'Navigate to URL first')
         .action(async (options) => {
@@ -145,7 +145,7 @@ function registerDataCommands(program) {
     // Find element
     program
         .command('find')
-        .description('Find element and return its information')
+        .description('Find element and return info (requires -s/--selector)')
         .requiredOption('-s, --selector <selector>', 'CSS selector')
         .option('-u, --url <url>', 'Navigate to URL first')
         .action(async (options) => {
@@ -169,7 +169,7 @@ function registerDataCommands(program) {
     // Get element property
     program
         .command('get-property')
-        .description('Get element property value')
+        .description('Get element property value (requires -s and -p)')
         .requiredOption('-s, --selector <selector>', 'CSS selector')
         .requiredOption('-p, --property <property>', 'Property name')
         .option('-u, --url <url>', 'Navigate to URL first')

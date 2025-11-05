@@ -1,11 +1,3 @@
 {
-  "projects": {
-    "claude-code-marketplace": {
-      "rootPath": "D:\\Work\\claude-code-marketplace",
-      "port": 9222,
-      "outputDir": ".browser-pilot",
-      "lastUsed": "2025-11-05T02:10:53.409Z",
-      "autoCleanup": false
-    }
-  }
+  "projects": {}
 }

@@ -6,7 +6,7 @@ function registerScrollCommands(program) {
     // Scroll command
     program
         .command('scroll')
-        .description('Scroll page or element')
+        .description('Scroll the page or a specific element to coordinates (x, y) or use a CSS selector to scroll an element into view')
         .requiredOption('-x, --x <pixels>', 'Horizontal scroll position', parseInt)
         .requiredOption('-y, --y <pixels>', 'Vertical scroll position', parseInt)
         .option('-s, --selector <selector>', 'CSS selector to scroll (optional)')
