@@ -244,11 +244,12 @@ function initializeLocalScripts(projectRoot) {
   logger.log('Copying source files...');
   fs.cpSync(path.join(pluginScriptsPath, 'src'), path.join(localSkillsPath, 'src'), { recursive: true });
   fs.copyFileSync(path.join(pluginScriptsPath, 'package.json'), path.join(localSkillsPath, 'package.json'));
+  fs.copyFileSync(path.join(pluginScriptsPath, 'package-lock.json'), path.join(localSkillsPath, 'package-lock.json'));
   fs.copyFileSync(path.join(pluginScriptsPath, 'tsconfig.json'), path.join(localSkillsPath, 'tsconfig.json'));
 
   // Install dependencies and build
-  logger.log('Installing dependencies...');
-  execSync('npm install', { cwd: localSkillsPath, stdio: 'inherit' });
+  logger.log('Installing dependencies (clean install)...');
+  execSync('npm ci', { cwd: localSkillsPath, stdio: 'inherit' });
 
   logger.log('Building scripts...');
   execSync('npm run build', { cwd: localSkillsPath, stdio: 'inherit' });
