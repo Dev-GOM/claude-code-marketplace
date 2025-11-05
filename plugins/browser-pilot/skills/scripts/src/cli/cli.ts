@@ -20,6 +20,9 @@ import { registerWaitCommands } from './commands/wait';
 import { registerDataCommands } from './commands/data';
 import { registerFocusCommands } from './commands/focus';
 import { registerAccessibilityCommands } from './commands/accessibility';
+import { registerDaemonCommands } from './commands/daemon';
+import { registerChainCommands } from './commands/chain';
+import { registerQueryCommands } from './commands/query';
 
 const program = new Command();
 
@@ -29,6 +32,8 @@ program
   .version('1.0.0');
 
 // Register all command groups
+registerDaemonCommands(program); // Daemon management first
+registerChainCommands(program); // Chain mode for sequential execution
 registerNavigationCommands(program);
 registerInteractionCommands(program);
 registerFormsCommands(program);
@@ -44,6 +49,7 @@ registerWaitCommands(program);
 registerDataCommands(program);
 registerFocusCommands(program);
 registerAccessibilityCommands(program);
+registerQueryCommands(program); // Query interaction map
 
 // Parse command line arguments
 program.parse();

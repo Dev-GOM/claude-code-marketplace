@@ -8,6 +8,7 @@ exports.getAccessibilitySnapshot = getAccessibilitySnapshot;
 exports.findElement = findElement;
 const utils_1 = require("../utils");
 const helpers_1 = require("./helpers");
+const logger_1 = require("../../utils/logger");
 /**
  * Get console messages.
  *
@@ -17,7 +18,7 @@ const helpers_1 = require("./helpers");
 async function getConsoleMessages(browser, errorOnly = false, options) {
     const opts = (0, helpers_1.mergeOptions)(options);
     if (opts.verbose)
-        console.log('📋 Getting console messages...');
+        logger_1.logger.info('📋 Getting console messages...');
     // Get all collected messages from browser
     const allMessages = browser.getConsoleMessages();
     // Filter by error level if requested
@@ -35,7 +36,7 @@ async function getConsoleMessages(browser, errorOnly = false, options) {
     const errorCount = allMessages.filter(msg => msg.level === 'error').length;
     const warningCount = allMessages.filter(msg => msg.level === 'warning').length;
     if (opts.verbose) {
-        console.log(`✅ Retrieved ${formattedMessages.length} message(s) (${errorCount} errors, ${warningCount} warnings)`);
+        logger_1.logger.info(`✅ Retrieved ${formattedMessages.length} message(s) (${errorCount} errors, ${warningCount} warnings)`);
     }
     return {
         success: true,
@@ -52,18 +53,21 @@ async function getConsoleMessages(browser, errorOnly = false, options) {
 async function getAccessibilitySnapshot(browser, options) {
     const opts = (0, helpers_1.mergeOptions)(options);
     if (opts.verbose)
-        console.log('♿ Getting accessibility snapshot...');
+        logger_1.logger.info('♿ Getting accessibility snapshot...');
     try {
         await browser.sendCommand('Accessibility.enable');
         const result = await browser.sendCommand('Accessibility.getFullAXTree');
         const nodes = result.nodes || [];
-        const formattedNodes = nodes.slice(0, 50).map((node) => ({
-            role: node.role?.value,
-            name: node.name?.value,
-            description: node.description?.value
-        }));
+        const formattedNodes = nodes.slice(0, 50).map((node) => {
+            const n = node;
+            return {
+                role: n.role?.value,
+                name: n.name?.value,
+                description: n.description?.value
+            };
+        });
         if (opts.verbose)
-            console.log(`✅ Retrieved ${nodes.length} accessibility nodes (showing first 50)`);
+            logger_1.logger.info(`✅ Retrieved ${nodes.length} accessibility nodes (showing first 50)`);
         return {
             success: true,
             nodeCount: nodes.length,
@@ -72,8 +76,7 @@ async function getAccessibilitySnapshot(browser, options) {
     }
     catch (error) {
         if (opts.verbose) {
-            console.error(`❌ Get accessibility snapshot failed`);
-            console.error(`   Error: ${error.message}`);
+            logger_1.logger.error(`❌ Get accessibility snapshot failed`, error);
         }
         throw error;
     }
@@ -85,7 +88,7 @@ async function getAccessibilitySnapshot(browser, options) {
 async function findElement(browser, selector, options) {
     const opts = (0, helpers_1.mergeOptions)(options);
     if (opts.verbose)
-        console.log(`🔍 Finding element: ${selector}`);
+        logger_1.logger.info(`🔍 Finding element: ${selector}`);
     const script = `
     (function() {
       const selector = ${JSON.stringify(selector)};
@@ -119,17 +122,17 @@ async function findElement(browser, selector, options) {
         returnByValue: true
     });
     const elementInfo = result.result?.value;
-    if (elementInfo === null) {
+    if (!elementInfo) {
         if (opts.verbose)
-            console.log(`❌ Element not found: ${selector}`);
+            logger_1.logger.info(`❌ Element not found: ${selector}`);
         return {
             success: false,
             error: `Element not found: ${selector}`
         };
     }
     if (opts.verbose)
-        console.log(`✅ Found <${elementInfo.tagName}> element`);
-    (0, helpers_1.checkConsoleErrors)(browser);
+        logger_1.logger.info(`✅ Found <${elementInfo.tagName}> element`);
+    (0, helpers_1.checkErrors)(browser, opts.logLevel);
     return {
         success: true,
         selector,

@@ -4,6 +4,7 @@
 
 import { ChromeBrowser } from '../browser';
 import { ActionResult, ActionOptions, mergeOptions } from './helpers';
+import { logger } from '../../utils/logger';
 
 /**
  * Emulate media type or color scheme.
@@ -17,7 +18,7 @@ export async function emulateMedia(
   const opts = mergeOptions(options);
 
   if (opts.verbose) {
-    console.log(`🎨 Emulating media - type: ${mediaType || 'none'}, colorScheme: ${colorScheme || 'none'}`);
+    logger.info(`🎨 Emulating media - type: ${mediaType || 'none'}, colorScheme: ${colorScheme || 'none'}`);
   }
 
   try {
@@ -29,7 +30,7 @@ export async function emulateMedia(
       }] : []
     });
 
-    if (opts.verbose) console.log(`✅ Media emulation set`);
+    if (opts.verbose) logger.info(`✅ Media emulation set`);
 
     return {
       success: true,
@@ -37,10 +38,14 @@ export async function emulateMedia(
       colorScheme: colorScheme || null
     };
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (opts.verbose) {
-      console.error(`❌ Emulate media failed`);
-      console.error(`   Error: ${error.message}`);
+      logger.error(`❌ Emulate media failed`);
+      if (error instanceof Error) {
+        logger.error(`   Error: ${error.message}`);
+      } else {
+        logger.error(`   Error: ${String(error)}`);
+      }
     }
     throw error;
   }

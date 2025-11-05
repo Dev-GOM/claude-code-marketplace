@@ -36,6 +36,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.registerAccessibilityCommands = registerAccessibilityCommands;
 const browser_1 = require("../../cdp/browser");
 const actions = __importStar(require("../../cdp/actions"));
+const logger_1 = require("../../utils/logger");
 function registerAccessibilityCommands(program) {
     // Get accessibility snapshot
     program
@@ -57,7 +58,7 @@ function registerAccessibilityCommands(program) {
             process.exit(0);
         }
         catch (error) {
-            console.error('Error:', error);
+            logger_1.logger.error('Command execution failed', error);
             process.exit(1);
         }
     });

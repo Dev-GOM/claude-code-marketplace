@@ -9,13 +9,18 @@ const fs_1 = require("fs");
 const path_1 = require("path");
 const fs_2 = require("fs");
 const helpers_1 = require("./helpers");
+const logger_1 = require("../../utils/logger");
+// PDF Constants
+const PDF_PAPER_LETTER_WIDTH = 8.5; // inches
+const PDF_PAPER_LETTER_HEIGHT = 11.0; // inches
+const PDF_DEFAULT_MARGIN = 0.4; // inches
 /**
  * Take screenshot.
  */
 async function screenshot(browser, outputPath, fullPage = true, options) {
     const opts = (0, helpers_1.mergeOptions)(options);
     if (opts.verbose)
-        console.log(`📸 Taking screenshot: ${outputPath}`);
+        logger_1.logger.info(`📸 Taking screenshot: ${outputPath}`);
     // Enable Page domain
     await browser.sendCommand('Page.enable');
     let params = {};
@@ -44,7 +49,7 @@ async function screenshot(browser, outputPath, fullPage = true, options) {
     }
     (0, fs_1.writeFileSync)(absolutePath, imageData);
     if (opts.verbose)
-        console.log(`✅ Screenshot saved: ${absolutePath}`);
+        logger_1.logger.info(`✅ Screenshot saved: ${absolutePath}`);
     return { success: true, path: absolutePath };
 }
 /**
@@ -53,24 +58,24 @@ async function screenshot(browser, outputPath, fullPage = true, options) {
 async function generatePdf(browser, outputPath, landscape = false, printBackground = true, options) {
     const opts = (0, helpers_1.mergeOptions)(options);
     if (opts.verbose)
-        console.log(`📄 Generating PDF: ${outputPath}`);
+        logger_1.logger.info(`📄 Generating PDF: ${outputPath}`);
     await browser.sendCommand('Page.enable');
     const params = {
         printBackground,
         landscape,
-        paperWidth: 8.5, // inches
-        paperHeight: 11.0,
-        marginTop: 0.4,
-        marginBottom: 0.4,
-        marginLeft: 0.4,
-        marginRight: 0.4
+        paperWidth: PDF_PAPER_LETTER_WIDTH,
+        paperHeight: PDF_PAPER_LETTER_HEIGHT,
+        marginTop: PDF_DEFAULT_MARGIN,
+        marginBottom: PDF_DEFAULT_MARGIN,
+        marginLeft: PDF_DEFAULT_MARGIN,
+        marginRight: PDF_DEFAULT_MARGIN
     };
     const result = await browser.sendCommand('Page.printToPDF', params);
     const pdfData = Buffer.from(result.data, 'base64');
     const absolutePath = (0, helpers_1.ensureOutputPath)(outputPath);
     (0, fs_1.writeFileSync)(absolutePath, pdfData);
     if (opts.verbose)
-        console.log(`✅ PDF saved: ${absolutePath}`);
+        logger_1.logger.info(`✅ PDF saved: ${absolutePath}`);
     return { success: true, path: absolutePath };
 }
 //# sourceMappingURL=capture.js.map

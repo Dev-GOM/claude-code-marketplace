@@ -5,11 +5,11 @@ import { EventEmitter } from 'events';
 export interface CDPMessage {
     id: number;
     method: string;
-    params?: Record<string, any>;
+    params?: unknown;
 }
 export interface CDPResponse {
     id: number;
-    result?: Record<string, any>;
+    result?: unknown;
     error?: {
         code: number;
         message: string;
@@ -17,7 +17,7 @@ export interface CDPResponse {
 }
 export interface CDPEvent {
     method: string;
-    params?: Record<string, any>;
+    params?: unknown;
 }
 export declare class CDPClient extends EventEmitter {
     private ws;
@@ -31,7 +31,7 @@ export declare class CDPClient extends EventEmitter {
     /**
      * Send CDP command and wait for response.
      */
-    sendCommand(method: string, params?: Record<string, any>): Promise<Record<string, any>>;
+    sendCommand<T = Record<string, unknown>>(method: string, params?: unknown): Promise<T>;
     /**
      * Close WebSocket connection.
      */

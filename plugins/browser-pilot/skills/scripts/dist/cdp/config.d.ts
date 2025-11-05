@@ -64,5 +64,5 @@ export declare function isPortAvailable(port: number): Promise<boolean>;
 /**
  * Find an available port starting from startPort
  */
-export declare function findAvailablePort(startPort?: number, maxAttempts?: number): Promise<number>;
+export declare function findAvailablePort(startPort?: 9222, maxAttempts?: number): Promise<number>;
 //# sourceMappingURL=config.d.ts.map

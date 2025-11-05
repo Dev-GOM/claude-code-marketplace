@@ -5,7 +5,8 @@
 import { ChromeBrowser } from '../browser';
 import { readFileSync, statSync } from 'fs';
 import { getFindElementScript } from '../utils';
-import { ActionResult, ActionOptions, mergeOptions, checkConsoleErrors } from './helpers';
+import { ActionResult, ActionOptions, mergeOptions, checkErrors, RuntimeEvaluateResult } from './helpers';
+import { logger } from '../../utils/logger';
 
 /**
  * Select option from dropdown.
@@ -19,7 +20,7 @@ export async function selectOption(
 ): Promise<ActionResult> {
   const opts = mergeOptions(options);
 
-  if (opts.verbose) console.log(`🔽 Selecting option ${value} in: ${selector}`);
+  if (opts.verbose) logger.info(`🔽 Selecting option ${value} in: ${selector}`);
 
   const script = `
     (function() {
@@ -40,17 +41,18 @@ export async function selectOption(
       returnByValue: true
     });
 
-    if (opts.verbose) console.log(`✅ Selected option: ${value}`);
-    checkConsoleErrors(browser);
+    if (opts.verbose) logger.info(`✅ Selected option: ${value}`);
+    checkErrors(browser, opts.logLevel);
 
     return { success: true, selector, value };
 
-  } catch (error: any) {
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
     if (opts.verbose) {
-      console.error(`❌ Select failed: ${selector}`);
-      console.error(`   Error: ${error.message}`);
+      logger.error(`❌ Select failed: ${selector}`);
+      logger.error(`   Error: ${errorMessage}`);
     }
-    checkConsoleErrors(browser);
+    checkErrors(browser, opts.logLevel);
     throw error;
   }
 }
@@ -67,7 +69,7 @@ export async function check(
 ): Promise<ActionResult> {
   const opts = mergeOptions(options);
 
-  if (opts.verbose) console.log(`☑️  Checking: ${selector}`);
+  if (opts.verbose) logger.info(`☑️  Checking: ${selector}`);
 
   // Step 1: Find element and get coordinates
   const script = `
@@ -93,26 +95,26 @@ export async function check(
   `;
 
   try {
-    const result = await browser.sendCommand('Runtime.evaluate', {
+    const result = await browser.sendCommand<RuntimeEvaluateResult>('Runtime.evaluate', {
       expression: script,
       returnByValue: true
     });
 
     if (!result.result || !result.result.value) {
-      console.error('❌ Element not found or error occurred');
+      logger.error('❌ Element not found or error occurred');
       if (result.exceptionDetails) {
-        console.error('Error:', result.exceptionDetails.exception?.description || result.exceptionDetails.text);
+        logger.error('Error:', result.exceptionDetails.exception?.description || result.exceptionDetails.text);
       }
       throw new Error(`Element not found: ${selector}`);
     }
 
-    const { x, y, checked } = result.result.value;
+    const { x, y, checked: isChecked } = result.result.value as { x: number; y: number; checked: boolean };
 
     // Step 2: Click only if not already checked
-    if (checked) {
-      if (opts.verbose) console.log(`✓ Checkbox already checked`);
+    if (isChecked) {
+      if (opts.verbose) logger.info(`✓ Checkbox already checked`);
     } else {
-      if (opts.verbose) console.log(`🖱️  Clicking checkbox at (${Math.round(x)}, ${Math.round(y)})`);
+      if (opts.verbose) logger.info(`🖱️  Clicking checkbox at (${Math.round(x)}, ${Math.round(y)})`);
 
       await browser.sendCommand('Input.dispatchMouseEvent', {
         type: 'mousePressed',
@@ -131,17 +133,18 @@ export async function check(
       });
     }
 
-    if (opts.verbose) console.log(`✅ Checkbox checked`);
-    checkConsoleErrors(browser);
+    if (opts.verbose) logger.info(`✅ Checkbox checked`);
+    checkErrors(browser, opts.logLevel);
 
     return { success: true, selector };
 
-  } catch (error: any) {
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
     if (opts.verbose) {
-      console.error(`❌ Check failed: ${selector}`);
-      console.error(`   Error: ${error.message}`);
+      logger.error(`❌ Check failed: ${selector}`);
+      logger.error(`   Error: ${errorMessage}`);
     }
-    checkConsoleErrors(browser);
+    checkErrors(browser, opts.logLevel);
     throw error;
   }
 }
@@ -158,7 +161,7 @@ export async function uncheck(
 ): Promise<ActionResult> {
   const opts = mergeOptions(options);
 
-  if (opts.verbose) console.log(`☐ Unchecking: ${selector}`);
+  if (opts.verbose) logger.info(`☐ Unchecking: ${selector}`);
 
   // Step 1: Find element and get coordinates
   const script = `
@@ -184,26 +187,26 @@ export async function uncheck(
   `;
 
   try {
-    const result = await browser.sendCommand('Runtime.evaluate', {
+    const result = await browser.sendCommand<RuntimeEvaluateResult>('Runtime.evaluate', {
       expression: script,
       returnByValue: true
     });
 
     if (!result.result || !result.result.value) {
-      console.error('❌ Element not found or error occurred');
+      logger.error('❌ Element not found or error occurred');
       if (result.exceptionDetails) {
-        console.error('Error:', result.exceptionDetails.exception?.description || result.exceptionDetails.text);
+        logger.error('Error:', result.exceptionDetails.exception?.description || result.exceptionDetails.text);
       }
       throw new Error(`Element not found: ${selector}`);
     }
 
-    const { x, y, checked } = result.result.value;
+    const { x, y, checked: isChecked } = result.result.value as { x: number; y: number; checked: boolean };
 
     // Step 2: Click only if currently checked
-    if (!checked) {
-      if (opts.verbose) console.log(`✓ Checkbox already unchecked`);
+    if (!isChecked) {
+      if (opts.verbose) logger.info(`✓ Checkbox already unchecked`);
     } else {
-      if (opts.verbose) console.log(`🖱️  Clicking checkbox at (${Math.round(x)}, ${Math.round(y)})`);
+      if (opts.verbose) logger.info(`🖱️  Clicking checkbox at (${Math.round(x)}, ${Math.round(y)})`);
 
       await browser.sendCommand('Input.dispatchMouseEvent', {
         type: 'mousePressed',
@@ -222,17 +225,18 @@ export async function uncheck(
       });
     }
 
-    if (opts.verbose) console.log(`✅ Checkbox unchecked`);
-    checkConsoleErrors(browser);
+    if (opts.verbose) logger.info(`✅ Checkbox unchecked`);
+    checkErrors(browser, opts.logLevel);
 
     return { success: true, selector };
 
-  } catch (error: any) {
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
     if (opts.verbose) {
-      console.error(`❌ Uncheck failed: ${selector}`);
-      console.error(`   Error: ${error.message}`);
+      logger.error(`❌ Uncheck failed: ${selector}`);
+      logger.error(`   Error: ${errorMessage}`);
     }
-    checkConsoleErrors(browser);
+    checkErrors(browser, opts.logLevel);
     throw error;
   }
 }
@@ -249,7 +253,7 @@ export async function uploadFile(
 ): Promise<ActionResult> {
   const opts = mergeOptions(options);
 
-  if (opts.verbose) console.log(`📁 Uploading file ${filePath} to: ${selector}`);
+  if (opts.verbose) logger.info(`📁 Uploading file ${filePath} to: ${selector}`);
 
   // File size validation (10MB limit)
   const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -257,7 +261,7 @@ export async function uploadFile(
 
   if (stats.size > MAX_FILE_SIZE) {
     const error = `File too large: ${stats.size} bytes (max: ${MAX_FILE_SIZE} bytes = 10MB)`;
-    if (opts.verbose) console.error(`❌ ${error}`);
+    if (opts.verbose) logger.error(`❌ ${error}`);
     throw new Error(error);
   }
 
@@ -297,17 +301,18 @@ export async function uploadFile(
       returnByValue: true
     });
 
-    if (opts.verbose) console.log(`✅ File uploaded: ${fileName}`);
-    checkConsoleErrors(browser);
+    if (opts.verbose) logger.info(`✅ File uploaded: ${fileName}`);
+    checkErrors(browser, opts.logLevel);
 
     return { success: true, selector, file: filePath };
 
-  } catch (error: any) {
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
     if (opts.verbose) {
-      console.error(`❌ Upload failed: ${selector}`);
-      console.error(`   Error: ${error.message}`);
+      logger.error(`❌ Upload failed: ${selector}`);
+      logger.error(`   Error: ${errorMessage}`);
     }
-    checkConsoleErrors(browser);
+    checkErrors(browser, opts.logLevel);
     throw error;
   }
 }

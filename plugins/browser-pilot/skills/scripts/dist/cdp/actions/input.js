@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.pressKey = pressKey;
 exports.typeText = typeText;
 const helpers_1 = require("./helpers");
+const logger_1 = require("../../utils/logger");
 /**
  * Press keyboard key.
  * Uses CDP Input.dispatchKeyEvent for proper React compatibility.
@@ -14,7 +15,7 @@ const helpers_1 = require("./helpers");
 async function pressKey(browser, key, options) {
     const opts = (0, helpers_1.mergeOptions)(options);
     if (opts.verbose)
-        console.log(`⌨️  Pressing key: ${key}`);
+        logger_1.logger.info(`⌨️  Pressing key: ${key}`);
     try {
         // Send keyDown event
         await browser.sendCommand('Input.dispatchKeyEvent', {
@@ -27,16 +28,21 @@ async function pressKey(browser, key, options) {
             key: key
         });
         if (opts.verbose)
-            console.log(`✅ Key pressed: ${key}`);
-        (0, helpers_1.checkConsoleErrors)(browser);
+            logger_1.logger.info(`✅ Key pressed: ${key}`);
+        (0, helpers_1.checkErrors)(browser, opts.logLevel);
         return { success: true, key };
     }
     catch (error) {
         if (opts.verbose) {
-            console.error(`❌ Press key failed: ${key}`);
-            console.error(`   Error: ${error.message}`);
+            logger_1.logger.error(`❌ Press key failed: ${key}`);
+            if (error instanceof Error) {
+                logger_1.logger.error(`   Error: ${error.message}`);
+            }
+            else {
+                logger_1.logger.error(`   Error: ${String(error)}`);
+            }
         }
-        (0, helpers_1.checkConsoleErrors)(browser);
+        (0, helpers_1.checkErrors)(browser, opts.logLevel);
         throw error;
     }
 }
@@ -48,9 +54,9 @@ async function pressKey(browser, key, options) {
 async function typeText(browser, text, delay = 0, options) {
     const opts = (0, helpers_1.mergeOptions)(options);
     if (opts.verbose) {
-        console.log(`⌨️  Typing: "${text}"`);
+        logger_1.logger.info(`⌨️  Typing: "${text}"`);
         if (delay > 0)
-            console.log(`   Delay: ${delay}ms per character`);
+            logger_1.logger.info(`   Delay: ${delay}ms per character`);
     }
     try {
         if (delay > 0) {
@@ -62,7 +68,7 @@ async function typeText(browser, text, delay = 0, options) {
                 await (0, helpers_1.sleep)(delay);
             }
             if (opts.verbose)
-                console.log(`✅ Typed ${text.length} characters with ${delay}ms delay`);
+                logger_1.logger.info(`✅ Typed ${text.length} characters with ${delay}ms delay`);
         }
         else {
             // Type all at once using CDP
@@ -70,17 +76,22 @@ async function typeText(browser, text, delay = 0, options) {
                 text: text
             });
             if (opts.verbose)
-                console.log(`✅ Typed ${text.length} characters`);
+                logger_1.logger.info(`✅ Typed ${text.length} characters`);
         }
-        (0, helpers_1.checkConsoleErrors)(browser);
+        (0, helpers_1.checkErrors)(browser, opts.logLevel);
         return { success: true, text };
     }
     catch (error) {
         if (opts.verbose) {
-            console.error(`❌ Type text failed`);
-            console.error(`   Error: ${error.message}`);
+            logger_1.logger.error(`❌ Type text failed`);
+            if (error instanceof Error) {
+                logger_1.logger.error(`   Error: ${error.message}`);
+            }
+            else {
+                logger_1.logger.error(`   Error: ${String(error)}`);
+            }
         }
-        (0, helpers_1.checkConsoleErrors)(browser);
+        (0, helpers_1.checkErrors)(browser, opts.logLevel);
         throw error;
     }
 }

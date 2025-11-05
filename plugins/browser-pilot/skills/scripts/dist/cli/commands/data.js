@@ -36,6 +36,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.registerDataCommands = registerDataCommands;
 const browser_1 = require("../../cdp/browser");
 const actions = __importStar(require("../../cdp/actions"));
+const daemon_helper_1 = require("../daemon-helper");
 function registerDataCommands(program) {
     // Extract text command
     program
@@ -76,23 +77,22 @@ function registerDataCommands(program) {
         .requiredOption('-e, --expression <script>', 'JavaScript expression to evaluate')
         .option('--headless', 'Run in headless mode', false)
         .action(async (options) => {
-        const browser = new browser_1.ChromeBrowser(options.headless);
         try {
-            // Try to connect to existing browser first, launch new one if failed
-            try {
-                await browser.connect();
-            }
-            catch {
-                await browser.launch();
-            }
+            // Navigate if URL provided
             if (options.url) {
-                await actions.navigate(browser, options.url);
-                await actions.waitForLoad(browser);
+                await (0, daemon_helper_1.executeViaDaemon)('navigate', { url: options.url });
             }
-            const result = await actions.evaluate(browser, options.expression);
-            console.log('Result:', result.result);
-            console.log('Browser remains open. Use "close" command to close it.');
-            process.exit(0);
+            // Execute JavaScript
+            const response = await (0, daemon_helper_1.executeViaDaemon)('eval', { expression: options.expression });
+            if (response.success) {
+                const data = response.data;
+                console.log('Result:', data.result);
+                console.log('Browser will stay open. Use "daemon-stop" to close it.');
+            }
+            else {
+                console.error('Eval failed:', response.error);
+            }
+            process.exit(response.success ? 0 : 1);
         }
         catch (error) {
             console.error('Error:', error);

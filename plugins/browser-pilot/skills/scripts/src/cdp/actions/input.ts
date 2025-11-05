@@ -3,7 +3,8 @@
  */
 
 import { ChromeBrowser } from '../browser';
-import { ActionResult, ActionOptions, mergeOptions, sleep, checkConsoleErrors } from './helpers';
+import { ActionResult, ActionOptions, mergeOptions, sleep, checkErrors } from './helpers';
+import { logger } from '../../utils/logger';
 
 /**
  * Press keyboard key.
@@ -17,7 +18,7 @@ export async function pressKey(
 ): Promise<ActionResult> {
   const opts = mergeOptions(options);
 
-  if (opts.verbose) console.log(`⌨️  Pressing key: ${key}`);
+  if (opts.verbose) logger.info(`⌨️  Pressing key: ${key}`);
 
   try {
     // Send keyDown event
@@ -32,17 +33,21 @@ export async function pressKey(
       key: key
     });
 
-    if (opts.verbose) console.log(`✅ Key pressed: ${key}`);
-    checkConsoleErrors(browser);
+    if (opts.verbose) logger.info(`✅ Key pressed: ${key}`);
+    checkErrors(browser, opts.logLevel);
 
     return { success: true, key };
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (opts.verbose) {
-      console.error(`❌ Press key failed: ${key}`);
-      console.error(`   Error: ${error.message}`);
+      logger.error(`❌ Press key failed: ${key}`);
+      if (error instanceof Error) {
+        logger.error(`   Error: ${error.message}`);
+      } else {
+        logger.error(`   Error: ${String(error)}`);
+      }
     }
-    checkConsoleErrors(browser);
+    checkErrors(browser, opts.logLevel);
     throw error;
   }
 }
@@ -61,8 +66,8 @@ export async function typeText(
   const opts = mergeOptions(options);
 
   if (opts.verbose) {
-    console.log(`⌨️  Typing: "${text}"`);
-    if (delay > 0) console.log(`   Delay: ${delay}ms per character`);
+    logger.info(`⌨️  Typing: "${text}"`);
+    if (delay > 0) logger.info(`   Delay: ${delay}ms per character`);
   }
 
   try {
@@ -74,24 +79,28 @@ export async function typeText(
         });
         await sleep(delay);
       }
-      if (opts.verbose) console.log(`✅ Typed ${text.length} characters with ${delay}ms delay`);
+      if (opts.verbose) logger.info(`✅ Typed ${text.length} characters with ${delay}ms delay`);
     } else {
       // Type all at once using CDP
       await browser.sendCommand('Input.insertText', {
         text: text
       });
-      if (opts.verbose) console.log(`✅ Typed ${text.length} characters`);
+      if (opts.verbose) logger.info(`✅ Typed ${text.length} characters`);
     }
 
-    checkConsoleErrors(browser);
+    checkErrors(browser, opts.logLevel);
     return { success: true, text };
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (opts.verbose) {
-      console.error(`❌ Type text failed`);
-      console.error(`   Error: ${error.message}`);
+      logger.error(`❌ Type text failed`);
+      if (error instanceof Error) {
+        logger.error(`   Error: ${error.message}`);
+      } else {
+        logger.error(`   Error: ${String(error)}`);
+      }
     }
-    checkConsoleErrors(browser);
+    checkErrors(browser, opts.logLevel);
     throw error;
   }
 }

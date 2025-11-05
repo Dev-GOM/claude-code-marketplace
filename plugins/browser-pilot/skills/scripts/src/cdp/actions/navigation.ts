@@ -3,7 +3,9 @@
  */
 
 import { ChromeBrowser } from '../browser';
-import { ActionResult, ActionOptions, mergeOptions, sleep, checkConsoleErrors } from './helpers';
+import { ActionResult, ActionOptions, mergeOptions, sleep, checkErrors } from './helpers';
+import { logger } from '../../utils/logger';
+import { TIMING } from '../../constants';
 
 /**
  * Navigate to URL.
@@ -15,21 +17,25 @@ export async function navigate(
 ): Promise<ActionResult> {
   const opts = mergeOptions(options);
 
-  if (opts.verbose) console.log(`🧭 Navigating to: ${url}`);
+  if (opts.verbose) logger.info(`🧭 Navigating to: ${url}`);
 
   try {
     await browser.sendCommand('Page.navigate', { url });
-    await sleep(1000); // Wait for initial page load
+    await sleep(TIMING.ACTION_DELAY_NAVIGATION); // Wait for initial page load
 
-    if (opts.verbose) console.log(`✓ Page loaded: ${url}`);
-    checkConsoleErrors(browser);
+    if (opts.verbose) logger.info(`✓ Page loaded: ${url}`);
+    checkErrors(browser, opts.logLevel);
 
     return { success: true, url };
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (opts.verbose) {
-      console.error(`❌ Navigation failed: ${url}`);
-      console.error(`   Error: ${error.message}`);
+      logger.error(`❌ Navigation failed: ${url}`);
+      if (error instanceof Error) {
+        logger.error(`   Error: ${error.message}`);
+      } else {
+        logger.error(`   Error: ${String(error)}`);
+      }
     }
     throw error;
   }
@@ -45,7 +51,7 @@ export async function waitForLoad(
 ): Promise<ActionResult> {
   const opts = mergeOptions(options);
 
-  if (opts.verbose) console.log(`⏳ Waiting for page load (timeout: ${timeout}ms)...`);
+  if (opts.verbose) logger.info(`⏳ Waiting for page load (timeout: ${timeout}ms)...`);
 
   const script = `
     new Promise((resolve, reject) => {
@@ -56,7 +62,7 @@ export async function waitForLoad(
         } else if (Date.now() - startTime > ${timeout}) {
           reject(new Error('Timeout waiting for page load'));
         } else {
-          setTimeout(checkReady, 100);
+          setTimeout(checkReady, ${TIMING.POLLING_INTERVAL_FAST});
         }
       };
       checkReady();
@@ -70,14 +76,18 @@ export async function waitForLoad(
       returnByValue: true
     });
 
-    if (opts.verbose) console.log(`✅ Page load complete`);
+    if (opts.verbose) logger.info(`✅ Page load complete`);
 
     return { success: true, state: 'complete' };
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (opts.verbose) {
-      console.error(`❌ Page load failed`);
-      console.error(`   Error: ${error.message}`);
+      logger.error(`❌ Page load failed`);
+      if (error instanceof Error) {
+        logger.error(`   Error: ${error.message}`);
+      } else {
+        logger.error(`   Error: ${String(error)}`);
+      }
     }
     throw error;
   }
@@ -93,19 +103,23 @@ export async function reload(
 ): Promise<ActionResult> {
   const opts = mergeOptions(options);
 
-  if (opts.verbose) console.log(`🔄 Reloading page (hard: ${hard})...`);
+  if (opts.verbose) logger.info(`🔄 Reloading page (hard: ${hard})...`);
 
   try {
     await browser.sendCommand('Page.reload', { ignoreCache: hard });
 
-    if (opts.verbose) console.log(`✅ Page reloaded`);
+    if (opts.verbose) logger.info(`✅ Page reloaded`);
 
     return { success: true, hardReload: hard };
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (opts.verbose) {
-      console.error(`❌ Reload failed`);
-      console.error(`   Error: ${error.message}`);
+      logger.error(`❌ Reload failed`);
+      if (error instanceof Error) {
+        logger.error(`   Error: ${error.message}`);
+      } else {
+        logger.error(`   Error: ${String(error)}`);
+      }
     }
     throw error;
   }
@@ -120,10 +134,13 @@ export async function goBack(
 ): Promise<ActionResult> {
   const opts = mergeOptions(options);
 
-  if (opts.verbose) console.log(`◀️  Navigating back...`);
+  if (opts.verbose) logger.info(`◀️  Navigating back...`);
 
   try {
-    const history = await browser.sendCommand('Page.getNavigationHistory');
+    const history = await browser.sendCommand<{
+      currentIndex: number;
+      entries: Array<{ id: number; url: string; title: string }>;
+    }>('Page.getNavigationHistory');
     const currentIndex = history.currentIndex || 0;
 
     if (currentIndex > 0) {
@@ -132,18 +149,22 @@ export async function goBack(
         entryId: previousEntry.id
       });
 
-      if (opts.verbose) console.log(`✅ Navigated back to: ${previousEntry.url}`);
+      if (opts.verbose) logger.info(`✅ Navigated back to: ${previousEntry.url}`);
 
       return { success: true, url: previousEntry.url };
     }
 
-    if (opts.verbose) console.log(`⚠️  No previous page in history`);
+    if (opts.verbose) logger.info(`⚠️  No previous page in history`);
     return { success: false, error: 'No previous page in history' };
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (opts.verbose) {
-      console.error(`❌ Go back failed`);
-      console.error(`   Error: ${error.message}`);
+      logger.error(`❌ Go back failed`);
+      if (error instanceof Error) {
+        logger.error(`   Error: ${error.message}`);
+      } else {
+        logger.error(`   Error: ${String(error)}`);
+      }
     }
     throw error;
   }
@@ -158,10 +179,13 @@ export async function goForward(
 ): Promise<ActionResult> {
   const opts = mergeOptions(options);
 
-  if (opts.verbose) console.log(`▶️  Navigating forward...`);
+  if (opts.verbose) logger.info(`▶️  Navigating forward...`);
 
   try {
-    const history = await browser.sendCommand('Page.getNavigationHistory');
+    const history = await browser.sendCommand<{
+      currentIndex: number;
+      entries: Array<{ id: number; url: string; title: string }>;
+    }>('Page.getNavigationHistory');
     const currentIndex = history.currentIndex || 0;
     const totalEntries = history.entries?.length || 0;
 
@@ -171,18 +195,22 @@ export async function goForward(
         entryId: nextEntry.id
       });
 
-      if (opts.verbose) console.log(`✅ Navigated forward to: ${nextEntry.url}`);
+      if (opts.verbose) logger.info(`✅ Navigated forward to: ${nextEntry.url}`);
 
       return { success: true, url: nextEntry.url };
     }
 
-    if (opts.verbose) console.log(`⚠️  No next page in history`);
+    if (opts.verbose) logger.info(`⚠️  No next page in history`);
     return { success: false, error: 'No next page in history' };
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (opts.verbose) {
-      console.error(`❌ Go forward failed`);
-      console.error(`   Error: ${error.message}`);
+      logger.error(`❌ Go forward failed`);
+      if (error instanceof Error) {
+        logger.error(`   Error: ${error.message}`);
+      } else {
+        logger.error(`   Error: ${String(error)}`);
+      }
     }
     throw error;
   }

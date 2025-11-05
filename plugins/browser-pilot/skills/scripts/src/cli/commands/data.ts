@@ -1,6 +1,7 @@
 import { Command } from 'commander';
 import { ChromeBrowser } from '../../cdp/browser';
 import * as actions from '../../cdp/actions';
+import { executeViaDaemon } from '../daemon-helper';
 
 export function registerDataCommands(program: Command) {
   // Extract text command
@@ -41,22 +42,24 @@ export function registerDataCommands(program: Command) {
     .requiredOption('-e, --expression <script>', 'JavaScript expression to evaluate')
     .option('--headless', 'Run in headless mode', false)
     .action(async (options) => {
-      const browser = new ChromeBrowser(options.headless);
       try {
-        // Try to connect to existing browser first, launch new one if failed
-        try {
-          await browser.connect();
-        } catch {
-          await browser.launch();
-        }
+        // Navigate if URL provided
         if (options.url) {
-          await actions.navigate(browser, options.url);
-          await actions.waitForLoad(browser);
+          await executeViaDaemon('navigate', { url: options.url });
         }
-        const result = await actions.evaluate(browser, options.expression);
-        console.log('Result:', result.result);
-        console.log('Browser remains open. Use "close" command to close it.');
-        process.exit(0);
+
+        // Execute JavaScript
+        const response = await executeViaDaemon('eval', { expression: options.expression });
+
+        if (response.success) {
+          const data = response.data as { result: unknown };
+          console.log('Result:', data.result);
+          console.log('Browser will stay open. Use "daemon-stop" to close it.');
+        } else {
+          console.error('Eval failed:', response.error);
+        }
+
+        process.exit(response.success ? 0 : 1);
       } catch (error) {
         console.error('Error:', error);
         process.exit(1);

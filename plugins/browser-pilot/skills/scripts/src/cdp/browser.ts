@@ -8,17 +8,22 @@ import { existsSync } from 'fs';
 import { join } from 'path';
 import { CDPClient } from './client';
 import {
-  getProjectConfig,
+  getProjectConfig as _getProjectConfig,
   getProjectPort,
   updateProjectLastUsed,
   cleanupProjectIfNeeded,
   isPortAvailable
 } from './config';
+import { logger } from '../utils/logger';
+import { TIMING, CDP } from '../constants';
 
 interface Target {
   type: string;
   webSocketDebuggerUrl: string;
-  [key: string]: any;
+  id?: string;
+  title?: string;
+  url?: string;
+  [key: string]: unknown;
 }
 
 // CDP Event Supporting Interfaces
@@ -38,6 +43,13 @@ export interface RemoteObject {
   [key: string]: unknown;
 }
 
+// Page Navigation Interfaces
+export interface PageNavigatedWithinDocumentPayload {
+  frameId: string;
+  url: string;
+  navigationType: 'fragment' | 'historyApi' | 'other';
+}
+
 // Console Message Interfaces
 export interface ConsoleMessage {
   level: string;
@@ -55,6 +67,53 @@ export interface FormattedConsoleMessage {
   url?: string;
   lineNumber?: number;
 }
+
+// Network Error Interfaces
+export interface NetworkError {
+  url: string;
+  errorText: string;
+  timestamp: number;
+  statusCode?: number;
+  requestId: string;
+}
+
+export interface NetworkFailedPayload {
+  requestId: string;
+  timestamp: number;
+  type?: string;
+  errorText: string;
+  canceled?: boolean;
+}
+
+export interface NetworkResponsePayload {
+  requestId: string;
+  response: {
+    url: string;
+    status: number;
+    statusText: string;
+  };
+}
+
+// Network Request Tracking Interface
+export interface NetworkRequestPayload {
+  requestId: string;
+  request: {
+    url: string;
+    method?: string;
+    headers?: Record<string, string>;
+  };
+  timestamp: number;
+  type?: string;
+}
+
+// CDP Event Handler Type
+type CDPEventHandler =
+  | ((params: LogEntryAddedPayload) => void)
+  | ((params: ConsoleAPICalledPayload) => void)
+  | ((params: ExceptionThrownPayload) => void)
+  | ((params: NetworkRequestPayload) => void)
+  | ((params: NetworkFailedPayload) => void)
+  | ((params: NetworkResponsePayload) => void);
 
 // CDP Event Payload Interfaces
 interface LogEntry {
@@ -96,9 +155,15 @@ export class ChromeBrowser {
   private readonly headless: boolean;
   public debugPort: number | null = null;
   private chromeProcess: ChildProcess | null = null;
-  private client: CDPClient | null = null;
+  public client: CDPClient | null = null;
   private consoleMessages: ConsoleMessage[] = [];
-  private readonly MAX_CONSOLE_MESSAGES = 1000;
+  private networkErrors: NetworkError[] = [];
+  private readonly MAX_CONSOLE_MESSAGES = TIMING.MAP_CACHE_TTL / 600; // 1000 messages (10min / 600ms)
+  private readonly MAX_NETWORK_ERRORS = TIMING.MAP_CACHE_TTL / 600; // 1000 errors
+  private pendingRequests: Map<string, { url: string; timestamp: number; processed: boolean }> = new Map();
+  private readonly REQUEST_TIMEOUT = TIMING.DAEMON_IDLE_TIMEOUT / 30; // ~60 seconds
+  private cleanupInterval: NodeJS.Timeout | null = null;
+  private eventListeners: Map<string, CDPEventHandler> = new Map();
 
   constructor(headless = false) {
     this.headless = headless;
@@ -114,6 +179,30 @@ export class ChromeBrowser {
     // Keep only the most recent messages
     if (this.consoleMessages.length > this.MAX_CONSOLE_MESSAGES) {
       this.consoleMessages = this.consoleMessages.slice(-this.MAX_CONSOLE_MESSAGES);
+    }
+  }
+
+  /**
+   * Add network error with size limit to prevent memory issues.
+   */
+  private addNetworkError(error: NetworkError): void {
+    this.networkErrors.push(error);
+
+    // Keep only the most recent errors
+    if (this.networkErrors.length > this.MAX_NETWORK_ERRORS) {
+      this.networkErrors = this.networkErrors.slice(-this.MAX_NETWORK_ERRORS);
+    }
+  }
+
+  /**
+   * Clean up stale pending requests to prevent memory leak.
+   */
+  private cleanupStaleRequests(): void {
+    const now = Date.now();
+    for (const [requestId, request] of this.pendingRequests.entries()) {
+      if (request.processed || (now - request.timestamp > this.REQUEST_TIMEOUT)) {
+        this.pendingRequests.delete(requestId);
+      }
     }
   }
 
@@ -164,7 +253,7 @@ export class ChromeBrowser {
     if (!portAvailable) {
       // Port is in use, browser is running
       this.debugPort = port;
-      console.log(`Connecting to existing Chrome on port ${this.debugPort}...`);
+      logger.info(`Connecting to existing Chrome on port ${this.debugPort}...`);
       await this.connectToPage();
       updateProjectLastUsed();
       return;
@@ -194,7 +283,7 @@ export class ChromeBrowser {
       args.push('--headless=new', '--disable-gpu');
     }
 
-    console.log(`Launching Chrome on port ${this.debugPort} (headless: ${this.headless})...`);
+    logger.info(`Launching Chrome on port ${this.debugPort} (headless: ${this.headless})...`);
 
     this.chromeProcess = spawn(chromePath, args, {
       stdio: 'ignore',
@@ -214,20 +303,20 @@ export class ChromeBrowser {
 
     while (attempts < maxAttempts) {
       try {
-        const response = await fetch(`http://localhost:${this.debugPort}/json/version`);
+        const response = await fetch(`http://${CDP.LOCALHOST}:${this.debugPort}/json/version`);
         if (response.ok) {
           connected = true;
           break;
         }
-      } catch (error) {
+      } catch (_error) {
         // Connection may be refused while browser is starting up
       }
       attempts++;
-      await this.sleep(500);
+      await this.sleep(TIMING.NETWORK_IDLE_TIMEOUT);
     }
 
     if (!connected) {
-      throw new Error('Failed to connect to Chrome within the timeout period (10 seconds).');
+      throw new Error(`Failed to connect to Chrome within the timeout period (${maxAttempts * TIMING.NETWORK_IDLE_TIMEOUT / TIMING.ACTION_DELAY_NAVIGATION} seconds).`);
     }
 
     // Connect to page target
@@ -240,7 +329,7 @@ export class ChromeBrowser {
   private async connectToPage(): Promise<void> {
     try {
       // Get list of targets
-      const url = `http://localhost:${this.debugPort}/json`;
+      const url = `http://${CDP.LOCALHOST}:${this.debugPort}/json`;
       const response = await fetch(url);
       const targets = await response.json() as Target[];
 
@@ -249,24 +338,26 @@ export class ChromeBrowser {
 
       if (!pageTarget) {
         // Create new target
-        const newUrl = `http://localhost:${this.debugPort}/json/new`;
+        const newUrl = `http://${CDP.LOCALHOST}:${this.debugPort}/json/new`;
         const newResponse = await fetch(newUrl);
         pageTarget = await newResponse.json() as Target;
       }
 
       const wsUrl = pageTarget.webSocketDebuggerUrl;
 
-      console.log(`Connecting to: ${wsUrl}`);
+      logger.info(`Connecting to: ${wsUrl}`);
       this.client = new CDPClient(wsUrl);
       await this.client.connect();
-      console.log('Connected to Chrome DevTools Protocol');
+      logger.info('Connected to Chrome DevTools Protocol');
 
       // Enable Log domain to receive console messages
       await this.client.sendCommand('Log.enable');
       await this.client.sendCommand('Runtime.enable');
+      // Enable Network domain to track network errors
+      await this.client.sendCommand('Network.enable');
 
-      // Set up console message listeners
-      this.client.on('Log.entryAdded', (params: LogEntryAddedPayload) => {
+      // Set up event listeners with references for cleanup
+      const logEntryHandler = (params: LogEntryAddedPayload) => {
         const entry = params.entry;
         this.addConsoleMessage({
           level: entry.level || 'log',
@@ -276,10 +367,9 @@ export class ChromeBrowser {
           lineNumber: entry.lineNumber,
           stackTrace: entry.stackTrace
         });
-      });
+      };
 
-      // Also listen to Runtime.consoleAPICalled for console.log/warn/error
-      this.client.on('Runtime.consoleAPICalled', (params: ConsoleAPICalledPayload) => {
+      const consoleApiHandler = (params: ConsoleAPICalledPayload) => {
         const args = params.args || [];
         const text = args.map((arg: RemoteObject) => arg.value || arg.description || '').join(' ');
 
@@ -290,10 +380,9 @@ export class ChromeBrowser {
           url: params.stackTrace?.callFrames?.[0]?.url,
           lineNumber: params.stackTrace?.callFrames?.[0]?.lineNumber
         });
-      });
+      };
 
-      // Listen to Runtime.exceptionThrown for errors
-      this.client.on('Runtime.exceptionThrown', (params: ExceptionThrownPayload) => {
+      const exceptionHandler = (params: ExceptionThrownPayload) => {
         const exception = params.exceptionDetails;
         const text = exception.exception?.description || exception.text || 'Unknown error';
 
@@ -305,7 +394,66 @@ export class ChromeBrowser {
           lineNumber: exception.lineNumber,
           stackTrace: exception.stackTrace
         });
-      });
+      };
+
+      const requestWillBeSentHandler = (params: NetworkRequestPayload) => {
+        this.pendingRequests.set(params.requestId, {
+          url: params.request.url,
+          timestamp: params.timestamp !== undefined ? params.timestamp * TIMING.ACTION_DELAY_NAVIGATION : Date.now(),
+          processed: false
+        });
+      };
+
+      const loadingFailedHandler = (params: NetworkFailedPayload) => {
+        const request = this.pendingRequests.get(params.requestId);
+        if (request && !request.processed && !params.canceled) {
+          this.addNetworkError({
+            url: request.url,
+            errorText: params.errorText,
+            timestamp: params.timestamp !== undefined ? params.timestamp * TIMING.ACTION_DELAY_NAVIGATION : Date.now(),
+            requestId: params.requestId
+          });
+          request.processed = true;
+        }
+      };
+
+      const responseReceivedHandler = (params: NetworkResponsePayload) => {
+        const { requestId, response } = params;
+        const request = this.pendingRequests.get(requestId);
+
+        if (request && !request.processed && response.status >= 400) {
+          this.addNetworkError({
+            url: response.url,
+            errorText: `HTTP ${response.status} ${response.statusText}`,
+            timestamp: Date.now(),
+            statusCode: response.status,
+            requestId: requestId
+          });
+          request.processed = true;
+        }
+      };
+
+      // Register event listeners
+      this.client.on('Log.entryAdded', logEntryHandler);
+      this.eventListeners.set('Log.entryAdded', logEntryHandler);
+
+      this.client.on('Runtime.consoleAPICalled', consoleApiHandler);
+      this.eventListeners.set('Runtime.consoleAPICalled', consoleApiHandler);
+
+      this.client.on('Runtime.exceptionThrown', exceptionHandler);
+      this.eventListeners.set('Runtime.exceptionThrown', exceptionHandler);
+
+      this.client.on('Network.requestWillBeSent', requestWillBeSentHandler);
+      this.eventListeners.set('Network.requestWillBeSent', requestWillBeSentHandler);
+
+      this.client.on('Network.loadingFailed', loadingFailedHandler);
+      this.eventListeners.set('Network.loadingFailed', loadingFailedHandler);
+
+      this.client.on('Network.responseReceived', responseReceivedHandler);
+      this.eventListeners.set('Network.responseReceived', responseReceivedHandler);
+
+      // Start periodic cleanup of stale requests
+      this.cleanupInterval = setInterval(() => this.cleanupStaleRequests(), TIMING.POLLING_INTERVAL_SLOW * 10);
 
     } catch (error) {
       throw new Error(`Failed to connect to Chrome: ${error}`);
@@ -315,14 +463,14 @@ export class ChromeBrowser {
   /**
    * Send CDP command.
    */
-  async sendCommand(
+  async sendCommand<T = Record<string, unknown>>(
     method: string,
-    params?: Record<string, any>
-  ): Promise<Record<string, any>> {
+    params?: unknown
+  ): Promise<T> {
     if (!this.client) {
       throw new Error('Not connected to Chrome');
     }
-    return this.client.sendCommand(method, params);
+    return this.client.sendCommand<T>(method, params);
   }
 
   /**
@@ -340,23 +488,52 @@ export class ChromeBrowser {
   }
 
   /**
+   * Get collected network errors.
+   */
+  getNetworkErrors(): NetworkError[] {
+    return [...this.networkErrors];
+  }
+
+  /**
+   * Clear network errors buffer.
+   */
+  clearNetworkErrors(): void {
+    this.networkErrors = [];
+  }
+
+  /**
    * Close browser and cleanup.
    */
   async close(): Promise<void> {
-    console.log('Closing browser...');
+    logger.info('Closing browser...');
+
+    // Stop cleanup interval
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+      this.cleanupInterval = null;
+    }
+
+    // Remove all event listeners
+    for (const [event, handler] of this.eventListeners.entries()) {
+      this.client?.off(event, handler);
+    }
+    this.eventListeners.clear();
 
     if (this.client) {
       try {
         // Send Browser.close command to gracefully close the browser
         await this.client.sendCommand('Browser.close');
-        console.log('Browser closed via CDP command');
-      } catch (error) {
-        console.log('Could not close browser via CDP, it may already be closed');
+        logger.info('Browser closed via CDP command');
+      } catch (_error) {
+        logger.info('Could not close browser via CDP, it may already be closed');
       }
 
       // Close WebSocket connection
       this.client.close();
     }
+
+    // Clear pending requests
+    this.pendingRequests.clear();
 
     // Clean up project config if autoCleanup is enabled
     cleanupProjectIfNeeded();

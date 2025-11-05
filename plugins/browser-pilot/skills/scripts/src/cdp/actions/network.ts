@@ -4,6 +4,7 @@
 
 import { ChromeBrowser } from '../browser';
 import { ActionResult, ActionOptions, mergeOptions } from './helpers';
+import { logger } from '../../utils/logger';
 
 /**
  * Set up network request interception.
@@ -14,24 +15,28 @@ export async function enableRequestInterception(
 ): Promise<ActionResult> {
   const opts = mergeOptions(options);
 
-  if (opts.verbose) console.log(`🌐 Enabling network request interception...`);
+  if (opts.verbose) logger.info(`🌐 Enabling network request interception...`);
 
   try {
     await browser.sendCommand('Fetch.enable', {
       patterns: [{ urlPattern: '*' }]
     });
 
-    if (opts.verbose) console.log(`✅ Request interception enabled`);
+    if (opts.verbose) logger.info(`✅ Request interception enabled`);
 
     return {
       success: true,
       note: 'Request interception enabled. Use interceptRequest() to handle requests.'
     };
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (opts.verbose) {
-      console.error(`❌ Enable request interception failed`);
-      console.error(`   Error: ${error.message}`);
+      logger.error(`❌ Enable request interception failed`);
+      if (error instanceof Error) {
+        logger.error(`   Error: ${error.message}`);
+      } else {
+        logger.error(`   Error: ${String(error)}`);
+      }
     }
     throw error;
   }
@@ -46,21 +51,25 @@ export async function disableRequestInterception(
 ): Promise<ActionResult> {
   const opts = mergeOptions(options);
 
-  if (opts.verbose) console.log(`🌐 Disabling network request interception...`);
+  if (opts.verbose) logger.info(`🌐 Disabling network request interception...`);
 
   try {
     await browser.sendCommand('Fetch.disable');
 
-    if (opts.verbose) console.log(`✅ Request interception disabled`);
+    if (opts.verbose) logger.info(`✅ Request interception disabled`);
 
     return {
       success: true
     };
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (opts.verbose) {
-      console.error(`❌ Disable request interception failed`);
-      console.error(`   Error: ${error.message}`);
+      logger.error(`❌ Disable request interception failed`);
+      if (error instanceof Error) {
+        logger.error(`   Error: ${error.message}`);
+      } else {
+        logger.error(`   Error: ${String(error)}`);
+      }
     }
     throw error;
   }
@@ -79,7 +88,7 @@ export async function mockRequest(
 ): Promise<ActionResult> {
   const opts = mergeOptions(options);
 
-  if (opts.verbose) console.log(`🌐 Mocking request: ${urlPattern} -> ${statusCode}`);
+  if (opts.verbose) logger.info(`🌐 Mocking request: ${urlPattern} -> ${statusCode}`);
 
   try {
     // This is a simplified version - full implementation requires event handling
@@ -87,7 +96,7 @@ export async function mockRequest(
       patterns: [{ urlPattern }]
     });
 
-    if (opts.verbose) console.log(`✅ Mock configured for: ${urlPattern}`);
+    if (opts.verbose) logger.info(`✅ Mock configured for: ${urlPattern}`);
 
     return {
       success: true,
@@ -96,10 +105,14 @@ export async function mockRequest(
       note: 'Mock configured. Use Fetch.continueRequest or Fetch.fulfillRequest in event handler.'
     };
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (opts.verbose) {
-      console.error(`❌ Mock request failed`);
-      console.error(`   Error: ${error.message}`);
+      logger.error(`❌ Mock request failed`);
+      if (error instanceof Error) {
+        logger.error(`   Error: ${error.message}`);
+      } else {
+        logger.error(`   Error: ${String(error)}`);
+      }
     }
     throw error;
   }
@@ -115,7 +128,7 @@ export async function blockRequest(
 ): Promise<ActionResult> {
   const opts = mergeOptions(options);
 
-  if (opts.verbose) console.log(`🚫 Blocking requests matching: ${urlPattern}`);
+  if (opts.verbose) logger.info(`🚫 Blocking requests matching: ${urlPattern}`);
 
   try {
     await browser.sendCommand('Network.enable');
@@ -123,7 +136,7 @@ export async function blockRequest(
       urls: [urlPattern]
     });
 
-    if (opts.verbose) console.log(`✅ Requests blocked: ${urlPattern}`);
+    if (opts.verbose) logger.info(`✅ Requests blocked: ${urlPattern}`);
 
     return {
       success: true,
@@ -131,10 +144,14 @@ export async function blockRequest(
       blocked: true
     };
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (opts.verbose) {
-      console.error(`❌ Block request failed`);
-      console.error(`   Error: ${error.message}`);
+      logger.error(`❌ Block request failed`);
+      if (error instanceof Error) {
+        logger.error(`   Error: ${error.message}`);
+      } else {
+        logger.error(`   Error: ${String(error)}`);
+      }
     }
     throw error;
   }
@@ -149,24 +166,28 @@ export async function unblockRequests(
 ): Promise<ActionResult> {
   const opts = mergeOptions(options);
 
-  if (opts.verbose) console.log(`🌐 Unblocking all requests...`);
+  if (opts.verbose) logger.info(`🌐 Unblocking all requests...`);
 
   try {
     await browser.sendCommand('Network.setBlockedURLs', {
       urls: []
     });
 
-    if (opts.verbose) console.log(`✅ All requests unblocked`);
+    if (opts.verbose) logger.info(`✅ All requests unblocked`);
 
     return {
       success: true,
       blocked: false
     };
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (opts.verbose) {
-      console.error(`❌ Unblock requests failed`);
-      console.error(`   Error: ${error.message}`);
+      logger.error(`❌ Unblock requests failed`);
+      if (error instanceof Error) {
+        logger.error(`   Error: ${error.message}`);
+      } else {
+        logger.error(`   Error: ${String(error)}`);
+      }
     }
     throw error;
   }

@@ -10,20 +10,21 @@ exports.getContent = getContent;
 exports.getElementProperty = getElementProperty;
 const utils_1 = require("../utils");
 const helpers_1 = require("./helpers");
+const logger_1 = require("../../utils/logger");
 /**
  * Evaluate JavaScript.
  */
 async function evaluate(browser, script, options) {
     const opts = (0, helpers_1.mergeOptions)(options);
     if (opts.verbose)
-        console.log(`⚙️  Evaluating JavaScript...`);
+        logger_1.logger.info(`⚙️  Evaluating JavaScript...`);
     const result = await browser.sendCommand('Runtime.evaluate', {
         expression: script,
         returnByValue: true
     });
     if (opts.verbose)
-        console.log(`✅ Evaluation complete`);
-    (0, helpers_1.checkConsoleErrors)(browser);
+        logger_1.logger.info(`✅ Evaluation complete`);
+    (0, helpers_1.checkErrors)(browser, opts.logLevel);
     return { success: true, result: result.result?.value };
 }
 /**
@@ -34,10 +35,10 @@ async function extractText(browser, selector, options) {
     const opts = (0, helpers_1.mergeOptions)(options);
     if (opts.verbose) {
         if (selector) {
-            console.log(`📝 Extracting text from: ${selector}`);
+            logger_1.logger.info(`📝 Extracting text from: ${selector}`);
         }
         else {
-            console.log(`📝 Extracting text from page body`);
+            logger_1.logger.info(`📝 Extracting text from page body`);
         }
     }
     const script = selector
@@ -53,8 +54,8 @@ async function extractText(browser, selector, options) {
     });
     const text = result.result?.value || '';
     if (opts.verbose)
-        console.log(`✅ Extracted ${text.length} characters`);
-    (0, helpers_1.checkConsoleErrors)(browser);
+        logger_1.logger.info(`✅ Extracted ${text.length} characters`);
+    (0, helpers_1.checkErrors)(browser, opts.logLevel);
     return { success: true, text };
 }
 /**
@@ -63,7 +64,7 @@ async function extractText(browser, selector, options) {
 async function extractData(browser, selectors, options) {
     const opts = (0, helpers_1.mergeOptions)(options);
     if (opts.verbose)
-        console.log(`📊 Extracting data with ${Object.keys(selectors).length} selectors`);
+        logger_1.logger.info(`📊 Extracting data with ${Object.keys(selectors).length} selectors`);
     const data = {};
     for (const [key, selector] of Object.entries(selectors)) {
         try {
@@ -83,12 +84,13 @@ async function extractData(browser, selectors, options) {
             data[key] = result.result?.value;
         }
         catch (error) {
-            data[key] = `Error: ${error}`;
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            data[key] = `Error: ${errorMessage}`;
         }
     }
     if (opts.verbose)
-        console.log(`✅ Extracted data for ${Object.keys(data).length} keys`);
-    (0, helpers_1.checkConsoleErrors)(browser);
+        logger_1.logger.info(`✅ Extracted data for ${Object.keys(data).length} keys`);
+    (0, helpers_1.checkErrors)(browser, opts.logLevel);
     return { success: true, data };
 }
 /**
@@ -97,7 +99,7 @@ async function extractData(browser, selectors, options) {
 async function getContent(browser, options) {
     const opts = (0, helpers_1.mergeOptions)(options);
     if (opts.verbose)
-        console.log('📄 Getting page HTML content');
+        logger_1.logger.info('📄 Getting page HTML content');
     const script = `document.documentElement.outerHTML`;
     const result = await browser.sendCommand('Runtime.evaluate', {
         expression: script,
@@ -105,7 +107,7 @@ async function getContent(browser, options) {
     });
     const content = result.result?.value || '';
     if (opts.verbose)
-        console.log(`✅ Retrieved ${content.length} characters of HTML`);
+        logger_1.logger.info(`✅ Retrieved ${content.length} characters of HTML`);
     return {
         success: true,
         content,
@@ -119,7 +121,7 @@ async function getContent(browser, options) {
 async function getElementProperty(browser, selector, propertyName, options) {
     const opts = (0, helpers_1.mergeOptions)(options);
     if (opts.verbose)
-        console.log(`🔍 Getting property '${propertyName}' from: ${selector}`);
+        logger_1.logger.info(`🔍 Getting property '${propertyName}' from: ${selector}`);
     const script = `
     (function() {
       const selector = ${JSON.stringify(selector)};
@@ -136,18 +138,21 @@ async function getElementProperty(browser, selector, propertyName, options) {
             returnByValue: true
         });
         if (result.exceptionDetails) {
+            const errorMsg = result.exceptionDetails.exception?.description ||
+                result.exceptionDetails.text ||
+                'Unknown error';
             if (opts.verbose) {
-                console.error(`❌ Get property failed: ${selector}`);
-                console.error(`   Error: ${result.exceptionDetails.exception.description}`);
+                logger_1.logger.error(`❌ Get property failed: ${selector}`);
+                logger_1.logger.error(`   Error: ${errorMsg}`);
             }
             return {
                 success: false,
-                error: result.exceptionDetails.exception.description
+                error: errorMsg
             };
         }
         if (opts.verbose)
-            console.log(`✅ Property '${propertyName}': ${result.result?.value}`);
-        (0, helpers_1.checkConsoleErrors)(browser);
+            logger_1.logger.info(`✅ Property '${propertyName}': ${result.result?.value}`);
+        (0, helpers_1.checkErrors)(browser, opts.logLevel);
         return {
             success: true,
             selector,
@@ -156,11 +161,12 @@ async function getElementProperty(browser, selector, propertyName, options) {
         };
     }
     catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
         if (opts.verbose) {
-            console.error(`❌ Get property failed: ${selector}`);
-            console.error(`   Error: ${error.message}`);
+            logger_1.logger.error(`❌ Get property failed: ${selector}`);
+            logger_1.logger.error(`   Error: ${errorMessage}`);
         }
-        (0, helpers_1.checkConsoleErrors)(browser);
+        (0, helpers_1.checkErrors)(browser, opts.logLevel);
         throw error;
     }
 }

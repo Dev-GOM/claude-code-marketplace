@@ -1,6 +1,7 @@
 import { Command } from 'commander';
 import { ChromeBrowser } from '../../cdp/browser';
 import * as actions from '../../cdp/actions';
+import { DaemonManager } from '../../daemon/manager';
 
 export function registerTabsCommands(program: Command) {
   // List tabs command
@@ -12,8 +13,9 @@ export function registerTabsCommands(program: Command) {
       try {
         await browser.connect();
         const result = await actions.listTabs(browser);
+        const tabs = result.tabs as Array<{ index: number; title: string; url: string; targetId: string }>;
         console.log(`Found ${result.count} tabs:`);
-        result.tabs.forEach((tab: any) => {
+        tabs.forEach((tab) => {
           console.log(`[${tab.index}] ${tab.title} - ${tab.url}`);
         });
         process.exit(0);
@@ -80,16 +82,36 @@ export function registerTabsCommands(program: Command) {
   // Close browser command
   program
     .command('close')
-    .description('Close the browser')
+    .description('Close the browser and stop daemon')
     .action(async () => {
       const browser = new ChromeBrowser(false);
+      const daemonManager = new DaemonManager();
+
       try {
+        // Close browser first
         await browser.connect();
         await browser.close();
         console.log('✓ Browser closed');
+
+        // Then stop daemon
+        if (daemonManager.isRunning()) {
+          await daemonManager.stop({ verbose: true });
+          console.log('✓ Daemon stopped');
+        }
+
         process.exit(0);
       } catch (error) {
-        console.error('Error: Could not connect to browser. Is it running?');
+        // Try to stop daemon even if browser close failed
+        try {
+          if (daemonManager.isRunning()) {
+            await daemonManager.stop({ verbose: true });
+            console.log('✓ Daemon stopped');
+          }
+        } catch (daemonError) {
+          console.error('Warning: Could not stop daemon:', daemonError);
+        }
+
+        console.error('Error:', error);
         process.exit(1);
       }
     });

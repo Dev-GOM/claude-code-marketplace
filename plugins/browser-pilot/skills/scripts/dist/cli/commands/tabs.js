@@ -36,6 +36,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.registerTabsCommands = registerTabsCommands;
 const browser_1 = require("../../cdp/browser");
 const actions = __importStar(require("../../cdp/actions"));
+const manager_1 = require("../../daemon/manager");
 function registerTabsCommands(program) {
     // List tabs command
     program
@@ -46,8 +47,9 @@ function registerTabsCommands(program) {
         try {
             await browser.connect();
             const result = await actions.listTabs(browser);
+            const tabs = result.tabs;
             console.log(`Found ${result.count} tabs:`);
-            result.tabs.forEach((tab) => {
+            tabs.forEach((tab) => {
                 console.log(`[${tab.index}] ${tab.title} - ${tab.url}`);
             });
             process.exit(0);
@@ -114,17 +116,34 @@ function registerTabsCommands(program) {
     // Close browser command
     program
         .command('close')
-        .description('Close the browser')
+        .description('Close the browser and stop daemon')
         .action(async () => {
         const browser = new browser_1.ChromeBrowser(false);
+        const daemonManager = new manager_1.DaemonManager();
         try {
+            // Close browser first
             await browser.connect();
             await browser.close();
             console.log('✓ Browser closed');
+            // Then stop daemon
+            if (daemonManager.isRunning()) {
+                await daemonManager.stop({ verbose: true });
+                console.log('✓ Daemon stopped');
+            }
             process.exit(0);
         }
         catch (error) {
-            console.error('Error: Could not connect to browser. Is it running?');
+            // Try to stop daemon even if browser close failed
+            try {
+                if (daemonManager.isRunning()) {
+                    await daemonManager.stop({ verbose: true });
+                    console.log('✓ Daemon stopped');
+                }
+            }
+            catch (daemonError) {
+                console.error('Warning: Could not stop daemon:', daemonError);
+            }
+            console.error('Error:', error);
             process.exit(1);
         }
     });

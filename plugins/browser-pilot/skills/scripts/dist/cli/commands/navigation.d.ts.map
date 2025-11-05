@@ -1,1 +1,1 @@
-{"version":3,"file":"navigation.d.ts","sourceRoot":"","sources":["../../../src/cli/commands/navigation.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,OAAO,EAAE,MAAM,WAAW,CAAC;AAIpC,wBAAgB,0BAA0B,CAAC,OAAO,EAAE,OAAO,QA2F1D"}
+{"version":3,"file":"navigation.d.ts","sourceRoot":"","sources":["../../../src/cli/commands/navigation.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,OAAO,EAAE,MAAM,WAAW,CAAC;AAGpC,wBAAgB,0BAA0B,CAAC,OAAO,EAAE,OAAO,QAoG1D"}

@@ -7,17 +7,18 @@ exports.getCookies = getCookies;
 exports.setCookie = setCookie;
 exports.deleteCookies = deleteCookies;
 const helpers_1 = require("./helpers");
+const logger_1 = require("../../utils/logger");
 /**
  * Get all cookies.
  */
 async function getCookies(browser, options) {
     const opts = (0, helpers_1.mergeOptions)(options);
     if (opts.verbose)
-        console.log('🍪 Getting cookies...');
+        logger_1.logger.info('🍪 Getting cookies...');
     const result = await browser.sendCommand('Network.getCookies');
     const cookies = result.cookies || [];
     if (opts.verbose)
-        console.log(`✅ Retrieved ${cookies.length} cookie(s)`);
+        logger_1.logger.info(`✅ Retrieved ${cookies.length} cookie(s)`);
     return { success: true, cookies, count: cookies.length };
 }
 /**
@@ -26,20 +27,18 @@ async function getCookies(browser, options) {
 async function setCookie(browser, name, value, domain, path = '/', secure = false, httpOnly = false, options) {
     const opts = (0, helpers_1.mergeOptions)(options);
     if (opts.verbose)
-        console.log(`🍪 Setting cookie: ${name}`);
+        logger_1.logger.info(`🍪 Setting cookie: ${name}`);
     const cookieParams = {
         name,
         value,
         path,
         secure,
-        httpOnly
+        httpOnly,
+        ...(domain && { domain })
     };
-    if (domain) {
-        cookieParams.domain = domain;
-    }
     await browser.sendCommand('Network.setCookie', cookieParams);
     if (opts.verbose)
-        console.log(`✅ Cookie set successfully`);
+        logger_1.logger.info(`✅ Cookie set successfully`);
     return { success: true, name };
 }
 /**
@@ -49,7 +48,7 @@ async function deleteCookies(browser, name, options) {
     const opts = (0, helpers_1.mergeOptions)(options);
     if (name) {
         if (opts.verbose)
-            console.log(`🍪 Deleting cookie: ${name}`);
+            logger_1.logger.info(`🍪 Deleting cookie: ${name}`);
         // Get all cookies to find the domain
         const result = await browser.sendCommand('Network.getCookies');
         const cookies = result.cookies || [];
@@ -63,19 +62,19 @@ async function deleteCookies(browser, name, options) {
                 });
             }
             if (opts.verbose)
-                console.log(`✅ Deleted ${matchingCookies.length} cookie(s) with name '${name}'`);
+                logger_1.logger.info(`✅ Deleted ${matchingCookies.length} cookie(s) with name '${name}'`);
         }
         else {
             if (opts.verbose)
-                console.log(`⚠️  Warning: Cookie '${name}' not found`);
+                logger_1.logger.warn(`⚠️  Warning: Cookie '${name}' not found`);
         }
     }
     else {
         if (opts.verbose)
-            console.log('🍪 Deleting all cookies...');
+            logger_1.logger.info('🍪 Deleting all cookies...');
         await browser.sendCommand('Network.clearBrowserCookies');
         if (opts.verbose)
-            console.log(`✅ All cookies deleted`);
+            logger_1.logger.info(`✅ All cookies deleted`);
     }
     return { success: true };
 }

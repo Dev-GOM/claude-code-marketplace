@@ -4,6 +4,36 @@
 
 import { ChromeBrowser } from '../browser';
 import { ActionResult, ActionOptions, mergeOptions } from './helpers';
+import { logger } from '../../utils/logger';
+
+// CDP Types for Network.Cookie
+interface Cookie {
+  name: string;
+  value: string;
+  domain?: string;
+  path?: string;
+  expires?: number;
+  size?: number;
+  httpOnly?: boolean;
+  secure?: boolean;
+  session?: boolean;
+  sameSite?: string;
+}
+
+interface GetCookiesResult {
+  cookies: Cookie[];
+}
+
+interface SetCookieParams {
+  name: string;
+  value: string;
+  domain?: string;
+  path: string;
+  secure: boolean;
+  httpOnly: boolean;
+  expires?: number;
+  sameSite?: string;
+}
 
 /**
  * Get all cookies.
@@ -14,10 +44,10 @@ export async function getCookies(
 ): Promise<ActionResult> {
   const opts = mergeOptions(options);
 
-  if (opts.verbose) console.log('🍪 Getting cookies...');
-  const result = await browser.sendCommand('Network.getCookies');
+  if (opts.verbose) logger.info('🍪 Getting cookies...');
+  const result = await browser.sendCommand<GetCookiesResult>('Network.getCookies');
   const cookies = result.cookies || [];
-  if (opts.verbose) console.log(`✅ Retrieved ${cookies.length} cookie(s)`);
+  if (opts.verbose) logger.info(`✅ Retrieved ${cookies.length} cookie(s)`);
   return { success: true, cookies, count: cookies.length };
 }
 
@@ -36,22 +66,19 @@ export async function setCookie(
 ): Promise<ActionResult> {
   const opts = mergeOptions(options);
 
-  if (opts.verbose) console.log(`🍪 Setting cookie: ${name}`);
+  if (opts.verbose) logger.info(`🍪 Setting cookie: ${name}`);
 
-  const cookieParams: any = {
+  const cookieParams: SetCookieParams = {
     name,
     value,
     path,
     secure,
-    httpOnly
+    httpOnly,
+    ...(domain && { domain })
   };
 
-  if (domain) {
-    cookieParams.domain = domain;
-  }
-
   await browser.sendCommand('Network.setCookie', cookieParams);
-  if (opts.verbose) console.log(`✅ Cookie set successfully`);
+  if (opts.verbose) logger.info(`✅ Cookie set successfully`);
   return { success: true, name };
 }
 
@@ -66,13 +93,13 @@ export async function deleteCookies(
   const opts = mergeOptions(options);
 
   if (name) {
-    if (opts.verbose) console.log(`🍪 Deleting cookie: ${name}`);
+    if (opts.verbose) logger.info(`🍪 Deleting cookie: ${name}`);
     // Get all cookies to find the domain
-    const result = await browser.sendCommand('Network.getCookies');
+    const result = await browser.sendCommand<GetCookiesResult>('Network.getCookies');
     const cookies = result.cookies || [];
 
     // Find matching cookies
-    const matchingCookies = cookies.filter((c: any) => c.name === name);
+    const matchingCookies = cookies.filter((c: Cookie) => c.name === name);
 
     if (matchingCookies.length > 0) {
       for (const cookie of matchingCookies) {
@@ -81,14 +108,14 @@ export async function deleteCookies(
           domain: cookie.domain || ''
         });
       }
-      if (opts.verbose) console.log(`✅ Deleted ${matchingCookies.length} cookie(s) with name '${name}'`);
+      if (opts.verbose) logger.info(`✅ Deleted ${matchingCookies.length} cookie(s) with name '${name}'`);
     } else {
-      if (opts.verbose) console.log(`⚠️  Warning: Cookie '${name}' not found`);
+      if (opts.verbose) logger.warn(`⚠️  Warning: Cookie '${name}' not found`);
     }
   } else {
-    if (opts.verbose) console.log('🍪 Deleting all cookies...');
+    if (opts.verbose) logger.info('🍪 Deleting all cookies...');
     await browser.sendCommand('Network.clearBrowserCookies');
-    if (opts.verbose) console.log(`✅ All cookies deleted`);
+    if (opts.verbose) logger.info(`✅ All cookies deleted`);
   }
 
   return { success: true };

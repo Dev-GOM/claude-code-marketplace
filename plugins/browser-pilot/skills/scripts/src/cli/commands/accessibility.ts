@@ -1,6 +1,7 @@
 import { Command } from 'commander';
 import { ChromeBrowser } from '../../cdp/browser';
 import * as actions from '../../cdp/actions';
+import { logger } from '../../utils/logger';
 
 export function registerAccessibilityCommands(program: Command) {
   // Get accessibility snapshot
@@ -22,7 +23,7 @@ export function registerAccessibilityCommands(program: Command) {
         console.log('Browser remains open. Use "close" command to close it.');
         process.exit(0);
       } catch (error) {
-        console.error('Error:', error);
+        logger.error('Command execution failed', error);
         process.exit(1);
       }
     });

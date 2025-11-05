@@ -20,12 +20,17 @@ const wait_1 = require("./commands/wait");
 const data_1 = require("./commands/data");
 const focus_1 = require("./commands/focus");
 const accessibility_1 = require("./commands/accessibility");
+const daemon_1 = require("./commands/daemon");
+const chain_1 = require("./commands/chain");
+const query_1 = require("./commands/query");
 const program = new commander_1.Command();
 program
     .name('cdp-browser')
     .description('Chrome DevTools Protocol browser automation CLI')
     .version('1.0.0');
 // Register all command groups
+(0, daemon_1.registerDaemonCommands)(program); // Daemon management first
+(0, chain_1.registerChainCommands)(program); // Chain mode for sequential execution
 (0, navigation_1.registerNavigationCommands)(program);
 (0, interaction_1.registerInteractionCommands)(program);
 (0, forms_1.registerFormsCommands)(program);
@@ -41,6 +46,7 @@ program
 (0, data_1.registerDataCommands)(program);
 (0, focus_1.registerFocusCommands)(program);
 (0, accessibility_1.registerAccessibilityCommands)(program);
+(0, query_1.registerQueryCommands)(program); // Query interaction map
 // Parse command line arguments
 program.parse();
 //# sourceMappingURL=cli.js.map

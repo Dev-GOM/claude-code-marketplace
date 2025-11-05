@@ -7,6 +7,49 @@ import { writeFileSync } from 'fs';
 import { dirname } from 'path';
 import { mkdirSync, existsSync } from 'fs';
 import { ActionResult, ActionOptions, mergeOptions, ensureOutputPath } from './helpers';
+import { logger } from '../../utils/logger';
+
+// CDP Types for Page domain
+interface LayoutMetrics {
+  contentSize: {
+    width: number;
+    height: number;
+  };
+}
+
+interface ScreenshotParams {
+  clip?: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    scale: number;
+  };
+}
+
+interface ScreenshotResult {
+  data: string;
+}
+
+interface PDFParams {
+  printBackground: boolean;
+  landscape: boolean;
+  paperWidth: number;
+  paperHeight: number;
+  marginTop: number;
+  marginBottom: number;
+  marginLeft: number;
+  marginRight: number;
+}
+
+interface PDFResult {
+  data: string;
+}
+
+// PDF Constants
+const PDF_PAPER_LETTER_WIDTH = 8.5;   // inches
+const PDF_PAPER_LETTER_HEIGHT = 11.0; // inches
+const PDF_DEFAULT_MARGIN = 0.4;       // inches
 
 /**
  * Take screenshot.
@@ -19,15 +62,15 @@ export async function screenshot(
 ): Promise<ActionResult> {
   const opts = mergeOptions(options);
 
-  if (opts.verbose) console.log(`📸 Taking screenshot: ${outputPath}`);
+  if (opts.verbose) logger.info(`📸 Taking screenshot: ${outputPath}`);
 
   // Enable Page domain
   await browser.sendCommand('Page.enable');
 
-  let params: any = {};
+  let params: ScreenshotParams = {};
   if (fullPage) {
     // Get page dimensions
-    const metrics = await browser.sendCommand('Page.getLayoutMetrics');
+    const metrics = await browser.sendCommand<LayoutMetrics>('Page.getLayoutMetrics');
     const contentSize = metrics.contentSize;
 
     params = {
@@ -41,7 +84,7 @@ export async function screenshot(
     };
   }
 
-  const result = await browser.sendCommand('Page.captureScreenshot', params);
+  const result = await browser.sendCommand<ScreenshotResult>('Page.captureScreenshot', params);
 
   // Decode and save
   const imageData = Buffer.from(result.data, 'base64');
@@ -55,7 +98,7 @@ export async function screenshot(
 
   writeFileSync(absolutePath, imageData);
 
-  if (opts.verbose) console.log(`✅ Screenshot saved: ${absolutePath}`);
+  if (opts.verbose) logger.info(`✅ Screenshot saved: ${absolutePath}`);
 
   return { success: true, path: absolutePath };
 }
@@ -72,28 +115,28 @@ export async function generatePdf(
 ): Promise<ActionResult> {
   const opts = mergeOptions(options);
 
-  if (opts.verbose) console.log(`📄 Generating PDF: ${outputPath}`);
+  if (opts.verbose) logger.info(`📄 Generating PDF: ${outputPath}`);
 
   await browser.sendCommand('Page.enable');
 
-  const params = {
+  const params: PDFParams = {
     printBackground,
     landscape,
-    paperWidth: 8.5,  // inches
-    paperHeight: 11.0,
-    marginTop: 0.4,
-    marginBottom: 0.4,
-    marginLeft: 0.4,
-    marginRight: 0.4
+    paperWidth: PDF_PAPER_LETTER_WIDTH,
+    paperHeight: PDF_PAPER_LETTER_HEIGHT,
+    marginTop: PDF_DEFAULT_MARGIN,
+    marginBottom: PDF_DEFAULT_MARGIN,
+    marginLeft: PDF_DEFAULT_MARGIN,
+    marginRight: PDF_DEFAULT_MARGIN
   };
 
-  const result = await browser.sendCommand('Page.printToPDF', params);
+  const result = await browser.sendCommand<PDFResult>('Page.printToPDF', params);
   const pdfData = Buffer.from(result.data, 'base64');
 
   const absolutePath = ensureOutputPath(outputPath);
   writeFileSync(absolutePath, pdfData);
 
-  if (opts.verbose) console.log(`✅ PDF saved: ${absolutePath}`);
+  if (opts.verbose) logger.info(`✅ PDF saved: ${absolutePath}`);
 
   return { success: true, path: absolutePath };
 }

@@ -20,6 +20,8 @@ const fs_1 = require("fs");
 const path_1 = require("path");
 const net_1 = require("net");
 const utils_1 = require("./utils");
+const constants_1 = require("../constants");
+const logger_1 = require("../utils/logger");
 /**
  * Get shared config file path in plugin skills folder
  * Config is stored in: {plugin-folder}/browser-pilot/skills/browser-pilot-config.json
@@ -41,7 +43,7 @@ function getProjectName(projectRoot) {
  */
 function getOutputDir() {
     const projectRoot = (0, utils_1.findProjectRoot)();
-    const outputDir = (0, path_1.join)(projectRoot, '.browser-pilot');
+    const outputDir = (0, path_1.join)(projectRoot, constants_1.FS.OUTPUT_DIR);
     // Ensure .browser-pilot directory exists
     if (!(0, fs_1.existsSync)(outputDir)) {
         (0, fs_1.mkdirSync)(outputDir, { recursive: true });
@@ -49,10 +51,7 @@ function getOutputDir() {
     // Always ensure .gitignore exists in .browser-pilot
     const gitignorePath = (0, path_1.join)(outputDir, '.gitignore');
     if (!(0, fs_1.existsSync)(gitignorePath)) {
-        const gitignoreContent = `# Browser Pilot generated files
-*
-`;
-        (0, fs_1.writeFileSync)(gitignorePath, gitignoreContent, 'utf-8');
+        (0, fs_1.writeFileSync)(gitignorePath, constants_1.FS.GITIGNORE_CONTENT, 'utf-8');
     }
     return outputDir;
 }
@@ -75,7 +74,9 @@ function loadSharedConfig() {
         return JSON.parse(data);
     }
     catch (error) {
-        console.error('Failed to load shared config:', error);
+        logger_1.logger.error('Failed to load shared config', error);
+        logger_1.logger.warn('Returning empty config - existing project settings may be lost');
+        logger_1.logger.warn(`Config path: ${configPath}`);
         return {
             projects: {}
         };
@@ -90,7 +91,9 @@ function saveSharedConfig(config) {
         (0, fs_1.writeFileSync)(configPath, JSON.stringify(config, null, 2), 'utf-8');
     }
     catch (error) {
-        console.error('Failed to save shared config:', error);
+        logger_1.logger.error('Failed to save shared config', error);
+        logger_1.logger.warn(`Config path: ${configPath}`);
+        throw new Error('Configuration save failed. Please check file permissions.');
     }
 }
 /**
@@ -110,42 +113,42 @@ async function getProjectConfig() {
             delete sharedConfig.projects[existingName];
             sharedConfig.projects[projectName] = config;
             saveSharedConfig(sharedConfig);
-            console.log(`📝 Updated project name: ${existingName} → ${projectName}`);
+            logger_1.logger.info(`📝 Updated project name: ${existingName} → ${projectName}`);
         }
         return config;
     }
     // Check if name already exists (different path)
     if (sharedConfig.projects[projectName]) {
-        console.warn(`⚠️  Project name "${projectName}" already exists with different path`);
-        console.warn(`   Existing: ${sharedConfig.projects[projectName].rootPath}`);
-        console.warn(`   Current:  ${projectRoot}`);
+        logger_1.logger.warn(`⚠️  Project name "${projectName}" already exists with different path`);
+        logger_1.logger.warn(`   Existing: ${sharedConfig.projects[projectName].rootPath}`);
+        logger_1.logger.warn(`   Current:  ${projectRoot}`);
         throw new Error(`Project name conflict: "${projectName}"`);
     }
     // Create new project config with available port
-    const basePort = parseInt(process.env.CDP_DEBUG_PORT || '9222');
+    const basePort = parseInt(process.env.CDP_DEBUG_PORT || String(constants_1.CDP.DEFAULT_PORT));
     // Find next available port that's not used by any project
     const usedPorts = Object.values(sharedConfig.projects).map(p => p.port);
     let port = basePort;
     // Find first available port not in use by other projects
     while (usedPorts.includes(port) || !(await isPortAvailable(port))) {
         port++;
-        if (port > basePort + 100) {
-            throw new Error(`No available port found in range ${basePort}-${basePort + 100}`);
+        if (port > basePort + constants_1.CDP.PORT_RANGE_MAX) {
+            throw new Error(`No available port found in range ${basePort}-${basePort + constants_1.CDP.PORT_RANGE_MAX}`);
         }
     }
     const projectConfig = {
         rootPath: projectRoot,
         port,
-        outputDir: '.browser-pilot',
+        outputDir: constants_1.FS.OUTPUT_DIR,
         lastUsed: new Date().toISOString(),
         autoCleanup: false // Default to false for safety
     };
     // Save new project config
     sharedConfig.projects[projectName] = projectConfig;
     saveSharedConfig(sharedConfig);
-    console.log(`📝 Created config for project: ${projectName}`);
-    console.log(`   Path: ${projectRoot}`);
-    console.log(`   Port: ${port}`);
+    logger_1.logger.info(`📝 Created config for project: ${projectName}`);
+    logger_1.logger.info(`   Path: ${projectRoot}`);
+    logger_1.logger.info(`   Port: ${port}`);
     return projectConfig;
 }
 /**
@@ -178,7 +181,7 @@ function cleanupProjectIfNeeded() {
     if (projectConfig && projectConfig.autoCleanup) {
         delete sharedConfig.projects[projectName];
         saveSharedConfig(sharedConfig);
-        console.log(`🗑️  Auto-cleaned config for project: ${projectName}`);
+        logger_1.logger.info(`🗑️  Auto-cleaned config for project: ${projectName}`);
     }
 }
 /**
@@ -191,7 +194,7 @@ function setAutoCleanup(enabled) {
     if (sharedConfig.projects[projectName]) {
         sharedConfig.projects[projectName].autoCleanup = enabled;
         saveSharedConfig(sharedConfig);
-        console.log(`${enabled ? '✅' : '❌'} Auto-cleanup ${enabled ? 'enabled' : 'disabled'} for: ${projectName}`);
+        logger_1.logger.info(`${enabled ? '✅' : '❌'} Auto-cleanup ${enabled ? 'enabled' : 'disabled'} for: ${projectName}`);
     }
 }
 /**
@@ -203,7 +206,7 @@ function resetProjectConfig() {
     const sharedConfig = loadSharedConfig();
     delete sharedConfig.projects[projectName];
     saveSharedConfig(sharedConfig);
-    console.log(`🗑️  Removed config for project: ${projectName}`);
+    logger_1.logger.info(`🗑️  Removed config for project: ${projectName}`);
 }
 /**
  * List all configured projects
@@ -212,17 +215,17 @@ function listProjects() {
     const sharedConfig = loadSharedConfig();
     const projects = Object.entries(sharedConfig.projects);
     if (projects.length === 0) {
-        console.log('No projects configured yet.');
+        logger_1.logger.info('No projects configured yet.');
         return;
     }
-    console.log(`\n📋 Configured Projects (${projects.length}):\n`);
+    logger_1.logger.info(`\n📋 Configured Projects (${projects.length}):\n`);
     projects.forEach(([name, config]) => {
-        console.log(`   ${name}`);
-        console.log(`   ├─ Path: ${config.rootPath}`);
-        console.log(`   ├─ Port: ${config.port}`);
-        console.log(`   ├─ Output: ${config.outputDir}`);
-        console.log(`   ├─ Auto-cleanup: ${config.autoCleanup ? 'Yes' : 'No'}`);
-        console.log(`   └─ Last Used: ${config.lastUsed || 'Never'}\n`);
+        logger_1.logger.info(`   ${name}`);
+        logger_1.logger.info(`   ├─ Path: ${config.rootPath}`);
+        logger_1.logger.info(`   ├─ Port: ${config.port}`);
+        logger_1.logger.info(`   ├─ Output: ${config.outputDir}`);
+        logger_1.logger.info(`   ├─ Auto-cleanup: ${config.autoCleanup ? 'Yes' : 'No'}`);
+        logger_1.logger.info(`   └─ Last Used: ${config.lastUsed || 'Never'}\n`);
     });
 }
 /**
@@ -239,13 +242,13 @@ async function isPortAvailable(port) {
             resolve(true);
         });
         // Listen on 127.0.0.1 specifically (same as Chrome)
-        server.listen(port, '127.0.0.1');
+        server.listen(port, constants_1.CDP.LOCALHOST);
     });
 }
 /**
  * Find an available port starting from startPort
  */
-async function findAvailablePort(startPort = 9222, maxAttempts = 10) {
+async function findAvailablePort(startPort = constants_1.CDP.DEFAULT_PORT, maxAttempts = 10) {
     for (let port = startPort; port < startPort + maxAttempts; port++) {
         if (await isPortAvailable(port)) {
             return port;
