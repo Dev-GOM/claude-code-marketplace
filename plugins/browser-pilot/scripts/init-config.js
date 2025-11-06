@@ -316,6 +316,33 @@ async function initializeLocalScripts(projectRoot) {
   logger.log('[STEP 1] Removing old .browser-pilot/skills folder...');
   const skillsDir = path.join(projectRoot, '.browser-pilot/skills');
   if (fs.existsSync(skillsDir)) {
+    // Pre-cleanup: Remove dist and node_modules first to reduce file locks
+    const scriptsPath = path.join(skillsDir, 'scripts');
+
+    if (fs.existsSync(scriptsPath)) {
+      try {
+        logger.log('[STEP 1] Pre-cleanup: Removing dist and node_modules...');
+        // Use npx rimraf for cross-platform deletion (npm 5.2+)
+        execSync('npx rimraf dist node_modules', {
+          cwd: scriptsPath,
+          stdio: 'ignore'
+        });
+        logger.log('✓ dist and node_modules removed');
+      } catch (error) {
+        logger.log('Failed to remove dist/node_modules: ' + error.message);
+        // Fallback to fs.rmSync if npx rimraf fails
+        try {
+          const distDir = path.join(scriptsPath, 'dist');
+          const nodeModulesDir = path.join(scriptsPath, 'node_modules');
+          if (fs.existsSync(distDir)) fs.rmSync(distDir, { recursive: true, force: true });
+          if (fs.existsSync(nodeModulesDir)) fs.rmSync(nodeModulesDir, { recursive: true, force: true });
+          logger.log('✓ dist and node_modules removed (fallback)');
+        } catch (fallbackError) {
+          logger.log('Fallback also failed: ' + fallbackError.message);
+        }
+      }
+    }
+
     const maxDeleteRetries = 3;
     let lastDeleteError;
 
