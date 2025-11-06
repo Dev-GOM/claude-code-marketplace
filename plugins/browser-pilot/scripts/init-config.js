@@ -357,8 +357,8 @@ async function initializeLocalScripts(projectRoot) {
   }
 
   // Install dependencies and build
-  logger.log('Installing dependencies (clean install)...');
-  execSync('npm ci', { cwd: localSkillsPath, stdio: 'inherit' });
+  logger.log('Installing dependencies...');
+  execSync('npm install', { cwd: localSkillsPath, stdio: 'inherit' });
 
   logger.log('Building scripts...');
   execSync('npm run build', { cwd: localSkillsPath, stdio: 'inherit' });
