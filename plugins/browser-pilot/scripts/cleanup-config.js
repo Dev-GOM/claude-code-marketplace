@@ -106,16 +106,16 @@ function saveSharedConfig(config) {
 }
 
 /**
- * Stop daemon if running
+ * Stop daemon if running (async version with proper IPC shutdown)
  */
-function stopDaemon(projectRoot) {
+async function stopDaemon(projectRoot) {
   const pidPath = path.join(projectRoot, '.browser-pilot', 'daemon.pid');
   const shutdownFlagPath = path.join(projectRoot, '.browser-pilot', 'daemon-to-stop.pid');
 
   // Check if PID file exists
   if (!fs.existsSync(pidPath)) {
     logger.log('Browser Pilot: No daemon PID file found');
-    return; // Daemon not running
+    return;
   }
 
   // Read and validate PID
@@ -143,58 +143,28 @@ function stopDaemon(projectRoot) {
 
   logger.log('Browser Pilot: Stopping daemon (PID: ' + pid + ')...');
 
-  // Try graceful shutdown via IPC first
+  // Try graceful shutdown via IPC first (properly async)
   try {
-    const net = require('net');
-    const socketPath = path.join(projectRoot, '.browser-pilot', 'daemon.sock');
-    const client = net.createConnection(socketPath);
-    let gracefulShutdown = false;
+    const shutdownSuccess = await attemptIPCShutdown(projectRoot, pid);
 
-    client.on('connect', () => {
-      // Send shutdown command
-      const request = JSON.stringify({
-        id: Date.now().toString(),
-        command: 'shutdown',
-        params: {}
-      }) + '\n';
-      client.write(request);
-      logger.log('✓ Sent graceful shutdown command via IPC');
-    });
-
-    client.on('error', (error) => {
-      logger.warn('IPC connection failed: ' + error.message);
-    });
-
-    client.on('close', () => {
-      gracefulShutdown = true;
-    });
-
-    // Wait for graceful shutdown (max 5 seconds)
-    const waitStart = Date.now();
-    while (Date.now() - waitStart < 5000) {
-      if (!processUtils.isProcessRunning(pid)) {
-        logger.log('✓ Browser Pilot Daemon stopped gracefully via IPC (PID: ' + pid + ')');
-        processUtils.removeFileWithFallback(pidPath, logger);
-        if (fs.existsSync(shutdownFlagPath)) {
-          processUtils.removeFileWithFallback(shutdownFlagPath, logger);
-        }
-        return;
+    if (shutdownSuccess) {
+      logger.log('✓ Browser Pilot Daemon stopped gracefully via IPC (PID: ' + pid + ')');
+      processUtils.removeFileWithFallback(pidPath, logger);
+      if (fs.existsSync(shutdownFlagPath)) {
+        processUtils.removeFileWithFallback(shutdownFlagPath, logger);
       }
-      // Sleep for 100ms
-      const start = Date.now();
-      while (Date.now() - start < 100) { /* busy wait */ }
+      return;
     }
 
-    client.destroy();
-    logger.warn('Graceful shutdown timeout, forcing kill...');
+    logger.warn('IPC shutdown failed or timeout, forcing kill...');
   } catch (error) {
-    logger.warn('IPC shutdown failed: ' + error.message);
+    logger.warn('IPC shutdown error: ' + error.message);
   }
 
   // If graceful shutdown failed, force kill
   logger.log('Forcing daemon shutdown...');
 
-  // Create shutdown request file (daemon will delete this when it exits)
+  // Create shutdown request file
   if (!processUtils.writeShutdownFlag(shutdownFlagPath, pid, 0, logger)) {
     logger.warn('Failed to create shutdown flag, continuing anyway');
   } else {
@@ -211,23 +181,74 @@ function stopDaemon(projectRoot) {
       logger.log('✓ Browser Pilot Daemon stopped (forced kill) (PID: ' + pid + ')');
     }
 
-    // Check if daemon cleaned up the shutdown flag
     if (fs.existsSync(shutdownFlagPath)) {
       logger.warn('⚠️  Daemon did not clean up shutdown flag, removing manually');
       processUtils.removeFileWithFallback(shutdownFlagPath, logger, pid);
     }
 
-    // Clean up PID file
     processUtils.removeFileWithFallback(pidPath, logger);
-
   } else {
-    // Failed to stop daemon
     logger.error('❌ Failed to stop daemon process (PID: ' + pid + ')');
     const relativeFlagPath = path.relative(projectRoot, shutdownFlagPath);
     logger.error('   Shutdown flag left at: ' + relativeFlagPath);
     logger.error('   Next session will attempt cleanup');
-    // Leave shutdown flag for next session to handle
   }
+}
+
+/**
+ * Attempt IPC shutdown (properly async)
+ */
+function attemptIPCShutdown(projectRoot, pid) {
+  return new Promise((resolve) => {
+    const net = require('net');
+    const socketPath = path.join(projectRoot, '.browser-pilot', 'daemon.sock');
+    const timeout = 5000;
+
+    let resolved = false;
+    const client = net.createConnection(socketPath);
+
+    // Set timeout
+    const timeoutId = setTimeout(() => {
+      if (!resolved) {
+        resolved = true;
+        client.destroy();
+        resolve(false);
+      }
+    }, timeout);
+
+    client.on('connect', () => {
+      // Send shutdown command
+      const request = JSON.stringify({
+        id: Date.now().toString(),
+        command: 'shutdown',
+        params: {}
+      }) + '\n';
+      client.write(request);
+      logger.log('✓ Sent graceful shutdown command via IPC');
+
+      // Check process termination
+      const checkInterval = setInterval(() => {
+        if (!processUtils.isProcessRunning(pid)) {
+          clearInterval(checkInterval);
+          clearTimeout(timeoutId);
+          if (!resolved) {
+            resolved = true;
+            client.destroy();
+            resolve(true);
+          }
+        }
+      }, 100);
+    });
+
+    client.on('error', (error) => {
+      logger.warn('IPC connection failed: ' + error.message);
+      clearTimeout(timeoutId);
+      if (!resolved) {
+        resolved = true;
+        resolve(false);
+      }
+    });
+  });
 }
 
 /**
@@ -276,9 +297,9 @@ function cleanupCacheFiles(projectRoot) {
 }
 
 /**
- * Clean up project configuration
+ * Clean up project configuration (async version)
  */
-function cleanupProject(hookInput) {
+async function cleanupProject(hookInput) {
   try {
     logger.log('Browser Pilot: Starting cleanup...');
 
@@ -289,8 +310,8 @@ function cleanupProject(hookInput) {
     logger.log('Browser Pilot: Project: ' + projectName);
     logger.log('Browser Pilot: Root: ' + projectRoot);
 
-    // Stop daemon first
-    stopDaemon(projectRoot);
+    // Stop daemon first (async)
+    await stopDaemon(projectRoot);
 
     // Clean up cache files (preserve local scripts)
     cleanupCacheFiles(projectRoot);
@@ -305,7 +326,6 @@ function cleanupProject(hookInput) {
     const projectConfig = sharedConfig.projects[projectName];
 
     // Check if rootPath matches (ensure we're cleaning up the right project)
-    // Normalize paths to handle forward/backward slash differences (Windows)
     const normalizedConfigPath = path.normalize(projectConfig.rootPath);
     const normalizedCurrentPath = path.normalize(projectRoot);
 
@@ -325,11 +345,9 @@ function cleanupProject(hookInput) {
 
     logger.log('✓ Browser Pilot: Cleanup complete for project "' + projectName + '"');
   } catch (error) {
-    // Report error and exit with failure code
     logger.error('❌ Browser Pilot Cleanup FAILED: ' + error.message);
     logger.error('   Stack: ' + error.stack);
-    logger.close();
-    process.exit(1);
+    throw error;
   }
 }
 
@@ -419,34 +437,50 @@ async function readHookInput() {
   });
 }
 
-// Main execution
-(async () => {
+/**
+ * Run cleanup as a detached background worker
+ */
+function spawnWorker(hookInput) {
+  const { spawn } = require('child_process');
+
+  logger.log('Spawning background worker for cleanup...');
+
+  // Spawn detached worker process
+  const worker = spawn(
+    process.execPath,
+    [__filename, '--worker'],
+    {
+      detached: true,
+      stdio: 'ignore',
+      env: {
+        ...process.env,
+        HOOK_INPUT: JSON.stringify(hookInput)
+      }
+    }
+  );
+
+  worker.unref(); // Allow parent to exit independently
+
+  logger.log('✓ Background worker started (PID: ' + worker.pid + ')');
+  logger.log('✓ Cleanup will continue in background');
+}
+
+/**
+ * Execute cleanup in worker mode
+ */
+async function runWorker() {
   let lockFile = null;
 
-  // Signal handlers to clean up lock file on interruption
-  const cleanup = (signal) => {
-    logger.log('Received ' + signal + ', cleaning up...');
-    if (lockFile) {
-      releaseLock(lockFile);
-    }
-    logger.close();
-    process.exit(1);
-  };
-
-  process.on('SIGINT', () => cleanup('SIGINT'));
-  process.on('SIGTERM', () => cleanup('SIGTERM'));
-  process.on('SIGHUP', () => cleanup('SIGHUP'));
-
   try {
-    // Read hook input
-    const hookInput = await readHookInput();
+    // Parse hook input from environment
+    const hookInput = process.env.HOOK_INPUT ? JSON.parse(process.env.HOOK_INPUT) : {};
 
-    logger.log('Hook input: ' + JSON.stringify(hookInput));
+    logger.log('[Worker] Starting background cleanup...');
+    logger.log('[Worker] Hook input: ' + JSON.stringify(hookInput));
 
     // Skip cleanup for 'clear' reason
-    // Context clear operations should not terminate the daemon (user is still in session)
     if (hookInput.reason === 'clear') {
-      logger.log('Skipping cleanup for reason: ' + hookInput.reason);
+      logger.log('[Worker] Skipping cleanup for reason: ' + hookInput.reason);
       logger.close();
       process.exit(0);
     }
@@ -457,18 +491,55 @@ async function readHookInput() {
     // Acquire lock before running cleanup
     lockFile = await acquireLock(projectRoot);
 
-    // Run cleanup
-    cleanupProject(hookInput);
+    // Run cleanup with proper IPC shutdown
+    await cleanupProject(hookInput);
 
     // Close log and exit
+    logger.log('[Worker] ✓ Background cleanup complete');
     logger.close();
     releaseLock(lockFile);
     process.exit(0);
   } catch (error) {
-    logger.error('Unexpected error: ' + error.message);
-    logger.error('Stack: ' + error.stack);
+    logger.error('[Worker] Cleanup failed: ' + error.message);
+    logger.error('[Worker] Stack: ' + error.stack);
     logger.close();
     if (lockFile) releaseLock(lockFile);
+    process.exit(1);
+  }
+}
+
+// Main execution
+(async () => {
+  // Check if running in worker mode
+  if (process.argv.includes('--worker')) {
+    await runWorker();
+    return;
+  }
+
+  // Normal mode: spawn worker and exit immediately
+  try {
+    // Read hook input
+    const hookInput = await readHookInput();
+
+    logger.log('Hook input: ' + JSON.stringify(hookInput));
+
+    // Skip cleanup for 'clear' reason
+    if (hookInput.reason === 'clear') {
+      logger.log('Skipping cleanup for reason: ' + hookInput.reason);
+      logger.close();
+      process.exit(0);
+    }
+
+    // Spawn background worker
+    spawnWorker(hookInput);
+
+    // Exit immediately (worker continues in background)
+    logger.close();
+    process.exit(0);
+  } catch (error) {
+    logger.error('Failed to spawn worker: ' + error.message);
+    logger.error('Stack: ' + error.stack);
+    logger.close();
     process.exit(1);
   }
 })();
