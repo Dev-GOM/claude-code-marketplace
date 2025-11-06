@@ -312,8 +312,8 @@ async function initializeLocalScripts(projectRoot) {
     await sleep(1000);
   }
 
-  // STEP 1: Remove entire .browser-pilot/skills folder with retry logic
-  logger.log('[STEP 1] Removing old .browser-pilot/skills folder...');
+  // STEP 1: Remove entire .browser-pilot/skills folder
+  logger.log('[STEP 1] Removing .browser-pilot/skills folder...');
   const skillsDir = path.join(projectRoot, '.browser-pilot/skills');
   if (fs.existsSync(skillsDir)) {
     // Pre-cleanup: Remove dist and node_modules first to reduce file locks
@@ -321,12 +321,12 @@ async function initializeLocalScripts(projectRoot) {
 
     if (fs.existsSync(scriptsPath)) {
       try {
-        logger.log('[STEP 1] Pre-cleanup: Removing dist and node_modules...');
+        logger.log('[STEP 1-a] Pre-cleanup: Removing dist and node_modules...');
 
         // Run npx rimraf as separate process and wait for completion
         await new Promise((resolve, reject) => {
-          const rimraf = spawn('npx', ['rimraf', 'dist', 'node_modules'], {
-            cwd: scriptsPath,
+          const rimraf = spawn('npx', ['rimraf', '.browser-pilot/skills/scripts/dist', '.browser-pilot/skills/scripts/node_modules'], {
+            cwd: projectRoot,
             stdio: 'ignore'
           });
 
@@ -343,12 +343,23 @@ async function initializeLocalScripts(projectRoot) {
           });
         });
 
+        // Wait for file system to flush (especially important on Windows)
+        await sleep(500);
+
         // Verify deletion after process has completed
         const distDir = path.join(scriptsPath, 'dist');
         const nodeModulesDir = path.join(scriptsPath, 'node_modules');
 
+        // Poll until folders are actually deleted (max 10 seconds)
+        const maxWait = 20000;
+        const startTime = Date.now();
+        while ((fs.existsSync(distDir) || fs.existsSync(nodeModulesDir)) &&
+               (Date.now() - startTime < maxWait)) {
+          await sleep(100);
+        }
+
         if (fs.existsSync(distDir) || fs.existsSync(nodeModulesDir)) {
-          throw new Error('Folders still exist after rimraf completion');
+          throw new Error('Folders still exist after rimraf completion and timeout');
         }
 
         logger.log('✓ dist and node_modules removed');
@@ -367,6 +378,7 @@ async function initializeLocalScripts(projectRoot) {
       }
     }
 
+    logger.log('[STEP 1-b] Removing skills folder...');
     const maxDeleteRetries = 3;
     let lastDeleteError;
 
@@ -420,7 +432,7 @@ async function initializeLocalScripts(projectRoot) {
 
   // Verify deletion completed
   if (!fs.existsSync(skillsDir)) {
-    logger.log('✓ [STEP 1] Folder deletion verified');
+    logger.log('✓ [STEP 1] Skills folder removed successfully');
   } else {
     throw new Error('Folder still exists after deletion');
   }
