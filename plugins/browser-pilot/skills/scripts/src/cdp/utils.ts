@@ -23,11 +23,22 @@ interface SharedBrowserPilotConfig {
 
 /**
  * Get shared config file path in plugin skills folder
+ * Uses hardcoded home directory path for reliability
  */
 function getSharedConfigPath(): string {
-  // Get plugin skills directory (3 levels up from dist/cdp/)
-  const skillsDir = join(__dirname, '..', '..', '..');
-  return join(skillsDir, 'browser-pilot-config.json');
+  const { homedir } = require('os');
+  const homeDir = homedir();
+  return join(
+    homeDir,
+    '.claude',
+    'plugins',
+    'marketplaces',
+    'dev-gom-plugins',
+    'plugins',
+    'browser-pilot',
+    'skills',
+    'browser-pilot-config.json'
+  );
 }
 
 /**
@@ -62,7 +73,8 @@ function pathsEqual(path1: string, path2: string): boolean {
  * Strategy (in order of priority):
  * 1. CLAUDE_PROJECT_DIR environment variable
  * 2. Shared config file (if running from scripts folder)
- * 3. process.cwd() (when running from project root via wrapper)
+ *
+ * No fallback to process.cwd() - requires explicit project configuration.
  */
 export function findProjectRoot(): string {
   // 1. Environment variable has highest priority
@@ -94,13 +106,13 @@ export function findProjectRoot(): string {
         return sorted[0].rootPath;
       }
     } catch (error) {
-      // If config loading fails, fall through to using cwd
-      logger.warn(`Could not load shared config: ${error}`);
+      logger.error(`Failed to load shared config: ${error}`);
+      throw new Error('Could not determine project root: CLAUDE_PROJECT_DIR not set and no projects in shared config');
     }
   }
 
-  // 3. Default to current working directory (wrapper execution from project root)
-  return cwd;
+  // No fallback to process.cwd() - require explicit project configuration
+  throw new Error('Could not determine project root: CLAUDE_PROJECT_DIR not set');
 }
 
 /**

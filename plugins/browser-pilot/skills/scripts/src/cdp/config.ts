@@ -25,13 +25,39 @@ export interface SharedBrowserPilotConfig {
 }
 
 /**
+ * Get local timestamp string (same format as logger)
+ * Format: YYYY-MM-DD HH:MM:SS.mmm
+ */
+function getLocalTimestamp(): string {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const seconds = String(now.getSeconds()).padStart(2, '0');
+  const milliseconds = String(now.getMilliseconds()).padStart(3, '0');
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}.${milliseconds}`;
+}
+
+/**
  * Get shared config file path in plugin skills folder
- * Config is stored in: {plugin-folder}/browser-pilot/skills/browser-pilot-config.json
+ * Uses hardcoded home directory path for reliability
  */
 function getSharedConfigPath(): string {
-  // Get plugin skills directory (3 levels up from dist/cdp/)
-  const skillsDir = join(__dirname, '..', '..', '..');
-  return join(skillsDir, 'browser-pilot-config.json');
+  const { homedir } = require('os');
+  const homeDir = homedir();
+  return join(
+    homeDir,
+    '.claude',
+    'plugins',
+    'marketplaces',
+    'dev-gom-plugins',
+    'plugins',
+    'browser-pilot',
+    'skills',
+    'browser-pilot-config.json'
+  );
 }
 
 /**
@@ -162,7 +188,7 @@ export async function getProjectConfig(): Promise<ProjectConfig> {
     rootPath: projectRoot,
     port,
     outputDir: FS.OUTPUT_DIR,
-    lastUsed: new Date().toISOString(),
+    lastUsed: getLocalTimestamp(),
     autoCleanup: false  // Default to false for safety
   };
 
@@ -186,7 +212,7 @@ export function updateProjectLastUsed(): void {
   const sharedConfig = loadSharedConfig();
 
   if (sharedConfig.projects[projectName]) {
-    sharedConfig.projects[projectName].lastUsed = new Date().toISOString();
+    sharedConfig.projects[projectName].lastUsed = getLocalTimestamp();
     saveSharedConfig(sharedConfig);
   }
 }
