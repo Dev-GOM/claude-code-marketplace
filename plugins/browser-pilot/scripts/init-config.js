@@ -190,7 +190,7 @@ require(cliPath);
  * Initialize local scripts in project .browser-pilot directory
  * Copies scripts from plugin and runs npm install & build if needed
  */
-function initializeLocalScripts(projectRoot) {
+async function initializeLocalScripts(projectRoot) {
   const localSkillsPath = path.join(projectRoot, '.browser-pilot/skills/scripts');
   const pluginRoot = process.env.CLAUDE_PLUGIN_ROOT;
 
@@ -236,18 +236,45 @@ function initializeLocalScripts(projectRoot) {
   // Remove existing scripts if they exist
   if (fs.existsSync(localSkillsPath)) {
     logger.log('Removing old scripts...');
-    fs.rmSync(localSkillsPath, { recursive: true, force: true });
+    fs.rmSync(localSkillsPath, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 });
+
+    // Wait for file system to settle
+    const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+    await sleep(200);
   }
 
   // Create directory
   fs.mkdirSync(localSkillsPath, { recursive: true });
 
-  // Copy source files
+  // Copy source files with retry logic
   logger.log('Copying source files...');
-  fs.cpSync(path.join(pluginScriptsPath, 'src'), path.join(localSkillsPath, 'src'), { recursive: true });
-  fs.copyFileSync(path.join(pluginScriptsPath, 'package.json'), path.join(localSkillsPath, 'package.json'));
-  fs.copyFileSync(path.join(pluginScriptsPath, 'package-lock.json'), path.join(localSkillsPath, 'package-lock.json'));
-  fs.copyFileSync(path.join(pluginScriptsPath, 'tsconfig.json'), path.join(localSkillsPath, 'tsconfig.json'));
+  const maxRetries = 3;
+  let lastError;
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      fs.cpSync(path.join(pluginScriptsPath, 'src'), path.join(localSkillsPath, 'src'), {
+        recursive: true,
+        force: true
+      });
+      fs.copyFileSync(path.join(pluginScriptsPath, 'package.json'), path.join(localSkillsPath, 'package.json'));
+      fs.copyFileSync(path.join(pluginScriptsPath, 'package-lock.json'), path.join(localSkillsPath, 'package-lock.json'));
+      fs.copyFileSync(path.join(pluginScriptsPath, 'tsconfig.json'), path.join(localSkillsPath, 'tsconfig.json'));
+      lastError = null;
+      break;
+    } catch (error) {
+      lastError = error;
+      logger.log('Copy attempt ' + attempt + ' failed: ' + error.message);
+      if (attempt < maxRetries) {
+        logger.log('Retrying in 300ms...');
+        await sleep(300);
+      }
+    }
+  }
+
+  if (lastError) {
+    throw new Error('Failed to copy files after ' + maxRetries + ' attempts: ' + lastError.message);
+  }
 
   // Install dependencies and build
   logger.log('Installing dependencies (clean install)...');
@@ -276,7 +303,7 @@ async function initializeProject(hookInput) {
   createOutputDirectory(projectRoot);
 
   // Initialize local scripts
-  initializeLocalScripts(projectRoot);
+  await initializeLocalScripts(projectRoot);
 
   // Create CLI wrapper script
   createWrapperScript(projectRoot);
