@@ -56,11 +56,9 @@ export async function handleQueryMap(
 
   // 3-stage fallback logic (max 3 attempts)
   let results: ReturnType<typeof queryMap> = [];
-  let allResults: ReturnType<typeof queryMap> = [];
   let attemptCount = 0;
   const maxAttempts = 3;
   const originalType = queryParams.type;
-  const originalTag = queryParams.tag;
 
   while (results.length === 0 && attemptCount < maxAttempts) {
     attemptCount++;
@@ -68,7 +66,6 @@ export async function handleQueryMap(
     // Stage 1: Try with type (with alias expansion)
     if (queryParams.type && !queryParams.tag) {
       logger.debug(`[Attempt ${attemptCount}] Trying type-based search: "${queryParams.type}"`);
-      allResults = queryMap(currentMap, { ...queryParams, limit: 0 });
       results = queryMap(currentMap, queryParams);
 
       if (results.length > 0) {
@@ -77,13 +74,12 @@ export async function handleQueryMap(
       }
 
       // Stage 2: Fallback to tag-based search
-      if (originalType && !originalTag) {
-        // Extract base tag from type (e.g., "input-search" → "input")
+      // Extract base tag from type (e.g., "input-search" → "input")
+      if (originalType) {
         const baseTag = originalType.split('-')[0];
         logger.debug(`[Attempt ${attemptCount}] Type search failed, trying tag-based search: "${baseTag}"`);
 
         const tagParams = { ...queryParams, type: undefined, tag: baseTag };
-        allResults = queryMap(currentMap, { ...tagParams, limit: 0 });
         results = queryMap(currentMap, tagParams);
 
         if (results.length > 0) {
@@ -93,7 +89,6 @@ export async function handleQueryMap(
       }
     } else {
       // No type specified, just query
-      allResults = queryMap(currentMap, { ...queryParams, limit: 0 });
       results = queryMap(currentMap, queryParams);
 
       if (results.length > 0) {
@@ -111,6 +106,9 @@ export async function handleQueryMap(
       currentMap = loadMap(mapPath);
     }
   }
+
+  // Calculate total count only once at the end
+  const allResults = queryMap(currentMap, { ...queryParams, limit: 0 });
 
   // Final check: no results found after all attempts
   if (results.length === 0 && !queryParams.listTypes && !queryParams.listTexts) {

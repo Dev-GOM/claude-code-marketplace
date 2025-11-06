@@ -195,14 +195,45 @@ async function stopDaemon(projectRoot) {
   }
 }
 
+// IPC shutdown constants
+const GRACEFUL_SHUTDOWN_TIMEOUT = 5000; // 5 seconds
+const POLLING_INTERVAL = 100; // 100ms
+
+// Socket path constants (must match server.ts logic)
+const SOCKET_PATH_PREFIX = 'daemon';
+
+/**
+ * Get project-specific socket name (matches protocol.ts logic)
+ */
+function getProjectSocketName(projectRoot) {
+  const projectName = path.basename(projectRoot)
+    .replace(/[^a-zA-Z0-9_-]/g, '-')
+    .toLowerCase();
+
+  return `${SOCKET_PATH_PREFIX}-${projectName}`;
+}
+
+/**
+ * Get socket path (platform-specific, must match server.ts)
+ */
+function getSocketPath(projectRoot) {
+  if (process.platform === 'win32') {
+    // Windows: Named pipe
+    const socketName = getProjectSocketName(projectRoot);
+    return `\\\\.\\pipe\\${socketName}`;
+  } else {
+    // Unix: Domain socket
+    return path.join(projectRoot, '.browser-pilot', `${SOCKET_PATH_PREFIX}.sock`);
+  }
+}
+
 /**
  * Attempt IPC shutdown (properly async)
  */
 function attemptIPCShutdown(projectRoot, pid) {
   return new Promise((resolve) => {
     const net = require('net');
-    const socketPath = path.join(projectRoot, '.browser-pilot', 'daemon.sock');
-    const timeout = 5000;
+    const socketPath = getSocketPath(projectRoot);
 
     let resolved = false;
     const client = net.createConnection(socketPath);
@@ -214,7 +245,7 @@ function attemptIPCShutdown(projectRoot, pid) {
         client.destroy();
         resolve(false);
       }
-    }, timeout);
+    }, GRACEFUL_SHUTDOWN_TIMEOUT);
 
     client.on('connect', () => {
       // Send shutdown command
@@ -237,7 +268,7 @@ function attemptIPCShutdown(projectRoot, pid) {
             resolve(true);
           }
         }
-      }, 100);
+      }, POLLING_INTERVAL);
     });
 
     client.on('error', (error) => {
@@ -245,6 +276,7 @@ function attemptIPCShutdown(projectRoot, pid) {
       clearTimeout(timeoutId);
       if (!resolved) {
         resolved = true;
+        client.destroy();
         resolve(false);
       }
     });
@@ -477,13 +509,6 @@ async function runWorker() {
 
     logger.log('[Worker] Starting background cleanup...');
     logger.log('[Worker] Hook input: ' + JSON.stringify(hookInput));
-
-    // Skip cleanup for 'clear' reason
-    if (hookInput.reason === 'clear') {
-      logger.log('[Worker] Skipping cleanup for reason: ' + hookInput.reason);
-      logger.close();
-      process.exit(0);
-    }
 
     // Get project root for lock file
     const projectRoot = getProjectRoot(hookInput);

@@ -119,7 +119,7 @@ async function findSelectorWithRetry(
       }
 
       // Stage 2: Fallback to tag-based search
-      if (originalType && !params.tag) {
+      if (originalType) {
         const baseTag = originalType.split('-')[0];
         logger.debug(`[Attempt ${attemptCount}] Type failed, trying tag: "${baseTag}"`);
 

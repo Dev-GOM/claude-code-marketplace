@@ -114,7 +114,7 @@ async function findSelectorWithRetry(context, params) {
                 break;
             }
             // Stage 2: Fallback to tag-based search
-            if (originalType && !params.tag) {
+            if (originalType) {
                 const baseTag = originalType.split('-')[0];
                 logger_1.logger.debug(`[Attempt ${attemptCount}] Type failed, trying tag: "${baseTag}"`);
                 foundSelector = findSelector(mapPath, {

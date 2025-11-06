@@ -109,7 +109,7 @@ Claude:
 
 Claude:
 ✓ 감지됨: Unity 프로젝트
-✓ version.json 업데이트: 1.5.7 → 2.0.0
+✓ version.json 업데이트: 1.5.8 → 2.0.0
 ✓ ProjectSettings.asset에 동기화됨
 ✓ 두 파일 모두 커밋됨
 ✓ 태그 v2.0.0 생성됨

@@ -44,29 +44,25 @@ async function handleQueryMap(context, params) {
     }
     // 3-stage fallback logic (max 3 attempts)
     let results = [];
-    let allResults = [];
     let attemptCount = 0;
     const maxAttempts = 3;
     const originalType = queryParams.type;
-    const originalTag = queryParams.tag;
     while (results.length === 0 && attemptCount < maxAttempts) {
         attemptCount++;
         // Stage 1: Try with type (with alias expansion)
         if (queryParams.type && !queryParams.tag) {
             logger_1.logger.debug(`[Attempt ${attemptCount}] Trying type-based search: "${queryParams.type}"`);
-            allResults = (0, query_map_1.queryMap)(currentMap, { ...queryParams, limit: 0 });
             results = (0, query_map_1.queryMap)(currentMap, queryParams);
             if (results.length > 0) {
                 logger_1.logger.debug(`✓ Found ${results.length} element(s) with type search`);
                 break;
             }
             // Stage 2: Fallback to tag-based search
-            if (originalType && !originalTag) {
-                // Extract base tag from type (e.g., "input-search" → "input")
+            // Extract base tag from type (e.g., "input-search" → "input")
+            if (originalType) {
                 const baseTag = originalType.split('-')[0];
                 logger_1.logger.debug(`[Attempt ${attemptCount}] Type search failed, trying tag-based search: "${baseTag}"`);
                 const tagParams = { ...queryParams, type: undefined, tag: baseTag };
-                allResults = (0, query_map_1.queryMap)(currentMap, { ...tagParams, limit: 0 });
                 results = (0, query_map_1.queryMap)(currentMap, tagParams);
                 if (results.length > 0) {
                     logger_1.logger.debug(`✓ Found ${results.length} element(s) with tag search`);
@@ -76,7 +72,6 @@ async function handleQueryMap(context, params) {
         }
         else {
             // No type specified, just query
-            allResults = (0, query_map_1.queryMap)(currentMap, { ...queryParams, limit: 0 });
             results = (0, query_map_1.queryMap)(currentMap, queryParams);
             if (results.length > 0) {
                 break;
@@ -90,6 +85,8 @@ async function handleQueryMap(context, params) {
             currentMap = (0, query_map_1.loadMap)(mapPath);
         }
     }
+    // Calculate total count only once at the end
+    const allResults = (0, query_map_1.queryMap)(currentMap, { ...queryParams, limit: 0 });
     // Final check: no results found after all attempts
     if (results.length === 0 && !queryParams.listTypes && !queryParams.listTexts) {
         // Build detailed error message with edge case handling

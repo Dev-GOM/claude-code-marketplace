@@ -195,11 +195,7 @@ function queryMap(map, options) {
     if (options.type) {
         const availableTypes = Object.keys(map.indexes.byType);
         const expandedTypes = expandTypeAlias(options.type, availableTypes);
-        const typeIds = [];
-        expandedTypes.forEach(type => {
-            const ids = map.indexes.byType[type] || [];
-            typeIds.push(...ids);
-        });
+        const typeIds = expandedTypes.flatMap(type => map.indexes.byType[type] || []);
         candidateIds = candidateIds.filter(id => typeIds.includes(id));
         // Log type expansion if expansion occurred
         if (expandedTypes.length > 1) {

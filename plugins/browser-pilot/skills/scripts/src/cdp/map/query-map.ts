@@ -220,11 +220,7 @@ export function queryMap(map: InteractionMap, options: QueryOptions): QueryResul
     const availableTypes = Object.keys(map.indexes.byType);
     const expandedTypes = expandTypeAlias(options.type, availableTypes);
 
-    const typeIds: string[] = [];
-    expandedTypes.forEach(type => {
-      const ids = map.indexes.byType[type] || [];
-      typeIds.push(...ids);
-    });
+    const typeIds = expandedTypes.flatMap(type => map.indexes.byType[type] || []);
 
     candidateIds = candidateIds.filter(id => typeIds.includes(id));
 
