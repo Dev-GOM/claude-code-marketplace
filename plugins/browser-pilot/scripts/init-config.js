@@ -312,13 +312,12 @@ async function initializeLocalScripts(projectRoot) {
     await sleep(1000);
   }
 
-  // Remove entire .browser-pilot/skills folder with retry logic
+  // STEP 1: Remove entire .browser-pilot/skills folder with retry logic
+  logger.log('[STEP 1] Removing old .browser-pilot/skills folder...');
   const skillsDir = path.join(projectRoot, '.browser-pilot/skills');
   if (fs.existsSync(skillsDir)) {
-    logger.log('Removing .browser-pilot/skills folder...');
-
     const maxDeleteRetries = 3;
-    let deleteSuccess = false;
+    let lastDeleteError;
 
     for (let attempt = 1; attempt <= maxDeleteRetries; attempt++) {
       try {
@@ -327,35 +326,37 @@ async function initializeLocalScripts(projectRoot) {
         // Wait until folder is actually deleted
         await waitForDeletion(skillsDir);
 
-        if (!fs.existsSync(skillsDir)) {
-          logger.log('✓ Folder deleted successfully');
-          deleteSuccess = true;
-          break;
-        } else {
-          throw new Error('Folder still exists after rmSync');
-        }
+        lastDeleteError = null; // Reset error on success
+        break; // Exit loop on success
       } catch (error) {
+        lastDeleteError = error;
         logger.log('Delete attempt ' + attempt + ' failed: ' + error.message);
 
         if (attempt < maxDeleteRetries) {
           logger.log('Waiting 2 seconds before retry...');
           await sleep(2000);
-        } else {
-          throw new Error('Failed to delete .browser-pilot/skills folder after ' + maxDeleteRetries + ' attempts. Please close any programs that may be locking files in this directory and try again.');
         }
       }
     }
 
-    if (!deleteSuccess) {
-      throw new Error('Failed to delete .browser-pilot/skills folder');
+    if (lastDeleteError) {
+      throw new Error('Failed to delete .browser-pilot/skills folder after ' + maxDeleteRetries + ' attempts. Please close any programs that may be locking files in this directory and try again.');
     }
   }
 
-  // Create fresh directory structure
-  fs.mkdirSync(localSkillsPath, { recursive: true });
+  // Verify deletion completed
+  if (!fs.existsSync(skillsDir)) {
+    logger.log('✓ [STEP 1] Folder deletion verified');
+  } else {
+    throw new Error('Folder still exists after deletion');
+  }
 
-  // Copy source files with retry logic
-  logger.log('Copying source files...');
+  // STEP 2: Create fresh directory structure and copy files
+  logger.log('[STEP 2] Creating directory structure...');
+  fs.mkdirSync(localSkillsPath, { recursive: true });
+  logger.log('✓ Directory created: ' + localSkillsPath);
+
+  logger.log('[STEP 2] Copying source files...');
   const maxRetries = 3;
   let lastError;
 
@@ -384,12 +385,31 @@ async function initializeLocalScripts(projectRoot) {
     throw new Error('Failed to copy files after ' + maxRetries + ' attempts: ' + lastError.message);
   }
 
-  // Install dependencies and build
-  logger.log('Installing dependencies...');
-  execSync('npm install', { cwd: localSkillsPath, stdio: 'inherit' });
+  // STEP 3: Verify all files were copied successfully
+  logger.log('[STEP 3] Verifying copied files...');
+  const requiredFiles = [
+    path.join(localSkillsPath, 'package.json'),
+    path.join(localSkillsPath, 'package-lock.json'),
+    path.join(localSkillsPath, 'tsconfig.json'),
+    path.join(localSkillsPath, 'src')
+  ];
 
-  logger.log('Building scripts...');
+  const missingFiles = requiredFiles.filter(file => !fs.existsSync(file));
+
+  if (missingFiles.length > 0) {
+    throw new Error('File verification failed. Missing files: ' + missingFiles.join(', '));
+  }
+
+  logger.log('✓ [STEP 3] All files copied and verified successfully');
+
+  // STEP 4: Install dependencies and build
+  logger.log('[STEP 4] Installing dependencies...');
+  execSync('npm install', { cwd: localSkillsPath, stdio: 'inherit' });
+  logger.log('✓ [STEP 4] Dependencies installed');
+
+  logger.log('[STEP 4] Building scripts...');
   execSync('npm run build', { cwd: localSkillsPath, stdio: 'inherit' });
+  logger.log('✓ [STEP 4] Build completed');
 
   logger.log('✅ Local scripts initialized successfully (v' + pluginVersion + ')');
 }
