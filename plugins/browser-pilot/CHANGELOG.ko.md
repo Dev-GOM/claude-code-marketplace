@@ -5,7 +5,7 @@ Browser Pilot의 모든 주요 변경사항이 이 파일에 문서화됩니다.
 형식은 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)를 기반으로 하며,
 이 프로젝트는 [Semantic Versioning](https://semver.org/spec/v2.0.0.html)을 준수합니다.
 
-## [1.4.0] - 2025-01-06
+## [1.4.0] - 2025-11-06
 
 ### 추가됨
 - 모든 문서에서 Smart Mode가 Direct Mode보다 우선적으로 권장됨

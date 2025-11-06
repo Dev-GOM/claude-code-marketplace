@@ -2,11 +2,11 @@
 
 All notable changes to the Dev GOM Plugins marketplace will be documented in this file.
 
-> **Version**: 2.12.0 | **Last Updated**: 2025-01-06
+> **Version**: 2.12.0 | **Last Updated**: 2025-11-06
 
 ---
 
-## [2.12.0] - 2025-01-06
+## [2.12.0] - 2025-11-06
 
 ### Changed
 - 🎉 **Browser Pilot v1.4.0**: Enhanced Documentation and Smart Mode Emphasis
