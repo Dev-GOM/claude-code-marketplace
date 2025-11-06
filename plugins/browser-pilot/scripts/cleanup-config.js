@@ -143,6 +143,57 @@ function stopDaemon(projectRoot) {
 
   logger.log('Browser Pilot: Stopping daemon (PID: ' + pid + ')...');
 
+  // Try graceful shutdown via IPC first
+  try {
+    const net = require('net');
+    const socketPath = path.join(projectRoot, '.browser-pilot', 'daemon.sock');
+    const client = net.createConnection(socketPath);
+    let gracefulShutdown = false;
+
+    client.on('connect', () => {
+      // Send shutdown command
+      const request = JSON.stringify({
+        id: Date.now().toString(),
+        command: 'shutdown',
+        params: {}
+      }) + '\n';
+      client.write(request);
+      logger.log('✓ Sent graceful shutdown command via IPC');
+    });
+
+    client.on('error', (error) => {
+      logger.warn('IPC connection failed: ' + error.message);
+    });
+
+    client.on('close', () => {
+      gracefulShutdown = true;
+    });
+
+    // Wait for graceful shutdown (max 5 seconds)
+    const waitStart = Date.now();
+    while (Date.now() - waitStart < 5000) {
+      if (!processUtils.isProcessRunning(pid)) {
+        logger.log('✓ Browser Pilot Daemon stopped gracefully via IPC (PID: ' + pid + ')');
+        processUtils.removeFileWithFallback(pidPath, logger);
+        if (fs.existsSync(shutdownFlagPath)) {
+          processUtils.removeFileWithFallback(shutdownFlagPath, logger);
+        }
+        return;
+      }
+      // Sleep for 100ms
+      const start = Date.now();
+      while (Date.now() - start < 100) { /* busy wait */ }
+    }
+
+    client.destroy();
+    logger.warn('Graceful shutdown timeout, forcing kill...');
+  } catch (error) {
+    logger.warn('IPC shutdown failed: ' + error.message);
+  }
+
+  // If graceful shutdown failed, force kill
+  logger.log('Forcing daemon shutdown...');
+
   // Create shutdown request file (daemon will delete this when it exits)
   if (!processUtils.writeShutdownFlag(shutdownFlagPath, pid, 0, logger)) {
     logger.warn('Failed to create shutdown flag, continuing anyway');
@@ -155,19 +206,14 @@ function stopDaemon(projectRoot) {
 
   if (result.success) {
     if (result.graceful) {
-      logger.log('✓ Browser Pilot Daemon stopped gracefully (PID: ' + pid + ')');
-
-      // Check if daemon cleaned up the shutdown flag
-      if (fs.existsSync(shutdownFlagPath)) {
-        logger.warn('⚠️  Daemon did not clean up shutdown flag, removing manually');
-        processUtils.removeFileWithFallback(shutdownFlagPath, logger, pid);
-      } else {
-        logger.log('✓ Daemon cleaned up shutdown flag successfully');
-      }
+      logger.log('✓ Browser Pilot Daemon stopped (forced graceful) (PID: ' + pid + ')');
     } else {
-      logger.log('✓ Browser Pilot Daemon force-stopped (PID: ' + pid + ')');
+      logger.log('✓ Browser Pilot Daemon stopped (forced kill) (PID: ' + pid + ')');
+    }
 
-      // Remove shutdown flag after force kill
+    // Check if daemon cleaned up the shutdown flag
+    if (fs.existsSync(shutdownFlagPath)) {
+      logger.warn('⚠️  Daemon did not clean up shutdown flag, removing manually');
       processUtils.removeFileWithFallback(shutdownFlagPath, logger, pid);
     }
 
