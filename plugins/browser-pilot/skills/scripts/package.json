@@ -1,6 +1,6 @@
 {
   "name": "browser-pilot-cli",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "description": "Chrome DevTools Protocol browser automation CLI",
   "main": "dist/cli/cli.js",
   "bin": {
