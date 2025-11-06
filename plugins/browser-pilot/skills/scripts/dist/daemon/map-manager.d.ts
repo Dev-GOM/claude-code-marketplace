@@ -28,10 +28,10 @@ export declare class MapManager extends EventEmitter {
      */
     generateMap(browser: ChromeBrowser, force?: boolean): Promise<InteractionMap>;
     /**
-     * Generate map with debounce to prevent rapid successive generations
+     * Generate map with lock to prevent concurrent executions
      * Returns a promise that resolves when map generation is complete
      */
-    generateMapDebounced(browser: ChromeBrowser, force?: boolean): Promise<void>;
+    generateMapSerially(browser: ChromeBrowser, force?: boolean): Promise<void>;
     /**
      * Check if map should be generated for a URL
      */

@@ -212,7 +212,7 @@ export async function handleClick(
   // Always regenerate map after click (DOM may have changed, URL may or may not change)
   logger.debug(`🔄 Regenerating map after click (URL: ${tracker.urlBefore} → ${tracker.urlAfter})`);
   if (context.mapManager) {
-    await context.mapManager.generateMapDebounced(context.browser, false);
+    await context.mapManager.generateMapSerially(context.browser, false);
   }
 
   return result;
@@ -252,7 +252,7 @@ export async function handleFill(
   // Always regenerate map after fill (DOM may have changed, URL may or may not change)
   logger.debug(`🔄 Regenerating map after fill (URL: ${tracker.urlBefore} → ${tracker.urlAfter})`);
   if (context.mapManager) {
-    await context.mapManager.generateMapDebounced(context.browser, false);
+    await context.mapManager.generateMapSerially(context.browser, false);
   }
 
   return result;

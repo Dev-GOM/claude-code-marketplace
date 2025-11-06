@@ -362,7 +362,7 @@ class DaemonServer {
             }
             logger_1.logger.info('✓ Generating interaction map...');
             // Generate map with debounce
-            await this.mapManager.generateMapDebounced(this.browser, false).catch((error) => {
+            await this.mapManager.generateMapSerially(this.browser, false).catch((error) => {
                 const errorMessage = error instanceof Error ? error.message : String(error);
                 logger_1.logger.warn(`⚠️  Auto map generation failed: ${errorMessage}`);
             });
@@ -601,12 +601,22 @@ class DaemonServer {
                 logger_1.logger.error('Error closing browser', error);
             }
         }
-        // Close IPC server (wait for all connections to close)
+        // Close IPC server (wait for all connections to close with timeout)
         if (this.server) {
             const server = this.server;
             await new Promise((resolve) => {
-                server.close(() => {
-                    logger_1.logger.info('IPC server closed');
+                const timeout = setTimeout(() => {
+                    logger_1.logger.warn('IPC server close timed out after 2 seconds. Continuing shutdown.');
+                    resolve();
+                }, 2000);
+                server.close((err) => {
+                    clearTimeout(timeout);
+                    if (err) {
+                        logger_1.logger.error('Error closing IPC server', err);
+                    }
+                    else {
+                        logger_1.logger.info('IPC server closed');
+                    }
                     resolve();
                 });
             });

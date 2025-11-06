@@ -52,7 +52,7 @@ async function waitForMapReady(
   if (!mapStatus.exists || mapStatus.url !== expectedUrl) {
     // Map doesn't exist or has wrong URL - generate new map
     logger.debug(`🔨 Generating new map for: ${expectedUrl}`);
-    await context.mapManager.generateMapDebounced(context.browser, false);
+    await context.mapManager.generateMapSerially(context.browser, false);
     // Above await completes only when map generation is fully done
   }
 

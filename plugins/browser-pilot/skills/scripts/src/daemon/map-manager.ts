@@ -256,10 +256,10 @@ export class MapManager extends EventEmitter {
   }
 
   /**
-   * Generate map with debounce to prevent rapid successive generations
+   * Generate map with lock to prevent concurrent executions
    * Returns a promise that resolves when map generation is complete
    */
-  async generateMapDebounced(browser: ChromeBrowser, force: boolean = false): Promise<void> {
+  async generateMapSerially(browser: ChromeBrowser, force: boolean = false): Promise<void> {
     // If already generating and not forced, return existing promise
     if (this.currentGenerationPromise && !force) {
       logger.debug('Map generation already in progress, waiting for completion...');
@@ -267,15 +267,15 @@ export class MapManager extends EventEmitter {
       return;
     }
 
-    // Clear existing debounce timer
+    // Clear existing debounce timer (legacy support)
     if (this.generationDebounceTimer) {
-      logger.debug(`Debounce: Canceling previous map generation (within ${MAP_CONFIG.DEBOUNCE_MS}ms)`);
+      logger.debug(`Canceling previous map generation timer`);
       clearTimeout(this.generationDebounceTimer);
     }
 
-    // Generate immediately without debounce delay (server.ts already prevents concurrent generation)
+    // Generate with lock to prevent concurrent execution
     try {
-      logger.debug('Generating map immediately...');
+      logger.debug('Generating map with lock...');
       this.currentGenerationPromise = this.generateMap(browser, force);
       await this.currentGenerationPromise;
     } catch (error: unknown) {
