@@ -10,7 +10,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { execSync } = require('child_process');
+const { execSync, spawn } = require('child_process');
 const { createLogger } = require('./logger');
 const processUtils = require('./process-utils');
 
@@ -322,11 +322,35 @@ async function initializeLocalScripts(projectRoot) {
     if (fs.existsSync(scriptsPath)) {
       try {
         logger.log('[STEP 1] Pre-cleanup: Removing dist and node_modules...');
-        // Use npx rimraf for cross-platform deletion (npm 5.2+)
-        execSync('npx rimraf dist node_modules', {
-          cwd: scriptsPath,
-          stdio: 'ignore'
+
+        // Run npx rimraf as separate process and wait for completion
+        await new Promise((resolve, reject) => {
+          const rimraf = spawn('npx', ['rimraf', 'dist', 'node_modules'], {
+            cwd: scriptsPath,
+            stdio: 'ignore'
+          });
+
+          rimraf.on('close', (code) => {
+            if (code === 0) {
+              resolve();
+            } else {
+              reject(new Error(`rimraf exited with code ${code}`));
+            }
+          });
+
+          rimraf.on('error', (error) => {
+            reject(error);
+          });
         });
+
+        // Verify deletion after process has completed
+        const distDir = path.join(scriptsPath, 'dist');
+        const nodeModulesDir = path.join(scriptsPath, 'node_modules');
+
+        if (fs.existsSync(distDir) || fs.existsSync(nodeModulesDir)) {
+          throw new Error('Folders still exist after rimraf completion');
+        }
+
         logger.log('✓ dist and node_modules removed');
       } catch (error) {
         logger.log('Failed to remove dist/node_modules: ' + error.message);
