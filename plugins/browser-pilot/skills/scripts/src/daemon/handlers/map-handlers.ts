@@ -6,6 +6,7 @@ import { join } from 'path';
 import { HandlerContext } from './navigation-handlers';
 import { loadMap, queryMap, listTypes, listTexts } from '../../cdp/map/query-map';
 import { SELECTOR_RETRY_CONFIG } from '../../cdp/actions/helpers';
+import { logger } from '../../utils/logger';
 import {
   MapQueryParams,
   MapQueryResult,
@@ -54,8 +55,27 @@ export async function handleQueryMap(
   }
 
   // Regular query
-  const allResults = queryMap(map, { ...queryParams, limit: 0 }); // Get all for total count
-  const results = queryMap(map, queryParams); // Get paginated results
+  let currentMap = map;
+  let allResults = queryMap(currentMap, { ...queryParams, limit: 0 }); // Get all for total count
+  let results = queryMap(currentMap, queryParams); // Get paginated results
+
+  // Retry with map regeneration if no results found
+  if (results.length === 0 && context.mapManager) {
+    logger.warn('⚠️  No elements found in map, regenerating and retrying...');
+
+    // Regenerate map
+    await context.mapManager.generateMap(context.browser, true);
+    logger.debug('🔄 Map regenerated, retrying query...');
+
+    // Reload map and retry query
+    currentMap = loadMap(mapPath);
+    allResults = queryMap(currentMap, { ...queryParams, limit: 0 });
+    results = queryMap(currentMap, queryParams);
+
+    if (results.length > 0) {
+      logger.debug(`✓ Found ${results.length} element(s) after map regeneration`);
+    }
+  }
 
   if (results.length === 0 && !queryParams.listTypes && !queryParams.listTexts) {
     throw new Error('No elements found matching query criteria');

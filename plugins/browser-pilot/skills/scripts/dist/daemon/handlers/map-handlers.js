@@ -9,6 +9,7 @@ exports.handleGetMapStatus = handleGetMapStatus;
 const path_1 = require("path");
 const query_map_1 = require("../../cdp/map/query-map");
 const helpers_1 = require("../../cdp/actions/helpers");
+const logger_1 = require("../../utils/logger");
 /**
  * Handle query-map command
  */
@@ -42,8 +43,23 @@ async function handleQueryMap(context, params) {
         };
     }
     // Regular query
-    const allResults = (0, query_map_1.queryMap)(map, { ...queryParams, limit: 0 }); // Get all for total count
-    const results = (0, query_map_1.queryMap)(map, queryParams); // Get paginated results
+    let currentMap = map;
+    let allResults = (0, query_map_1.queryMap)(currentMap, { ...queryParams, limit: 0 }); // Get all for total count
+    let results = (0, query_map_1.queryMap)(currentMap, queryParams); // Get paginated results
+    // Retry with map regeneration if no results found
+    if (results.length === 0 && context.mapManager) {
+        logger_1.logger.warn('⚠️  No elements found in map, regenerating and retrying...');
+        // Regenerate map
+        await context.mapManager.generateMap(context.browser, true);
+        logger_1.logger.debug('🔄 Map regenerated, retrying query...');
+        // Reload map and retry query
+        currentMap = (0, query_map_1.loadMap)(mapPath);
+        allResults = (0, query_map_1.queryMap)(currentMap, { ...queryParams, limit: 0 });
+        results = (0, query_map_1.queryMap)(currentMap, queryParams);
+        if (results.length > 0) {
+            logger_1.logger.debug(`✓ Found ${results.length} element(s) after map regeneration`);
+        }
+    }
     if (results.length === 0 && !queryParams.listTypes && !queryParams.listTexts) {
         throw new Error('No elements found matching query criteria');
     }
