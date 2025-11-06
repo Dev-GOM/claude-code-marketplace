@@ -9,6 +9,7 @@
 const fs = require('fs');
 const path = require('path');
 const { createLogger } = require('./logger');
+const processUtils = require('./process-utils');
 
 // Create logger instance
 const logger = createLogger('cleanup-log.txt', 'Browser Pilot Cleanup Log');
@@ -99,6 +100,7 @@ function saveSharedConfig(config) {
  */
 function stopDaemon(projectRoot) {
   const pidPath = path.join(projectRoot, '.browser-pilot', 'daemon.pid');
+  const shutdownFlagPath = path.join(projectRoot, '.browser-pilot', 'daemon-to-stop.pid');
 
   // Check if PID file exists
   if (!fs.existsSync(pidPath)) {
@@ -106,28 +108,69 @@ function stopDaemon(projectRoot) {
     return; // Daemon not running
   }
 
-  // Read PID
-  const pidStr = fs.readFileSync(pidPath, 'utf-8').trim();
-  const pid = parseInt(pidStr, 10);
+  // Read and validate PID
+  let pid;
+  try {
+    const pidStr = fs.readFileSync(pidPath, 'utf-8').trim();
+    pid = parseInt(pidStr, 10);
 
-  if (isNaN(pid)) {
-    // Invalid PID, just remove file
-    fs.unlinkSync(pidPath);
-    logger.log('Browser Pilot: Removed invalid daemon PID file');
+    if (!processUtils.isValidPid(pid)) {
+      logger.log('Browser Pilot: Removed invalid daemon PID file (PID: ' + pidStr + ')');
+      processUtils.removeFileWithFallback(pidPath, logger);
+      return;
+    }
+  } catch (error) {
+    logger.error('Error reading PID file: ' + error.message);
     return;
   }
 
-  try {
-    // Check if process exists and kill it
-    process.kill(pid, 0); // Signal 0 checks if process exists
-    process.kill(pid, 'SIGTERM'); // Graceful shutdown
-    logger.log('✓ Browser Pilot Daemon stopped (PID: ' + pid + ')');
-  } catch (error) {
-    // Process doesn't exist, just clean up PID file
-    if (fs.existsSync(pidPath)) {
-      fs.unlinkSync(pidPath);
-      logger.log('Browser Pilot: Cleaned up stale daemon PID file');
+  // Check if process is running
+  if (!processUtils.isProcessRunning(pid)) {
+    logger.log('Browser Pilot: Daemon process not running (PID: ' + pid + ')');
+    processUtils.removeFileWithFallback(pidPath, logger);
+    return;
+  }
+
+  logger.log('Browser Pilot: Stopping daemon (PID: ' + pid + ')...');
+
+  // Create shutdown request file (daemon will delete this when it exits)
+  if (!processUtils.writeShutdownFlag(shutdownFlagPath, pid, 0, logger)) {
+    logger.warn('Failed to create shutdown flag, continuing anyway');
+  } else {
+    logger.log('Created shutdown request file');
+  }
+
+  // Kill process gracefully (SIGTERM → SIGKILL)
+  const result = processUtils.killProcessGraceful(pid, logger, 5000);
+
+  if (result.success) {
+    if (result.graceful) {
+      logger.log('✓ Browser Pilot Daemon stopped gracefully (PID: ' + pid + ')');
+
+      // Check if daemon cleaned up the shutdown flag
+      if (fs.existsSync(shutdownFlagPath)) {
+        logger.warn('⚠️  Daemon did not clean up shutdown flag, removing manually');
+        processUtils.removeFileWithFallback(shutdownFlagPath, logger, pid);
+      } else {
+        logger.log('✓ Daemon cleaned up shutdown flag successfully');
+      }
+    } else {
+      logger.log('✓ Browser Pilot Daemon force-stopped (PID: ' + pid + ')');
+
+      // Remove shutdown flag after force kill
+      processUtils.removeFileWithFallback(shutdownFlagPath, logger, pid);
     }
+
+    // Clean up PID file
+    processUtils.removeFileWithFallback(pidPath, logger);
+
+  } else {
+    // Failed to stop daemon
+    logger.error('❌ Failed to stop daemon process (PID: ' + pid + ')');
+    const relativeFlagPath = path.relative(projectRoot, shutdownFlagPath);
+    logger.error('   Shutdown flag left at: ' + relativeFlagPath);
+    logger.error('   Next session will attempt cleanup');
+    // Leave shutdown flag for next session to handle
   }
 }
 

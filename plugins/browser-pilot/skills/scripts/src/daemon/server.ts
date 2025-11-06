@@ -653,6 +653,29 @@ export class DaemonServer {
       logger.info('PID file removed');
     }
 
+    // Remove shutdown request flag (if exists from SessionEnd)
+    // This flag is created by SessionEnd (cleanup-config.js) to track daemon shutdown
+    const shutdownFlagPath = join(this.outputDir, 'daemon-to-stop.pid');
+    if (existsSync(shutdownFlagPath)) {
+      try {
+        unlinkSync(shutdownFlagPath);
+        logger.info('Shutdown request flag removed');
+      } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : String(error);
+        logger.warn(`Failed to remove shutdown flag: ${errorMsg}`);
+
+        // Fallback: Mark as COMPLETED so next SessionStart knows shutdown succeeded
+        // Even if file can't be deleted (Windows file lock), marking it prevents force-kill attempt
+        try {
+          const { writeFileSync } = require('fs');
+          writeFileSync(shutdownFlagPath, `COMPLETED:${process.pid}`, 'utf-8');
+          logger.info('Marked shutdown flag as COMPLETED (deletion failed due to file lock)');
+        } catch (_writeError) {
+          logger.error('Failed to mark shutdown flag as COMPLETED');
+        }
+      }
+    }
+
     logger.info('Daemon shutdown complete');
     process.exit(0);
   }
