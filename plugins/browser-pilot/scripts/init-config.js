@@ -175,6 +175,9 @@ function createWrapperScript(projectRoot) {
 
 const path = require('path');
 
+// Set CLAUDE_PROJECT_DIR to project root (parent of .browser-pilot)
+process.env.CLAUDE_PROJECT_DIR = path.resolve(__dirname, '..');
+
 // Get the actual CLI path
 const cliPath = path.join(__dirname, 'skills', 'scripts', 'dist', 'cli', 'cli.js');
 
