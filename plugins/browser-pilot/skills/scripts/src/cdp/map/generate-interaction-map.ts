@@ -39,6 +39,29 @@ export function getInteractionMapScript(): string {
       const elements = [];
       let idCounter = 0;
 
+      // Helper: Escape text for XPath (handles both single and double quotes)
+      function escapeXPath(text) {
+        // If no quotes, use single quotes
+        if (!text.includes("'") && !text.includes('"')) {
+          return "'" + text + "'";
+        }
+        // If only single quotes, use double quotes
+        if (text.includes("'") && !text.includes('"')) {
+          return '"' + text + '"';
+        }
+        // If only double quotes, use single quotes
+        if (!text.includes("'") && text.includes('"')) {
+          return "'" + text + "'";
+        }
+        // Both present: use concat()
+        const parts = text.split("'");
+        const escaped = parts.map((part, i) => {
+          if (i === 0) return "'" + part + "'";
+          return "\"'\"," + "'" + part + "'";
+        }).join(',');
+        return "concat(" + escaped + ")";
+      }
+
       // Helper: Generate Browser Pilot compatible selectors
       function getBrowserPilotSelectors(el) {
         const selectors = {};
@@ -46,11 +69,8 @@ export function getInteractionMapScript(): string {
         // 1. Text-based XPath (most stable for Browser Pilot)
         const text = el.textContent?.trim();
         if (text && text.length > 0 && text.length <= 50) {
-          // Escape single quotes in text
-          const escapedText = text.replace(/'/g, "\\\\'");
-          // Use specific tag name for better precision (button, a, input, etc.)
           const tagName = el.tagName.toLowerCase();
-          selectors.byText = "//" + tagName + "[contains(text(), '" + escapedText + "')]";
+          selectors.byText = "//" + tagName + "[contains(text(), " + escapeXPath(text) + ")]";
         }
 
         // 2. ID selector (best if available)
@@ -89,7 +109,8 @@ export function getInteractionMapScript(): string {
         // 5. ARIA label selector
         const ariaLabel = el.getAttribute('aria-label');
         if (ariaLabel) {
-          const escapedLabel = ariaLabel.replace(/'/g, "\\\\'");
+          // For CSS selectors, escape both quotes properly
+          const escapedLabel = ariaLabel.replace(/\\\\/g, '\\\\\\\\').replace(/'/g, "\\\\'").replace(/"/g, '\\\\"');
           selectors.byAriaLabel = "[aria-label='" + escapedLabel + "']";
         }
 

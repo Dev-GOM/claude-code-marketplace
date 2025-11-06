@@ -103,7 +103,8 @@ export async function handleQueryMap(
       await context.mapManager.generateMap(context.browser, true);
       logger.debug('🔄 Map regenerated, reloading and retrying...');
 
-      currentMap = loadMap(mapPath);
+      // Wait for map to be ready before continuing
+      currentMap = loadMap(mapPath, true, 10000);
     }
   }
 

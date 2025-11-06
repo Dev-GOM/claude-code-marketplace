@@ -142,6 +142,12 @@ function getAlternativeSelectors(element) {
     return alternatives;
 }
 /**
+ * Escape special regex characters in a string
+ */
+function escapeRegex(str) {
+    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+/**
  * Expand type alias to include all matching types
  * Examples:
  * - "input" → ["input", "input-text", "input-search", "input-password", ...]
@@ -153,8 +159,10 @@ function expandTypeAlias(type, availableTypes) {
     if (type.includes('-')) {
         return [type];
     }
+    // Escape regex special characters to prevent regex injection
+    const escapedType = escapeRegex(type);
     // Expand to include all types starting with the alias
-    const pattern = new RegExp(`^${type}(-.*)?$`);
+    const pattern = new RegExp(`^${escapedType}(-.*)?$`);
     const matches = availableTypes.filter(t => pattern.test(t));
     // If no matches found, return original type
     return matches.length > 0 ? matches : [type];

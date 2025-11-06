@@ -260,6 +260,13 @@ export class MapManager extends EventEmitter {
    * Returns a promise that resolves when map generation is complete
    */
   async generateMapDebounced(browser: ChromeBrowser, force: boolean = false): Promise<void> {
+    // If already generating and not forced, return existing promise
+    if (this.currentGenerationPromise && !force) {
+      logger.debug('Map generation already in progress, waiting for completion...');
+      await this.currentGenerationPromise;
+      return;
+    }
+
     // Clear existing debounce timer
     if (this.generationDebounceTimer) {
       logger.debug(`Debounce: Canceling previous map generation (within ${MAP_CONFIG.DEBOUNCE_MS}ms)`);

@@ -151,7 +151,7 @@ export declare const DEFAULT_TIMEOUT = 30000;
 export declare const IDLE_SHUTDOWN_TIMEOUT = 1800000;
 /**
  * Get project-specific socket name
- * Uses project folder name to create unique socket for each project
+ * Uses project folder name + path hash to create unique socket for each project
  */
 export declare function getProjectSocketName(): string;
 /**

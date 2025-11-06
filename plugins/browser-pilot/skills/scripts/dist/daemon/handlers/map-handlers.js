@@ -82,7 +82,8 @@ async function handleQueryMap(context, params) {
             logger_1.logger.warn(`[Attempt ${attemptCount}] No elements found, regenerating map and retrying...`);
             await context.mapManager.generateMap(context.browser, true);
             logger_1.logger.debug('🔄 Map regenerated, reloading and retrying...');
-            currentMap = (0, query_map_1.loadMap)(mapPath);
+            // Wait for map to be ready before continuing
+            currentMap = (0, query_map_1.loadMap)(mapPath, true, 10000);
         }
     }
     // Calculate total count only once at the end

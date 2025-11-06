@@ -41,7 +41,8 @@ function getProjectRoot(hookInput) {
     process.exit(1);
   }
 
-  return projectRoot;
+  // Validate and normalize path to prevent path traversal
+  return processUtils.validateProjectRoot(projectRoot, logger);
 }
 
 /**

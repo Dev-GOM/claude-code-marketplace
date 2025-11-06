@@ -15,16 +15,22 @@ exports.DEFAULT_TIMEOUT = 30000; // 30 seconds
 exports.IDLE_SHUTDOWN_TIMEOUT = 1800000; // 30 minutes
 /**
  * Get project-specific socket name
- * Uses project folder name to create unique socket for each project
+ * Uses project folder name + path hash to create unique socket for each project
  */
 function getProjectSocketName() {
     const { basename } = require('path');
     const { findProjectRoot } = require('../cdp/utils');
+    const { createHash } = require('crypto');
     const projectRoot = findProjectRoot();
     const projectName = basename(projectRoot)
         .replace(/[^a-zA-Z0-9_-]/g, '-') // Replace special chars with hyphen
         .toLowerCase();
-    return `${exports.SOCKET_PATH_PREFIX}-${projectName}`;
+    // Add hash of full path to prevent collision
+    const hash = createHash('sha256')
+        .update(projectRoot)
+        .digest('hex')
+        .substring(0, 8); // Use first 8 chars for brevity
+    return `${exports.SOCKET_PATH_PREFIX}-${projectName}-${hash}`;
 }
 /**
  * Protocol errors
