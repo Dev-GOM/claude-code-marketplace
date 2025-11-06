@@ -49,6 +49,13 @@ function getProjectName(projectRoot) {
 }
 
 /**
+ * Sleep utility for async delays
+ */
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+/**
  * Get shared config file path
  */
 function getSharedConfigPath() {
