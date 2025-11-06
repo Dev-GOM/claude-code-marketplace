@@ -37,6 +37,7 @@ var __importStar = (this && this.__importStar) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.handleScreenshot = handleScreenshot;
+exports.handleSetViewport = handleSetViewport;
 exports.handlePdf = handlePdf;
 const actions = __importStar(require("../../cdp/actions"));
 /**
@@ -44,7 +45,33 @@ const actions = __importStar(require("../../cdp/actions"));
  */
 async function handleScreenshot(context, params) {
     const filename = params.filename;
-    return actions.screenshot(context.browser, filename || 'screenshot.png');
+    const fullPage = params.fullPage !== false; // Default true
+    // Parse clip options if provided
+    let clip;
+    if (params.clipX !== undefined && params.clipY !== undefined &&
+        params.clipWidth !== undefined && params.clipHeight !== undefined) {
+        clip = {
+            x: params.clipX,
+            y: params.clipY,
+            width: params.clipWidth,
+            height: params.clipHeight,
+            scale: params.clipScale
+        };
+    }
+    return actions.screenshot(context.browser, filename || 'screenshot.png', fullPage, clip);
+}
+/**
+ * Handle set viewport size command
+ */
+async function handleSetViewport(context, params) {
+    const width = params.width;
+    const height = params.height;
+    const deviceScaleFactor = params.deviceScaleFactor || 1;
+    const mobile = params.mobile || false;
+    if (!width || !height) {
+        throw new Error('Width and height are required for viewport');
+    }
+    return actions.setViewportSize(context.browser, width, height, deviceScaleFactor, mobile);
 }
 /**
  * Handle PDF generation command
