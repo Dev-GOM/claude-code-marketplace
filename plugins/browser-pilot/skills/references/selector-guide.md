@@ -150,6 +150,39 @@ node .browser-pilot/bp click --text "Learn More" --type a
 node .browser-pilot/bp fill --text "Email" -v "test@example.com" --type input-text
 ```
 
+### Type Aliases (Auto-Expanded)
+```bash
+# Generic type (matches all subtypes)
+node .browser-pilot/bp click --text "Search" --type input
+# Expands to: input, input-text, input-search, input-password, etc.
+
+# Specific type (exact match)
+node .browser-pilot/bp fill --text "Email" --type input-search -v "query"
+# Matches only: input-search
+
+# Button aliases
+node .browser-pilot/bp click --text "Submit" --type button
+# Expands to: button, button-submit, button-reset, etc.
+```
+
+### Tag-Based Search
+```bash
+# Filter by HTML tag (broader matching)
+node .browser-pilot/bp click --text "Submit" --tag button
+# Matches all <button> elements regardless of type
+
+node .browser-pilot/bp fill --text "Email" --tag input -v "user@example.com"
+# Matches all <input> elements regardless of type
+
+# Combined with text search
+node .browser-pilot/bp click --text "Next" --tag button --viewport-only
+```
+
+**Tag vs Type:**
+- `--tag`: Matches HTML tag name (`<button>`, `<input>`)
+- `--type`: Matches interaction map classification (more specific)
+- Use `--tag` when type filtering fails or for broader matches
+
 ### With Indexing
 ```bash
 # Second "Delete" button

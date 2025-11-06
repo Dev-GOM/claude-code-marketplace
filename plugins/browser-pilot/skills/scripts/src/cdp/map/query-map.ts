@@ -34,7 +34,8 @@ export interface InteractionMap {
 
 export interface QueryOptions {
   text?: string;          // Search by text content
-  type?: string;          // Filter by element type
+  type?: string;          // Filter by element type (supports aliases: "input" → "input-*")
+  tag?: string;           // Filter by HTML tag (e.g., "input", "button")
   index?: number;         // Select nth match (1-based)
   viewportOnly?: boolean; // Only visible elements
   id?: string;            // Direct ID lookup
@@ -158,6 +159,27 @@ export function getAlternativeSelectors(element: InteractionElement): string[] {
 }
 
 /**
+ * Expand type alias to include all matching types
+ * Examples:
+ * - "input" → ["input", "input-text", "input-search", "input-password", ...]
+ * - "button" → ["button", "button-submit", "button-reset", ...]
+ * - "input-search" → ["input-search"] (exact match, no expansion)
+ */
+export function expandTypeAlias(type: string, availableTypes: string[]): string[] {
+  // If type contains a hyphen, it's a specific type (no expansion)
+  if (type.includes('-')) {
+    return [type];
+  }
+
+  // Expand to include all types starting with the alias
+  const pattern = new RegExp(`^${type}(-.*)?$`);
+  const matches = availableTypes.filter(t => pattern.test(t));
+
+  // If no matches found, return original type
+  return matches.length > 0 ? matches : [type];
+}
+
+/**
  * Query map for elements matching criteria
  */
 export function queryMap(map: InteractionMap, options: QueryOptions): QueryResult[] {
@@ -193,10 +215,32 @@ export function queryMap(map: InteractionMap, options: QueryOptions): QueryResul
     candidateIds = Object.keys(map.elements);
   }
 
-  // Type filter
+  // Type filter (with alias expansion)
   if (options.type) {
-    const typeIds = map.indexes.byType[options.type] || [];
+    const availableTypes = Object.keys(map.indexes.byType);
+    const expandedTypes = expandTypeAlias(options.type, availableTypes);
+
+    const typeIds: string[] = [];
+    expandedTypes.forEach(type => {
+      const ids = map.indexes.byType[type] || [];
+      typeIds.push(...ids);
+    });
+
     candidateIds = candidateIds.filter(id => typeIds.includes(id));
+
+    // Log type expansion if expansion occurred
+    if (expandedTypes.length > 1) {
+      logger.debug(`Type alias "${options.type}" expanded to: ${expandedTypes.join(', ')}`);
+    }
+  }
+
+  // Tag filter (HTML tag name)
+  if (options.tag) {
+    const tagLower = options.tag.toLowerCase();
+    candidateIds = candidateIds.filter(id => {
+      const element = map.elements[id];
+      return element && element.tag.toLowerCase() === tagLower;
+    });
   }
 
   // Viewport filter

@@ -25,6 +25,7 @@ interface SelectorQueryParams {
   text: string;
   index?: number;
   type?: string;
+  tag?: string;
   viewportOnly?: boolean;
 }
 
@@ -77,8 +78,10 @@ async function executeActionWithTracking<T>(
 }
 
 /**
- * Helper: Find selector with automatic map regeneration fallback
- * Queries interaction map for element, regenerates map if not found
+ * Helper: Find selector with 3-stage fallback logic
+ * Stage 1: Type-based search (with alias expansion)
+ * Stage 2: Tag-based search
+ * Stage 3: Map regeneration + retry (max 3 attempts)
  */
 async function findSelectorWithRetry(
   context: HandlerContext,
@@ -90,39 +93,87 @@ async function findSelectorWithRetry(
   const path = await import('path');
 
   const mapPath = path.join(getOutputDir(), SELECTOR_RETRY_CONFIG.MAP_FILENAME);
-  logger.debug(`🔍 Smart Mode: querying map at ${mapPath} for text="${params.text}"`);
+  logger.debug(`🔍 Smart Mode: querying map for text="${params.text}"`);
 
-  let foundSelector = findSelector(mapPath, {
-    text: params.text,
-    index: params.index,
-    type: params.type,
-    viewportOnly: params.viewportOnly
-  });
+  let foundSelector: string | null = null;
+  let attemptCount = 0;
+  const maxAttempts = 3;
+  const originalType = params.type;
 
-  // Fallback: regenerate map if element not found
-  if (!foundSelector) {
-    logger.warn(`⚠️  Element not found in map, regenerating map and retrying...`);
+  while (!foundSelector && attemptCount < maxAttempts) {
+    attemptCount++;
 
-    if (context.mapManager) {
-      await context.mapManager.generateMap(context.browser, true);
-      logger.debug(`🔄 Map regenerated, retrying selector search...`);
-
+    // Stage 1: Try with type (with alias expansion)
+    if (params.type && !params.tag) {
+      logger.debug(`[Attempt ${attemptCount}] Type-based search: "${params.type}"`);
       foundSelector = findSelector(mapPath, {
         text: params.text,
         index: params.index,
         type: params.type,
         viewportOnly: params.viewportOnly
       });
+
+      if (foundSelector) {
+        logger.debug(`✓ Found selector with type search: ${foundSelector}`);
+        break;
+      }
+
+      // Stage 2: Fallback to tag-based search
+      if (originalType && !params.tag) {
+        const baseTag = originalType.split('-')[0];
+        logger.debug(`[Attempt ${attemptCount}] Type failed, trying tag: "${baseTag}"`);
+
+        foundSelector = findSelector(mapPath, {
+          text: params.text,
+          index: params.index,
+          tag: baseTag,
+          viewportOnly: params.viewportOnly
+        });
+
+        if (foundSelector) {
+          logger.debug(`✓ Found selector with tag search: ${foundSelector}`);
+          break;
+        }
+      }
+    } else {
+      // No type specified, just search
+      foundSelector = findSelector(mapPath, {
+        text: params.text,
+        index: params.index,
+        type: params.type,
+        tag: params.tag,
+        viewportOnly: params.viewportOnly
+      });
+
+      if (foundSelector) {
+        logger.debug(`✓ Found selector: ${foundSelector}`);
+        break;
+      }
     }
 
-    if (!foundSelector) {
-      logger.error(`❌ Element still not found after map regeneration: "${params.text}"`);
-      throw new Error(`Element not found in map: "${params.text}"`);
-    }
+    // Stage 3: Regenerate map and retry
+    if (!foundSelector && context.mapManager && attemptCount < maxAttempts) {
+      logger.warn(`[Attempt ${attemptCount}] Element not found, regenerating map...`);
 
-    logger.debug(`✓ Found selector after map regeneration: ${foundSelector}`);
-  } else {
-    logger.debug(`✓ Found selector: ${foundSelector}`);
+      await context.mapManager.generateMap(context.browser, true);
+      logger.debug('🔄 Map regenerated, retrying...');
+    }
+  }
+
+  // Final check
+  if (!foundSelector) {
+    let errorMsg = `Element not found after ${attemptCount} attempt(s): "${params.text}"\n`;
+    errorMsg += '\n💡 Troubleshooting:\n';
+    errorMsg += `- Check text is exact: --text "${params.text}"\n`;
+    if (params.type) {
+      const baseTag = params.type.split('-')[0];
+      errorMsg += `- Try tag search: --tag ${baseTag}\n`;
+    }
+    errorMsg += `- List available elements: node .browser-pilot/bp query --list-texts\n`;
+    errorMsg += `- Remove filters: try searching without --type or --viewport-only\n`;
+
+    logger.error(`❌ ${errorMsg}`);
+    throw new Error(errorMsg);
   }
 
   return foundSelector;
@@ -143,6 +194,7 @@ export async function handleClick(
       text: params.text as string,
       index: params.index as number | undefined,
       type: params.type as string | undefined,
+      tag: params.tag as string | undefined,
       viewportOnly: params.viewportOnly as boolean | undefined
     });
   }
@@ -182,6 +234,7 @@ export async function handleFill(
       text: params.text as string,
       index: params.index as number | undefined,
       type: params.type as string | undefined,
+      tag: params.tag as string | undefined,
       viewportOnly: params.viewportOnly as boolean | undefined
     });
   }

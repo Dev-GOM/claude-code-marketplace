@@ -56,7 +56,8 @@ node .browser-pilot/bp click --text "<text>" [options]
 Options:
   --text <text>          Text content to search for
   --index <number>       Select nth match (1-based)
-  --type <type>          Element type filter (button, input, etc.)
+  --type <type>          Element type filter (supports aliases: "input" → "input-*")
+  --tag <tag>            HTML tag filter (e.g., "button", "input")
   --viewport-only        Only search visible elements
   --verify               Verify action success
 
@@ -64,6 +65,8 @@ Examples:
   node .browser-pilot/bp click --text Submit
   node .browser-pilot/bp click --text "Sign In" --type button
   node .browser-pilot/bp click --text Delete --index 2
+  node .browser-pilot/bp click --text Search --type input       # Auto-expands to all input types
+  node .browser-pilot/bp click --text Submit --tag button       # Tag-based search
 ```
 
 Direct Mode (fallback for unique IDs):
@@ -80,13 +83,15 @@ node .browser-pilot/bp fill --text "<label>" -v "<value>" [options]
 
 Options:
   --text <label>         Label or placeholder text to search
-  --type <type>          Input type filter (default: input)
+  --type <type>          Input type filter (supports aliases: "input" → "input-*")
+  --tag <tag>            HTML tag filter (e.g., "input", "textarea")
   --viewport-only        Only search visible elements
   --verify               Verify action success
 
 Examples:
   node .browser-pilot/bp fill --text Email -v user@example.com
   node .browser-pilot/bp fill --text Password -v secret --type input-password
+  node .browser-pilot/bp fill --text Email --tag input -v user@example.com   # Tag-based search
 ```
 
 Direct Mode (fallback for unique IDs):
@@ -242,6 +247,14 @@ node .browser-pilot/bp query --text "<text-content>"
 
 # Find all elements of a type (paginated)
 node .browser-pilot/bp query --type <element-type>
+
+# Type aliases (auto-expanded)
+node .browser-pilot/bp query --type input          # Matches: input, input-text, input-search, etc.
+node .browser-pilot/bp query --type input-search   # Exact match only
+
+# Find by HTML tag
+node .browser-pilot/bp query --tag button          # All <button> elements
+node .browser-pilot/bp query --text Submit --tag button
 
 # Show detailed information
 node .browser-pilot/bp query --type button --verbose
