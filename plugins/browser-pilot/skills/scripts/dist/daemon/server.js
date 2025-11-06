@@ -588,13 +588,10 @@ class DaemonServer {
         if (this.idleTimeout) {
             clearTimeout(this.idleTimeout);
         }
-        // Close IPC server
-        if (this.server) {
-            this.server.close(() => {
-                logger_1.logger.info('IPC server closed');
-            });
-        }
-        // Close browser
+        // Remove process signal listeners
+        process.removeAllListeners('SIGINT');
+        process.removeAllListeners('SIGTERM');
+        // Close browser first
         if (this.browser) {
             try {
                 await this.browser.close();
@@ -604,10 +601,26 @@ class DaemonServer {
                 logger_1.logger.error('Error closing browser', error);
             }
         }
-        // Clean up socket file (Unix only)
+        // Close IPC server (wait for all connections to close)
+        if (this.server) {
+            const server = this.server;
+            await new Promise((resolve) => {
+                server.close(() => {
+                    logger_1.logger.info('IPC server closed');
+                    resolve();
+                });
+            });
+        }
+        // Clean up socket file (Unix only) - safe after server.close() completes
         if (process.platform !== 'win32' && (0, fs_1.existsSync)(this.socketPath)) {
-            (0, fs_1.unlinkSync)(this.socketPath);
-            logger_1.logger.info('Socket file removed');
+            try {
+                (0, fs_1.unlinkSync)(this.socketPath);
+                logger_1.logger.info('Socket file removed');
+            }
+            catch (error) {
+                const errorMsg = error instanceof Error ? error.message : String(error);
+                logger_1.logger.warn(`Failed to remove socket file: ${errorMsg}`);
+            }
         }
         // Remove PID file
         if ((0, fs_1.existsSync)(this.pidPath)) {

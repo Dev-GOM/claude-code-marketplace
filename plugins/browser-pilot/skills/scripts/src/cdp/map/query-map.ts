@@ -159,6 +159,13 @@ export function getAlternativeSelectors(element: InteractionElement): string[] {
 }
 
 /**
+ * Escape special regex characters in a string
+ */
+function escapeRegex(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/**
  * Expand type alias to include all matching types
  * Examples:
  * - "input" → ["input", "input-text", "input-search", "input-password", ...]
@@ -171,8 +178,11 @@ export function expandTypeAlias(type: string, availableTypes: string[]): string[
     return [type];
   }
 
+  // Escape regex special characters to prevent regex injection
+  const escapedType = escapeRegex(type);
+
   // Expand to include all types starting with the alias
-  const pattern = new RegExp(`^${type}(-.*)?$`);
+  const pattern = new RegExp(`^${escapedType}(-.*)?$`);
   const matches = availableTypes.filter(t => pattern.test(t));
 
   // If no matches found, return original type

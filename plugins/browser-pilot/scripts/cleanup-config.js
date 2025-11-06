@@ -37,7 +37,8 @@ function getProjectRoot(hookInput) {
     process.exit(1);
   }
 
-  return projectRoot;
+  // Validate and normalize path to prevent path traversal
+  return processUtils.validateProjectRoot(projectRoot, logger);
 }
 
 /**
@@ -206,11 +207,18 @@ const SOCKET_PATH_PREFIX = 'daemon';
  * Get project-specific socket name (matches protocol.ts logic)
  */
 function getProjectSocketName(projectRoot) {
+  const crypto = require('crypto');
   const projectName = path.basename(projectRoot)
     .replace(/[^a-zA-Z0-9_-]/g, '-')
     .toLowerCase();
 
-  return `${SOCKET_PATH_PREFIX}-${projectName}`;
+  // Add hash of full path to prevent collision
+  const hash = crypto.createHash('sha256')
+    .update(projectRoot)
+    .digest('hex')
+    .substring(0, 8); // Use first 8 chars for brevity
+
+  return `${SOCKET_PATH_PREFIX}-${projectName}-${hash}`;
 }
 
 /**
@@ -236,12 +244,14 @@ function attemptIPCShutdown(projectRoot, pid) {
     const socketPath = getSocketPath(projectRoot);
 
     let resolved = false;
+    let checkInterval = null;
     const client = net.createConnection(socketPath);
 
     // Set timeout
     const timeoutId = setTimeout(() => {
       if (!resolved) {
         resolved = true;
+        if (checkInterval) clearInterval(checkInterval);
         client.destroy();
         resolve(false);
       }
@@ -258,7 +268,7 @@ function attemptIPCShutdown(projectRoot, pid) {
       logger.log('✓ Sent graceful shutdown command via IPC');
 
       // Check process termination
-      const checkInterval = setInterval(() => {
+      checkInterval = setInterval(() => {
         if (!processUtils.isProcessRunning(pid)) {
           clearInterval(checkInterval);
           clearTimeout(timeoutId);
@@ -274,6 +284,7 @@ function attemptIPCShutdown(projectRoot, pid) {
     client.on('error', (error) => {
       logger.warn('IPC connection failed: ' + error.message);
       clearTimeout(timeoutId);
+      if (checkInterval) clearInterval(checkInterval);
       if (!resolved) {
         resolved = true;
         client.destroy();
