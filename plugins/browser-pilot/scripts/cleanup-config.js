@@ -45,6 +45,13 @@ function getProjectName(projectRoot) {
 }
 
 /**
+ * Sleep utility for async delays
+ */
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+/**
  * Get shared config file path
  */
 function getSharedConfigPath() {
@@ -277,6 +284,63 @@ function cleanupProject(hookInput) {
 }
 
 /**
+ * Acquire lock file to prevent concurrent execution
+ */
+async function acquireLock(projectRoot) {
+  const lockFile = path.join(projectRoot, '.browser-pilot', '.cleanup.lock');
+  const maxWait = 30000; // 30 seconds
+  const checkInterval = 500; // 500ms
+  const startTime = Date.now();
+
+  while (fs.existsSync(lockFile)) {
+    // Check if lock file is stale (older than 5 minutes)
+    try {
+      const stats = fs.statSync(lockFile);
+      const age = Date.now() - stats.mtimeMs;
+      if (age > 300000) {
+        logger.log('Removing stale lock file (age: ' + Math.floor(age / 1000) + 's)');
+        fs.unlinkSync(lockFile);
+        break;
+      }
+    } catch (error) {
+      // Lock file deleted by other process
+      break;
+    }
+
+    if (Date.now() - startTime > maxWait) {
+      throw new Error('Timeout waiting for lock file. Another cleanup may be in progress.');
+    }
+
+    logger.log('Waiting for another cleanup process to complete...');
+    await sleep(checkInterval);
+  }
+
+  // Create lock file
+  const lockDir = path.dirname(lockFile);
+  if (!fs.existsSync(lockDir)) {
+    fs.mkdirSync(lockDir, { recursive: true });
+  }
+  fs.writeFileSync(lockFile, String(process.pid));
+  logger.log('Lock acquired (PID: ' + process.pid + ')');
+
+  return lockFile;
+}
+
+/**
+ * Release lock file
+ */
+function releaseLock(lockFile) {
+  try {
+    if (fs.existsSync(lockFile)) {
+      fs.unlinkSync(lockFile);
+      logger.log('Lock released');
+    }
+  } catch (error) {
+    logger.log('Failed to release lock: ' + error.message);
+  }
+}
+
+/**
  * Read hook input from stdin
  */
 async function readHookInput() {
@@ -307,22 +371,32 @@ async function readHookInput() {
 
 // Main execution
 (async () => {
+  let lockFile = null;
+
   try {
     // Read hook input
     const hookInput = await readHookInput();
 
     logger.log('Hook input: ' + JSON.stringify(hookInput));
 
+    // Get project root for lock file
+    const projectRoot = getProjectRoot(hookInput);
+
+    // Acquire lock before running cleanup
+    lockFile = await acquireLock(projectRoot);
+
     // Run cleanup
     cleanupProject(hookInput);
 
     // Close log and exit
     logger.close();
+    releaseLock(lockFile);
     process.exit(0);
   } catch (error) {
     logger.error('Unexpected error: ' + error.message);
     logger.error('Stack: ' + error.stack);
     logger.close();
+    if (lockFile) releaseLock(lockFile);
     process.exit(1);
   }
 })();
