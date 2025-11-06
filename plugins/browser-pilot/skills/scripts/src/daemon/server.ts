@@ -90,8 +90,16 @@ export class DaemonServer {
       logger.info('Connected to existing Chrome instance');
     } catch (_error) {
       // If no browser running, launch new one
-      logger.info('Launching new Chrome instance...');
-      await this.browser.launch();
+      const initialUrl = process.env.BP_INITIAL_URL;
+      if (initialUrl) {
+        logger.info(`Launching new Chrome instance with initial URL: ${initialUrl}`);
+        await this.browser.launch(initialUrl);
+        // Clear environment variable after use
+        delete process.env.BP_INITIAL_URL;
+      } else {
+        logger.info('Launching new Chrome instance...');
+        await this.browser.launch();
+      }
       logger.info('Chrome launched successfully');
     }
 
