@@ -181,7 +181,7 @@ export const IDLE_SHUTDOWN_TIMEOUT = 1800000; // 30 minutes
  */
 export function getProjectSocketName(): string {
   const { basename } = require('path');
-  const { findProjectRoot } = require('../cdp/config');
+  const { findProjectRoot } = require('../cdp/utils');
 
   const projectRoot = findProjectRoot();
   const projectName = basename(projectRoot)
