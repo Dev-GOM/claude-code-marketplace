@@ -160,12 +160,15 @@ Options:
   --clip-scale <scale>   Clip region scale factor (default: 1)
   --headless             Run in headless mode
 
+Note: Clip region options take priority over --full-page. When clip options are specified,
+only the specified region will be captured regardless of --full-page setting.
+
 Examples:
   # Full page screenshot
   node .browser-pilot/bp screenshot -o result.png --full-page
   # Saves to: .browser-pilot/screenshots/result.png
 
-  # Capture specific region
+  # Capture specific region (clip takes priority over full-page)
   node .browser-pilot/bp screenshot -o region.png --clip-x 100 --clip-y 200 --clip-width 800 --clip-height 600
   # Saves to: .browser-pilot/screenshots/region.png
 ```
