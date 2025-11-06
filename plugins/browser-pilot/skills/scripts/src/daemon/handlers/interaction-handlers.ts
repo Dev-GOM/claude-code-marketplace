@@ -19,6 +19,16 @@ interface PageChangeTracker {
 }
 
 /**
+ * Selector query parameters for Smart Mode
+ */
+interface SelectorQueryParams {
+  text: string;
+  index?: number;
+  type?: string;
+  viewportOnly?: boolean;
+}
+
+/**
  * Helper: Get current URL from browser
  */
 async function getCurrentUrl(browser: ChromeBrowser): Promise<string> {
@@ -67,6 +77,58 @@ async function executeActionWithTracking<T>(
 }
 
 /**
+ * Helper: Find selector with automatic map regeneration fallback
+ * Queries interaction map for element, regenerates map if not found
+ */
+async function findSelectorWithRetry(
+  context: HandlerContext,
+  params: SelectorQueryParams
+): Promise<string> {
+  const { findSelector } = await import('../../cdp/map/query-map');
+  const { SELECTOR_RETRY_CONFIG } = await import('../../cdp/actions/helpers');
+  const { getOutputDir } = await import('../../cdp/config');
+  const path = await import('path');
+
+  const mapPath = path.join(getOutputDir(), SELECTOR_RETRY_CONFIG.MAP_FILENAME);
+  logger.debug(`🔍 Smart Mode: querying map at ${mapPath} for text="${params.text}"`);
+
+  let foundSelector = findSelector(mapPath, {
+    text: params.text,
+    index: params.index,
+    type: params.type,
+    viewportOnly: params.viewportOnly
+  });
+
+  // Fallback: regenerate map if element not found
+  if (!foundSelector) {
+    logger.warn(`⚠️  Element not found in map, regenerating map and retrying...`);
+
+    if (context.mapManager) {
+      await context.mapManager.generateMap(context.browser, true);
+      logger.debug(`🔄 Map regenerated, retrying selector search...`);
+
+      foundSelector = findSelector(mapPath, {
+        text: params.text,
+        index: params.index,
+        type: params.type,
+        viewportOnly: params.viewportOnly
+      });
+    }
+
+    if (!foundSelector) {
+      logger.error(`❌ Element still not found after map regeneration: "${params.text}"`);
+      throw new Error(`Element not found in map: "${params.text}"`);
+    }
+
+    logger.debug(`✓ Found selector after map regeneration: ${foundSelector}`);
+  } else {
+    logger.debug(`✓ Found selector: ${foundSelector}`);
+  }
+
+  return foundSelector;
+}
+
+/**
  * Handle click command with smart mode support
  */
 export async function handleClick(
@@ -77,48 +139,12 @@ export async function handleClick(
 
   // Smart Mode: if text provided, query map
   if (params.text && !selector) {
-    const { findSelector } = await import('../../cdp/map/query-map');
-    const { SELECTOR_RETRY_CONFIG } = await import('../../cdp/actions/helpers');
-    const { getOutputDir } = await import('../../cdp/config');
-    const path = await import('path');
-
-    const mapPath = path.join(getOutputDir(), SELECTOR_RETRY_CONFIG.MAP_FILENAME);
-    logger.debug(`🔍 Smart Mode: querying map at ${mapPath} for text="${params.text}"`);
-
-    let foundSelector = findSelector(mapPath, {
+    selector = await findSelectorWithRetry(context, {
       text: params.text as string,
       index: params.index as number | undefined,
       type: params.type as string | undefined,
       viewportOnly: params.viewportOnly as boolean | undefined
     });
-
-    // Fallback: regenerate map if element not found
-    if (!foundSelector) {
-      logger.warn(`⚠️  Element not found in map, regenerating map and retrying...`);
-
-      if (context.mapManager) {
-        await context.mapManager.generateMap(context.browser, true);
-        logger.debug(`🔄 Map regenerated, retrying selector search...`);
-
-        foundSelector = findSelector(mapPath, {
-          text: params.text as string,
-          index: params.index as number | undefined,
-          type: params.type as string | undefined,
-          viewportOnly: params.viewportOnly as boolean | undefined
-        });
-      }
-
-      if (!foundSelector) {
-        logger.error(`❌ Element still not found after map regeneration: "${params.text}"`);
-        throw new Error(`Element not found in map: "${params.text}"`);
-      }
-
-      logger.debug(`✓ Found selector after map regeneration: ${foundSelector}`);
-    } else {
-      logger.debug(`✓ Found selector: ${foundSelector}`);
-    }
-
-    selector = foundSelector;
   }
 
   if (!selector) {
@@ -152,48 +178,12 @@ export async function handleFill(
 
   // Smart Mode: if text provided, query map
   if (params.text && !selector) {
-    const { findSelector } = await import('../../cdp/map/query-map');
-    const { SELECTOR_RETRY_CONFIG } = await import('../../cdp/actions/helpers');
-    const { getOutputDir } = await import('../../cdp/config');
-    const path = await import('path');
-
-    const mapPath = path.join(getOutputDir(), SELECTOR_RETRY_CONFIG.MAP_FILENAME);
-    logger.debug(`🔍 Smart Mode: querying map at ${mapPath} for text="${params.text}"`);
-
-    let foundSelector = findSelector(mapPath, {
+    selector = await findSelectorWithRetry(context, {
       text: params.text as string,
       index: params.index as number | undefined,
       type: params.type as string | undefined,
       viewportOnly: params.viewportOnly as boolean | undefined
     });
-
-    // Fallback: regenerate map if element not found
-    if (!foundSelector) {
-      logger.warn(`⚠️  Element not found in map, regenerating map and retrying...`);
-
-      if (context.mapManager) {
-        await context.mapManager.generateMap(context.browser, true);
-        logger.debug(`🔄 Map regenerated, retrying selector search...`);
-
-        foundSelector = findSelector(mapPath, {
-          text: params.text as string,
-          index: params.index as number | undefined,
-          type: params.type as string | undefined,
-          viewportOnly: params.viewportOnly as boolean | undefined
-        });
-      }
-
-      if (!foundSelector) {
-        logger.error(`❌ Element still not found after map regeneration: "${params.text}"`);
-        throw new Error(`Element not found in map: "${params.text}"`);
-      }
-
-      logger.debug(`✓ Found selector after map regeneration: ${foundSelector}`);
-    } else {
-      logger.debug(`✓ Found selector: ${foundSelector}`);
-    }
-
-    selector = foundSelector;
   }
 
   if (!selector) {
