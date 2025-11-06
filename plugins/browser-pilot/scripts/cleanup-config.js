@@ -380,6 +380,14 @@ async function readHookInput() {
 
     logger.log('Hook input: ' + JSON.stringify(hookInput));
 
+    // Skip cleanup for 'clear' reason
+    // Context clear operations should not terminate the daemon (user is still in session)
+    if (hookInput.reason === 'clear') {
+      logger.log('Skipping cleanup for reason: ' + hookInput.reason);
+      logger.close();
+      process.exit(0);
+    }
+
     // Get project root for lock file
     const projectRoot = getProjectRoot(hookInput);
 

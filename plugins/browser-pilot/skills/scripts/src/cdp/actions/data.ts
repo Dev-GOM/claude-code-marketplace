@@ -199,7 +199,9 @@ export async function getElementProperty(
       logger.error(`❌ Get property failed: ${selector}`);
       logger.error(`   Error: ${errorMessage}`);
     }
-    checkErrors(browser, opts.logLevel);
-    throw error;
+    return {
+      success: false,
+      error: errorMessage
+    };
   }
 }
