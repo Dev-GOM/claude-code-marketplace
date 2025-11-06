@@ -332,7 +332,30 @@ async function initializeLocalScripts(projectRoot) {
         lastDeleteError = error;
         logger.log('Delete attempt ' + attempt + ' failed: ' + error.message);
 
-        if (attempt < maxDeleteRetries) {
+        // Log remaining files for debugging
+        if (attempt < maxDeleteRetries && fs.existsSync(skillsDir)) {
+          try {
+            const remainingFiles = [];
+            const scanDir = (dir) => {
+              const items = fs.readdirSync(dir);
+              items.forEach(item => {
+                const fullPath = path.join(dir, item);
+                const stat = fs.statSync(fullPath);
+                if (stat.isDirectory()) {
+                  scanDir(fullPath);
+                } else {
+                  remainingFiles.push(fullPath.replace(skillsDir + path.sep, ''));
+                }
+              });
+            };
+            scanDir(skillsDir);
+            if (remainingFiles.length > 0) {
+              logger.log('Remaining files (' + remainingFiles.length + '): ' + remainingFiles.slice(0, 5).join(', ') + (remainingFiles.length > 5 ? ' ...' : ''));
+            }
+          } catch (scanError) {
+            // Ignore scan errors
+          }
+
           logger.log('Waiting 2 seconds before retry...');
           await sleep(2000);
         }
