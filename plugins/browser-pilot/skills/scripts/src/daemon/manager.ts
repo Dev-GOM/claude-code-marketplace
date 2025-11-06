@@ -50,8 +50,8 @@ export class DaemonManager {
   /**
    * Start daemon process
    */
-  async start(options: { verbose?: boolean } = {}): Promise<void> {
-    const { verbose = true } = options;
+  async start(options: { verbose?: boolean; initialUrl?: string } = {}): Promise<void> {
+    const { verbose = true, initialUrl } = options;
 
     // Check if already running
     if (this.isRunning()) {
@@ -72,11 +72,21 @@ export class DaemonManager {
       throw new Error(`Daemon server not found at ${serverPath}. Did you run 'npm run build'?`);
     }
 
+    // Prepare environment variables
+    const env = { ...process.env };
+    if (initialUrl) {
+      env.BP_INITIAL_URL = initialUrl;
+      if (verbose) {
+        logger.info(`Setting initial URL: ${initialUrl}`);
+      }
+    }
+
     // Spawn daemon as detached process
     const daemon: ChildProcess = spawn(process.execPath, [serverPath], {
       detached: true,
       stdio: 'ignore', // Don't inherit stdio
-      cwd: process.cwd()
+      cwd: process.cwd(),
+      env // Pass environment variables
     });
 
     // Detach the process so it continues running when parent exits
@@ -296,7 +306,7 @@ export class DaemonManager {
   /**
    * Ensure daemon is running (auto-start if needed)
    */
-  async ensureRunning(options: { verbose?: boolean } = {}): Promise<void> {
+  async ensureRunning(options: { verbose?: boolean; initialUrl?: string } = {}): Promise<void> {
     if (!this.isRunning()) {
       await this.start(options);
     }

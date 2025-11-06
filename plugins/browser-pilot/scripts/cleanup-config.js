@@ -196,10 +196,11 @@ function cleanupCacheFiles(projectRoot) {
   logger.log('Browser Pilot: Cleaning up cache files...');
 
   // Remove cache files (keep local scripts)
+  // Note: daemon.pid is already removed in stopDaemon()
   const filesToRemove = [
     'interaction-map.json',
-    'map-cache.json',
-    'daemon.pid'
+    'map-cache.json'
+    // 'daemon.pid' - removed by stopDaemon(), not here
   ];
 
   let removedCount = 0;

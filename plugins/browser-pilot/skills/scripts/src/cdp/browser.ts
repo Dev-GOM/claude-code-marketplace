@@ -265,8 +265,9 @@ export class ChromeBrowser {
 
   /**
    * Launch Chrome in debugging mode.
+   * @param initialUrl - Optional initial URL to open (defaults to about:blank)
    */
-  async launch(): Promise<void> {
+  async launch(initialUrl?: string): Promise<void> {
     // Get project port from shared config (auto-creates if not exists)
     this.debugPort = await getProjectPort();
 
@@ -281,6 +282,14 @@ export class ChromeBrowser {
 
     if (this.headless) {
       args.push('--headless=new', '--disable-gpu');
+    }
+
+    // Add initial URL or default to blank page
+    if (initialUrl) {
+      args.push(initialUrl);
+      logger.info(`Launching Chrome with initial URL: ${initialUrl}`);
+    } else {
+      args.push('about:blank');
     }
 
     logger.info(`Launching Chrome on port ${this.debugPort} (headless: ${this.headless})...`);
