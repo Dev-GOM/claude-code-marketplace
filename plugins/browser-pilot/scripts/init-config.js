@@ -17,7 +17,7 @@ const { createLogger } = require('./logger');
 const logger = createLogger('init-log.txt', 'Browser Pilot Initialization Log');
 
 /**
- * Get project root from environment variable, hook input, or process.cwd()
+ * Get project root from environment variable or hook input
  */
 function getProjectRoot(hookInput) {
   // Try environment variable first
@@ -29,10 +29,12 @@ function getProjectRoot(hookInput) {
     logger.log('Using cwd from hook input as project root');
   }
 
-  // Final fallback to process.cwd()
+  // No fallback to process.cwd() - require explicit project root
   if (!projectRoot) {
-    projectRoot = process.cwd();
-    logger.log('Using process.cwd() as project root: ' + projectRoot);
+    logger.error('Error: Could not determine project root');
+    logger.error('CLAUDE_PROJECT_DIR not set and no cwd in hook input');
+    logger.close();
+    process.exit(1);
   }
 
   return projectRoot;
