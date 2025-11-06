@@ -127,8 +127,19 @@ export class DaemonServer {
     });
 
     // Setup graceful shutdown
-    process.on('SIGINT', () => this.shutdown());
-    process.on('SIGTERM', () => this.shutdown());
+    // Use async wrapper to properly await shutdown completion
+    process.on('SIGINT', () => {
+      this.shutdown().catch((error) => {
+        logger.error('Error during SIGINT shutdown', error);
+        process.exit(1);
+      });
+    });
+    process.on('SIGTERM', () => {
+      this.shutdown().catch((error) => {
+        logger.error('Error during SIGTERM shutdown', error);
+        process.exit(1);
+      });
+    });
   }
 
   /**

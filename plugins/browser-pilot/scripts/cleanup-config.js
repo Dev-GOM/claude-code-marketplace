@@ -380,6 +380,14 @@ async function readHookInput() {
 
     logger.log('Hook input: ' + JSON.stringify(hookInput));
 
+    // Skip cleanup for 'clear' and 'compact' events
+    // These are context management operations that should not terminate the daemon
+    if (hookInput.source === 'clear' || hookInput.source === 'compact') {
+      logger.log('Skipping cleanup for event: ' + hookInput.source);
+      logger.close();
+      process.exit(0);
+    }
+
     // Get project root for lock file
     const projectRoot = getProjectRoot(hookInput);
 
