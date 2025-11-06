@@ -653,6 +653,30 @@ export class DaemonServer {
       logger.info('PID file removed');
     }
 
+    // Remove interaction map cache files
+    const mapPath = join(this.outputDir, 'interaction-map.json');
+    const mapCachePath = join(this.outputDir, 'map-cache.json');
+
+    if (existsSync(mapPath)) {
+      try {
+        unlinkSync(mapPath);
+        logger.info('Interaction map cache removed');
+      } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : String(error);
+        logger.warn(`Failed to remove interaction map: ${errorMsg}`);
+      }
+    }
+
+    if (existsSync(mapCachePath)) {
+      try {
+        unlinkSync(mapCachePath);
+        logger.info('Map cache metadata removed');
+      } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : String(error);
+        logger.warn(`Failed to remove map cache metadata: ${errorMsg}`);
+      }
+    }
+
     // Remove shutdown request flag (if exists from SessionEnd)
     // This flag is created by SessionEnd (cleanup-config.js) to track daemon shutdown
     const shutdownFlagPath = join(this.outputDir, 'daemon-to-stop.pid');

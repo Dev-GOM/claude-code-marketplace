@@ -1,6 +1,7 @@
 import { Command } from 'commander';
 import { executeViaDaemon } from '../daemon-helper';
 import { findSelector } from '../../cdp/map/query-map';
+import { findSelectorWithRetry } from './selector-helper';
 import { SELECTOR_RETRY_CONFIG } from '../../cdp/actions/helpers';
 import { getOutputDir } from '../../cdp/config';
 import * as path from 'path';
@@ -284,7 +285,8 @@ export function registerChainCommands(program: Command) {
               // Ignore errors, just use 'unknown'
             }
 
-            const selector = findSelector(
+            // Try to find selector with retry on failure
+            let selector = findSelector(
               mapPath,
               {
                 text: daemonParams.text as string,
@@ -296,12 +298,22 @@ export function registerChainCommands(program: Command) {
               chainTimeout // timeout
             );
 
+            // Fallback: regenerate map if element not found
             if (!selector) {
-              console.error(`✗ Element not found in map: "${daemonParams.text}" in URL: ${currentUrl}`);
-              process.exit(1);
-            }
+              selector = await findSelectorWithRetry({
+                text: daemonParams.text as string,
+                index: daemonParams.index as number | undefined,
+                type: daemonParams.type as string | undefined,
+                viewportOnly: daemonParams.viewportOnly as boolean | undefined
+              }, 'element');
 
-            console.log(`✓ Map ready, found selector: ${selector}`);
+              if (!selector) {
+                console.error(`   in URL: ${currentUrl}`);
+                process.exit(1);
+              }
+            } else {
+              console.log(`✓ Map ready, found selector: ${selector}`);
+            }
             daemonParams.selector = selector;
             delete daemonParams.text;
             delete daemonParams.index;
