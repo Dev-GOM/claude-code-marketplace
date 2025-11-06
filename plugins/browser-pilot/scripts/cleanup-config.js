@@ -11,8 +11,11 @@ const path = require('path');
 const { createLogger } = require('./logger');
 const processUtils = require('./process-utils');
 
-// Create logger instance
-const logger = createLogger('cleanup-log.txt', 'Browser Pilot Cleanup Log');
+// Get project name early for logging (from environment variable if available)
+const projectName = process.env.CLAUDE_PROJECT_DIR ? path.basename(process.env.CLAUDE_PROJECT_DIR) : null;
+
+// Create logger instance with project name
+const logger = createLogger('cleanup-log.txt', 'Browser Pilot Cleanup Log', projectName);
 
 /**
  * Get project root from environment variable or hook input
@@ -373,6 +376,20 @@ async function readHookInput() {
 // Main execution
 (async () => {
   let lockFile = null;
+
+  // Signal handlers to clean up lock file on interruption
+  const cleanup = (signal) => {
+    logger.log('Received ' + signal + ', cleaning up...');
+    if (lockFile) {
+      releaseLock(lockFile);
+    }
+    logger.close();
+    process.exit(1);
+  };
+
+  process.on('SIGINT', () => cleanup('SIGINT'));
+  process.on('SIGTERM', () => cleanup('SIGTERM'));
+  process.on('SIGHUP', () => cleanup('SIGHUP'));
 
   try {
     // Read hook input
