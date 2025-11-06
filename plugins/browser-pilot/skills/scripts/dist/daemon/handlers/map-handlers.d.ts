@@ -4,7 +4,7 @@
 import { HandlerContext } from './navigation-handlers';
 import { MapQueryResult, MapGenerateResult, MapStatusResult } from '../protocol';
 /**
- * Handle query-map command
+ * Handle query-map command with 3-stage fallback logic
  */
 export declare function handleQueryMap(context: HandlerContext, params: Record<string, unknown>): Promise<MapQueryResult>;
 /**

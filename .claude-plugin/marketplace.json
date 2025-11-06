@@ -5,7 +5,7 @@
   },
   "metadata": {
     "description": "Productivity plugins for Claude Code to automate development workflows",
-    "version": "2.13.6",
+    "version": "2.13.7",
     "homepage": "https://github.com/Dev-GOM/claude-code-marketplace"
   },
   "plugins": [
@@ -231,7 +231,7 @@
       "name": "browser-pilot",
       "source": "./plugins/browser-pilot",
       "description": "Chrome DevTools Protocol (CDP) browser automation, web scraping, and crawling with React compatibility",
-      "version": "1.5.6",
+      "version": "1.5.7",
       "author": {
         "name": "Dev GOM"
       },
@@ -249,5 +249,5 @@
       ]
     }
   ],
-  "version": "2.13.6"
+  "version": "2.13.7"
 }

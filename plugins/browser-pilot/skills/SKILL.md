@@ -26,6 +26,16 @@ Use browser-pilot when tasks involve:
 - Tasks requiring text-based element selection ("click the 3rd Delete button")
 - Bot detection bypass requirements (navigator.webdriver = false)
 
+## ⚠️ Important Guidelines
+
+**When to Ask User:** Use AskUserQuestion tool if:
+- Task requirements unclear or ambiguous
+- Multiple implementation approaches possible
+- Element selectors not working despite troubleshooting
+- User intent uncertain (e.g., "automate this" without specifics)
+
+**DO NOT** guess or assume user requirements. Always clarify first.
+
 ## Prerequisites
 
 Chrome must be installed. Local scripts initialize automatically on session start (no manual setup required).
@@ -97,6 +107,18 @@ node .browser-pilot/bp click --text Delete --index 2
 
 # Filter visible elements only
 node .browser-pilot/bp click --text Submit --viewport-only
+
+# Type aliases (auto-expanded)
+node .browser-pilot/bp click --text Search --type input  # Matches: input, input-text, input-search, etc.
+
+# Tag-based filtering (HTML tag)
+node .browser-pilot/bp click --text Submit --tag button  # Matches all <button> tags
+node .browser-pilot/bp fill --text Email --tag input -v user@example.com
+
+# 3-stage fallback (automatic)
+# Stage 1: Type search (with alias expansion)
+# Stage 2: Tag search (if type fails)
+# Stage 3: Map regeneration + retry (up to 3 attempts)
 ```
 
 **Interaction (Direct Mode - fallback for unique IDs):**
@@ -174,15 +196,24 @@ node .browser-pilot/bp regen-map
 
 3. **Handle duplicates with indexing**: `--index 2` selects 2nd match when multiple elements have same text
 
-4. **Filter by type for precision**: `--type button` narrows search results
+4. **Filter with type aliases**: `--type input` auto-expands to match `input`, `input-text`, `input-search`, etc.
+   - Generic: `--type input` (matches all input types)
+   - Specific: `--type input-search` (exact match only)
 
-5. **Verify element visibility**: `--viewport-only` ensures element is on screen
+5. **Use tag-based search for flexibility**: `--tag button` matches all `<button>` elements regardless of type
 
-6. **Use Chain Mode for workflows**: Execute multiple commands in sequence for complex automation
+6. **3-stage fallback is automatic**: If element not found, system automatically:
+   - Tries type-based search (with alias expansion)
+   - Falls back to tag-based search
+   - Regenerates map and retries (up to 3 attempts)
 
-7. **Check console for errors**: `node .browser-pilot/bp console` after actions fail
+7. **Verify element visibility**: `--viewport-only` ensures element is on screen
 
-8. **Let daemon auto-manage**: Starts on first command, stops at session end
+8. **Use Chain Mode for workflows**: Execute multiple commands in sequence for complex automation
+
+9. **Check console for errors**: `node .browser-pilot/bp console` after actions fail
+
+10. **Let daemon auto-manage**: Starts on first command, stops at session end
 
 ## References
 

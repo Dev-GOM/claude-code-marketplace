@@ -222,12 +222,30 @@ XPath selectors include tag names for precision:
 ```typescript
 interface QueryOptions {
   text?: string;          // Search by text content
-  type?: string;          // Filter by element type
+  type?: string;          // Filter by element type (supports aliases: "input" → "input-*")
+  tag?: string;           // Filter by HTML tag (e.g., "input", "button")
   index?: number;         // Select nth match (1-based)
   viewportOnly?: boolean; // Only visible elements
   id?: string;            // Direct ID lookup
 }
 ```
+
+**Type Aliases:**
+- Generic types auto-expand to match all subtypes
+- `type: "input"` → matches `input`, `input-text`, `input-search`, `input-password`, etc.
+- `type: "button"` → matches `button`, `button-submit`, `button-reset`, etc.
+- Specific types match exactly: `type: "input-search"` → only `input-search`
+
+**Tag vs Type:**
+- `tag`: Filters by HTML tag name (e.g., `<input>`, `<button>`)
+- `type`: Filters by interaction map type classification (more specific, includes subtypes)
+- Use `tag` for broader matching, `type` for precise targeting
+
+**3-Stage Fallback (Automatic):**
+When element not found, system automatically:
+1. Tries type-based search (with alias expansion)
+2. Falls back to tag-based search (if type specified)
+3. Regenerates map and retries (up to 3 attempts)
 
 ### Usage Examples
 

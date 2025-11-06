@@ -5,9 +5,10 @@ export function registerQueryCommands(program: Command) {
   // Query interaction map
   program
     .command('query')
-    .description('Search interaction map for elements (by text, type, or ID with pagination support)')
+    .description('Search interaction map for elements (by text, type, tag, or ID with pagination support)')
     .option('-t, --text <text>', 'Search by text content')
-    .option('--type <type>', 'Filter by element type (button, input, etc.)')
+    .option('--type <type>', 'Filter by element type (supports aliases: "input" → "input-*")')
+    .option('--tag <tag>', 'Filter by HTML tag (e.g., "input", "button")')
     .option('-i, --index <number>', 'Select nth match (1-based)', parseInt)
     .option('--viewport-only', 'Only search visible elements in viewport', false)
     .option('--id <id>', 'Direct element ID lookup')
@@ -23,6 +24,7 @@ export function registerQueryCommands(program: Command) {
 
         if (options.text) params.text = options.text;
         if (options.type) params.type = options.type;
+        if (options.tag) params.tag = options.tag;
         if (options.index) params.index = options.index;
         if (options.viewportOnly) params.viewportOnly = true;
         if (options.id) params.id = options.id;

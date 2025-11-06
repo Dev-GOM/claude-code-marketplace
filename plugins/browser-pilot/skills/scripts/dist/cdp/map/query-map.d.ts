@@ -26,6 +26,7 @@ export interface InteractionMap {
 export interface QueryOptions {
     text?: string;
     type?: string;
+    tag?: string;
     index?: number;
     viewportOnly?: boolean;
     id?: string;
@@ -56,6 +57,14 @@ export declare function selectBestSelector(element: InteractionElement): string;
  * Get all alternative selectors for an element
  */
 export declare function getAlternativeSelectors(element: InteractionElement): string[];
+/**
+ * Expand type alias to include all matching types
+ * Examples:
+ * - "input" → ["input", "input-text", "input-search", "input-password", ...]
+ * - "button" → ["button", "button-submit", "button-reset", ...]
+ * - "input-search" → ["input-search"] (exact match, no expansion)
+ */
+export declare function expandTypeAlias(type: string, availableTypes: string[]): string[];
 /**
  * Query map for elements matching criteria
  */

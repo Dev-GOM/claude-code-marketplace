@@ -16,7 +16,7 @@ import {
 } from '../protocol';
 
 /**
- * Handle query-map command
+ * Handle query-map command with 3-stage fallback logic
  */
 export async function handleQueryMap(
   context: HandlerContext,
@@ -26,22 +26,22 @@ export async function handleQueryMap(
 
   // Load map
   const mapPath = join(context.outputDir, SELECTOR_RETRY_CONFIG.MAP_FILENAME);
-  const map = loadMap(mapPath);
+  let currentMap = loadMap(mapPath);
 
   // Handle listTypes request
   if (queryParams.listTypes) {
-    const types = listTypes(map);
+    const types = listTypes(currentMap);
     return {
       count: Object.keys(types).length,
       results: [],
       types,
-      total: map.statistics.total
+      total: currentMap.statistics.total
     };
   }
 
   // Handle listTexts request
   if (queryParams.listTexts) {
-    const texts = listTexts(map, {
+    const texts = listTexts(currentMap, {
       type: queryParams.type,
       limit: queryParams.limit,
       offset: queryParams.offset
@@ -50,35 +50,102 @@ export async function handleQueryMap(
       count: texts.length,
       results: [],
       texts,
-      total: Object.keys(map.indexes.byText).length
+      total: Object.keys(currentMap.indexes.byText).length
     };
   }
 
-  // Regular query
-  let currentMap = map;
-  let allResults = queryMap(currentMap, { ...queryParams, limit: 0 }); // Get all for total count
-  let results = queryMap(currentMap, queryParams); // Get paginated results
+  // 3-stage fallback logic (max 3 attempts)
+  let results: ReturnType<typeof queryMap> = [];
+  let allResults: ReturnType<typeof queryMap> = [];
+  let attemptCount = 0;
+  const maxAttempts = 3;
+  const originalType = queryParams.type;
+  const originalTag = queryParams.tag;
 
-  // Retry with map regeneration if no results found
-  if (results.length === 0 && context.mapManager) {
-    logger.warn('⚠️  No elements found in map, regenerating and retrying...');
+  while (results.length === 0 && attemptCount < maxAttempts) {
+    attemptCount++;
 
-    // Regenerate map
-    await context.mapManager.generateMap(context.browser, true);
-    logger.debug('🔄 Map regenerated, retrying query...');
+    // Stage 1: Try with type (with alias expansion)
+    if (queryParams.type && !queryParams.tag) {
+      logger.debug(`[Attempt ${attemptCount}] Trying type-based search: "${queryParams.type}"`);
+      allResults = queryMap(currentMap, { ...queryParams, limit: 0 });
+      results = queryMap(currentMap, queryParams);
 
-    // Reload map and retry query
-    currentMap = loadMap(mapPath);
-    allResults = queryMap(currentMap, { ...queryParams, limit: 0 });
-    results = queryMap(currentMap, queryParams);
+      if (results.length > 0) {
+        logger.debug(`✓ Found ${results.length} element(s) with type search`);
+        break;
+      }
 
-    if (results.length > 0) {
-      logger.debug(`✓ Found ${results.length} element(s) after map regeneration`);
+      // Stage 2: Fallback to tag-based search
+      if (originalType && !originalTag) {
+        // Extract base tag from type (e.g., "input-search" → "input")
+        const baseTag = originalType.split('-')[0];
+        logger.debug(`[Attempt ${attemptCount}] Type search failed, trying tag-based search: "${baseTag}"`);
+
+        const tagParams = { ...queryParams, type: undefined, tag: baseTag };
+        allResults = queryMap(currentMap, { ...tagParams, limit: 0 });
+        results = queryMap(currentMap, tagParams);
+
+        if (results.length > 0) {
+          logger.debug(`✓ Found ${results.length} element(s) with tag search`);
+          break;
+        }
+      }
+    } else {
+      // No type specified, just query
+      allResults = queryMap(currentMap, { ...queryParams, limit: 0 });
+      results = queryMap(currentMap, queryParams);
+
+      if (results.length > 0) {
+        break;
+      }
+    }
+
+    // Stage 3: Regenerate map and retry
+    if (results.length === 0 && context.mapManager && attemptCount < maxAttempts) {
+      logger.warn(`[Attempt ${attemptCount}] No elements found, regenerating map and retrying...`);
+
+      await context.mapManager.generateMap(context.browser, true);
+      logger.debug('🔄 Map regenerated, reloading and retrying...');
+
+      currentMap = loadMap(mapPath);
     }
   }
 
+  // Final check: no results found after all attempts
   if (results.length === 0 && !queryParams.listTypes && !queryParams.listTexts) {
-    throw new Error('No elements found matching query criteria');
+    // Build detailed error message with edge case handling
+    let errorMsg = 'No elements found matching query criteria after ' + attemptCount + ' attempt(s).\n';
+
+    errorMsg += '\n💡 Troubleshooting tips:\n';
+
+    if (queryParams.text) {
+      errorMsg += `- Try searching without quotes: --text ${queryParams.text.replace(/"/g, '')}\n`;
+      errorMsg += `- Try partial text: --text "${queryParams.text.substring(0, Math.min(10, queryParams.text.length))}"\n`;
+      errorMsg += `- List all texts: node .browser-pilot/bp query --list-texts\n`;
+    }
+
+    if (queryParams.type) {
+      const baseTag = queryParams.type.split('-')[0];
+      errorMsg += `- Try tag-based search: --tag ${baseTag}\n`;
+      errorMsg += `- List available types: node .browser-pilot/bp query --list-types\n`;
+      errorMsg += `- Remove type filter and search by text only\n`;
+    }
+
+    if (queryParams.tag) {
+      errorMsg += `- Try type-based search: --type ${queryParams.tag}\n`;
+      errorMsg += `- List available types: node .browser-pilot/bp query --list-types\n`;
+    }
+
+    if (!queryParams.text && !queryParams.type && !queryParams.tag) {
+      errorMsg += `- Specify search criteria: --text, --type, or --tag\n`;
+      errorMsg += `- List all elements: node .browser-pilot/bp query --list-types\n`;
+    }
+
+    errorMsg += `- Force map regeneration: node .browser-pilot/bp regen-map\n`;
+    errorMsg += `- Check if element is in viewport: --viewport-only (or remove if used)\n`;
+
+    throw new Error(errorMsg);
   }
 
   // Return all results in MapQueryResult format
