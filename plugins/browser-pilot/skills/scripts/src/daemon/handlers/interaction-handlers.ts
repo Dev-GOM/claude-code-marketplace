@@ -85,19 +85,39 @@ export async function handleClick(
     const mapPath = path.join(getOutputDir(), SELECTOR_RETRY_CONFIG.MAP_FILENAME);
     logger.debug(`🔍 Smart Mode: querying map at ${mapPath} for text="${params.text}"`);
 
-    const foundSelector = findSelector(mapPath, {
+    let foundSelector = findSelector(mapPath, {
       text: params.text as string,
       index: params.index as number | undefined,
       type: params.type as string | undefined,
       viewportOnly: params.viewportOnly as boolean | undefined
     });
 
+    // Fallback: regenerate map if element not found
     if (!foundSelector) {
-      logger.error(`❌ findSelector returned null for text="${params.text}"`);
-      throw new Error(`Element not found in map: "${params.text}"`);
+      logger.warn(`⚠️  Element not found in map, regenerating map and retrying...`);
+
+      if (context.mapManager) {
+        await context.mapManager.generateMap(context.browser, true);
+        logger.debug(`🔄 Map regenerated, retrying selector search...`);
+
+        foundSelector = findSelector(mapPath, {
+          text: params.text as string,
+          index: params.index as number | undefined,
+          type: params.type as string | undefined,
+          viewportOnly: params.viewportOnly as boolean | undefined
+        });
+      }
+
+      if (!foundSelector) {
+        logger.error(`❌ Element still not found after map regeneration: "${params.text}"`);
+        throw new Error(`Element not found in map: "${params.text}"`);
+      }
+
+      logger.debug(`✓ Found selector after map regeneration: ${foundSelector}`);
+    } else {
+      logger.debug(`✓ Found selector: ${foundSelector}`);
     }
 
-    logger.debug(`✓ Found selector: ${foundSelector}`);
     selector = foundSelector;
   }
 
@@ -121,14 +141,64 @@ export async function handleClick(
 }
 
 /**
- * Handle fill command
+ * Handle fill command with smart mode support
  */
 export async function handleFill(
   context: HandlerContext,
   params: Record<string, unknown>
 ): Promise<unknown> {
-  const selector = params.selector as string;
+  let selector = params.selector as string | undefined;
   const value = params.value as string;
+
+  // Smart Mode: if text provided, query map
+  if (params.text && !selector) {
+    const { findSelector } = await import('../../cdp/map/query-map');
+    const { SELECTOR_RETRY_CONFIG } = await import('../../cdp/actions/helpers');
+    const { getOutputDir } = await import('../../cdp/config');
+    const path = await import('path');
+
+    const mapPath = path.join(getOutputDir(), SELECTOR_RETRY_CONFIG.MAP_FILENAME);
+    logger.debug(`🔍 Smart Mode: querying map at ${mapPath} for text="${params.text}"`);
+
+    let foundSelector = findSelector(mapPath, {
+      text: params.text as string,
+      index: params.index as number | undefined,
+      type: params.type as string | undefined,
+      viewportOnly: params.viewportOnly as boolean | undefined
+    });
+
+    // Fallback: regenerate map if element not found
+    if (!foundSelector) {
+      logger.warn(`⚠️  Element not found in map, regenerating map and retrying...`);
+
+      if (context.mapManager) {
+        await context.mapManager.generateMap(context.browser, true);
+        logger.debug(`🔄 Map regenerated, retrying selector search...`);
+
+        foundSelector = findSelector(mapPath, {
+          text: params.text as string,
+          index: params.index as number | undefined,
+          type: params.type as string | undefined,
+          viewportOnly: params.viewportOnly as boolean | undefined
+        });
+      }
+
+      if (!foundSelector) {
+        logger.error(`❌ Element still not found after map regeneration: "${params.text}"`);
+        throw new Error(`Element not found in map: "${params.text}"`);
+      }
+
+      logger.debug(`✓ Found selector after map regeneration: ${foundSelector}`);
+    } else {
+      logger.debug(`✓ Found selector: ${foundSelector}`);
+    }
+
+    selector = foundSelector;
+  }
+
+  if (!selector) {
+    throw new Error('No selector provided');
+  }
 
   // Execute with tracking
   const { result, tracker } = await executeActionWithTracking(

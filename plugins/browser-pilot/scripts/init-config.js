@@ -236,17 +236,31 @@ async function initializeLocalScripts(projectRoot) {
 
   logger.log('Updating local scripts to v' + pluginVersion + '...');
 
-  // Remove existing scripts if they exist
-  if (fs.existsSync(localSkillsPath)) {
-    logger.log('Removing old scripts...');
-    fs.rmSync(localSkillsPath, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 });
+  const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-    // Wait for file system to settle
-    const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-    await sleep(200);
+  // Wait for path to be deleted
+  async function waitForDeletion(targetPath, maxWaitMs = 5000) {
+    const startTime = Date.now();
+    while (fs.existsSync(targetPath)) {
+      if (Date.now() - startTime > maxWaitMs) {
+        throw new Error('Timeout waiting for deletion: ' + targetPath);
+      }
+      await sleep(100);
+    }
   }
 
-  // Create directory
+  // Remove entire .browser-pilot/skills folder
+  const skillsDir = path.join(projectRoot, '.browser-pilot/skills');
+  if (fs.existsSync(skillsDir)) {
+    logger.log('Removing .browser-pilot/skills folder...');
+    fs.rmSync(skillsDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 });
+
+    // Wait until folder is actually deleted
+    await waitForDeletion(skillsDir);
+    logger.log('✓ Folder deleted successfully');
+  }
+
+  // Create fresh directory structure
   fs.mkdirSync(localSkillsPath, { recursive: true });
 
   // Copy source files with retry logic
