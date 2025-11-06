@@ -12,6 +12,7 @@ const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
 const { createLogger } = require('./logger');
+const processUtils = require('./process-utils');
 
 // Create logger instance
 const logger = createLogger('init-log.txt', 'Browser Pilot Initialization Log');
@@ -249,11 +250,73 @@ async function initializeLocalScripts(projectRoot) {
     }
   }
 
+  // Check for shutdown request flag from previous SessionEnd
+  const shutdownFlagPath = path.join(projectRoot, '.browser-pilot', 'daemon-to-stop.pid');
+  const flagData = processUtils.readShutdownFlag(shutdownFlagPath, logger);
+
+  if (flagData.completed) {
+    // Flag marked as COMPLETED, safe to remove
+    logger.log('Found completed shutdown flag from previous session');
+    processUtils.removeFileWithFallback(shutdownFlagPath, logger);
+
+  } else if (flagData.pid) {
+    // Flag exists with valid PID
+    logger.warn('⚠️  Found shutdown request flag from previous session');
+    logger.log(`Previous SessionEnd may not have stopped daemon properly (PID: ${flagData.pid}, retry: ${flagData.retryCount})`);
+
+    // Check retry limit
+    const MAX_RETRY_COUNT = 3;
+    if (flagData.retryCount >= MAX_RETRY_COUNT) {
+      logger.warn(`Retry limit reached (${flagData.retryCount}), forcing flag removal`);
+      processUtils.markFlagCompleted(shutdownFlagPath, flagData.pid, logger);
+      processUtils.removeFileWithFallback(shutdownFlagPath, logger, flagData.pid);
+    } else {
+      // Attempt to stop daemon
+      if (processUtils.isProcessRunning(flagData.pid)) {
+        logger.log(`Attempting to force-stop daemon (PID: ${flagData.pid})...`);
+
+        // Force kill (no graceful SIGTERM, since SessionEnd already tried)
+        try {
+          if (process.platform === 'win32') {
+            const { execSync } = require('child_process');
+            execSync(`taskkill /F /PID ${flagData.pid}`, { stdio: 'ignore' });
+            logger.log('✓ Daemon force-stopped (Windows taskkill)');
+          } else {
+            process.kill(flagData.pid, 'SIGKILL');
+            logger.log('✓ Daemon force-stopped (SIGKILL)');
+          }
+
+          // Wait for process to exit
+          await sleep(1000);
+
+          if (!processUtils.isProcessRunning(flagData.pid)) {
+            logger.log('✓ Daemon process confirmed stopped');
+            processUtils.removeFileWithFallback(shutdownFlagPath, logger, flagData.pid);
+          } else {
+            logger.error('❌ Daemon still running after force kill, incrementing retry count');
+            processUtils.writeShutdownFlag(shutdownFlagPath, flagData.pid, flagData.retryCount + 1, logger);
+          }
+
+        } catch (killError) {
+          logger.error(`Failed to kill daemon: ${killError.message}`);
+          processUtils.writeShutdownFlag(shutdownFlagPath, flagData.pid, flagData.retryCount + 1, logger);
+        }
+      } else {
+        // Process not running, just remove flag
+        logger.log('Daemon process not running, removing stale flag');
+        processUtils.removeFileWithFallback(shutdownFlagPath, logger, flagData.pid);
+      }
+    }
+
+    // Extra wait to ensure file handles are released
+    await sleep(1000);
+  }
+
   // Remove entire .browser-pilot/skills folder
   const skillsDir = path.join(projectRoot, '.browser-pilot/skills');
   if (fs.existsSync(skillsDir)) {
     logger.log('Removing .browser-pilot/skills folder...');
-    fs.rmSync(skillsDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 });
+    fs.rmSync(skillsDir, { recursive: true, force: true, maxRetries: 10, retryDelay: 500 });
 
     // Wait until folder is actually deleted
     await waitForDeletion(skillsDir);
