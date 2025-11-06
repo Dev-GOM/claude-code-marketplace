@@ -1,8 +1,8 @@
 import { Command } from 'commander';
 import { executeViaDaemon } from '../daemon-helper';
-import { findSelector } from '../../cdp/map/query-map';
-import { SELECTOR_RETRY_CONFIG } from '../../cdp/actions/helpers';
+import { findSelectorWithRetry } from './selector-helper';
 import { getOutputDir } from '../../cdp/config';
+import { SELECTOR_RETRY_CONFIG } from '../../cdp/actions/helpers';
 import * as path from 'path';
 
 export function registerInteractionCommands(program: Command) {
@@ -29,21 +29,17 @@ export function registerInteractionCommands(program: Command) {
         // Smart mode: query map if text option provided
         if (options.text && !selector) {
           console.log(`🔍 Searching for: "${options.text}"${options.index ? ` (match #${options.index})` : ''}`);
+          console.log(`📁 Map path: ${path.join(getOutputDir(), SELECTOR_RETRY_CONFIG.MAP_FILENAME)}`);
 
-          const outputDir = getOutputDir();
-          const mapPath = path.join(outputDir, SELECTOR_RETRY_CONFIG.MAP_FILENAME);
-          console.log(`📁 Map path: ${mapPath}`);
-
-          selector = findSelector(mapPath, {
+          selector = await findSelectorWithRetry({
             text: options.text,
             index: options.index,
             type: options.type,
             viewportOnly: options.viewportOnly
-          });
+          }, 'element');
 
           if (!selector) {
-            console.error('❌ Element not found in interaction map');
-            console.error('   Try generating a new map or use --selector for direct mode');
+            console.error('   Try using --selector for direct mode');
             process.exit(1);
           }
 
@@ -100,16 +96,14 @@ export function registerInteractionCommands(program: Command) {
         if (options.label && !selector) {
           console.log(`🔍 Searching for input: "${options.label}"`);
 
-          const mapPath = path.join(getOutputDir(), SELECTOR_RETRY_CONFIG.MAP_FILENAME);
-          selector = findSelector(mapPath, {
+          selector = await findSelectorWithRetry({
             text: options.label,
             type: options.type,
             viewportOnly: options.viewportOnly
-          });
+          }, 'input field');
 
           if (!selector) {
-            console.error('❌ Input field not found in interaction map');
-            console.error('   Try generating a new map or use --selector for direct mode');
+            console.error('   Try using --selector for direct mode');
             process.exit(1);
           }
 
