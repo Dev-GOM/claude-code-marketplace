@@ -109,7 +109,7 @@ User: "Update Unity version to 2.0.0"
 
 Claude:
 ✓ Detected: Unity project
-✓ Updated version.json: 1.5.5 → 2.0.0
+✓ Updated version.json: 1.5.6 → 2.0.0
 ✓ Synced to ProjectSettings.asset
 ✓ Committed both files
 ✓ Created tag v2.0.0
