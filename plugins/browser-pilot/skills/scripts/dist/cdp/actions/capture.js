@@ -7,7 +7,6 @@ exports.screenshot = screenshot;
 exports.generatePdf = generatePdf;
 const fs_1 = require("fs");
 const path_1 = require("path");
-const fs_2 = require("fs");
 const helpers_1 = require("./helpers");
 const logger_1 = require("../../utils/logger");
 const constants_1 = require("../../constants");
@@ -50,10 +49,6 @@ async function screenshot(browser, filename, fullPage = true, options) {
     const imageData = Buffer.from(result.data, 'base64');
     // Ensure output directory exists (creates .browser-pilot/screenshots/ if needed)
     const absolutePath = (0, helpers_1.ensureOutputPath)(screenshotPath);
-    const dir = (0, path_1.dirname)(absolutePath);
-    if (!(0, fs_2.existsSync)(dir)) {
-        (0, fs_2.mkdirSync)(dir, { recursive: true });
-    }
     (0, fs_1.writeFileSync)(absolutePath, imageData);
     if (opts.verbose)
         logger_1.logger.info(`✅ Screenshot saved: ${absolutePath}`);

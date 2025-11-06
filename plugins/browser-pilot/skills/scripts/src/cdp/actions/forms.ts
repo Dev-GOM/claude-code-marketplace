@@ -58,18 +58,25 @@ export async function selectOption(
 }
 
 /**
- * Check checkbox.
- * Supports both CSS selectors and XPath (when selector starts with '//').
- * Uses CDP click for proper React compatibility.
+ * Helper function to toggle checkbox state.
+ * @param browser - ChromeBrowser instance
+ * @param selector - Checkbox selector
+ * @param targetState - Desired checkbox state (true = checked, false = unchecked)
+ * @param actionName - Action name for logging ("check" or "uncheck")
+ * @param options - Action options
  */
-export async function check(
+async function _toggleCheckbox(
   browser: ChromeBrowser,
   selector: string,
+  targetState: boolean,
+  actionName: string,
   options?: ActionOptions
 ): Promise<ActionResult> {
   const opts = mergeOptions(options);
+  const emoji = targetState ? '☑️' : '☐';
+  const stateName = targetState ? 'checked' : 'unchecked';
 
-  if (opts.verbose) logger.info(`☑️  Checking: ${selector}`);
+  if (opts.verbose) logger.info(`${emoji} ${actionName}: ${selector}`);
 
   // Step 1: Find element and get coordinates
   const script = `
@@ -110,9 +117,9 @@ export async function check(
 
     const { x, y, checked: isChecked } = result.result.value as { x: number; y: number; checked: boolean };
 
-    // Step 2: Click only if not already checked
-    if (isChecked) {
-      if (opts.verbose) logger.info(`✓ Checkbox already checked`);
+    // Step 2: Click only if current state differs from target state
+    if (isChecked === targetState) {
+      if (opts.verbose) logger.info(`✓ Checkbox already ${stateName}`);
     } else {
       if (opts.verbose) logger.info(`🖱️  Clicking checkbox at (${Math.round(x)}, ${Math.round(y)})`);
 
@@ -133,7 +140,7 @@ export async function check(
       });
     }
 
-    if (opts.verbose) logger.info(`✅ Checkbox checked`);
+    if (opts.verbose) logger.info(`✅ Checkbox ${stateName}`);
     checkErrors(browser, opts.logLevel);
 
     return { success: true, selector };
@@ -141,12 +148,25 @@ export async function check(
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     if (opts.verbose) {
-      logger.error(`❌ Check failed: ${selector}`);
+      logger.error(`❌ ${actionName} failed: ${selector}`);
       logger.error(`   Error: ${errorMessage}`);
     }
     checkErrors(browser, opts.logLevel);
     throw error;
   }
+}
+
+/**
+ * Check checkbox.
+ * Supports both CSS selectors and XPath (when selector starts with '//').
+ * Uses CDP click for proper React compatibility.
+ */
+export async function check(
+  browser: ChromeBrowser,
+  selector: string,
+  options?: ActionOptions
+): Promise<ActionResult> {
+  return _toggleCheckbox(browser, selector, true, 'Checking', options);
 }
 
 /**
@@ -159,86 +179,7 @@ export async function uncheck(
   selector: string,
   options?: ActionOptions
 ): Promise<ActionResult> {
-  const opts = mergeOptions(options);
-
-  if (opts.verbose) logger.info(`☐ Unchecking: ${selector}`);
-
-  // Step 1: Find element and get coordinates
-  const script = `
-    (function() {
-      const selector = ${JSON.stringify(selector)};
-      ${getFindElementScript()}
-      const el = findElement(selector);
-      if (!el) throw new Error('Element not found: ' + selector);
-      if (el.type !== 'checkbox') throw new Error('Element is not a checkbox: ' + selector);
-
-      // Scroll element into view
-      el.scrollIntoView({ block: 'center', inline: 'center', behavior: 'instant' });
-
-      // Get bounding box and calculate center point
-      const box = el.getBoundingClientRect();
-
-      return {
-        x: box.left + box.width / 2,
-        y: box.top + box.height / 2,
-        checked: el.checked
-      };
-    })()
-  `;
-
-  try {
-    const result = await browser.sendCommand<RuntimeEvaluateResult>('Runtime.evaluate', {
-      expression: script,
-      returnByValue: true
-    });
-
-    if (!result.result || !result.result.value) {
-      logger.error('❌ Element not found or error occurred');
-      if (result.exceptionDetails) {
-        logger.error('Error:', result.exceptionDetails.exception?.description || result.exceptionDetails.text);
-      }
-      throw new Error(`Element not found: ${selector}`);
-    }
-
-    const { x, y, checked: isChecked } = result.result.value as { x: number; y: number; checked: boolean };
-
-    // Step 2: Click only if currently checked
-    if (!isChecked) {
-      if (opts.verbose) logger.info(`✓ Checkbox already unchecked`);
-    } else {
-      if (opts.verbose) logger.info(`🖱️  Clicking checkbox at (${Math.round(x)}, ${Math.round(y)})`);
-
-      await browser.sendCommand('Input.dispatchMouseEvent', {
-        type: 'mousePressed',
-        button: 'left',
-        clickCount: 1,
-        x,
-        y
-      });
-
-      await browser.sendCommand('Input.dispatchMouseEvent', {
-        type: 'mouseReleased',
-        button: 'left',
-        clickCount: 1,
-        x,
-        y
-      });
-    }
-
-    if (opts.verbose) logger.info(`✅ Checkbox unchecked`);
-    checkErrors(browser, opts.logLevel);
-
-    return { success: true, selector };
-
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    if (opts.verbose) {
-      logger.error(`❌ Uncheck failed: ${selector}`);
-      logger.error(`   Error: ${errorMessage}`);
-    }
-    checkErrors(browser, opts.logLevel);
-    throw error;
-  }
+  return _toggleCheckbox(browser, selector, false, 'Unchecking', options);
 }
 
 /**

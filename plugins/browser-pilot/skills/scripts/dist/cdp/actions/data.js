@@ -166,8 +166,10 @@ async function getElementProperty(browser, selector, propertyName, options) {
             logger_1.logger.error(`❌ Get property failed: ${selector}`);
             logger_1.logger.error(`   Error: ${errorMessage}`);
         }
-        (0, helpers_1.checkErrors)(browser, opts.logLevel);
-        throw error;
+        return {
+            success: false,
+            error: errorMessage
+        };
     }
 }
 //# sourceMappingURL=data.js.map

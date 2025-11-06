@@ -4,8 +4,7 @@
 
 import { ChromeBrowser } from '../browser';
 import { writeFileSync } from 'fs';
-import { dirname, join } from 'path';
-import { mkdirSync, existsSync } from 'fs';
+import { join } from 'path';
 import { ActionResult, ActionOptions, mergeOptions, ensureOutputPath } from './helpers';
 import { logger } from '../../utils/logger';
 import { FS } from '../../constants';
@@ -99,10 +98,6 @@ export async function screenshot(
 
   // Ensure output directory exists (creates .browser-pilot/screenshots/ if needed)
   const absolutePath = ensureOutputPath(screenshotPath);
-  const dir = dirname(absolutePath);
-  if (!existsSync(dir)) {
-    mkdirSync(dir, { recursive: true });
-  }
 
   writeFileSync(absolutePath, imageData);
 

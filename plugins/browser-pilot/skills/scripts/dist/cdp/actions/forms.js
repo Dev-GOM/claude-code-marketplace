@@ -52,14 +52,19 @@ async function selectOption(browser, selector, value, options) {
     }
 }
 /**
- * Check checkbox.
- * Supports both CSS selectors and XPath (when selector starts with '//').
- * Uses CDP click for proper React compatibility.
+ * Helper function to toggle checkbox state.
+ * @param browser - ChromeBrowser instance
+ * @param selector - Checkbox selector
+ * @param targetState - Desired checkbox state (true = checked, false = unchecked)
+ * @param actionName - Action name for logging ("check" or "uncheck")
+ * @param options - Action options
  */
-async function check(browser, selector, options) {
+async function _toggleCheckbox(browser, selector, targetState, actionName, options) {
     const opts = (0, helpers_1.mergeOptions)(options);
+    const emoji = targetState ? '☑️' : '☐';
+    const stateName = targetState ? 'checked' : 'unchecked';
     if (opts.verbose)
-        logger_1.logger.info(`☑️  Checking: ${selector}`);
+        logger_1.logger.info(`${emoji} ${actionName}: ${selector}`);
     // Step 1: Find element and get coordinates
     const script = `
     (function() {
@@ -95,10 +100,10 @@ async function check(browser, selector, options) {
             throw new Error(`Element not found: ${selector}`);
         }
         const { x, y, checked: isChecked } = result.result.value;
-        // Step 2: Click only if not already checked
-        if (isChecked) {
+        // Step 2: Click only if current state differs from target state
+        if (isChecked === targetState) {
             if (opts.verbose)
-                logger_1.logger.info(`✓ Checkbox already checked`);
+                logger_1.logger.info(`✓ Checkbox already ${stateName}`);
         }
         else {
             if (opts.verbose)
@@ -119,14 +124,14 @@ async function check(browser, selector, options) {
             });
         }
         if (opts.verbose)
-            logger_1.logger.info(`✅ Checkbox checked`);
+            logger_1.logger.info(`✅ Checkbox ${stateName}`);
         (0, helpers_1.checkErrors)(browser, opts.logLevel);
         return { success: true, selector };
     }
     catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
         if (opts.verbose) {
-            logger_1.logger.error(`❌ Check failed: ${selector}`);
+            logger_1.logger.error(`❌ ${actionName} failed: ${selector}`);
             logger_1.logger.error(`   Error: ${errorMessage}`);
         }
         (0, helpers_1.checkErrors)(browser, opts.logLevel);
@@ -134,86 +139,20 @@ async function check(browser, selector, options) {
     }
 }
 /**
+ * Check checkbox.
+ * Supports both CSS selectors and XPath (when selector starts with '//').
+ * Uses CDP click for proper React compatibility.
+ */
+async function check(browser, selector, options) {
+    return _toggleCheckbox(browser, selector, true, 'Checking', options);
+}
+/**
  * Uncheck checkbox.
  * Supports both CSS selectors and XPath (when selector starts with '//').
  * Uses CDP click for proper React compatibility.
  */
 async function uncheck(browser, selector, options) {
-    const opts = (0, helpers_1.mergeOptions)(options);
-    if (opts.verbose)
-        logger_1.logger.info(`☐ Unchecking: ${selector}`);
-    // Step 1: Find element and get coordinates
-    const script = `
-    (function() {
-      const selector = ${JSON.stringify(selector)};
-      ${(0, utils_1.getFindElementScript)()}
-      const el = findElement(selector);
-      if (!el) throw new Error('Element not found: ' + selector);
-      if (el.type !== 'checkbox') throw new Error('Element is not a checkbox: ' + selector);
-
-      // Scroll element into view
-      el.scrollIntoView({ block: 'center', inline: 'center', behavior: 'instant' });
-
-      // Get bounding box and calculate center point
-      const box = el.getBoundingClientRect();
-
-      return {
-        x: box.left + box.width / 2,
-        y: box.top + box.height / 2,
-        checked: el.checked
-      };
-    })()
-  `;
-    try {
-        const result = await browser.sendCommand('Runtime.evaluate', {
-            expression: script,
-            returnByValue: true
-        });
-        if (!result.result || !result.result.value) {
-            logger_1.logger.error('❌ Element not found or error occurred');
-            if (result.exceptionDetails) {
-                logger_1.logger.error('Error:', result.exceptionDetails.exception?.description || result.exceptionDetails.text);
-            }
-            throw new Error(`Element not found: ${selector}`);
-        }
-        const { x, y, checked: isChecked } = result.result.value;
-        // Step 2: Click only if currently checked
-        if (!isChecked) {
-            if (opts.verbose)
-                logger_1.logger.info(`✓ Checkbox already unchecked`);
-        }
-        else {
-            if (opts.verbose)
-                logger_1.logger.info(`🖱️  Clicking checkbox at (${Math.round(x)}, ${Math.round(y)})`);
-            await browser.sendCommand('Input.dispatchMouseEvent', {
-                type: 'mousePressed',
-                button: 'left',
-                clickCount: 1,
-                x,
-                y
-            });
-            await browser.sendCommand('Input.dispatchMouseEvent', {
-                type: 'mouseReleased',
-                button: 'left',
-                clickCount: 1,
-                x,
-                y
-            });
-        }
-        if (opts.verbose)
-            logger_1.logger.info(`✅ Checkbox unchecked`);
-        (0, helpers_1.checkErrors)(browser, opts.logLevel);
-        return { success: true, selector };
-    }
-    catch (error) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        if (opts.verbose) {
-            logger_1.logger.error(`❌ Uncheck failed: ${selector}`);
-            logger_1.logger.error(`   Error: ${errorMessage}`);
-        }
-        (0, helpers_1.checkErrors)(browser, opts.logLevel);
-        throw error;
-    }
+    return _toggleCheckbox(browser, selector, false, 'Unchecking', options);
 }
 /**
  * Upload file to input element.
