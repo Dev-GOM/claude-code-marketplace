@@ -316,6 +316,30 @@ async function initializeLocalScripts(projectRoot) {
   logger.log('[STEP 1] Removing old .browser-pilot/skills folder...');
   const skillsDir = path.join(projectRoot, '.browser-pilot/skills');
   if (fs.existsSync(skillsDir)) {
+    // Pre-cleanup: Remove dist and node_modules first to reduce file locks
+    const distDir = path.join(skillsDir, 'scripts/dist');
+    const nodeModulesDir = path.join(skillsDir, 'scripts/node_modules');
+
+    if (fs.existsSync(distDir)) {
+      try {
+        logger.log('[STEP 1] Pre-cleanup: Removing dist folder...');
+        fs.rmSync(distDir, { recursive: true, force: true });
+        logger.log('✓ dist folder removed');
+      } catch (error) {
+        logger.log('Failed to remove dist folder: ' + error.message);
+      }
+    }
+
+    if (fs.existsSync(nodeModulesDir)) {
+      try {
+        logger.log('[STEP 1] Pre-cleanup: Removing node_modules folder...');
+        fs.rmSync(nodeModulesDir, { recursive: true, force: true });
+        logger.log('✓ node_modules folder removed');
+      } catch (error) {
+        logger.log('Failed to remove node_modules folder: ' + error.message);
+      }
+    }
+
     const maxDeleteRetries = 3;
     let lastDeleteError;
 
