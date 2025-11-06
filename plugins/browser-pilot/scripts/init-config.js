@@ -317,26 +317,29 @@ async function initializeLocalScripts(projectRoot) {
   const skillsDir = path.join(projectRoot, '.browser-pilot/skills');
   if (fs.existsSync(skillsDir)) {
     // Pre-cleanup: Remove dist and node_modules first to reduce file locks
-    const distDir = path.join(skillsDir, 'scripts/dist');
-    const nodeModulesDir = path.join(skillsDir, 'scripts/node_modules');
+    const scriptsPath = path.join(skillsDir, 'scripts');
 
-    if (fs.existsSync(distDir)) {
+    if (fs.existsSync(scriptsPath)) {
       try {
-        logger.log('[STEP 1] Pre-cleanup: Removing dist folder...');
-        fs.rmSync(distDir, { recursive: true, force: true });
-        logger.log('✓ dist folder removed');
+        logger.log('[STEP 1] Pre-cleanup: Removing dist and node_modules...');
+        // Use npx rimraf for cross-platform deletion (npm 5.2+)
+        execSync('npx rimraf dist node_modules', {
+          cwd: scriptsPath,
+          stdio: 'ignore'
+        });
+        logger.log('✓ dist and node_modules removed');
       } catch (error) {
-        logger.log('Failed to remove dist folder: ' + error.message);
-      }
-    }
-
-    if (fs.existsSync(nodeModulesDir)) {
-      try {
-        logger.log('[STEP 1] Pre-cleanup: Removing node_modules folder...');
-        fs.rmSync(nodeModulesDir, { recursive: true, force: true });
-        logger.log('✓ node_modules folder removed');
-      } catch (error) {
-        logger.log('Failed to remove node_modules folder: ' + error.message);
+        logger.log('Failed to remove dist/node_modules: ' + error.message);
+        // Fallback to fs.rmSync if npx rimraf fails
+        try {
+          const distDir = path.join(scriptsPath, 'dist');
+          const nodeModulesDir = path.join(scriptsPath, 'node_modules');
+          if (fs.existsSync(distDir)) fs.rmSync(distDir, { recursive: true, force: true });
+          if (fs.existsSync(nodeModulesDir)) fs.rmSync(nodeModulesDir, { recursive: true, force: true });
+          logger.log('✓ dist and node_modules removed (fallback)');
+        } catch (fallbackError) {
+          logger.log('Fallback also failed: ' + fallbackError.message);
+        }
       }
     }
 
