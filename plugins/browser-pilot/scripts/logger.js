@@ -25,9 +25,18 @@ function getLocalTimestamp() {
  * Create a logger instance
  * @param {string} logFileName - Name of the log file (e.g., 'init-log.txt')
  * @param {string} title - Title for the log file (e.g., 'Browser Pilot Initialization Log')
+ * @param {string} [projectName] - Optional project name to include in log filename
  */
-function createLogger(logFileName, title) {
-  const logFile = path.join(__dirname, logFileName);
+function createLogger(logFileName, title, projectName) {
+  // If projectName is provided, insert it into the filename
+  let finalLogFileName = logFileName;
+  if (projectName) {
+    const ext = path.extname(logFileName);
+    const base = path.basename(logFileName, ext);
+    finalLogFileName = `${base}-${projectName}${ext}`;
+  }
+
+  const logFile = path.join(__dirname, finalLogFileName);
   const logBuffer = [];
 
   // Initialize log

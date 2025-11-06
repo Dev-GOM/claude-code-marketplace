@@ -541,6 +541,29 @@ export class ChromeBrowser {
       this.client.close();
     }
 
+    // Force kill Chrome process if it's still running
+    if (this.chromeProcess) {
+      try {
+        // Check if process is still alive
+        if (!this.chromeProcess.killed) {
+          this.chromeProcess.kill('SIGTERM');
+          logger.info('Chrome process terminated (SIGTERM)');
+
+          // Wait a bit for graceful shutdown
+          await this.sleep(1000);
+
+          // Force kill if still alive
+          if (!this.chromeProcess.killed) {
+            this.chromeProcess.kill('SIGKILL');
+            logger.info('Chrome process force-killed (SIGKILL)');
+          }
+        }
+      } catch (error) {
+        logger.warn(`Failed to kill Chrome process: ${error instanceof Error ? error.message : String(error)}`);
+      }
+      this.chromeProcess = null;
+    }
+
     // Clear pending requests
     this.pendingRequests.clear();
 
