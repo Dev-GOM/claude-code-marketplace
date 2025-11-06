@@ -312,15 +312,43 @@ async function initializeLocalScripts(projectRoot) {
     await sleep(1000);
   }
 
-  // Remove entire .browser-pilot/skills folder
+  // Remove entire .browser-pilot/skills folder with retry logic
   const skillsDir = path.join(projectRoot, '.browser-pilot/skills');
   if (fs.existsSync(skillsDir)) {
     logger.log('Removing .browser-pilot/skills folder...');
-    fs.rmSync(skillsDir, { recursive: true, force: true, maxRetries: 10, retryDelay: 500 });
 
-    // Wait until folder is actually deleted
-    await waitForDeletion(skillsDir);
-    logger.log('✓ Folder deleted successfully');
+    const maxDeleteRetries = 3;
+    let deleteSuccess = false;
+
+    for (let attempt = 1; attempt <= maxDeleteRetries; attempt++) {
+      try {
+        fs.rmSync(skillsDir, { recursive: true, force: true, maxRetries: 10, retryDelay: 500 });
+
+        // Wait until folder is actually deleted
+        await waitForDeletion(skillsDir);
+
+        if (!fs.existsSync(skillsDir)) {
+          logger.log('✓ Folder deleted successfully');
+          deleteSuccess = true;
+          break;
+        } else {
+          throw new Error('Folder still exists after rmSync');
+        }
+      } catch (error) {
+        logger.log('Delete attempt ' + attempt + ' failed: ' + error.message);
+
+        if (attempt < maxDeleteRetries) {
+          logger.log('Waiting 2 seconds before retry...');
+          await sleep(2000);
+        } else {
+          throw new Error('Failed to delete .browser-pilot/skills folder after ' + maxDeleteRetries + ' attempts. Please close any programs that may be locking files in this directory and try again.');
+        }
+      }
+    }
+
+    if (!deleteSuccess) {
+      throw new Error('Failed to delete .browser-pilot/skills folder');
+    }
   }
 
   // Create fresh directory structure
