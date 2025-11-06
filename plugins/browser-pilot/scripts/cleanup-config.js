@@ -380,10 +380,10 @@ async function readHookInput() {
 
     logger.log('Hook input: ' + JSON.stringify(hookInput));
 
-    // Skip cleanup for 'clear' and 'compact' events
-    // These are context management operations that should not terminate the daemon
-    if (hookInput.source === 'clear' || hookInput.source === 'compact') {
-      logger.log('Skipping cleanup for event: ' + hookInput.source);
+    // Skip cleanup for 'clear' reason
+    // Context clear operations should not terminate the daemon (user is still in session)
+    if (hookInput.reason === 'clear') {
+      logger.log('Skipping cleanup for reason: ' + hookInput.reason);
       logger.close();
       process.exit(0);
     }
