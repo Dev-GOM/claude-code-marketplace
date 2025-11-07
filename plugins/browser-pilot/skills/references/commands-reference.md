@@ -209,6 +209,28 @@ Examples:
   node .browser-pilot/bp set-viewport -w 768 -h 1024 --scale 2
 ```
 
+**get-viewport** - Get current viewport size
+```bash
+node .browser-pilot/bp get-viewport
+
+Output:
+  === Viewport Information ===
+  Size: 1920x1080
+  Scale: 1
+```
+
+**get-screen-info** - Get screen and viewport information
+```bash
+node .browser-pilot/bp get-screen-info
+
+Output:
+  === Screen Information ===
+  Screen: 2560x1440          # Physical screen resolution
+  Available: 2560x1392        # Available screen (excluding taskbar)
+  Viewport: 1920x1080        # Current browser viewport
+  Scale: 1                   # Device pixel ratio
+```
+
 ### Tab Management Commands
 
 **tabs** - List all open tabs

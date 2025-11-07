@@ -23,4 +23,16 @@ export declare function emulateMedia(browser: ChromeBrowser, mediaType?: 'screen
  * @param options - Action options
  */
 export declare function setViewportSize(browser: ChromeBrowser, width: number, height: number, deviceScaleFactor?: number, mobile?: boolean, options?: ActionOptions): Promise<ActionResult>;
+/**
+ * Get current viewport size.
+ * @param browser - ChromeBrowser instance
+ * @param options - Action options
+ */
+export declare function getViewport(browser: ChromeBrowser, options?: ActionOptions): Promise<ActionResult>;
+/**
+ * Get screen and viewport information.
+ * @param browser - ChromeBrowser instance
+ * @param options - Action options
+ */
+export declare function getScreenInfo(browser: ChromeBrowser, options?: ActionOptions): Promise<ActionResult>;
 //# sourceMappingURL=emulation.d.ts.map

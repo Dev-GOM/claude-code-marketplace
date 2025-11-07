@@ -5,6 +5,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.emulateMedia = emulateMedia;
 exports.setViewportSize = setViewportSize;
+exports.getViewport = getViewport;
+exports.getScreenInfo = getScreenInfo;
 const helpers_1 = require("./helpers");
 const logger_1 = require("../../utils/logger");
 /**
@@ -78,6 +80,82 @@ async function setViewportSize(browser, width, height, deviceScaleFactor = 1, mo
     catch (error) {
         if (opts.verbose) {
             logger_1.logger.error(`❌ Set viewport size failed`);
+            if (error instanceof Error) {
+                logger_1.logger.error(`   Error: ${error.message}`);
+            }
+            else {
+                logger_1.logger.error(`   Error: ${String(error)}`);
+            }
+        }
+        throw error;
+    }
+}
+/**
+ * Get current viewport size.
+ * @param browser - ChromeBrowser instance
+ * @param options - Action options
+ */
+async function getViewport(browser, options) {
+    const opts = (0, helpers_1.mergeOptions)(options);
+    if (opts.verbose) {
+        logger_1.logger.info(`📏 Getting viewport size...`);
+    }
+    try {
+        const result = await browser.sendCommand('Runtime.evaluate', {
+            expression: 'JSON.stringify({width: window.innerWidth, height: window.innerHeight, devicePixelRatio: window.devicePixelRatio})',
+            returnByValue: true
+        });
+        const viewport = JSON.parse(result.result.value);
+        if (opts.verbose) {
+            logger_1.logger.info(`✅ Viewport: ${viewport.width}x${viewport.height} (scale: ${viewport.devicePixelRatio})`);
+        }
+        return {
+            success: true,
+            viewport
+        };
+    }
+    catch (error) {
+        if (opts.verbose) {
+            logger_1.logger.error(`❌ Get viewport failed`);
+            if (error instanceof Error) {
+                logger_1.logger.error(`   Error: ${error.message}`);
+            }
+            else {
+                logger_1.logger.error(`   Error: ${String(error)}`);
+            }
+        }
+        throw error;
+    }
+}
+/**
+ * Get screen and viewport information.
+ * @param browser - ChromeBrowser instance
+ * @param options - Action options
+ */
+async function getScreenInfo(browser, options) {
+    const opts = (0, helpers_1.mergeOptions)(options);
+    if (opts.verbose) {
+        logger_1.logger.info(`📊 Getting screen information...`);
+    }
+    try {
+        const result = await browser.sendCommand('Runtime.evaluate', {
+            expression: 'JSON.stringify({viewport: {width: window.innerWidth, height: window.innerHeight}, screen: {width: window.screen.width, height: window.screen.height, availWidth: window.screen.availWidth, availHeight: window.screen.availHeight}, devicePixelRatio: window.devicePixelRatio})',
+            returnByValue: true
+        });
+        const screenInfo = JSON.parse(result.result.value);
+        if (opts.verbose) {
+            logger_1.logger.info(`✅ Screen: ${screenInfo.screen.width}x${screenInfo.screen.height}`);
+            logger_1.logger.info(`   Viewport: ${screenInfo.viewport.width}x${screenInfo.viewport.height}`);
+            logger_1.logger.info(`   Scale: ${screenInfo.devicePixelRatio}`);
+        }
+        return {
+            success: true,
+            ...screenInfo
+        };
+    }
+    catch (error) {
+        if (opts.verbose) {
+            logger_1.logger.error(`❌ Get screen info failed`);
             if (error instanceof Error) {
                 logger_1.logger.error(`   Error: ${error.message}`);
             }

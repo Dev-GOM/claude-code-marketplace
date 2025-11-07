@@ -111,3 +111,95 @@ export async function setViewportSize(
     throw error;
   }
 }
+
+/**
+ * Get current viewport size.
+ * @param browser - ChromeBrowser instance
+ * @param options - Action options
+ */
+export async function getViewport(
+  browser: ChromeBrowser,
+  options?: ActionOptions
+): Promise<ActionResult> {
+  const opts = mergeOptions(options);
+
+  if (opts.verbose) {
+    logger.info(`📏 Getting viewport size...`);
+  }
+
+  try {
+    const result = await browser.sendCommand<{ result: { value: unknown } }>('Runtime.evaluate', {
+      expression: 'JSON.stringify({width: window.innerWidth, height: window.innerHeight, devicePixelRatio: window.devicePixelRatio})',
+      returnByValue: true
+    });
+
+    const viewport = JSON.parse(result.result.value as string);
+
+    if (opts.verbose) {
+      logger.info(`✅ Viewport: ${viewport.width}x${viewport.height} (scale: ${viewport.devicePixelRatio})`);
+    }
+
+    return {
+      success: true,
+      viewport
+    };
+
+  } catch (error: unknown) {
+    if (opts.verbose) {
+      logger.error(`❌ Get viewport failed`);
+      if (error instanceof Error) {
+        logger.error(`   Error: ${error.message}`);
+      } else {
+        logger.error(`   Error: ${String(error)}`);
+      }
+    }
+    throw error;
+  }
+}
+
+/**
+ * Get screen and viewport information.
+ * @param browser - ChromeBrowser instance
+ * @param options - Action options
+ */
+export async function getScreenInfo(
+  browser: ChromeBrowser,
+  options?: ActionOptions
+): Promise<ActionResult> {
+  const opts = mergeOptions(options);
+
+  if (opts.verbose) {
+    logger.info(`📊 Getting screen information...`);
+  }
+
+  try {
+    const result = await browser.sendCommand<{ result: { value: unknown } }>('Runtime.evaluate', {
+      expression: 'JSON.stringify({viewport: {width: window.innerWidth, height: window.innerHeight}, screen: {width: window.screen.width, height: window.screen.height, availWidth: window.screen.availWidth, availHeight: window.screen.availHeight}, devicePixelRatio: window.devicePixelRatio})',
+      returnByValue: true
+    });
+
+    const screenInfo = JSON.parse(result.result.value as string);
+
+    if (opts.verbose) {
+      logger.info(`✅ Screen: ${screenInfo.screen.width}x${screenInfo.screen.height}`);
+      logger.info(`   Viewport: ${screenInfo.viewport.width}x${screenInfo.viewport.height}`);
+      logger.info(`   Scale: ${screenInfo.devicePixelRatio}`);
+    }
+
+    return {
+      success: true,
+      ...screenInfo
+    };
+
+  } catch (error: unknown) {
+    if (opts.verbose) {
+      logger.error(`❌ Get screen info failed`);
+      if (error instanceof Error) {
+        logger.error(`   Error: ${error.message}`);
+      } else {
+        logger.error(`   Error: ${String(error)}`);
+      }
+    }
+    throw error;
+  }
+}
