@@ -14,11 +14,11 @@ export interface HandlerContext {
 /**
  * Helper: Save last visited URL to file
  */
-export declare function saveLastUrl(outputDir: string, url: string): void;
+export declare function saveLastUrl(outputDir: string, url: string): Promise<void>;
 /**
  * Helper: Load last visited URL from file
  */
-export declare function loadLastUrl(outputDir: string): string | null;
+export declare function loadLastUrl(outputDir: string): Promise<string | null>;
 /**
  * Handle navigate command
  */

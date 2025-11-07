@@ -153,7 +153,7 @@ async function handleGenerateMap(context, params) {
     const map = await context.mapManager.generateMap(context.browser, force);
     // Save last visited URL
     if (currentUrl !== 'unknown') {
-        (0, navigation_handlers_1.saveLastUrl)(context.outputDir, currentUrl);
+        await (0, navigation_handlers_1.saveLastUrl)(context.outputDir, currentUrl);
     }
     return {
         success: true,

@@ -61,10 +61,10 @@ async function getCurrentUrl(browser) {
 /**
  * Helper: Save last visited URL to file
  */
-function saveLastUrl(outputDir, url) {
+async function saveLastUrl(outputDir, url) {
     try {
         const lastUrlPath = path.join(outputDir, 'last-url.txt');
-        fs.writeFileSync(lastUrlPath, url, 'utf-8');
+        await fs.promises.writeFile(lastUrlPath, url, 'utf-8');
         logger_1.logger.debug(`💾 Saved last URL: ${url}`);
     }
     catch (error) {
@@ -74,19 +74,22 @@ function saveLastUrl(outputDir, url) {
 /**
  * Helper: Load last visited URL from file
  */
-function loadLastUrl(outputDir) {
+async function loadLastUrl(outputDir) {
     try {
         const lastUrlPath = path.join(outputDir, 'last-url.txt');
-        if (fs.existsSync(lastUrlPath)) {
-            const url = fs.readFileSync(lastUrlPath, 'utf-8').trim();
-            logger_1.logger.debug(`📂 Loaded last URL: ${url}`);
-            return url || null;
-        }
+        const url = await fs.promises.readFile(lastUrlPath, 'utf-8');
+        const trimmedUrl = url.trim();
+        logger_1.logger.debug(`📂 Loaded last URL: ${trimmedUrl}`);
+        return trimmedUrl || null;
     }
     catch (error) {
+        if (error.code === 'ENOENT') {
+            // File not found is an expected case, no need to log a warning
+            return null;
+        }
         logger_1.logger.warn(`Failed to load last URL: ${error instanceof Error ? error.message : String(error)}`);
+        return null;
     }
-    return null;
 }
 /**
  * Helper: Wait for map to be ready for a specific URL
@@ -117,7 +120,7 @@ async function handleNavigate(context, params) {
     logger_1.logger.info(`🔄 Navigating to: ${url}`);
     await waitForMapReady(context, url, 10000);
     // Save last visited URL
-    saveLastUrl(context.outputDir, url);
+    await saveLastUrl(context.outputDir, url);
     return result;
 }
 /**
@@ -131,7 +134,7 @@ async function handleBack(context, _params) {
     await waitForMapReady(context, newUrl, 10000);
     // Save last visited URL
     if (newUrl !== 'unknown') {
-        saveLastUrl(context.outputDir, newUrl);
+        await saveLastUrl(context.outputDir, newUrl);
     }
     return result;
 }
@@ -146,7 +149,7 @@ async function handleForward(context, _params) {
     await waitForMapReady(context, newUrl, 10000);
     // Save last visited URL
     if (newUrl !== 'unknown') {
-        saveLastUrl(context.outputDir, newUrl);
+        await saveLastUrl(context.outputDir, newUrl);
     }
     return result;
 }
@@ -163,7 +166,7 @@ async function handleReload(context, params) {
     await waitForMapReady(context, currentUrl, 10000);
     // Save last visited URL
     if (currentUrl !== 'unknown') {
-        saveLastUrl(context.outputDir, currentUrl);
+        await saveLastUrl(context.outputDir, currentUrl);
     }
     return result;
 }

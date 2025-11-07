@@ -168,7 +168,7 @@ export class DaemonServer {
       }
 
       // Load last visited URL
-      const lastUrl = loadLastUrl(this.outputDir);
+      const lastUrl = await loadLastUrl(this.outputDir);
 
       if (!lastUrl) {
         logger.debug('No last URL found, skipping restoration');
