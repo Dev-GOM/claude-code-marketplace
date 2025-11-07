@@ -3,7 +3,7 @@
  * Unified exports for all Browser Pilot Daemon handlers
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.handleStatus = exports.handleConsole = exports.handleWait = exports.handleScroll = exports.handleGetMapStatus = exports.handleGenerateMap = exports.handleQueryMap = exports.handleEval = exports.handleFind = exports.handleContent = exports.handleExtract = exports.handlePdf = exports.handleScreenshot = exports.handleType = exports.handlePress = exports.handleHover = exports.handleFill = exports.handleClick = exports.handleReload = exports.handleForward = exports.handleBack = exports.handleNavigate = void 0;
+exports.handleStatus = exports.handleConsole = exports.handleWait = exports.handleScroll = exports.handleGetMapStatus = exports.handleGenerateMap = exports.handleQueryMap = exports.handleEval = exports.handleFind = exports.handleContent = exports.handleExtract = exports.handleSetViewport = exports.handlePdf = exports.handleScreenshot = exports.handleType = exports.handlePress = exports.handleHover = exports.handleFill = exports.handleClick = exports.handleReload = exports.handleForward = exports.handleBack = exports.handleNavigate = void 0;
 // Navigation handlers
 var navigation_handlers_1 = require("./navigation-handlers");
 Object.defineProperty(exports, "handleNavigate", { enumerable: true, get: function () { return navigation_handlers_1.handleNavigate; } });
@@ -21,6 +21,7 @@ Object.defineProperty(exports, "handleType", { enumerable: true, get: function (
 var capture_handlers_1 = require("./capture-handlers");
 Object.defineProperty(exports, "handleScreenshot", { enumerable: true, get: function () { return capture_handlers_1.handleScreenshot; } });
 Object.defineProperty(exports, "handlePdf", { enumerable: true, get: function () { return capture_handlers_1.handlePdf; } });
+Object.defineProperty(exports, "handleSetViewport", { enumerable: true, get: function () { return capture_handlers_1.handleSetViewport; } });
 // Data handlers
 var data_handlers_1 = require("./data-handlers");
 Object.defineProperty(exports, "handleExtract", { enumerable: true, get: function () { return data_handlers_1.handleExtract; } });

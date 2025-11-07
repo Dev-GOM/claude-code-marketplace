@@ -19,9 +19,10 @@ const PDF_DEFAULT_MARGIN = 0.4; // inches
  * @param browser - ChromeBrowser instance
  * @param filename - Screenshot filename (automatically saved to .browser-pilot/screenshots/)
  * @param fullPage - Capture full page or viewport only
+ * @param clip - Optional clip region (x, y, width, height, scale)
  * @param options - Action options
  */
-async function screenshot(browser, filename, fullPage = true, options) {
+async function screenshot(browser, filename, fullPage = true, clip, options) {
     const opts = (0, helpers_1.mergeOptions)(options);
     // Construct path within screenshots folder
     const screenshotPath = (0, path_1.join)(constants_1.FS.SCREENSHOTS_DIR, filename);
@@ -30,7 +31,22 @@ async function screenshot(browser, filename, fullPage = true, options) {
     // Enable Page domain
     await browser.sendCommand('Page.enable');
     let params = {};
-    if (fullPage) {
+    // Clip region has priority over fullPage
+    if (clip) {
+        params = {
+            clip: {
+                x: clip.x,
+                y: clip.y,
+                width: clip.width,
+                height: clip.height,
+                scale: clip.scale || 1
+            }
+        };
+        if (opts.verbose) {
+            logger_1.logger.info(`  Region: (${clip.x}, ${clip.y}) ${clip.width}x${clip.height} scale=${clip.scale || 1}`);
+        }
+    }
+    else if (fullPage) {
         // Get page dimensions
         const metrics = await browser.sendCommand('Page.getLayoutMetrics');
         const contentSize = metrics.contentSize;

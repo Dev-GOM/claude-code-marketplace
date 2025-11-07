@@ -3,14 +3,22 @@
  */
 import { ChromeBrowser } from '../browser';
 import { ActionResult, ActionOptions } from './helpers';
+export interface ClipOptions {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    scale?: number;
+}
 /**
  * Take screenshot.
  * @param browser - ChromeBrowser instance
  * @param filename - Screenshot filename (automatically saved to .browser-pilot/screenshots/)
  * @param fullPage - Capture full page or viewport only
+ * @param clip - Optional clip region (x, y, width, height, scale)
  * @param options - Action options
  */
-export declare function screenshot(browser: ChromeBrowser, filename: string, fullPage?: boolean, options?: ActionOptions): Promise<ActionResult>;
+export declare function screenshot(browser: ChromeBrowser, filename: string, fullPage?: boolean, clip?: ClipOptions, options?: ActionOptions): Promise<ActionResult>;
 /**
  * Generate PDF from current page.
  * @param browser - ChromeBrowser instance

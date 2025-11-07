@@ -13,7 +13,41 @@ export async function handleScreenshot(
   params: Record<string, unknown>
 ): Promise<unknown> {
   const filename = params.filename as string | undefined;
-  return actions.screenshot(context.browser, filename || 'screenshot.png');
+  const fullPage = params.fullPage !== false; // Default true
+
+  // Parse clip options if provided
+  let clip: actions.ClipOptions | undefined;
+  if (params.clipX !== undefined && params.clipY !== undefined &&
+      params.clipWidth !== undefined && params.clipHeight !== undefined) {
+    clip = {
+      x: params.clipX as number,
+      y: params.clipY as number,
+      width: params.clipWidth as number,
+      height: params.clipHeight as number,
+      scale: params.clipScale as number | undefined
+    };
+  }
+
+  return actions.screenshot(context.browser, filename || 'screenshot.png', fullPage, clip);
+}
+
+/**
+ * Handle set viewport size command
+ */
+export async function handleSetViewport(
+  context: HandlerContext,
+  params: Record<string, unknown>
+): Promise<unknown> {
+  const width = params.width as number;
+  const height = params.height as number;
+  const deviceScaleFactor = (params.deviceScaleFactor as number) || 1;
+  const mobile = (params.mobile as boolean) || false;
+
+  if (!width || !height) {
+    throw new Error('Width and height are required for viewport');
+  }
+
+  return actions.setViewportSize(context.browser, width, height, deviceScaleFactor, mobile);
 }
 
 /**

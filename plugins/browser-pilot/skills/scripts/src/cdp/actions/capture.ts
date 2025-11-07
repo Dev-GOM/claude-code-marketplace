@@ -51,17 +51,27 @@ const PDF_PAPER_LETTER_WIDTH = 8.5;   // inches
 const PDF_PAPER_LETTER_HEIGHT = 11.0; // inches
 const PDF_DEFAULT_MARGIN = 0.4;       // inches
 
+export interface ClipOptions {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  scale?: number;
+}
+
 /**
  * Take screenshot.
  * @param browser - ChromeBrowser instance
  * @param filename - Screenshot filename (automatically saved to .browser-pilot/screenshots/)
  * @param fullPage - Capture full page or viewport only
+ * @param clip - Optional clip region (x, y, width, height, scale)
  * @param options - Action options
  */
 export async function screenshot(
   browser: ChromeBrowser,
   filename: string,
   fullPage = true,
+  clip?: ClipOptions,
   options?: ActionOptions
 ): Promise<ActionResult> {
   const opts = mergeOptions(options);
@@ -75,7 +85,22 @@ export async function screenshot(
   await browser.sendCommand('Page.enable');
 
   let params: ScreenshotParams = {};
-  if (fullPage) {
+
+  // Clip region has priority over fullPage
+  if (clip) {
+    params = {
+      clip: {
+        x: clip.x,
+        y: clip.y,
+        width: clip.width,
+        height: clip.height,
+        scale: clip.scale || 1
+      }
+    };
+    if (opts.verbose) {
+      logger.info(`  Region: (${clip.x}, ${clip.y}) ${clip.width}x${clip.height} scale=${clip.scale || 1}`);
+    }
+  } else if (fullPage) {
     // Get page dimensions
     const metrics = await browser.sendCommand<LayoutMetrics>('Page.getLayoutMetrics');
     const contentSize = metrics.contentSize;

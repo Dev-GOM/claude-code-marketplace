@@ -517,6 +517,9 @@ class DaemonServer {
                 case 'pdf':
                     result = await handlers.handlePdf(context, request.params);
                     break;
+                case 'set-viewport':
+                    result = await handlers.handleSetViewport(context, request.params);
+                    break;
                 // Data commands
                 case 'extract':
                     result = await handlers.handleExtract(context, request.params);

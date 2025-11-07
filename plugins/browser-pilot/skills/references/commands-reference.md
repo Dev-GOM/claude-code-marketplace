@@ -153,11 +153,24 @@ Options:
   -u, --url <url>        URL to capture (optional)
   -o, --output <path>    Output filename (saved to .browser-pilot/screenshots/)
   --full-page            Capture full page (default: true)
+  --clip-x <x>           Clip region X coordinate (pixels)
+  --clip-y <y>           Clip region Y coordinate (pixels)
+  --clip-width <width>   Clip region width (pixels)
+  --clip-height <height> Clip region height (pixels)
+  --clip-scale <scale>   Clip region scale factor (default: 1)
   --headless             Run in headless mode
 
-Example:
+Note: Clip region options take priority over --full-page. When clip options are specified,
+only the specified region will be captured regardless of --full-page setting.
+
+Examples:
+  # Full page screenshot
   node .browser-pilot/bp screenshot -o result.png --full-page
   # Saves to: .browser-pilot/screenshots/result.png
+
+  # Capture specific region (clip takes priority over full-page)
+  node .browser-pilot/bp screenshot -o region.png --clip-x 100 --clip-y 200 --clip-width 800 --clip-height 600
+  # Saves to: .browser-pilot/screenshots/region.png
 ```
 
 **pdf** - Generate PDF (saved to `.browser-pilot/pdfs/`)
@@ -173,6 +186,27 @@ Options:
 Example:
   node .browser-pilot/bp pdf -o document.pdf --landscape
   # Saves to: .browser-pilot/pdfs/document.pdf
+```
+
+**set-viewport** - Set browser viewport size (useful for responsive design testing)
+```bash
+node .browser-pilot/bp set-viewport -w <width> -h <height> [options]
+
+Options:
+  -w, --width <width>    Viewport width in pixels (required)
+  -h, --height <height>  Viewport height in pixels (required)
+  --scale <scale>        Device scale factor (default: 1)
+  --mobile               Emulate mobile device (default: false)
+
+Examples:
+  # Desktop viewport
+  node .browser-pilot/bp set-viewport -w 1920 -h 1080
+
+  # Mobile viewport (iPhone 12)
+  node .browser-pilot/bp set-viewport -w 390 -h 844 --scale 3 --mobile
+
+  # Tablet viewport (iPad)
+  node .browser-pilot/bp set-viewport -w 768 -h 1024 --scale 2
 ```
 
 ### Tab Management Commands
