@@ -26,6 +26,10 @@ export declare class DaemonServer {
      */
     start(): Promise<void>;
     /**
+     * Auto-restore last visited URL if enabled
+     */
+    private autoRestoreUrl;
+    /**
      * Setup Page domain for navigation events
      */
     private setupPageDomain;

@@ -581,7 +581,8 @@ async function initializeProject(hookInput) {
     port: port,
     outputDir: '.browser-pilot',
     lastUsed: new Date().toISOString(),
-    autoCleanup: false
+    autoCleanup: false,
+    autoRestore: true  // Auto-restore last visited URL (default: true)
   };
 
   sharedConfig.projects[projectName] = projectConfig;

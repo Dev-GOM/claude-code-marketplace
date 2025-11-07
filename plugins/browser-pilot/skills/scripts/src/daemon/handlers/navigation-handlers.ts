@@ -2,6 +2,8 @@
  * Navigation command handlers for Browser Pilot Daemon
  */
 
+import * as fs from 'fs';
+import * as path from 'path';
 import { ChromeBrowser } from '../../cdp/browser';
 import { MapManager } from '../map-manager';
 import * as actions from '../../cdp/actions';
@@ -29,6 +31,36 @@ async function getCurrentUrl(browser: ChromeBrowser): Promise<string> {
   } catch {
     return 'unknown';
   }
+}
+
+/**
+ * Helper: Save last visited URL to file
+ */
+export function saveLastUrl(outputDir: string, url: string): void {
+  try {
+    const lastUrlPath = path.join(outputDir, 'last-url.txt');
+    fs.writeFileSync(lastUrlPath, url, 'utf-8');
+    logger.debug(`💾 Saved last URL: ${url}`);
+  } catch (error) {
+    logger.warn(`Failed to save last URL: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
+
+/**
+ * Helper: Load last visited URL from file
+ */
+export function loadLastUrl(outputDir: string): string | null {
+  try {
+    const lastUrlPath = path.join(outputDir, 'last-url.txt');
+    if (fs.existsSync(lastUrlPath)) {
+      const url = fs.readFileSync(lastUrlPath, 'utf-8').trim();
+      logger.debug(`📂 Loaded last URL: ${url}`);
+      return url || null;
+    }
+  } catch (error) {
+    logger.warn(`Failed to load last URL: ${error instanceof Error ? error.message : String(error)}`);
+  }
+  return null;
 }
 
 /**
@@ -73,6 +105,9 @@ export async function handleNavigate(
   logger.info(`🔄 Navigating to: ${url}`);
   await waitForMapReady(context, url, 10000);
 
+  // Save last visited URL
+  saveLastUrl(context.outputDir, url);
+
   return result;
 }
 
@@ -90,6 +125,11 @@ export async function handleBack(
   logger.info(`🔄 Navigated back to: ${newUrl}`);
   await waitForMapReady(context, newUrl, 10000);
 
+  // Save last visited URL
+  if (newUrl !== 'unknown') {
+    saveLastUrl(context.outputDir, newUrl);
+  }
+
   return result;
 }
 
@@ -106,6 +146,11 @@ export async function handleForward(
   const newUrl = await getCurrentUrl(context.browser);
   logger.info(`🔄 Navigated forward to: ${newUrl}`);
   await waitForMapReady(context, newUrl, 10000);
+
+  // Save last visited URL
+  if (newUrl !== 'unknown') {
+    saveLastUrl(context.outputDir, newUrl);
+  }
 
   return result;
 }
@@ -126,6 +171,11 @@ export async function handleReload(
   // Reload stays on same URL, wait for map
   logger.info(`🔄 Reloading page: ${currentUrl}`);
   await waitForMapReady(context, currentUrl, 10000);
+
+  // Save last visited URL
+  if (currentUrl !== 'unknown') {
+    saveLastUrl(context.outputDir, currentUrl);
+  }
 
   return result;
 }

@@ -7,6 +7,7 @@ exports.handleQueryMap = handleQueryMap;
 exports.handleGenerateMap = handleGenerateMap;
 exports.handleGetMapStatus = handleGetMapStatus;
 const path_1 = require("path");
+const navigation_handlers_1 = require("./navigation-handlers");
 const query_map_1 = require("../../cdp/map/query-map");
 const helpers_1 = require("../../cdp/actions/helpers");
 const logger_1 = require("../../utils/logger");
@@ -150,6 +151,10 @@ async function handleGenerateMap(context, params) {
     const cached = !force && context.mapManager.isCacheValid(currentUrl);
     // Generate map
     const map = await context.mapManager.generateMap(context.browser, force);
+    // Save last visited URL
+    if (currentUrl !== 'unknown') {
+        (0, navigation_handlers_1.saveLastUrl)(context.outputDir, currentUrl);
+    }
     return {
         success: true,
         url: map.url,

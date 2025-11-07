@@ -36,10 +36,14 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.saveLastUrl = saveLastUrl;
+exports.loadLastUrl = loadLastUrl;
 exports.handleNavigate = handleNavigate;
 exports.handleBack = handleBack;
 exports.handleForward = handleForward;
 exports.handleReload = handleReload;
+const fs = __importStar(require("fs"));
+const path = __importStar(require("path"));
 const actions = __importStar(require("../../cdp/actions"));
 const logger_1 = require("../../utils/logger");
 /**
@@ -53,6 +57,36 @@ async function getCurrentUrl(browser) {
     catch {
         return 'unknown';
     }
+}
+/**
+ * Helper: Save last visited URL to file
+ */
+function saveLastUrl(outputDir, url) {
+    try {
+        const lastUrlPath = path.join(outputDir, 'last-url.txt');
+        fs.writeFileSync(lastUrlPath, url, 'utf-8');
+        logger_1.logger.debug(`💾 Saved last URL: ${url}`);
+    }
+    catch (error) {
+        logger_1.logger.warn(`Failed to save last URL: ${error instanceof Error ? error.message : String(error)}`);
+    }
+}
+/**
+ * Helper: Load last visited URL from file
+ */
+function loadLastUrl(outputDir) {
+    try {
+        const lastUrlPath = path.join(outputDir, 'last-url.txt');
+        if (fs.existsSync(lastUrlPath)) {
+            const url = fs.readFileSync(lastUrlPath, 'utf-8').trim();
+            logger_1.logger.debug(`📂 Loaded last URL: ${url}`);
+            return url || null;
+        }
+    }
+    catch (error) {
+        logger_1.logger.warn(`Failed to load last URL: ${error instanceof Error ? error.message : String(error)}`);
+    }
+    return null;
 }
 /**
  * Helper: Wait for map to be ready for a specific URL
@@ -82,6 +116,8 @@ async function handleNavigate(context, params) {
     // Navigation always changes URL, wait for map
     logger_1.logger.info(`🔄 Navigating to: ${url}`);
     await waitForMapReady(context, url, 10000);
+    // Save last visited URL
+    saveLastUrl(context.outputDir, url);
     return result;
 }
 /**
@@ -93,6 +129,10 @@ async function handleBack(context, _params) {
     const newUrl = await getCurrentUrl(context.browser);
     logger_1.logger.info(`🔄 Navigated back to: ${newUrl}`);
     await waitForMapReady(context, newUrl, 10000);
+    // Save last visited URL
+    if (newUrl !== 'unknown') {
+        saveLastUrl(context.outputDir, newUrl);
+    }
     return result;
 }
 /**
@@ -104,6 +144,10 @@ async function handleForward(context, _params) {
     const newUrl = await getCurrentUrl(context.browser);
     logger_1.logger.info(`🔄 Navigated forward to: ${newUrl}`);
     await waitForMapReady(context, newUrl, 10000);
+    // Save last visited URL
+    if (newUrl !== 'unknown') {
+        saveLastUrl(context.outputDir, newUrl);
+    }
     return result;
 }
 /**
@@ -117,6 +161,10 @@ async function handleReload(context, params) {
     // Reload stays on same URL, wait for map
     logger_1.logger.info(`🔄 Reloading page: ${currentUrl}`);
     await waitForMapReady(context, currentUrl, 10000);
+    // Save last visited URL
+    if (currentUrl !== 'unknown') {
+        saveLastUrl(context.outputDir, currentUrl);
+    }
     return result;
 }
 //# sourceMappingURL=navigation-handlers.js.map

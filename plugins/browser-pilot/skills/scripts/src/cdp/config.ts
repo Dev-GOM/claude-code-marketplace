@@ -16,6 +16,7 @@ export interface ProjectConfig {
   outputDir: string;
   lastUsed: string | null;
   autoCleanup: boolean;
+  autoRestore?: boolean; // Auto-restore last visited URL (default: true)
 }
 
 export interface SharedBrowserPilotConfig {
