@@ -3,7 +3,7 @@
  */
 
 import { join } from 'path';
-import { HandlerContext } from './navigation-handlers';
+import { HandlerContext, saveLastUrl } from './navigation-handlers';
 import { loadMap, queryMap, listTypes, listTexts } from '../../cdp/map/query-map';
 import { SELECTOR_RETRY_CONFIG } from '../../cdp/actions/helpers';
 import { logger } from '../../utils/logger';
@@ -189,6 +189,11 @@ export async function handleGenerateMap(
 
   // Generate map
   const map = await context.mapManager.generateMap(context.browser, force);
+
+  // Save last visited URL
+  if (currentUrl !== 'unknown') {
+    saveLastUrl(context.outputDir, currentUrl);
+  }
 
   return {
     success: true,

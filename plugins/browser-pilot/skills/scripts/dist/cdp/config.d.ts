@@ -8,6 +8,7 @@ export interface ProjectConfig {
     outputDir: string;
     lastUsed: string | null;
     autoCleanup: boolean;
+    autoRestore?: boolean;
 }
 export interface SharedBrowserPilotConfig {
     projects: {

@@ -12,6 +12,14 @@ export interface HandlerContext {
     outputDir: string;
 }
 /**
+ * Helper: Save last visited URL to file
+ */
+export declare function saveLastUrl(outputDir: string, url: string): void;
+/**
+ * Helper: Load last visited URL from file
+ */
+export declare function loadLastUrl(outputDir: string): string | null;
+/**
  * Handle navigate command
  */
 export declare function handleNavigate(context: HandlerContext, params: Record<string, unknown>): Promise<unknown>;

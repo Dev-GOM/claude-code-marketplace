@@ -49,6 +49,7 @@ const map_manager_1 = require("./map-manager");
 const logger_1 = require("../utils/logger");
 const constants_1 = require("../constants");
 const handlers = __importStar(require("./handlers"));
+const navigation_handlers_1 = require("./handlers/navigation-handlers");
 class DaemonServer {
     server = null;
     browser = null;
@@ -126,6 +127,8 @@ class DaemonServer {
         await this.setupPageDomain();
         // Set up Network tracking for auto-wait
         await this.setupNetworkTracking();
+        // Auto-restore last visited URL if enabled
+        await this.autoRestoreUrl();
         // Create IPC server
         this.server = (0, net_1.createServer)((socket) => this.handleConnection(socket));
         // Start listening
@@ -154,6 +157,39 @@ class DaemonServer {
                 process.exit(1);
             });
         });
+    }
+    /**
+     * Auto-restore last visited URL if enabled
+     */
+    async autoRestoreUrl() {
+        if (!this.browser)
+            return;
+        try {
+            // Load shared config
+            const config = (0, config_1.loadSharedConfig)();
+            const projectRoot = process.cwd();
+            const projectName = (0, path_1.basename)(projectRoot);
+            const projectConfig = config.projects[projectName];
+            // Check if autoRestore is enabled (default: true)
+            const autoRestore = projectConfig?.autoRestore !== false;
+            if (!autoRestore) {
+                logger_1.logger.debug('Auto-restore disabled, skipping URL restoration');
+                return;
+            }
+            // Load last visited URL
+            const lastUrl = (0, navigation_handlers_1.loadLastUrl)(this.outputDir);
+            if (!lastUrl) {
+                logger_1.logger.debug('No last URL found, skipping restoration');
+                return;
+            }
+            logger_1.logger.info(`🔄 Auto-restoring last visited URL: ${lastUrl}`);
+            // Navigate to last URL
+            await this.browser.sendCommand('Page.navigate', { url: lastUrl });
+            logger_1.logger.info('✅ URL restored successfully');
+        }
+        catch (error) {
+            logger_1.logger.warn(`Failed to auto-restore URL: ${error instanceof Error ? error.message : String(error)}`);
+        }
     }
     /**
      * Setup Page domain for navigation events

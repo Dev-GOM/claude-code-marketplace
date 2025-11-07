@@ -4,10 +4,10 @@
  */
 
 import { createServer, Server, Socket } from 'net';
-import { join } from 'path';
+import { join, basename } from 'path';
 import { existsSync, unlinkSync, writeFileSync } from 'fs';
 import { ChromeBrowser } from '../cdp/browser';
-import { getOutputDir } from '../cdp/config';
+import { getOutputDir, loadSharedConfig } from '../cdp/config';
 import { RuntimeEvaluateResult } from '../cdp/actions/helpers';
 import { waitForDomStable } from '../cdp/actions/wait';
 import {
@@ -24,6 +24,7 @@ import { MapManager } from './map-manager';
 import { logger } from '../utils/logger';
 import { TIME_CONVERSION } from '../constants';
 import * as handlers from './handlers';
+import { loadLastUrl } from './handlers/navigation-handlers';
 
 export class DaemonServer {
   private server: Server | null = null;
@@ -109,6 +110,9 @@ export class DaemonServer {
     // Set up Network tracking for auto-wait
     await this.setupNetworkTracking();
 
+    // Auto-restore last visited URL if enabled
+    await this.autoRestoreUrl();
+
     // Create IPC server
     this.server = createServer((socket) => this.handleConnection(socket));
 
@@ -140,6 +144,46 @@ export class DaemonServer {
         process.exit(1);
       });
     });
+  }
+
+  /**
+   * Auto-restore last visited URL if enabled
+   */
+  private async autoRestoreUrl(): Promise<void> {
+    if (!this.browser) return;
+
+    try {
+      // Load shared config
+      const config = loadSharedConfig();
+      const projectRoot = process.cwd();
+      const projectName = basename(projectRoot);
+      const projectConfig = config.projects[projectName];
+
+      // Check if autoRestore is enabled (default: true)
+      const autoRestore = projectConfig?.autoRestore !== false;
+
+      if (!autoRestore) {
+        logger.debug('Auto-restore disabled, skipping URL restoration');
+        return;
+      }
+
+      // Load last visited URL
+      const lastUrl = loadLastUrl(this.outputDir);
+
+      if (!lastUrl) {
+        logger.debug('No last URL found, skipping restoration');
+        return;
+      }
+
+      logger.info(`🔄 Auto-restoring last visited URL: ${lastUrl}`);
+
+      // Navigate to last URL
+      await this.browser.sendCommand('Page.navigate', { url: lastUrl });
+
+      logger.info('✅ URL restored successfully');
+    } catch (error) {
+      logger.warn(`Failed to auto-restore URL: ${error instanceof Error ? error.message : String(error)}`);
+    }
   }
 
   /**

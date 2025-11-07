@@ -2,7 +2,24 @@
 
 All notable changes to the Dev GOM Plugins marketplace will be documented in this file.
 
-> **Version**: 2.15.2 | **Last Updated**: 2025-11-07
+> **Version**: 2.15.3 | **Last Updated**: 2025-11-07
+
+---
+
+## [2.15.3] - 2025-11-07
+
+### Added
+- ✨ **Browser Pilot v1.7.3**: Auto-Restore Last Visited URL
+  - **Auto-Restore Feature**: Automatically restores last visited URL when daemon restarts
+    - Saves URL to `.browser-pilot/last-url.txt` on navigation, back, forward, reload, and map regeneration
+    - Loads and navigates to last URL when daemon starts (if `autoRestore: true`)
+    - New config option `autoRestore` (default: `true`) in project configuration
+  - **Enhanced URL Persistence**: URL is now saved across all navigation operations
+    - Navigate command
+    - Back/Forward commands
+    - Reload command
+    - Map regeneration (regen-map)
+  - Seamless workflow: Stop daemon, run non-navigate command, automatically returns to last page
 
 ---
 
