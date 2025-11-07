@@ -177,7 +177,7 @@ class DaemonServer {
                 return;
             }
             // Load last visited URL
-            const lastUrl = (0, navigation_handlers_1.loadLastUrl)(this.outputDir);
+            const lastUrl = await (0, navigation_handlers_1.loadLastUrl)(this.outputDir);
             if (!lastUrl) {
                 logger_1.logger.debug('No last URL found, skipping restoration');
                 return;

@@ -192,7 +192,7 @@ export async function handleGenerateMap(
 
   // Save last visited URL
   if (currentUrl !== 'unknown') {
-    saveLastUrl(context.outputDir, currentUrl);
+    await saveLastUrl(context.outputDir, currentUrl);
   }
 
   return {
