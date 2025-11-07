@@ -1,6 +1,58 @@
 import { Command } from 'commander';
 import { executeViaDaemon } from '../daemon-helper';
 
+/**
+ * Type guard for viewport response data
+ */
+function isViewportResponse(data: unknown): data is { viewport: { width: number; height: number; devicePixelRatio: number } } {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    'viewport' in data &&
+    typeof (data as Record<string, unknown>).viewport === 'object' &&
+    (data as Record<string, unknown>).viewport !== null &&
+    'width' in ((data as Record<string, unknown>).viewport as object) &&
+    'height' in ((data as Record<string, unknown>).viewport as object) &&
+    'devicePixelRatio' in ((data as Record<string, unknown>).viewport as object) &&
+    typeof ((data as Record<string, unknown>).viewport as Record<string, unknown>).width === 'number' &&
+    typeof ((data as Record<string, unknown>).viewport as Record<string, unknown>).height === 'number' &&
+    typeof ((data as Record<string, unknown>).viewport as Record<string, unknown>).devicePixelRatio === 'number'
+  );
+}
+
+/**
+ * Type guard for screen info response data
+ */
+function isScreenInfoResponse(data: unknown): data is {
+  viewport: { width: number; height: number };
+  screen: { width: number; height: number; availWidth: number; availHeight: number };
+  devicePixelRatio: number;
+} {
+  if (typeof data !== 'object' || data === null) return false;
+
+  const d = data as Record<string, unknown>;
+
+  // Check viewport
+  if (typeof d.viewport !== 'object' || d.viewport === null) return false;
+  const viewport = d.viewport as Record<string, unknown>;
+  if (typeof viewport.width !== 'number' || typeof viewport.height !== 'number') return false;
+
+  // Check screen
+  if (typeof d.screen !== 'object' || d.screen === null) return false;
+  const screen = d.screen as Record<string, unknown>;
+  if (
+    typeof screen.width !== 'number' ||
+    typeof screen.height !== 'number' ||
+    typeof screen.availWidth !== 'number' ||
+    typeof screen.availHeight !== 'number'
+  ) return false;
+
+  // Check devicePixelRatio
+  if (typeof d.devicePixelRatio !== 'number') return false;
+
+  return true;
+}
+
 export function registerCaptureCommands(program: Command) {
   // Screenshot command
   program
@@ -96,7 +148,11 @@ export function registerCaptureCommands(program: Command) {
         const response = await executeViaDaemon('get-viewport', {});
 
         if (response.success) {
-          const data = response.data as { viewport: { width: number; height: number; devicePixelRatio: number } };
+          if (!isViewportResponse(response.data)) {
+            console.error('Get viewport failed: Invalid response format');
+            process.exit(1);
+          }
+          const data = response.data;
           console.log('=== Viewport Information ===');
           console.log(`Size: ${data.viewport.width}x${data.viewport.height}`);
           console.log(`Scale: ${data.viewport.devicePixelRatio}`);
@@ -121,11 +177,11 @@ export function registerCaptureCommands(program: Command) {
         const response = await executeViaDaemon('get-screen-info', {});
 
         if (response.success) {
-          const data = response.data as {
-            viewport: { width: number; height: number };
-            screen: { width: number; height: number; availWidth: number; availHeight: number };
-            devicePixelRatio: number;
-          };
+          if (!isScreenInfoResponse(response.data)) {
+            console.error('Get screen info failed: Invalid response format');
+            process.exit(1);
+          }
+          const data = response.data;
           console.log('=== Screen Information ===');
           console.log(`Screen: ${data.screen.width}x${data.screen.height}`);
           console.log(`Available: ${data.screen.availWidth}x${data.screen.availHeight}`);

@@ -2,7 +2,35 @@
 
 All notable changes to the Dev GOM Plugins marketplace will be documented in this file.
 
-> **Version**: 2.12.0 | **Last Updated**: 2025-11-06
+> **Version**: 2.15.2 | **Last Updated**: 2025-11-07
+
+---
+
+## [2.15.2] - 2025-11-07
+
+### Changed
+- 🔧 **Browser Pilot v1.7.2**: Code Quality Improvements
+  - Added `logActionError` helper function to `helpers.ts` for centralized error logging
+  - Refactored `emulation.ts` to eliminate duplicate error logging in catch blocks
+  - Added type guard functions in `capture.ts` for safe viewport response validation
+  - Improved type safety by replacing `as` type assertions with proper type guards
+
+---
+
+## [2.15.1] - 2025-11-06
+
+### Added
+- ✨ **Browser Pilot v1.7.1**: Viewport Information Commands
+  - **New Commands**: Added viewport and screen information retrieval
+    - `get-viewport`: Get current viewport size (width, height, devicePixelRatio)
+    - `get-screen-info`: Get comprehensive screen metrics (screen size, available area, viewport, scale)
+  - Full integration through actions → handlers → CLI layers
+
+### Fixed
+- 🐛 **Browser Pilot v1.7.1**: Map Generation Bug Fixes
+  - Fixed XPath escape syntax error in `generate-interaction-map.ts`
+  - Enhanced error logging in `map-manager.ts` for better debugging
+  - Resolved "Failed to extract interactive elements" error on complex pages
 
 ---
 

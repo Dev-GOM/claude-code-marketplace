@@ -74,6 +74,13 @@ export declare function checkConsoleErrors(browser: ChromeBrowser): void;
  */
 export declare function waitForActionComplete(browser: ChromeBrowser, opts: Required<ActionOptions>): Promise<void>;
 /**
+ * Helper: Log action error with consistent formatting
+ * @param context - Error context (e.g., 'Get viewport failed')
+ * @param error - Error object
+ * @param verbose - Whether to log the error
+ */
+export declare function logActionError(context: string, error: unknown, verbose: boolean): void;
+/**
  * Helper: Ensure output path (convert relative to .browser-pilot/).
  * Security: Prevents path traversal attacks and rejects absolute paths.
  * Uses getOutputDir() from config to get project-specific output directory.

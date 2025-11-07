@@ -2,6 +2,49 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.registerCaptureCommands = registerCaptureCommands;
 const daemon_helper_1 = require("../daemon-helper");
+/**
+ * Type guard for viewport response data
+ */
+function isViewportResponse(data) {
+    return (typeof data === 'object' &&
+        data !== null &&
+        'viewport' in data &&
+        typeof data.viewport === 'object' &&
+        data.viewport !== null &&
+        'width' in data.viewport &&
+        'height' in data.viewport &&
+        'devicePixelRatio' in data.viewport &&
+        typeof data.viewport.width === 'number' &&
+        typeof data.viewport.height === 'number' &&
+        typeof data.viewport.devicePixelRatio === 'number');
+}
+/**
+ * Type guard for screen info response data
+ */
+function isScreenInfoResponse(data) {
+    if (typeof data !== 'object' || data === null)
+        return false;
+    const d = data;
+    // Check viewport
+    if (typeof d.viewport !== 'object' || d.viewport === null)
+        return false;
+    const viewport = d.viewport;
+    if (typeof viewport.width !== 'number' || typeof viewport.height !== 'number')
+        return false;
+    // Check screen
+    if (typeof d.screen !== 'object' || d.screen === null)
+        return false;
+    const screen = d.screen;
+    if (typeof screen.width !== 'number' ||
+        typeof screen.height !== 'number' ||
+        typeof screen.availWidth !== 'number' ||
+        typeof screen.availHeight !== 'number')
+        return false;
+    // Check devicePixelRatio
+    if (typeof d.devicePixelRatio !== 'number')
+        return false;
+    return true;
+}
 function registerCaptureCommands(program) {
     // Screenshot command
     program
@@ -91,6 +134,10 @@ function registerCaptureCommands(program) {
         try {
             const response = await (0, daemon_helper_1.executeViaDaemon)('get-viewport', {});
             if (response.success) {
+                if (!isViewportResponse(response.data)) {
+                    console.error('Get viewport failed: Invalid response format');
+                    process.exit(1);
+                }
                 const data = response.data;
                 console.log('=== Viewport Information ===');
                 console.log(`Size: ${data.viewport.width}x${data.viewport.height}`);
@@ -115,6 +162,10 @@ function registerCaptureCommands(program) {
         try {
             const response = await (0, daemon_helper_1.executeViaDaemon)('get-screen-info', {});
             if (response.success) {
+                if (!isScreenInfoResponse(response.data)) {
+                    console.error('Get screen info failed: Invalid response format');
+                    process.exit(1);
+                }
                 const data = response.data;
                 console.log('=== Screen Information ===');
                 console.log(`Screen: ${data.screen.width}x${data.screen.height}`);
