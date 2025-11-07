@@ -9,6 +9,7 @@ exports.sleep = sleep;
 exports.checkErrors = checkErrors;
 exports.checkConsoleErrors = checkConsoleErrors;
 exports.waitForActionComplete = waitForActionComplete;
+exports.logActionError = logActionError;
 exports.ensureOutputPath = ensureOutputPath;
 const path_1 = require("path");
 const fs_1 = require("fs");
@@ -122,6 +123,23 @@ async function waitForActionComplete(browser, opts) {
         await sleep(NAVIGATION_WAIT_DELAY_MS); // Additional delay for errors to surface
     }
     checkErrors(browser, opts.logLevel);
+}
+/**
+ * Helper: Log action error with consistent formatting
+ * @param context - Error context (e.g., 'Get viewport failed')
+ * @param error - Error object
+ * @param verbose - Whether to log the error
+ */
+function logActionError(context, error, verbose) {
+    if (!verbose)
+        return;
+    logger_1.logger.error(`❌ ${context}`);
+    if (error instanceof Error) {
+        logger_1.logger.error(`   Error: ${error.message}`);
+    }
+    else {
+        logger_1.logger.error(`   Error: ${String(error)}`);
+    }
 }
 /**
  * Helper: Ensure output path (convert relative to .browser-pilot/).

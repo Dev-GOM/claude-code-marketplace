@@ -78,15 +78,7 @@ async function setViewportSize(browser, width, height, deviceScaleFactor = 1, mo
         };
     }
     catch (error) {
-        if (opts.verbose) {
-            logger_1.logger.error(`❌ Set viewport size failed`);
-            if (error instanceof Error) {
-                logger_1.logger.error(`   Error: ${error.message}`);
-            }
-            else {
-                logger_1.logger.error(`   Error: ${String(error)}`);
-            }
-        }
+        (0, helpers_1.logActionError)('Set viewport size failed', error, opts.verbose);
         throw error;
     }
 }
@@ -115,15 +107,7 @@ async function getViewport(browser, options) {
         };
     }
     catch (error) {
-        if (opts.verbose) {
-            logger_1.logger.error(`❌ Get viewport failed`);
-            if (error instanceof Error) {
-                logger_1.logger.error(`   Error: ${error.message}`);
-            }
-            else {
-                logger_1.logger.error(`   Error: ${String(error)}`);
-            }
-        }
+        (0, helpers_1.logActionError)('Get viewport failed', error, opts.verbose);
         throw error;
     }
 }
@@ -154,15 +138,7 @@ async function getScreenInfo(browser, options) {
         };
     }
     catch (error) {
-        if (opts.verbose) {
-            logger_1.logger.error(`❌ Get screen info failed`);
-            if (error instanceof Error) {
-                logger_1.logger.error(`   Error: ${error.message}`);
-            }
-            else {
-                logger_1.logger.error(`   Error: ${String(error)}`);
-            }
-        }
+        (0, helpers_1.logActionError)('Get screen info failed', error, opts.verbose);
         throw error;
     }
 }

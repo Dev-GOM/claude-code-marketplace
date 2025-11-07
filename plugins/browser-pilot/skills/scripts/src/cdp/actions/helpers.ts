@@ -179,6 +179,23 @@ export async function waitForActionComplete(
 }
 
 /**
+ * Helper: Log action error with consistent formatting
+ * @param context - Error context (e.g., 'Get viewport failed')
+ * @param error - Error object
+ * @param verbose - Whether to log the error
+ */
+export function logActionError(context: string, error: unknown, verbose: boolean): void {
+  if (!verbose) return;
+
+  logger.error(`❌ ${context}`);
+  if (error instanceof Error) {
+    logger.error(`   Error: ${error.message}`);
+  } else {
+    logger.error(`   Error: ${String(error)}`);
+  }
+}
+
+/**
  * Helper: Ensure output path (convert relative to .browser-pilot/).
  * Security: Prevents path traversal attacks and rejects absolute paths.
  * Uses getOutputDir() from config to get project-specific output directory.

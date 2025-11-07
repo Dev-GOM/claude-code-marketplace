@@ -3,7 +3,7 @@
  */
 
 import { ChromeBrowser } from '../browser';
-import { ActionResult, ActionOptions, mergeOptions } from './helpers';
+import { ActionResult, ActionOptions, mergeOptions, logActionError } from './helpers';
 import { logger } from '../../utils/logger';
 
 export interface ViewportOptions {
@@ -100,14 +100,7 @@ export async function setViewportSize(
     };
 
   } catch (error: unknown) {
-    if (opts.verbose) {
-      logger.error(`❌ Set viewport size failed`);
-      if (error instanceof Error) {
-        logger.error(`   Error: ${error.message}`);
-      } else {
-        logger.error(`   Error: ${String(error)}`);
-      }
-    }
+    logActionError('Set viewport size failed', error, opts.verbose);
     throw error;
   }
 }
@@ -145,14 +138,7 @@ export async function getViewport(
     };
 
   } catch (error: unknown) {
-    if (opts.verbose) {
-      logger.error(`❌ Get viewport failed`);
-      if (error instanceof Error) {
-        logger.error(`   Error: ${error.message}`);
-      } else {
-        logger.error(`   Error: ${String(error)}`);
-      }
-    }
+    logActionError('Get viewport failed', error, opts.verbose);
     throw error;
   }
 }
@@ -192,14 +178,7 @@ export async function getScreenInfo(
     };
 
   } catch (error: unknown) {
-    if (opts.verbose) {
-      logger.error(`❌ Get screen info failed`);
-      if (error instanceof Error) {
-        logger.error(`   Error: ${error.message}`);
-      } else {
-        logger.error(`   Error: ${String(error)}`);
-      }
-    }
+    logActionError('Get screen info failed', error, opts.verbose);
     throw error;
   }
 }
