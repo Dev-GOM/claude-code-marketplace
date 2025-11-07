@@ -26,7 +26,9 @@ export {
 export {
   handleScreenshot,
   handlePdf,
-  handleSetViewport
+  handleSetViewport,
+  handleGetViewport,
+  handleGetScreenInfo
 } from './capture-handlers';
 
 // Data handlers

@@ -93,8 +93,17 @@ class MapManager extends events_1.EventEmitter {
             expression: script,
             returnByValue: true
         });
+        // Check for script execution errors
+        if (result.exceptionDetails) {
+            const errorMsg = result.exceptionDetails.exception?.description ||
+                result.exceptionDetails.text ||
+                'Unknown script error';
+            logger_1.logger.error('Map generation script error:', errorMsg);
+            throw new Error(`Failed to extract interactive elements: ${errorMsg}`);
+        }
         if (!result.result || !result.result.value) {
-            throw new Error('Failed to extract interactive elements');
+            logger_1.logger.error('Unexpected result structure:', JSON.stringify(result, null, 2));
+            throw new Error('Failed to extract interactive elements: No value returned');
         }
         const elementsArray = result.result.value;
         // Generate statistics

@@ -565,6 +565,12 @@ export class DaemonServer {
         case 'set-viewport':
           result = await handlers.handleSetViewport(context, request.params);
           break;
+        case 'get-viewport':
+          result = await handlers.handleGetViewport(context, request.params);
+          break;
+        case 'get-screen-info':
+          result = await handlers.handleGetScreenInfo(context, request.params);
+          break;
 
         // Data commands
         case 'extract':

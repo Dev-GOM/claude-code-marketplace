@@ -33,7 +33,7 @@ function getInteractionMapScript() {
         const parts = text.split("'");
         const escaped = parts.map((part, i) => {
           if (i === 0) return "'" + part + "'";
-          return "\"'\"," + "'" + part + "'";
+          return "\\"'\\"," + "'" + part + "'";
         }).join(',');
         return "concat(" + escaped + ")";
       }

@@ -51,6 +51,26 @@ export async function handleSetViewport(
 }
 
 /**
+ * Handle get viewport command
+ */
+export async function handleGetViewport(
+  context: HandlerContext,
+  params: Record<string, unknown>
+): Promise<unknown> {
+  return actions.getViewport(context.browser);
+}
+
+/**
+ * Handle get screen info command
+ */
+export async function handleGetScreenInfo(
+  context: HandlerContext,
+  params: Record<string, unknown>
+): Promise<unknown> {
+  return actions.getScreenInfo(context.browser);
+}
+
+/**
  * Handle PDF generation command
  */
 export async function handlePdf(

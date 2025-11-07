@@ -3,7 +3,7 @@ name: browser-pilot
 description: |
   Chrome DevTools Protocol (CDP) browser automation, web scraping, crawling. 브라우저 자동화, 웹 스크래핑, 크롤링.
 
-  Features/기능: screenshot 스크린샷, PDF generation PDF생성, web scraping 웹스크래핑, data extraction 데이터추출, form filling 폼작성, login automation 로그인자동화, click/input 클릭/입력, element finder 요소찾기, tab management 탭관리, cookie control 쿠키제어, JavaScript execution JS실행, page navigation 페이지이동, wait for element 요소대기, scroll 스크롤, accessibility tree 접근성트리, console messages 콘솔메시지, network idle 네트워크대기, back/forward 뒤로/앞으로, reload 새로고침, file upload 파일업로드, React compatibility React호환성, Smart Mode with Interaction Map 스마트모드.
+  Features/기능: screenshot with region control 영역지정스크린샷, viewport control 뷰포트제어, PDF generation PDF생성, web scraping 웹스크래핑, data extraction 데이터추출, form filling 폼작성, login automation 로그인자동화, click/input 클릭/입력, element finder 요소찾기, tab management 탭관리, cookie control 쿠키제어, JavaScript execution JS실행, page navigation 페이지이동, wait for element 요소대기, scroll 스크롤, accessibility tree 접근성트리, console messages 콘솔메시지, network idle 네트워크대기, back/forward 뒤로/앞으로, reload 새로고침, file upload 파일업로드, React compatibility React호환성, Smart Mode with Interaction Map 스마트모드.
 
   Selectors 셀렉터: CSS selectors (ID, class, attribute), XPath selectors with wildcard * (text-based, structural), XPath indexing (select N-th element with same text). Smart Mode: text-based element search with automatic selector generation.
 
@@ -131,6 +131,18 @@ node .browser-pilot/bp fill -s "input[name='email']" -v <value>
 ```bash
 # Screenshots saved to .browser-pilot/screenshots/
 node .browser-pilot/bp screenshot -o <filename>.png
+
+# Capture specific region
+node .browser-pilot/bp screenshot -o region.png --clip-x 100 --clip-y 200 --clip-width 800 --clip-height 600
+
+# Set viewport size for responsive testing
+node .browser-pilot/bp set-viewport -w 375 -h 667 --scale 2 --mobile
+
+# Get current viewport size
+node .browser-pilot/bp get-viewport
+
+# Get screen and viewport information
+node .browser-pilot/bp get-screen-info
 
 # PDFs saved to .browser-pilot/pdfs/
 node .browser-pilot/bp pdf -o <filename>.pdf

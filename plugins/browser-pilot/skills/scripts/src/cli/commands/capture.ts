@@ -87,6 +87,62 @@ export function registerCaptureCommands(program: Command) {
       }
     });
 
+  // Get viewport command
+  program
+    .command('get-viewport')
+    .description('Get current viewport size')
+    .action(async () => {
+      try {
+        const response = await executeViaDaemon('get-viewport', {});
+
+        if (response.success) {
+          const data = response.data as { viewport: { width: number; height: number; devicePixelRatio: number } };
+          console.log('=== Viewport Information ===');
+          console.log(`Size: ${data.viewport.width}x${data.viewport.height}`);
+          console.log(`Scale: ${data.viewport.devicePixelRatio}`);
+          console.log('Browser will stay open. Use "daemon-stop" to close it.');
+        } else {
+          console.error('Get viewport failed:', response.error);
+        }
+
+        process.exit(response.success ? 0 : 1);
+      } catch (error) {
+        console.error('Error:', error);
+        process.exit(1);
+      }
+    });
+
+  // Get screen info command
+  program
+    .command('get-screen-info')
+    .description('Get screen and viewport information')
+    .action(async () => {
+      try {
+        const response = await executeViaDaemon('get-screen-info', {});
+
+        if (response.success) {
+          const data = response.data as {
+            viewport: { width: number; height: number };
+            screen: { width: number; height: number; availWidth: number; availHeight: number };
+            devicePixelRatio: number;
+          };
+          console.log('=== Screen Information ===');
+          console.log(`Screen: ${data.screen.width}x${data.screen.height}`);
+          console.log(`Available: ${data.screen.availWidth}x${data.screen.availHeight}`);
+          console.log(`Viewport: ${data.viewport.width}x${data.viewport.height}`);
+          console.log(`Scale: ${data.devicePixelRatio}`);
+          console.log('Browser will stay open. Use "daemon-stop" to close it.');
+        } else {
+          console.error('Get screen info failed:', response.error);
+        }
+
+        process.exit(response.success ? 0 : 1);
+      } catch (error) {
+        console.error('Error:', error);
+        process.exit(1);
+      }
+    });
+
   // Generate PDF command
   program
     .command('pdf')

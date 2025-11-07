@@ -38,6 +38,8 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.handleScreenshot = handleScreenshot;
 exports.handleSetViewport = handleSetViewport;
+exports.handleGetViewport = handleGetViewport;
+exports.handleGetScreenInfo = handleGetScreenInfo;
 exports.handlePdf = handlePdf;
 const actions = __importStar(require("../../cdp/actions"));
 /**
@@ -72,6 +74,18 @@ async function handleSetViewport(context, params) {
         throw new Error('Width and height are required for viewport');
     }
     return actions.setViewportSize(context.browser, width, height, deviceScaleFactor, mobile);
+}
+/**
+ * Handle get viewport command
+ */
+async function handleGetViewport(context, params) {
+    return actions.getViewport(context.browser);
+}
+/**
+ * Handle get screen info command
+ */
+async function handleGetScreenInfo(context, params) {
+    return actions.getScreenInfo(context.browser);
 }
 /**
  * Handle PDF generation command
