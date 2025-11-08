@@ -2,7 +2,23 @@
 
 All notable changes to the Dev GOM Plugins marketplace will be documented in this file.
 
-> **Version**: 2.15.3 | **Last Updated**: 2025-11-07
+> **Version**: 2.16.0 | **Last Updated**: 2025-11-08
+
+---
+
+## [2.16.0] - 2025-11-08
+
+### Added
+- ✨ **Browser Pilot v1.8.0**: Reinstall Command for Troubleshooting
+  - **New Command**: `reinstall` - Force complete reinstallation of Browser Pilot scripts
+    - Stops daemon if running
+    - Removes `.browser-pilot` directory completely
+    - Next command triggers automatic reinstallation via SessionStart hook
+  - **Use Cases**: Corrupted installations, scripts not updating, troubleshooting persistent issues
+  - **Options**:
+    - `-y, --yes`: Skip confirmation prompt
+    - `-q, --quiet`: Suppress output messages
+  - **Documentation**: Added comprehensive guide in `commands-reference.md`
 
 ---
 

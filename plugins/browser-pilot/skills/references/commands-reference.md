@@ -409,6 +409,44 @@ node .browser-pilot/bp daemon-restart
 node .browser-pilot/bp daemon-status
 ```
 
+## System Maintenance Commands
+
+**reinstall** - Reinstall Browser Pilot scripts
+
+Removes the `.browser-pilot` directory to force complete reinstallation on next command. Useful when:
+- Installation or build is corrupted
+- Scripts are not updating properly
+- Troubleshooting persistent issues
+
+```bash
+# Show confirmation prompt
+node .browser-pilot/bp reinstall
+
+# Skip confirmation and reinstall immediately
+node .browser-pilot/bp reinstall --yes
+
+# Quiet mode (no output)
+node .browser-pilot/bp reinstall --yes --quiet
+```
+
+**What it does:**
+1. Stops the daemon if running
+2. Removes `.browser-pilot` directory completely
+3. Next command will trigger automatic reinstallation via SessionStart hook
+
+**Options:**
+- `-y, --yes`: Skip confirmation prompt
+- `-q, --quiet`: Suppress output messages
+
+**Example workflow:**
+```bash
+# Reinstall scripts
+node .browser-pilot/bp reinstall --yes
+
+# Next command triggers automatic reinstallation
+node .browser-pilot/bp navigate -u "https://example.com"
+```
+
 ## Common Options
 
 Most commands support:
