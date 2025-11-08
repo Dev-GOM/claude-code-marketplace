@@ -2,7 +2,40 @@
 
 All notable changes to the Dev GOM Plugins marketplace will be documented in this file.
 
-> **Version**: 2.16.0 | **Last Updated**: 2025-11-08
+> **Version**: 2.17.1 | **Last Updated**: 2025-11-09
+
+---
+
+## [2.17.1] - 2025-11-09
+
+### Changed
+- 🔧 **Browser Pilot v1.9.1**: Code Quality and Performance Improvements
+  - **Documentation**: Added comprehensive comment explaining `getLocalTimestamp` function duplication
+    - Function exists in both `init-config.js` (JavaScript hook) and `timestamp.ts` (TypeScript module)
+    - Duplication is intentional as hook scripts cannot import TypeScript modules
+    - Prevents build dependencies for lightweight hook scripts
+  - **Refactoring**: Improved `rimraf` timeout handling using modern `Promise.race` pattern
+    - Replaced complex completed flag logic with cleaner Promise-based approach
+    - Better separation of execution promise vs timeout promise
+    - Enhanced code readability and maintainability
+  - **Error Handling**: Enhanced npm error messages to preserve original error context
+    - Install errors now include original error message: `Failed to install dependencies: ${errorMessage}`
+    - Build errors now include original error message: `Failed to build scripts: ${errorMessage}`
+    - Improved debuggability when npm operations fail
+  - **Performance**: Converted synchronous file I/O to async operations
+    - Changed `readFileSync` to async `readFile` from `fs/promises`
+    - Made `getPid()` and `isRunning()` async methods
+    - Updated 12 call sites across 4 files to use `await`
+    - Eliminates event loop blocking for better server responsiveness
+    - Maintains PID caching (1-second TTL) to minimize actual file I/O
+
+---
+
+## [2.17.0] - 2025-11-09
+
+### Changed
+- 🔧 **Browser Pilot v1.9.0**: Code Review Feedback - 27 Issues Resolved
+  - See v2.17.0 release notes for full details
 
 ---
 

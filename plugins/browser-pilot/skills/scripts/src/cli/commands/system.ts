@@ -87,7 +87,7 @@ export function registerSystemCommands(program: Command) {
 
         // Stop daemon if running
         const manager = new DaemonManager();
-        if (manager.isRunning()) {
+        if (await manager.isRunning()) {
           if (!options.quiet) {
             console.log('🛑 Stopping daemon...');
           }
@@ -176,7 +176,7 @@ export function registerSystemCommands(program: Command) {
 
         // Stop daemon if running
         const manager = new DaemonManager();
-        if (manager.isRunning()) {
+        if (await manager.isRunning()) {
           if (!options.quiet) {
             console.log('🛑 Stopping daemon on port ' + oldPort + '...');
           }
