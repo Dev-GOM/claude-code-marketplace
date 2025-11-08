@@ -14,11 +14,42 @@ const { execSync, spawn } = require('child_process');
 const { createLogger } = require('./logger');
 const processUtils = require('./process-utils');
 
-// Get project name early for logging (from environment variable if available)
-const projectName = process.env.CLAUDE_PROJECT_DIR ? path.basename(process.env.CLAUDE_PROJECT_DIR) : null;
+// Get hookInput early to determine project name
+let hookInput = null;
+try {
+  if (process.argv[2]) {
+    hookInput = JSON.parse(process.argv[2]);
+  }
+} catch (error) {
+  // Invalid JSON, will use environment variable
+  const errorMessage = error instanceof Error ? error.message : String(error);
+  console.warn('Failed to parse hook input JSON:', errorMessage);
+}
 
-// Create logger instance with project name
-const logger = createLogger('init-log.txt', 'Browser Pilot Initialization Log', projectName);
+// Get project name early for logging
+let projectName = null;
+if (process.env.CLAUDE_PROJECT_DIR) {
+  projectName = path.basename(process.env.CLAUDE_PROJECT_DIR);
+} else if (hookInput && hookInput.cwd) {
+  projectName = path.basename(hookInput.cwd);
+}
+
+// Create logger instance with project name (or 'unknown' if not available)
+const logger = createLogger('init-log.txt', 'Browser Pilot Initialization Log', projectName || 'unknown');
+
+/**
+ * Get local timestamp string in format: YYYY-MM-DD HH:MM:SS
+ */
+function getLocalTimestamp() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const seconds = String(now.getSeconds()).padStart(2, '0');
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
 
 /**
  * Get project root from environment variable or hook input
@@ -341,16 +372,34 @@ async function initializeLocalScripts(projectRoot) {
             stdio: 'ignore'
           });
 
+          let completed = false;
+
+          const timeout = setTimeout(() => {
+            if (!completed) {
+              completed = true;
+              rimraf.kill('SIGTERM');
+              reject(new Error('rimraf timed out after 30 seconds'));
+            }
+          }, 30000);
+
           rimraf.on('close', (code) => {
-            if (code === 0) {
-              resolve();
-            } else {
-              reject(new Error(`rimraf exited with code ${code}`));
+            if (!completed) {
+              completed = true;
+              clearTimeout(timeout);
+              if (code === 0) {
+                resolve();
+              } else {
+                reject(new Error(`rimraf exited with code ${code}`));
+              }
             }
           });
 
           rimraf.on('error', (error) => {
-            reject(error);
+            if (!completed) {
+              completed = true;
+              clearTimeout(timeout);
+              reject(error);
+            }
           });
         });
 
@@ -501,12 +550,24 @@ async function initializeLocalScripts(projectRoot) {
 
   // STEP 4: Install dependencies and build
   logger.log('[STEP 4] Installing dependencies...');
-  execSync('npm install', { cwd: localSkillsPath, stdio: 'inherit' });
-  logger.log('✓ [STEP 4] Dependencies installed');
+  try {
+    execSync('npm install', { cwd: localSkillsPath, stdio: 'inherit' });
+    logger.log('✓ [STEP 4] Dependencies installed');
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    logger.error('npm install failed:', errorMessage);
+    throw new Error('Failed to install dependencies');
+  }
 
   logger.log('[STEP 4] Building scripts...');
-  execSync('npm run build', { cwd: localSkillsPath, stdio: 'inherit' });
-  logger.log('✓ [STEP 4] Build completed');
+  try {
+    execSync('npm run build', { cwd: localSkillsPath, stdio: 'inherit' });
+    logger.log('✓ [STEP 4] Build completed');
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    logger.error('npm run build failed:', errorMessage);
+    throw new Error('Failed to build scripts');
+  }
 
   logger.log('✅ Local scripts initialized successfully (v' + pluginVersion + ')');
 }
@@ -552,7 +613,7 @@ async function initializeProject(hookInput) {
       logger.log(`✅ Browser Pilot: Updated project name: ${existingName} → ${projectName}`);
     } else {
       // Project exists with same name, just update lastUsed
-      config.lastUsed = new Date().toISOString();
+      config.lastUsed = getLocalTimestamp();
       saveSharedConfig(sharedConfig);
       logger.log(`✅ Browser Pilot: Project "${projectName}" ready (Port: ${config.port})`);
     }
@@ -580,7 +641,7 @@ async function initializeProject(hookInput) {
     rootPath: normalizedProjectRoot,  // Store normalized path
     port: port,
     outputDir: '.browser-pilot',
-    lastUsed: new Date().toISOString(),
+    lastUsed: getLocalTimestamp(),
     autoCleanup: false,
     autoRestore: true  // Auto-restore last visited URL (default: true)
   };
@@ -631,13 +692,15 @@ async function acquireLock(projectRoot) {
   const checkInterval = 500; // 500ms
   const startTime = Date.now();
 
+  const STALE_LOCK_TIMEOUT = 120000; // 2 minutes
+
   while (fs.existsSync(lockFile)) {
-    // Check if lock file is stale (older than 5 minutes)
+    // Check if lock file is stale (older than 2 minutes)
     try {
       const stats = fs.statSync(lockFile);
       const age = Date.now() - stats.mtimeMs;
-      if (age > 300000) {
-        logger.log('Removing stale lock file (age: ' + Math.floor(age / 1000) + 's)');
+      if (age > STALE_LOCK_TIMEOUT) {
+        logger.log(`Removing stale lock file (age: ${Math.floor(age / 1000)}s, limit: ${STALE_LOCK_TIMEOUT / 1000}s)`);
         fs.unlinkSync(lockFile);
         break;
       }
@@ -695,7 +758,11 @@ function releaseLock(lockFile) {
 
   process.on('SIGINT', () => cleanup('SIGINT'));
   process.on('SIGTERM', () => cleanup('SIGTERM'));
-  process.on('SIGHUP', () => cleanup('SIGHUP'));
+
+  // SIGHUP is Unix-only
+  if (process.platform !== 'win32') {
+    process.on('SIGHUP', () => cleanup('SIGHUP'));
+  }
 
   try {
     // Read hook input to check source

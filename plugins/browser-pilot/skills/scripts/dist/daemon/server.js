@@ -60,9 +60,13 @@ class DaemonServer {
     lastActivity = Date.now();
     startTime = Date.now();
     isShuttingDown = false;
+    shutdownPromise = null;
     mapManager = null;
     pendingNetworkRequests = new Set();
     mapGenerationInProgress = false;
+    activeSockets = new Set();
+    initialUrl;
+    MAX_MESSAGE_SIZE = 10 * 1024 * 1024; // 10MB
     constructor() {
         this.outputDir = (0, config_1.getOutputDir)();
         this.socketPath = this.getSocketPath();
@@ -92,6 +96,8 @@ class DaemonServer {
         logger_1.logger.enableFileLogging(logFile);
         logger_1.logger.info('🚀 Browser Pilot Daemon starting...');
         logger_1.logger.info(`Log file: ${logFile}`);
+        // Store initial URL from environment
+        this.initialUrl = process.env.BP_INITIAL_URL;
         // Check if already running
         if (this.isAlreadyRunning()) {
             throw new protocol_1.IPCError('Daemon already running', protocol_1.IPCErrorCodes.DAEMON_ALREADY_RUNNING);
@@ -110,12 +116,10 @@ class DaemonServer {
         }
         catch (_error) {
             // If no browser running, launch new one
-            const initialUrl = process.env.BP_INITIAL_URL;
-            if (initialUrl) {
-                logger_1.logger.info(`Launching new Chrome instance with initial URL: ${initialUrl}`);
-                await this.browser.launch(initialUrl);
-                // Clear environment variable after use
-                delete process.env.BP_INITIAL_URL;
+            if (this.initialUrl) {
+                logger_1.logger.info(`Launching new Chrome instance with initial URL: ${this.initialUrl}`);
+                await this.browser.launch(this.initialUrl);
+                this.initialUrl = undefined; // Clear after use
             }
             else {
                 logger_1.logger.info('Launching new Chrome instance...');
@@ -141,6 +145,11 @@ class DaemonServer {
         // Handle server errors
         this.server.on('error', (error) => {
             logger_1.logger.error('Server error', error);
+            // For EADDRINUSE, exit immediately to allow DaemonManager retry logic
+            if ('code' in error && error.code === 'EADDRINUSE') {
+                logger_1.logger.error('Address already in use. Exiting for retry...');
+                process.exit(1);
+            }
             this.shutdown();
         });
         // Setup graceful shutdown
@@ -420,7 +429,7 @@ class DaemonServer {
             return false;
         }
         try {
-            const pidStr = require('fs').readFileSync(this.pidPath, 'utf-8');
+            const pidStr = (0, fs_1.readFileSync)(this.pidPath, 'utf-8');
             const pid = parseInt(pidStr, 10);
             // Check if process with this PID exists
             process.kill(pid, 0); // Signal 0 checks existence without killing
@@ -463,9 +472,17 @@ class DaemonServer {
      */
     handleConnection(socket) {
         logger_1.logger.debug('🔗 Client connected');
+        // Track active socket
+        this.activeSockets.add(socket);
         let buffer = '';
         socket.on('data', async (data) => {
             buffer += data.toString();
+            // Check buffer size to prevent memory exhaustion
+            if (buffer.length > this.MAX_MESSAGE_SIZE) {
+                logger_1.logger.error('Message size exceeds limit, closing connection');
+                socket.destroy();
+                return;
+            }
             // Process complete JSON messages (delimited by newline)
             const messages = buffer.split('\n');
             buffer = messages.pop() || ''; // Keep incomplete message in buffer
@@ -474,6 +491,10 @@ class DaemonServer {
                     continue;
                 try {
                     const request = JSON.parse(message);
+                    // Validate request structure
+                    if (!request.id || !request.command) {
+                        throw new Error('Invalid request structure: missing id or command');
+                    }
                     const response = await this.handleRequest(request);
                     socket.write(JSON.stringify(response) + '\n');
                 }
@@ -489,9 +510,11 @@ class DaemonServer {
         });
         socket.on('end', () => {
             logger_1.logger.info('Client disconnected');
+            this.activeSockets.delete(socket);
         });
         socket.on('error', (error) => {
             logger_1.logger.error('Socket error', error);
+            this.activeSockets.delete(socket);
         });
     }
     /**
@@ -625,6 +648,17 @@ class DaemonServer {
      * Graceful shutdown
      */
     async shutdown() {
+        // Return existing shutdown promise if already shutting down
+        if (this.shutdownPromise) {
+            return this.shutdownPromise;
+        }
+        this.shutdownPromise = this._doShutdown();
+        return this.shutdownPromise;
+    }
+    /**
+     * Internal shutdown implementation
+     */
+    async _doShutdown() {
         if (this.isShuttingDown)
             return;
         this.isShuttingDown = true;
@@ -645,6 +679,20 @@ class DaemonServer {
             catch (error) {
                 logger_1.logger.error('Error closing browser', error);
             }
+        }
+        // Force close all active socket connections
+        if (this.activeSockets.size > 0) {
+            logger_1.logger.info(`Closing ${this.activeSockets.size} active socket connection(s)...`);
+            for (const socket of this.activeSockets) {
+                try {
+                    socket.destroy();
+                }
+                catch (error) {
+                    logger_1.logger.error('Error destroying socket', error);
+                }
+            }
+            this.activeSockets.clear();
+            logger_1.logger.info('All socket connections closed');
         }
         // Close IPC server (wait for all connections to close with timeout)
         if (this.server) {
@@ -719,8 +767,7 @@ class DaemonServer {
                 // Fallback: Mark as COMPLETED so next SessionStart knows shutdown succeeded
                 // Even if file can't be deleted (Windows file lock), marking it prevents force-kill attempt
                 try {
-                    const { writeFileSync } = require('fs');
-                    writeFileSync(shutdownFlagPath, `COMPLETED:${process.pid}`, 'utf-8');
+                    (0, fs_1.writeFileSync)(shutdownFlagPath, `COMPLETED:${process.pid}`, 'utf-8');
                     logger_1.logger.info('Marked shutdown flag as COMPLETED (deletion failed due to file lock)');
                 }
                 catch (_writeError) {

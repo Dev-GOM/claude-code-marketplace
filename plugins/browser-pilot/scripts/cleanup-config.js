@@ -11,11 +11,26 @@ const path = require('path');
 const { createLogger } = require('./logger');
 const processUtils = require('./process-utils');
 
-// Get project name early for logging (from environment variable if available)
-const projectName = process.env.CLAUDE_PROJECT_DIR ? path.basename(process.env.CLAUDE_PROJECT_DIR) : null;
+// Get hookInput early to determine project name
+let hookInput = null;
+try {
+  if (process.argv[2]) {
+    hookInput = JSON.parse(process.argv[2]);
+  }
+} catch (error) {
+  // Invalid JSON, will use environment variable
+}
 
-// Create logger instance with project name
-const logger = createLogger('cleanup-log.txt', 'Browser Pilot Cleanup Log', projectName);
+// Get project name early for logging
+let projectName = null;
+if (process.env.CLAUDE_PROJECT_DIR) {
+  projectName = path.basename(process.env.CLAUDE_PROJECT_DIR);
+} else if (hookInput && hookInput.cwd) {
+  projectName = path.basename(hookInput.cwd);
+}
+
+// Create logger instance with project name (or 'unknown' if not available)
+const logger = createLogger('cleanup-log.txt', 'Browser Pilot Cleanup Log', projectName || 'unknown');
 
 /**
  * Get project root from environment variable or hook input

@@ -7,18 +7,32 @@ export declare class DaemonManager {
     private outputDir;
     private pidPath;
     private socketPath;
+    private cachedPid;
+    private readonly PID_CACHE_TTL;
     constructor();
     /**
      * Get socket path (platform-specific, project-unique)
      */
     private getSocketPath;
     /**
-     * Start daemon process
+     * Start daemon process with retry and port fallback
      */
     start(options?: {
         verbose?: boolean;
         initialUrl?: string;
     }): Promise<void>;
+    /**
+     * Change port automatically to find available port
+     */
+    private changePortAutomatically;
+    /**
+     * Find available port starting from base + 1
+     */
+    private findAvailablePort;
+    /**
+     * Check if port is available
+     */
+    private isPortAvailable;
     /**
      * Stop daemon process
      */
@@ -43,7 +57,7 @@ export declare class DaemonManager {
      */
     isRunning(): boolean;
     /**
-     * Get daemon PID from PID file
+     * Get daemon PID from PID file (with caching)
      */
     private getPid;
     /**
