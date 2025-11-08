@@ -15,6 +15,5 @@
     "fixme",
     "comments",
     "tracking"
-  ],
-  "hooks": "./hooks/hooks.json"
+  ]
 }

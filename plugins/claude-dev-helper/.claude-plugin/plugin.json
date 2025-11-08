@@ -18,6 +18,5 @@
     "hooks",
     "workflow",
     "inline-diff"
-  ],
-  "hooks": "./hooks/hooks.json"
+  ]
 }

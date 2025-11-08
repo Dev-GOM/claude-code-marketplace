@@ -16,6 +16,5 @@
     "bug-detection",
     "code-quality",
     "ai-assistant"
-  ],
-  "hooks": "./hooks/hooks.json"
+  ]
 }
