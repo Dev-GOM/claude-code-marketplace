@@ -15,6 +15,5 @@
     "quality",
     "monitoring",
     "refactoring"
-  ],
-  "hooks": "./hooks/hooks.json"
+  ]
 }

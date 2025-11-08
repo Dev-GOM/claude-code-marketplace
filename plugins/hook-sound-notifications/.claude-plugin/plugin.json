@@ -16,6 +16,5 @@
     "hooks",
     "feedback",
     "volume-control"
-  ],
-  "hooks": "./hooks/hooks.json"
+  ]
 }

@@ -15,6 +15,5 @@
     "tracking",
     "summary",
     "files"
-  ],
-  "hooks": "./hooks/hooks.json"
+  ]
 }
