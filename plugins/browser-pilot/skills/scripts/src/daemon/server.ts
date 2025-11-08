@@ -5,7 +5,7 @@
 
 import { createServer, Server, Socket } from 'net';
 import { join, basename } from 'path';
-import { existsSync, unlinkSync, writeFileSync } from 'fs';
+import { existsSync, unlinkSync, writeFileSync, readFileSync } from 'fs';
 import { ChromeBrowser } from '../cdp/browser';
 import { getOutputDir, loadSharedConfig } from '../cdp/config';
 import { RuntimeEvaluateResult } from '../cdp/actions/helpers';
@@ -36,9 +36,13 @@ export class DaemonServer {
   private lastActivity: number = Date.now();
   private startTime: number = Date.now();
   private isShuttingDown: boolean = false;
+  private shutdownPromise: Promise<void> | null = null;
   private mapManager: MapManager | null = null;
   private pendingNetworkRequests: Set<string> = new Set();
   private mapGenerationInProgress: boolean = false;
+  private activeSockets: Set<Socket> = new Set();
+  private initialUrl: string | undefined;
+  private readonly MAX_MESSAGE_SIZE = 10 * 1024 * 1024; // 10MB
 
   constructor() {
     this.outputDir = getOutputDir();
@@ -71,6 +75,9 @@ export class DaemonServer {
     logger.info('🚀 Browser Pilot Daemon starting...');
     logger.info(`Log file: ${logFile}`);
 
+    // Store initial URL from environment
+    this.initialUrl = process.env.BP_INITIAL_URL;
+
     // Check if already running
     if (this.isAlreadyRunning()) {
       throw new IPCError('Daemon already running', IPCErrorCodes.DAEMON_ALREADY_RUNNING);
@@ -91,12 +98,10 @@ export class DaemonServer {
       logger.info('Connected to existing Chrome instance');
     } catch (_error) {
       // If no browser running, launch new one
-      const initialUrl = process.env.BP_INITIAL_URL;
-      if (initialUrl) {
-        logger.info(`Launching new Chrome instance with initial URL: ${initialUrl}`);
-        await this.browser.launch(initialUrl);
-        // Clear environment variable after use
-        delete process.env.BP_INITIAL_URL;
+      if (this.initialUrl) {
+        logger.info(`Launching new Chrome instance with initial URL: ${this.initialUrl}`);
+        await this.browser.launch(this.initialUrl);
+        this.initialUrl = undefined; // Clear after use
       } else {
         logger.info('Launching new Chrome instance...');
         await this.browser.launch();
@@ -127,6 +132,13 @@ export class DaemonServer {
     // Handle server errors
     this.server.on('error', (error) => {
       logger.error('Server error', error);
+
+      // For EADDRINUSE, exit immediately to allow DaemonManager retry logic
+      if ('code' in error && error.code === 'EADDRINUSE') {
+        logger.error('Address already in use. Exiting for retry...');
+        process.exit(1);
+      }
+
       this.shutdown();
     });
 
@@ -455,7 +467,7 @@ export class DaemonServer {
     }
 
     try {
-      const pidStr = require('fs').readFileSync(this.pidPath, 'utf-8');
+      const pidStr = readFileSync(this.pidPath, 'utf-8');
       const pid = parseInt(pidStr, 10);
 
       // Check if process with this PID exists
@@ -504,10 +516,20 @@ export class DaemonServer {
   private handleConnection(socket: Socket): void {
     logger.debug('🔗 Client connected');
 
+    // Track active socket
+    this.activeSockets.add(socket);
+
     let buffer = '';
 
     socket.on('data', async (data) => {
       buffer += data.toString();
+
+      // Check buffer size to prevent memory exhaustion
+      if (buffer.length > this.MAX_MESSAGE_SIZE) {
+        logger.error('Message size exceeds limit, closing connection');
+        socket.destroy();
+        return;
+      }
 
       // Process complete JSON messages (delimited by newline)
       const messages = buffer.split('\n');
@@ -518,6 +540,12 @@ export class DaemonServer {
 
         try {
           const request: IPCRequest = JSON.parse(message);
+
+          // Validate request structure
+          if (!request.id || !request.command) {
+            throw new Error('Invalid request structure: missing id or command');
+          }
+
           const response = await this.handleRequest(request);
           socket.write(JSON.stringify(response) + '\n');
         } catch (error) {
@@ -533,10 +561,12 @@ export class DaemonServer {
 
     socket.on('end', () => {
       logger.info('Client disconnected');
+      this.activeSockets.delete(socket);
     });
 
     socket.on('error', (error) => {
       logger.error('Socket error', error);
+      this.activeSockets.delete(socket);
     });
   }
 
@@ -686,6 +716,19 @@ export class DaemonServer {
    * Graceful shutdown
    */
   async shutdown(): Promise<void> {
+    // Return existing shutdown promise if already shutting down
+    if (this.shutdownPromise) {
+      return this.shutdownPromise;
+    }
+
+    this.shutdownPromise = this._doShutdown();
+    return this.shutdownPromise;
+  }
+
+  /**
+   * Internal shutdown implementation
+   */
+  private async _doShutdown(): Promise<void> {
     if (this.isShuttingDown) return;
     this.isShuttingDown = true;
 
@@ -708,6 +751,20 @@ export class DaemonServer {
       } catch (error) {
         logger.error('Error closing browser', error);
       }
+    }
+
+    // Force close all active socket connections
+    if (this.activeSockets.size > 0) {
+      logger.info(`Closing ${this.activeSockets.size} active socket connection(s)...`);
+      for (const socket of this.activeSockets) {
+        try {
+          socket.destroy();
+        } catch (error) {
+          logger.error('Error destroying socket', error);
+        }
+      }
+      this.activeSockets.clear();
+      logger.info('All socket connections closed');
     }
 
     // Close IPC server (wait for all connections to close with timeout)
@@ -786,7 +843,6 @@ export class DaemonServer {
         // Fallback: Mark as COMPLETED so next SessionStart knows shutdown succeeded
         // Even if file can't be deleted (Windows file lock), marking it prevents force-kill attempt
         try {
-          const { writeFileSync } = require('fs');
           writeFileSync(shutdownFlagPath, `COMPLETED:${process.pid}`, 'utf-8');
           logger.info('Marked shutdown flag as COMPLETED (deletion failed due to file lock)');
         } catch (_writeError) {

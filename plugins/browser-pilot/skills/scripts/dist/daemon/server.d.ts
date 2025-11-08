@@ -13,9 +13,13 @@ export declare class DaemonServer {
     private lastActivity;
     private startTime;
     private isShuttingDown;
+    private shutdownPromise;
     private mapManager;
     private pendingNetworkRequests;
     private mapGenerationInProgress;
+    private activeSockets;
+    private initialUrl;
+    private readonly MAX_MESSAGE_SIZE;
     constructor();
     /**
      * Get socket path (platform-specific, project-unique)
@@ -70,6 +74,10 @@ export declare class DaemonServer {
      * Graceful shutdown
      */
     shutdown(): Promise<void>;
+    /**
+     * Internal shutdown implementation
+     */
+    private _doShutdown;
     /**
      * Get current browser instance (for testing)
      */

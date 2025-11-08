@@ -3,20 +3,57 @@
  * Daemon Process Manager
  * Handles starting, stopping, and checking status of the Browser Pilot Daemon
  */
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DaemonManager = void 0;
 const child_process_1 = require("child_process");
 const path_1 = require("path");
 const fs_1 = require("fs");
+const net = __importStar(require("net"));
 const config_1 = require("../cdp/config");
 const client_1 = require("./client");
 const protocol_1 = require("./protocol");
 const logger_1 = require("../utils/logger");
+const timestamp_1 = require("../utils/timestamp");
 const constants_1 = require("../constants");
 class DaemonManager {
     outputDir;
     pidPath;
     socketPath;
+    cachedPid = null;
+    PID_CACHE_TTL = 1000; // 1 second
     constructor() {
         this.outputDir = (0, config_1.getOutputDir)();
         this.pidPath = (0, path_1.join)(this.outputDir, protocol_1.PID_FILENAME);
@@ -37,7 +74,7 @@ class DaemonManager {
         }
     }
     /**
-     * Start daemon process
+     * Start daemon process with retry and port fallback
      */
     async start(options = {}) {
         const { verbose = true, initialUrl } = options;
@@ -56,28 +93,168 @@ class DaemonManager {
         if (!(0, fs_1.existsSync)(serverPath)) {
             throw new Error(`Daemon server not found at ${serverPath}. Did you run 'npm run build'?`);
         }
-        // Prepare environment variables
-        const env = { ...process.env };
-        if (initialUrl) {
-            env.BP_INITIAL_URL = initialUrl;
-            if (verbose) {
-                logger_1.logger.info(`Setting initial URL: ${initialUrl}`);
+        // Try starting with retry logic
+        const maxRetries = 2;
+        let lastError = null;
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+            try {
+                // Prepare environment variables
+                const env = { ...process.env };
+                if (initialUrl) {
+                    env.BP_INITIAL_URL = initialUrl;
+                    if (verbose && attempt === 1) {
+                        logger_1.logger.info(`Setting initial URL: ${initialUrl}`);
+                    }
+                }
+                // Spawn daemon as detached process
+                const daemon = (0, child_process_1.spawn)(process.execPath, [serverPath], {
+                    detached: true,
+                    stdio: 'ignore', // Don't inherit stdio
+                    cwd: process.cwd(),
+                    env // Pass environment variables
+                });
+                // Detach the process so it continues running when parent exits
+                daemon.unref();
+                // Wait a bit for daemon to start
+                await this.waitForDaemon(constants_1.DAEMON.IPC_TIMEOUT);
+                if (verbose) {
+                    console.log('✓ Daemon started successfully');
+                }
+                return; // Success!
+            }
+            catch (error) {
+                lastError = error instanceof Error ? error : new Error(String(error));
+                if (verbose) {
+                    console.log(`⚠️  Attempt ${attempt}/${maxRetries} failed: ${lastError.message}`);
+                }
+                // Stop any partially started daemon
+                if (this.isRunning()) {
+                    if (verbose) {
+                        console.log('🛑 Stopping partially started daemon...');
+                    }
+                    try {
+                        await this.stop({ verbose: false, force: true });
+                    }
+                    catch (stopError) {
+                        const errorMessage = stopError instanceof Error ? stopError.message : String(stopError);
+                        logger_1.logger.warn(`Failed to stop partially started daemon: ${errorMessage}`);
+                        // Continue to next retry
+                    }
+                }
+                // On last retry, try changing port
+                if (attempt === maxRetries) {
+                    if (verbose) {
+                        console.log('🔄 Attempting automatic port change...');
+                    }
+                    try {
+                        await this.changePortAutomatically(verbose);
+                        // One more attempt with new port
+                        if (verbose) {
+                            console.log('🚀 Retrying with new port...');
+                        }
+                        const env = { ...process.env };
+                        if (initialUrl) {
+                            env.BP_INITIAL_URL = initialUrl;
+                        }
+                        const daemon = (0, child_process_1.spawn)(process.execPath, [serverPath], {
+                            detached: true,
+                            stdio: 'ignore',
+                            cwd: process.cwd(),
+                            env
+                        });
+                        daemon.unref();
+                        await this.waitForDaemon(constants_1.DAEMON.IPC_TIMEOUT);
+                        if (verbose) {
+                            console.log('✓ Daemon started successfully with new port');
+                        }
+                        return; // Success with new port!
+                    }
+                    catch (portChangeError) {
+                        if (verbose) {
+                            console.log(`⚠️  Port change also failed: ${portChangeError.message}`);
+                        }
+                    }
+                }
+                // Wait a bit before retrying
+                if (attempt < maxRetries) {
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
             }
         }
-        // Spawn daemon as detached process
-        const daemon = (0, child_process_1.spawn)(process.execPath, [serverPath], {
-            detached: true,
-            stdio: 'ignore', // Don't inherit stdio
-            cwd: process.cwd(),
-            env // Pass environment variables
-        });
-        // Detach the process so it continues running when parent exits
-        daemon.unref();
-        // Wait a bit for daemon to start
-        await this.waitForDaemon(constants_1.DAEMON.IPC_TIMEOUT);
-        if (verbose) {
-            console.log('✓ Daemon started successfully');
+        // All retries failed
+        throw new Error(`Failed to start daemon after ${maxRetries} attempts. Last error: ${lastError?.message || 'Unknown'}`);
+    }
+    /**
+     * Change port automatically to find available port
+     */
+    async changePortAutomatically(verbose) {
+        const projectRoot = process.env.CLAUDE_PROJECT_DIR || process.cwd();
+        const projectName = (0, path_1.basename)(projectRoot);
+        const config = (0, config_1.loadSharedConfig)();
+        const projectConfig = config.projects[projectName];
+        if (!projectConfig) {
+            throw new Error('Project configuration not found');
         }
+        const oldPort = projectConfig.port;
+        const newPort = await this.findAvailablePort(oldPort);
+        if (verbose) {
+            console.log(`📍 Changing port: ${oldPort} → ${newPort}`);
+        }
+        projectConfig.port = newPort;
+        projectConfig.lastUsed = (0, timestamp_1.getLocalTimestamp)();
+        (0, config_1.saveSharedConfig)(config);
+    }
+    /**
+     * Find available port starting from base + 1
+     */
+    async findAvailablePort(basePort) {
+        const MAX_PORTS = 100;
+        const timeout = 10000; // 10 seconds total timeout
+        const startTime = Date.now();
+        for (let port = basePort + 1; port < basePort + MAX_PORTS; port++) {
+            if (Date.now() - startTime > timeout) {
+                throw new Error('Timeout while searching for available port');
+            }
+            if (await this.isPortAvailable(port)) {
+                return port;
+            }
+        }
+        throw new Error(`No available ports found in range ${basePort + 1}-${basePort + MAX_PORTS}`);
+    }
+    /**
+     * Check if port is available
+     */
+    async isPortAvailable(port) {
+        return new Promise((resolve) => {
+            const server = net.createServer();
+            let resolved = false;
+            const cleanup = () => {
+                if (!resolved) {
+                    resolved = true;
+                    try {
+                        server.close();
+                    }
+                    catch (error) {
+                        // Ignore close errors
+                    }
+                }
+            };
+            const timeout = setTimeout(() => {
+                cleanup();
+                resolve(false); // Timeout = not available
+            }, 2000);
+            server.once('error', () => {
+                clearTimeout(timeout);
+                cleanup();
+                resolve(false);
+            });
+            server.once('listening', () => {
+                clearTimeout(timeout);
+                cleanup();
+                resolve(true);
+            });
+            server.listen(port, '127.0.0.1');
+        });
     }
     /**
      * Stop daemon process
@@ -205,7 +382,8 @@ class DaemonManager {
             return true;
         }
         catch (_error) {
-            // Process doesn't exist, clean up stale PID file
+            // Process doesn't exist, clean up stale PID file and invalidate cache
+            this.cachedPid = null;
             if ((0, fs_1.existsSync)(this.pidPath)) {
                 (0, fs_1.unlinkSync)(this.pidPath);
             }
@@ -213,18 +391,26 @@ class DaemonManager {
         }
     }
     /**
-     * Get daemon PID from PID file
+     * Get daemon PID from PID file (with caching)
      */
     getPid() {
+        // Use cached value if available and fresh
+        if (this.cachedPid && Date.now() - this.cachedPid.timestamp < this.PID_CACHE_TTL) {
+            return this.cachedPid.pid;
+        }
         if (!(0, fs_1.existsSync)(this.pidPath)) {
+            this.cachedPid = { pid: null, timestamp: Date.now() };
             return null;
         }
         try {
             const pidStr = (0, fs_1.readFileSync)(this.pidPath, 'utf-8').trim();
             const pid = parseInt(pidStr, 10);
-            return isNaN(pid) ? null : pid;
+            const result = isNaN(pid) ? null : pid;
+            this.cachedPid = { pid: result, timestamp: Date.now() };
+            return result;
         }
         catch (_error) {
+            this.cachedPid = { pid: null, timestamp: Date.now() };
             return null;
         }
     }

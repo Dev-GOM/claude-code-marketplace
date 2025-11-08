@@ -3,10 +3,11 @@
  * Handles starting, stopping, and checking status of the Browser Pilot Daemon
  */
 
-import { spawn, ChildProcess } from 'child_process';
-import { join } from 'path';
+import { spawn, ChildProcess, execSync } from 'child_process';
+import { join, basename } from 'path';
 import { existsSync, readFileSync, unlinkSync } from 'fs';
-import { getOutputDir } from '../cdp/config';
+import * as net from 'net';
+import { getOutputDir, loadSharedConfig, saveSharedConfig } from '../cdp/config';
 import { IPCClient } from './client';
 import {
   PID_FILENAME,
@@ -20,12 +21,15 @@ import {
   getProjectSocketName
 } from './protocol';
 import { logger } from '../utils/logger';
+import { getLocalTimestamp } from '../utils/timestamp';
 import { TIMING, DAEMON } from '../constants';
 
 export class DaemonManager {
   private outputDir: string;
   private pidPath: string;
   private socketPath: string;
+  private cachedPid: { pid: number | null; timestamp: number } | null = null;
+  private readonly PID_CACHE_TTL = 1000; // 1 second
 
   constructor() {
     this.outputDir = getOutputDir();
@@ -48,7 +52,7 @@ export class DaemonManager {
   }
 
   /**
-   * Start daemon process
+   * Start daemon process with retry and port fallback
    */
   async start(options: { verbose?: boolean; initialUrl?: string } = {}): Promise<void> {
     const { verbose = true, initialUrl } = options;
@@ -72,32 +76,194 @@ export class DaemonManager {
       throw new Error(`Daemon server not found at ${serverPath}. Did you run 'npm run build'?`);
     }
 
-    // Prepare environment variables
-    const env = { ...process.env };
-    if (initialUrl) {
-      env.BP_INITIAL_URL = initialUrl;
-      if (verbose) {
-        logger.info(`Setting initial URL: ${initialUrl}`);
+    // Try starting with retry logic
+    const maxRetries = 2;
+    let lastError: Error | null = null;
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        // Prepare environment variables
+        const env = { ...process.env };
+        if (initialUrl) {
+          env.BP_INITIAL_URL = initialUrl;
+          if (verbose && attempt === 1) {
+            logger.info(`Setting initial URL: ${initialUrl}`);
+          }
+        }
+
+        // Spawn daemon as detached process
+        const daemon: ChildProcess = spawn(process.execPath, [serverPath], {
+          detached: true,
+          stdio: 'ignore', // Don't inherit stdio
+          cwd: process.cwd(),
+          env // Pass environment variables
+        });
+
+        // Detach the process so it continues running when parent exits
+        daemon.unref();
+
+        // Wait a bit for daemon to start
+        await this.waitForDaemon(DAEMON.IPC_TIMEOUT);
+
+        if (verbose) {
+          console.log('✓ Daemon started successfully');
+        }
+        return; // Success!
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error(String(error));
+
+        if (verbose) {
+          console.log(`⚠️  Attempt ${attempt}/${maxRetries} failed: ${lastError.message}`);
+        }
+
+        // Stop any partially started daemon
+        if (this.isRunning()) {
+          if (verbose) {
+            console.log('🛑 Stopping partially started daemon...');
+          }
+          try {
+            await this.stop({ verbose: false, force: true });
+          } catch (stopError) {
+            const errorMessage = stopError instanceof Error ? stopError.message : String(stopError);
+            logger.warn(`Failed to stop partially started daemon: ${errorMessage}`);
+            // Continue to next retry
+          }
+        }
+
+        // On last retry, try changing port
+        if (attempt === maxRetries) {
+          if (verbose) {
+            console.log('🔄 Attempting automatic port change...');
+          }
+
+          try {
+            await this.changePortAutomatically(verbose);
+
+            // One more attempt with new port
+            if (verbose) {
+              console.log('🚀 Retrying with new port...');
+            }
+
+            const env = { ...process.env };
+            if (initialUrl) {
+              env.BP_INITIAL_URL = initialUrl;
+            }
+
+            const daemon: ChildProcess = spawn(process.execPath, [serverPath], {
+              detached: true,
+              stdio: 'ignore',
+              cwd: process.cwd(),
+              env
+            });
+
+            daemon.unref();
+            await this.waitForDaemon(DAEMON.IPC_TIMEOUT);
+
+            if (verbose) {
+              console.log('✓ Daemon started successfully with new port');
+            }
+            return; // Success with new port!
+          } catch (portChangeError) {
+            if (verbose) {
+              console.log(`⚠️  Port change also failed: ${(portChangeError as Error).message}`);
+            }
+          }
+        }
+
+        // Wait a bit before retrying
+        if (attempt < maxRetries) {
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
       }
     }
 
-    // Spawn daemon as detached process
-    const daemon: ChildProcess = spawn(process.execPath, [serverPath], {
-      detached: true,
-      stdio: 'ignore', // Don't inherit stdio
-      cwd: process.cwd(),
-      env // Pass environment variables
-    });
+    // All retries failed
+    throw new Error(`Failed to start daemon after ${maxRetries} attempts. Last error: ${lastError?.message || 'Unknown'}`);
+  }
 
-    // Detach the process so it continues running when parent exits
-    daemon.unref();
+  /**
+   * Change port automatically to find available port
+   */
+  private async changePortAutomatically(verbose: boolean): Promise<void> {
+    const projectRoot = process.env.CLAUDE_PROJECT_DIR || process.cwd();
+    const projectName = basename(projectRoot);
+    const config = loadSharedConfig();
+    const projectConfig = config.projects[projectName];
 
-    // Wait a bit for daemon to start
-    await this.waitForDaemon(DAEMON.IPC_TIMEOUT);
+    if (!projectConfig) {
+      throw new Error('Project configuration not found');
+    }
+
+    const oldPort = projectConfig.port;
+    const newPort = await this.findAvailablePort(oldPort);
 
     if (verbose) {
-      console.log('✓ Daemon started successfully');
+      console.log(`📍 Changing port: ${oldPort} → ${newPort}`);
     }
+
+    projectConfig.port = newPort;
+    projectConfig.lastUsed = getLocalTimestamp();
+    saveSharedConfig(config);
+  }
+
+  /**
+   * Find available port starting from base + 1
+   */
+  private async findAvailablePort(basePort: number): Promise<number> {
+    const MAX_PORTS = 100;
+    const timeout = 10000; // 10 seconds total timeout
+    const startTime = Date.now();
+
+    for (let port = basePort + 1; port < basePort + MAX_PORTS; port++) {
+      if (Date.now() - startTime > timeout) {
+        throw new Error('Timeout while searching for available port');
+      }
+
+      if (await this.isPortAvailable(port)) {
+        return port;
+      }
+    }
+    throw new Error(`No available ports found in range ${basePort + 1}-${basePort + MAX_PORTS}`);
+  }
+
+  /**
+   * Check if port is available
+   */
+  private async isPortAvailable(port: number): Promise<boolean> {
+    return new Promise((resolve) => {
+      const server = net.createServer();
+      let resolved = false;
+
+      const cleanup = () => {
+        if (!resolved) {
+          resolved = true;
+          try {
+            server.close();
+          } catch (error) {
+            // Ignore close errors
+          }
+        }
+      };
+
+      const timeout = setTimeout(() => {
+        cleanup();
+        resolve(false); // Timeout = not available
+      }, 2000);
+
+      server.once('error', () => {
+        clearTimeout(timeout);
+        cleanup();
+        resolve(false);
+      });
+
+      server.once('listening', () => {
+        clearTimeout(timeout);
+        cleanup();
+        resolve(true);
+      });
+
+      server.listen(port, '127.0.0.1');
+    });
   }
 
   /**
@@ -241,7 +407,8 @@ export class DaemonManager {
       process.kill(pid, 0);
       return true;
     } catch (_error) {
-      // Process doesn't exist, clean up stale PID file
+      // Process doesn't exist, clean up stale PID file and invalidate cache
+      this.cachedPid = null;
       if (existsSync(this.pidPath)) {
         unlinkSync(this.pidPath);
       }
@@ -250,18 +417,27 @@ export class DaemonManager {
   }
 
   /**
-   * Get daemon PID from PID file
+   * Get daemon PID from PID file (with caching)
    */
   private getPid(): number | null {
+    // Use cached value if available and fresh
+    if (this.cachedPid && Date.now() - this.cachedPid.timestamp < this.PID_CACHE_TTL) {
+      return this.cachedPid.pid;
+    }
+
     if (!existsSync(this.pidPath)) {
+      this.cachedPid = { pid: null, timestamp: Date.now() };
       return null;
     }
 
     try {
       const pidStr = readFileSync(this.pidPath, 'utf-8').trim();
       const pid = parseInt(pidStr, 10);
-      return isNaN(pid) ? null : pid;
+      const result = isNaN(pid) ? null : pid;
+      this.cachedPid = { pid: result, timestamp: Date.now() };
+      return result;
     } catch (_error) {
+      this.cachedPid = { pid: null, timestamp: Date.now() };
       return null;
     }
   }
