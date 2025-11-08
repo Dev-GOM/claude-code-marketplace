@@ -41,6 +41,7 @@ exports.DaemonManager = void 0;
 const child_process_1 = require("child_process");
 const path_1 = require("path");
 const fs_1 = require("fs");
+const promises_1 = require("fs/promises");
 const net = __importStar(require("net"));
 const config_1 = require("../cdp/config");
 const client_1 = require("./client");
@@ -79,7 +80,7 @@ class DaemonManager {
     async start(options = {}) {
         const { verbose = true, initialUrl } = options;
         // Check if already running
-        if (this.isRunning()) {
+        if (await this.isRunning()) {
             if (verbose) {
                 console.log('✓ Daemon is already running');
             }
@@ -128,7 +129,7 @@ class DaemonManager {
                     console.log(`⚠️  Attempt ${attempt}/${maxRetries} failed: ${lastError.message}`);
                 }
                 // Stop any partially started daemon
-                if (this.isRunning()) {
+                if (await this.isRunning()) {
                     if (verbose) {
                         console.log('🛑 Stopping partially started daemon...');
                     }
@@ -261,7 +262,7 @@ class DaemonManager {
      */
     async stop(options = {}) {
         const { verbose = true, force = false } = options;
-        if (!this.isRunning()) {
+        if (!(await this.isRunning())) {
             if (verbose) {
                 console.log('⚠️  Daemon is not running');
             }
@@ -290,7 +291,7 @@ class DaemonManager {
             }
         }
         // Force kill if graceful shutdown failed
-        const pid = this.getPid();
+        const pid = await this.getPid();
         if (pid) {
             try {
                 process.kill(pid, 'SIGTERM');
@@ -338,7 +339,7 @@ class DaemonManager {
      */
     async getStatus(options = {}) {
         const { verbose = true } = options;
-        if (!this.isRunning()) {
+        if (!(await this.isRunning())) {
             if (verbose) {
                 console.log('❌ Daemon is not running');
             }
@@ -371,8 +372,8 @@ class DaemonManager {
     /**
      * Check if daemon is running
      */
-    isRunning() {
-        const pid = this.getPid();
+    async isRunning() {
+        const pid = await this.getPid();
         if (!pid) {
             return false;
         }
@@ -391,9 +392,9 @@ class DaemonManager {
         }
     }
     /**
-     * Get daemon PID from PID file (with caching)
+     * Get daemon PID from PID file (with caching, async for non-blocking I/O)
      */
-    getPid() {
+    async getPid() {
         // Use cached value if available and fresh
         if (this.cachedPid && Date.now() - this.cachedPid.timestamp < this.PID_CACHE_TTL) {
             return this.cachedPid.pid;
@@ -403,8 +404,8 @@ class DaemonManager {
             return null;
         }
         try {
-            const pidStr = (0, fs_1.readFileSync)(this.pidPath, 'utf-8').trim();
-            const pid = parseInt(pidStr, 10);
+            const pidStr = await (0, promises_1.readFile)(this.pidPath, 'utf-8');
+            const pid = parseInt(pidStr.trim(), 10);
             const result = isNaN(pid) ? null : pid;
             this.cachedPid = { pid: result, timestamp: Date.now() };
             return result;
@@ -420,7 +421,7 @@ class DaemonManager {
     async waitForDaemon(timeout) {
         const startTime = Date.now();
         while (Date.now() - startTime < timeout) {
-            if (this.isRunning()) {
+            if (await this.isRunning()) {
                 // Also check if socket is available
                 if ((0, fs_1.existsSync)(this.socketPath) || process.platform === 'win32') {
                     return;
@@ -436,7 +437,7 @@ class DaemonManager {
     async waitForStop(timeout) {
         const startTime = Date.now();
         while (Date.now() - startTime < timeout) {
-            if (!this.isRunning()) {
+            if (!(await this.isRunning())) {
                 return;
             }
             await new Promise(resolve => setTimeout(resolve, constants_1.TIMING.POLLING_INTERVAL_FAST));
@@ -447,7 +448,7 @@ class DaemonManager {
      * Ensure daemon is running (auto-start if needed)
      */
     async ensureRunning(options = {}) {
-        if (!this.isRunning()) {
+        if (!(await this.isRunning())) {
             await this.start(options);
         }
     }

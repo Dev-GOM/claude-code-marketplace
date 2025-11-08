@@ -39,6 +39,13 @@ const logger = createLogger('init-log.txt', 'Browser Pilot Initialization Log', 
 
 /**
  * Get local timestamp string in format: YYYY-MM-DD HH:MM:SS
+ *
+ * NOTE: This function is duplicated from skills/scripts/src/utils/timestamp.ts
+ * Duplication is intentional because:
+ * - This is a Node.js hook script (plain JavaScript) executed directly by Claude Code
+ * - timestamp.ts is a TypeScript module that must be compiled before use
+ * - Hook scripts cannot import TypeScript modules or require compiled dist files
+ * - Keeping this lightweight function here avoids build dependencies for hooks
  */
 function getLocalTimestamp() {
   const now = new Date();
@@ -366,42 +373,35 @@ async function initializeLocalScripts(projectRoot) {
         logger.log('[STEP 1-a] Pre-cleanup: Removing dist and node_modules...');
 
         // Run npx rimraf as separate process and wait for completion
-        await new Promise((resolve, reject) => {
-          const rimraf = spawn('npx', ['rimraf', '.browser-pilot/skills/scripts/dist', '.browser-pilot/skills/scripts/node_modules'], {
-            cwd: projectRoot,
-            stdio: 'ignore'
-          });
+        const rimraf = spawn('npx', ['rimraf', '.browser-pilot/skills/scripts/dist', '.browser-pilot/skills/scripts/node_modules'], {
+          cwd: projectRoot,
+          stdio: 'ignore'
+        });
 
-          let completed = false;
-
-          const timeout = setTimeout(() => {
-            if (!completed) {
-              completed = true;
-              rimraf.kill('SIGTERM');
-              reject(new Error('rimraf timed out after 30 seconds'));
-            }
-          }, 30000);
-
+        // Create promises for execution and timeout
+        const executionPromise = new Promise((resolve, reject) => {
           rimraf.on('close', (code) => {
-            if (!completed) {
-              completed = true;
-              clearTimeout(timeout);
-              if (code === 0) {
-                resolve();
-              } else {
-                reject(new Error(`rimraf exited with code ${code}`));
-              }
+            if (code === 0) {
+              resolve();
+            } else {
+              reject(new Error(`rimraf exited with code ${code}`));
             }
           });
 
           rimraf.on('error', (error) => {
-            if (!completed) {
-              completed = true;
-              clearTimeout(timeout);
-              reject(error);
-            }
+            reject(error);
           });
         });
+
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => {
+            rimraf.kill('SIGTERM');
+            reject(new Error('rimraf timed out after 30 seconds'));
+          }, 30000);
+        });
+
+        // Race between execution and timeout
+        await Promise.race([executionPromise, timeoutPromise]);
 
         // Wait for file system to flush (especially important on Windows)
         await sleep(500);
@@ -556,7 +556,7 @@ async function initializeLocalScripts(projectRoot) {
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     logger.error('npm install failed:', errorMessage);
-    throw new Error('Failed to install dependencies');
+    throw new Error(`Failed to install dependencies: ${errorMessage}`);
   }
 
   logger.log('[STEP 4] Building scripts...');
@@ -566,7 +566,7 @@ async function initializeLocalScripts(projectRoot) {
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     logger.error('npm run build failed:', errorMessage);
-    throw new Error('Failed to build scripts');
+    throw new Error(`Failed to build scripts: ${errorMessage}`);
   }
 
   logger.log('✅ Local scripts initialized successfully (v' + pluginVersion + ')');

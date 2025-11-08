@@ -5,7 +5,8 @@
 
 import { spawn, ChildProcess, execSync } from 'child_process';
 import { join, basename } from 'path';
-import { existsSync, readFileSync, unlinkSync } from 'fs';
+import { existsSync, unlinkSync } from 'fs';
+import { readFile } from 'fs/promises';
 import * as net from 'net';
 import { getOutputDir, loadSharedConfig, saveSharedConfig } from '../cdp/config';
 import { IPCClient } from './client';
@@ -58,7 +59,7 @@ export class DaemonManager {
     const { verbose = true, initialUrl } = options;
 
     // Check if already running
-    if (this.isRunning()) {
+    if (await this.isRunning()) {
       if (verbose) {
         console.log('✓ Daemon is already running');
       }
@@ -117,7 +118,7 @@ export class DaemonManager {
         }
 
         // Stop any partially started daemon
-        if (this.isRunning()) {
+        if (await this.isRunning()) {
           if (verbose) {
             console.log('🛑 Stopping partially started daemon...');
           }
@@ -272,7 +273,7 @@ export class DaemonManager {
   async stop(options: { verbose?: boolean; force?: boolean } = {}): Promise<void> {
     const { verbose = true, force = false } = options;
 
-    if (!this.isRunning()) {
+    if (!(await this.isRunning())) {
       if (verbose) {
         console.log('⚠️  Daemon is not running');
       }
@@ -305,7 +306,7 @@ export class DaemonManager {
     }
 
     // Force kill if graceful shutdown failed
-    const pid = this.getPid();
+    const pid = await this.getPid();
     if (pid) {
       try {
         process.kill(pid, 'SIGTERM');
@@ -359,7 +360,7 @@ export class DaemonManager {
   async getStatus(options: { verbose?: boolean } = {}): Promise<DaemonState | null> {
     const { verbose = true } = options;
 
-    if (!this.isRunning()) {
+    if (!(await this.isRunning())) {
       if (verbose) {
         console.log('❌ Daemon is not running');
       }
@@ -396,8 +397,8 @@ export class DaemonManager {
   /**
    * Check if daemon is running
    */
-  isRunning(): boolean {
-    const pid = this.getPid();
+  async isRunning(): Promise<boolean> {
+    const pid = await this.getPid();
     if (!pid) {
       return false;
     }
@@ -417,9 +418,9 @@ export class DaemonManager {
   }
 
   /**
-   * Get daemon PID from PID file (with caching)
+   * Get daemon PID from PID file (with caching, async for non-blocking I/O)
    */
-  private getPid(): number | null {
+  private async getPid(): Promise<number | null> {
     // Use cached value if available and fresh
     if (this.cachedPid && Date.now() - this.cachedPid.timestamp < this.PID_CACHE_TTL) {
       return this.cachedPid.pid;
@@ -431,8 +432,8 @@ export class DaemonManager {
     }
 
     try {
-      const pidStr = readFileSync(this.pidPath, 'utf-8').trim();
-      const pid = parseInt(pidStr, 10);
+      const pidStr = await readFile(this.pidPath, 'utf-8');
+      const pid = parseInt(pidStr.trim(), 10);
       const result = isNaN(pid) ? null : pid;
       this.cachedPid = { pid: result, timestamp: Date.now() };
       return result;
@@ -449,7 +450,7 @@ export class DaemonManager {
     const startTime = Date.now();
 
     while (Date.now() - startTime < timeout) {
-      if (this.isRunning()) {
+      if (await this.isRunning()) {
         // Also check if socket is available
         if (existsSync(this.socketPath) || process.platform === 'win32') {
           return;
@@ -469,7 +470,7 @@ export class DaemonManager {
     const startTime = Date.now();
 
     while (Date.now() - startTime < timeout) {
-      if (!this.isRunning()) {
+      if (!(await this.isRunning())) {
         return;
       }
 
@@ -483,7 +484,7 @@ export class DaemonManager {
    * Ensure daemon is running (auto-start if needed)
    */
   async ensureRunning(options: { verbose?: boolean; initialUrl?: string } = {}): Promise<void> {
-    if (!this.isRunning()) {
+    if (!(await this.isRunning())) {
       await this.start(options);
     }
   }

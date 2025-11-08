@@ -2,7 +2,40 @@
 
 Dev GOM Plugins 마켓플레이스의 모든 주요 변경사항이 이 파일에 문서화됩니다.
 
-> **버전**: 2.16.0 | **최종 업데이트**: 2025-11-08
+> **버전**: 2.17.1 | **최종 업데이트**: 2025-11-09
+
+---
+
+## [2.17.1] - 2025-11-09
+
+### 변경됨
+- 🔧 **Browser Pilot v1.9.1**: 코드 품질 및 성능 개선
+  - **문서화**: `getLocalTimestamp` 함수 중복에 대한 포괄적인 주석 추가
+    - 함수가 `init-config.js` (JavaScript 훅)와 `timestamp.ts` (TypeScript 모듈) 양쪽에 존재
+    - 훅 스크립트는 TypeScript 모듈을 import할 수 없으므로 중복이 의도적임
+    - 경량 훅 스크립트의 빌드 의존성 방지
+  - **리팩토링**: 모던 `Promise.race` 패턴을 사용한 `rimraf` 타임아웃 처리 개선
+    - 복잡한 완료 플래그 로직을 더 깔끔한 Promise 기반 접근법으로 대체
+    - 실행 Promise와 타임아웃 Promise의 명확한 분리
+    - 코드 가독성 및 유지보수성 향상
+  - **에러 처리**: 원본 에러 컨텍스트를 보존하도록 npm 에러 메시지 개선
+    - 설치 에러에 원본 에러 메시지 포함: `Failed to install dependencies: ${errorMessage}`
+    - 빌드 에러에 원본 에러 메시지 포함: `Failed to build scripts: ${errorMessage}`
+    - npm 작업 실패 시 디버깅 용이성 향상
+  - **성능**: 동기 파일 I/O를 비동기 작업으로 변환
+    - `readFileSync`를 `fs/promises`의 비동기 `readFile`로 변경
+    - `getPid()` 및 `isRunning()` 메서드를 async로 변경
+    - 4개 파일의 12개 호출 지점을 `await` 사용으로 업데이트
+    - 이벤트 루프 블로킹 제거로 서버 응답성 향상
+    - PID 캐싱(1초 TTL) 유지로 실제 파일 I/O 최소화
+
+---
+
+## [2.17.0] - 2025-11-09
+
+### 변경됨
+- 🔧 **Browser Pilot v1.9.0**: 코드 리뷰 피드백 - 27개 이슈 해결
+  - 상세 내용은 v2.17.0 릴리즈 노트 참조
 
 ---
 

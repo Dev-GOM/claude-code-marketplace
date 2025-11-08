@@ -26,7 +26,8 @@ export async function executeViaDaemon(
     const manager = new DaemonManager();
 
     // If navigate command and daemon not running, pass initial URL
-    const initialUrl = (command === 'navigate' && !manager.isRunning() && params.url)
+    const isRunning = await manager.isRunning();
+    const initialUrl = (command === 'navigate' && !isRunning && params.url)
       ? params.url as string
       : undefined;
 

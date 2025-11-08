@@ -55,9 +55,9 @@ export declare class DaemonManager {
     /**
      * Check if daemon is running
      */
-    isRunning(): boolean;
+    isRunning(): Promise<boolean>;
     /**
-     * Get daemon PID from PID file (with caching)
+     * Get daemon PID from PID file (with caching, async for non-blocking I/O)
      */
     private getPid;
     /**

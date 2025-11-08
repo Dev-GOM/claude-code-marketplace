@@ -94,7 +94,7 @@ export function registerTabsCommands(program: Command) {
         console.log('✓ Browser closed');
 
         // Then stop daemon
-        if (daemonManager.isRunning()) {
+        if (await daemonManager.isRunning()) {
           await daemonManager.stop({ verbose: true });
           console.log('✓ Daemon stopped');
         }
@@ -103,7 +103,7 @@ export function registerTabsCommands(program: Command) {
       } catch (error) {
         // Try to stop daemon even if browser close failed
         try {
-          if (daemonManager.isRunning()) {
+          if (await daemonManager.isRunning()) {
             await daemonManager.stop({ verbose: true });
             console.log('✓ Daemon stopped');
           }
