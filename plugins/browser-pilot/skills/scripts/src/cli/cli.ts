@@ -23,6 +23,7 @@ import { registerAccessibilityCommands } from './commands/accessibility';
 import { registerDaemonCommands } from './commands/daemon';
 import { registerChainCommands } from './commands/chain';
 import { registerQueryCommands } from './commands/query';
+import { registerSystemCommands } from './commands/system';
 
 const program = new Command();
 
@@ -34,6 +35,7 @@ program
 
 // Register all command groups
 registerDaemonCommands(program); // Daemon management first
+registerSystemCommands(program); // System maintenance commands
 registerChainCommands(program); // Chain mode for sequential execution
 registerNavigationCommands(program);
 registerInteractionCommands(program);

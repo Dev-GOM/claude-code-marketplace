@@ -23,6 +23,7 @@ const accessibility_1 = require("./commands/accessibility");
 const daemon_1 = require("./commands/daemon");
 const chain_1 = require("./commands/chain");
 const query_1 = require("./commands/query");
+const system_1 = require("./commands/system");
 const program = new commander_1.Command();
 program
     .name('cdp-browser')
@@ -31,6 +32,7 @@ program
     .addHelpText('after', '\nTip: Use "<command> --help" to see detailed options for each command.\nExample: cdp-browser navigate --help');
 // Register all command groups
 (0, daemon_1.registerDaemonCommands)(program); // Daemon management first
+(0, system_1.registerSystemCommands)(program); // System maintenance commands
 (0, chain_1.registerChainCommands)(program); // Chain mode for sequential execution
 (0, navigation_1.registerNavigationCommands)(program);
 (0, interaction_1.registerInteractionCommands)(program);
