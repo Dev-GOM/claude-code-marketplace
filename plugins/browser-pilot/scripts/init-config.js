@@ -378,9 +378,11 @@ async function initializeLocalScripts(projectRoot) {
           stdio: 'ignore'
         });
 
+        let timeoutId;
         // Create promises for execution and timeout
         const executionPromise = new Promise((resolve, reject) => {
           rimraf.on('close', (code) => {
+            clearTimeout(timeoutId);
             if (code === 0) {
               resolve();
             } else {
@@ -389,12 +391,13 @@ async function initializeLocalScripts(projectRoot) {
           });
 
           rimraf.on('error', (error) => {
+            clearTimeout(timeoutId);
             reject(error);
           });
         });
 
         const timeoutPromise = new Promise((_, reject) => {
-          setTimeout(() => {
+          timeoutId = setTimeout(() => {
             rimraf.kill('SIGTERM');
             reject(new Error('rimraf timed out after 30 seconds'));
           }, 30000);

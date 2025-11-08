@@ -2,7 +2,17 @@
 
 All notable changes to the Dev GOM Plugins marketplace will be documented in this file.
 
-> **Version**: 2.17.1 | **Last Updated**: 2025-11-09
+> **Version**: 2.17.2 | **Last Updated**: 2025-11-09
+
+---
+
+## [2.17.2] - 2025-11-09
+
+### Fixed
+- 🐛 **Browser Pilot v1.9.2**: Promise.race Timeout Cleanup
+  - Fixed memory leak in rimraf timeout handling by adding `clearTimeout()`
+  - Timeout is now properly cleared when rimraf completes before timeout
+  - Prevents unnecessary timers from remaining in event loop
 
 ---
 
