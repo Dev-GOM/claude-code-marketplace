@@ -99,17 +99,23 @@ function sleep(ms) {
 
 /**
  * Get shared config file path
+ * Uses same path as config.ts to ensure consistency between hook and CLI
+ * Path: ~/.claude/plugins/marketplaces/dev-gom-plugins/plugins/blender-toolkit/skills/blender-config.json
  */
 function getSharedConfigPath() {
-  // Plugin root is provided by hook environment variable
-  const pluginRoot = process.env.CLAUDE_PLUGIN_ROOT;
-  if (!pluginRoot) {
-    logger.error('Error: CLAUDE_PLUGIN_ROOT not set');
-    logger.close();
-    process.exit(1);
-  }
-
-  return path.join(pluginRoot, 'skills', 'blender-toolkit-config.json');
+  const { homedir } = require('os');
+  const homeDir = homedir();
+  return path.join(
+    homeDir,
+    '.claude',
+    'plugins',
+    'marketplaces',
+    'dev-gom-plugins',
+    'plugins',
+    'blender-toolkit',
+    'skills',
+    'blender-config.json'
+  );
 }
 
 /**
