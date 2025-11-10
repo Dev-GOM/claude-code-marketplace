@@ -186,11 +186,80 @@ await workflow.run({
 .blender-toolkit/
 ├── animations/              # Downloaded Mixamo FBX files
 ├── skills/scripts/          # Local TypeScript scripts
+├── logs/                    # Log files (typescript.log, blender-addon.log, error.log)
 └── .gitignore
 
 Shared config:
 ~/.claude/plugins/marketplaces/dev-gom-plugins/plugins/blender-toolkit/skills/blender-config.json
 \`\`\`
+
+## Best Practices
+
+1. **🌟 Use Auto Bone Mapping with UI Confirmation**: Most reliable workflow for unknown rigs
+   - Recommended: \`boneMapping: 'auto', skipConfirmation: false\`
+   - Review auto-generated mappings before applying
+   - Edit incorrect mappings directly in Blender UI
+
+2. **Check Mapping Quality**: Always review the quality report
+   - Excellent (8-9 critical bones): Safe to proceed automatically
+   - Good (6-7 critical bones): Quick review recommended
+   - Fair (4-5 critical bones): Thorough review required
+   - Poor (< 4 critical bones): Use custom mapping
+
+3. **Start with Simple Animations**: Verify bone mapping works correctly
+   - Test with: Idle, Walking, Running
+   - Check root motion (Hips bone)
+   - Verify left/right bones not swapped
+   - Then proceed to complex animations
+
+4. **Use Descriptive Armature Names**: Makes debugging easier
+   - Good: \`MyCharacter\`, \`HeroRig\`, \`PlayerModel\`
+   - Avoid: \`Armature\`, \`Armature.001\`, \`rig\`
+
+5. **Download Correct Format from Mixamo**: Always use FBX without skin
+   - Format: FBX (.fbx)
+   - Skin: Without Skin (Animation only)
+   - FPS: 30 fps
+   - Keyframe Reduction: None
+
+6. **Enable Logging for Troubleshooting**: Debug mode shows detailed information
+   - Set \`DEBUG=1\` environment variable
+   - Check logs in \`.blender-toolkit/logs/\`
+   - TypeScript: \`typescript.log\`
+   - Python: \`blender-addon.log\`
+   - Errors: \`error.log\`
+
+7. **Let System Manage Ports**: Project-specific ports prevent conflicts
+   - Ports auto-assigned (9400-9500 range)
+   - Configuration persists across sessions
+   - Multiple projects can run simultaneously
+
+8. **Review Critical Bones First**: Focus on essential bones for quality check
+   - Hips (root motion)
+   - Spine chain (posture)
+   - Shoulders and arms (upper body)
+   - Hips and legs (lower body)
+   - Head (orientation)
+
+9. **Save Custom Mappings for Reuse**: Non-standard rigs benefit from saved mappings
+   - Export custom mapping to JSON
+   - Reuse across multiple animations
+   - Share mappings with team members
+
+10. **Use Session Hooks**: Auto-initialization on session start
+    - No manual daemon management
+    - Scripts auto-installed and built
+    - Configuration auto-saved
+
+## References
+
+Detailed documentation in \`references/\` folder (load as needed):
+
+- **\`references/websocket-commands.md\`**: Complete WebSocket command list with all parameters, examples, and TypeScript client usage
+- **\`references/bone-mapping-guide.md\`**: Bone mapping strategies, fuzzy matching algorithm, quality assessment, and troubleshooting
+- **\`references/workflow-examples.md\`**: Complete workflow examples for common use cases including batch processing, error handling, and integration
+
+Load references when user needs detailed information about specific features, advanced usage patterns, or troubleshooting guidance.
 
 ## Notes
 
