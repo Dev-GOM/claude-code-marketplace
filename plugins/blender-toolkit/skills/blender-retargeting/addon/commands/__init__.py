@@ -15,9 +15,21 @@ from .geometry import (
     # Object operations
     delete_object, transform_object, duplicate_object, list_objects,
     # Vertex operations
-    get_vertices, move_vertex, subdivide_mesh, extrude_face,
+    get_vertices, move_vertex, subdivide_mesh, extrude_face
+)
+from .modifier import (
     # Modifier operations
-    add_modifier, apply_modifier
+    add_modifier, apply_modifier, list_modifiers, remove_modifier,
+    toggle_modifier, modify_modifier_properties, get_modifier_info, reorder_modifier
+)
+from .material import (
+    # Material creation
+    create_material, list_materials, delete_material,
+    # Material assignment
+    assign_material, list_object_materials,
+    # Material properties
+    set_material_base_color, set_material_metallic, set_material_roughness,
+    set_material_emission, get_material_properties
 )
 
 __all__ = [
@@ -56,7 +68,24 @@ __all__ = [
     'move_vertex',
     'subdivide_mesh',
     'extrude_face',
-    # Geometry - Modifier operations
+    # Modifier operations
     'add_modifier',
     'apply_modifier',
+    'list_modifiers',
+    'remove_modifier',
+    'toggle_modifier',
+    'modify_modifier_properties',
+    'get_modifier_info',
+    'reorder_modifier',
+    # Material operations
+    'create_material',
+    'list_materials',
+    'delete_material',
+    'assign_material',
+    'list_object_materials',
+    'set_material_base_color',
+    'set_material_metallic',
+    'set_material_roughness',
+    'set_material_emission',
+    'get_material_properties',
 ]

@@ -114,6 +114,10 @@ class BlenderWebSocketServer:
                 result = await self.handle_object_command(method, params)
             elif method.startswith("Modifier."):
                 result = await self.handle_modifier_command(method, params)
+            elif method.startswith("Material."):
+                result = await self.handle_material_command(method, params)
+            elif method.startswith("Collection."):
+                result = await self.handle_collection_command(method, params)
             else:
                 raise ValueError(f"Unknown method: {method}")
 
@@ -312,23 +316,139 @@ class BlenderWebSocketServer:
 
     async def handle_modifier_command(self, method: str, params: Dict) -> Any:
         """모디파이어 명령 처리"""
-        from .commands.geometry import add_modifier, apply_modifier
+        from .commands.modifier import (
+            add_modifier, apply_modifier, list_modifiers, remove_modifier,
+            toggle_modifier, modify_modifier_properties, get_modifier_info, reorder_modifier
+        )
 
         if method == "Modifier.add":
             properties = params.get("properties", {})
             return add_modifier(
                 object_name=params.get("objectName"),
                 modifier_type=params.get("modifierType"),
-                name=params.get("name"),
-                **properties
+                name=params.get("name")
             )
         elif method == "Modifier.apply":
             return apply_modifier(
                 object_name=params.get("objectName"),
                 modifier_name=params.get("modifierName")
             )
+        elif method == "Modifier.list":
+            return list_modifiers(
+                object_name=params.get("objectName")
+            )
+        elif method == "Modifier.remove":
+            return remove_modifier(
+                object_name=params.get("objectName"),
+                modifier_name=params.get("modifierName")
+            )
+        elif method == "Modifier.toggle":
+            return toggle_modifier(
+                object_name=params.get("objectName"),
+                modifier_name=params.get("modifierName"),
+                viewport=params.get("viewport"),
+                render=params.get("render")
+            )
+        elif method == "Modifier.modify":
+            properties = params.get("properties", {})
+            return modify_modifier_properties(
+                object_name=params.get("objectName"),
+                modifier_name=params.get("modifierName"),
+                **properties
+            )
+        elif method == "Modifier.getInfo":
+            return get_modifier_info(
+                object_name=params.get("objectName"),
+                modifier_name=params.get("modifierName")
+            )
+        elif method == "Modifier.reorder":
+            return reorder_modifier(
+                object_name=params.get("objectName"),
+                modifier_name=params.get("modifierName"),
+                direction=params.get("direction")
+            )
         else:
             raise ValueError(f"Unknown modifier method: {method}")
+
+    async def handle_material_command(self, method: str, params: Dict) -> Any:
+        """머티리얼 명령 처리"""
+        from .commands.material import (
+            create_material, list_materials, delete_material,
+            assign_material, list_object_materials,
+            set_material_base_color, set_material_metallic, set_material_roughness,
+            set_material_emission, get_material_properties
+        )
+
+        if method == "Material.create":
+            return create_material(
+                name=params.get("name"),
+                use_nodes=params.get("useNodes", True)
+            )
+        elif method == "Material.list":
+            return list_materials()
+        elif method == "Material.delete":
+            return delete_material(name=params.get("name"))
+        elif method == "Material.assign":
+            return assign_material(
+                object_name=params.get("objectName"),
+                material_name=params.get("materialName"),
+                slot_index=params.get("slotIndex", 0)
+            )
+        elif method == "Material.listObjectMaterials":
+            return list_object_materials(object_name=params.get("objectName"))
+        elif method == "Material.setBaseColor":
+            color = params.get("color")
+            return set_material_base_color(
+                material_name=params.get("materialName"),
+                color=tuple(color) if isinstance(color, list) else color
+            )
+        elif method == "Material.setMetallic":
+            return set_material_metallic(
+                material_name=params.get("materialName"),
+                metallic=params.get("metallic")
+            )
+        elif method == "Material.setRoughness":
+            return set_material_roughness(
+                material_name=params.get("materialName"),
+                roughness=params.get("roughness")
+            )
+        elif method == "Material.setEmission":
+            color = params.get("color")
+            return set_material_emission(
+                material_name=params.get("materialName"),
+                color=tuple(color) if isinstance(color, list) else color,
+                strength=params.get("strength", 1.0)
+            )
+        elif method == "Material.getProperties":
+            return get_material_properties(material_name=params.get("materialName"))
+        else:
+            raise ValueError(f"Unknown material method: {method}")
+
+    async def handle_collection_command(self, method: str, params: Dict) -> Any:
+        """컬렉션 명령 처리"""
+        from .commands.collection import (
+            create_collection, list_collections, add_to_collection,
+            remove_from_collection, delete_collection
+        )
+
+        if method == "Collection.create":
+            return create_collection(name=params.get("name"))
+        elif method == "Collection.list":
+            return list_collections()
+        elif method == "Collection.addObject":
+            return add_to_collection(
+                object_name=params.get("objectName"),
+                collection_name=params.get("collectionName")
+            )
+        elif method == "Collection.removeObject":
+            return remove_from_collection(
+                object_name=params.get("objectName"),
+                collection_name=params.get("collectionName")
+            )
+        elif method == "Collection.delete":
+            return delete_collection(name=params.get("name"))
+        else:
+            raise ValueError(f"Unknown collection method: {method}")
 
     async def start(self):
         """서버 시작"""
