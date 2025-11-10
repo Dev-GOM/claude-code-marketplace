@@ -4,7 +4,7 @@
 
 **Language**: [English](README.md) | [한국어](README.ko.md)
 
-Blender automation toolkit for Claude Code - WebSocket-based real-time Blender control and Mixamo animation retargeting
+Claude Code를 위한 Blender 자동화 툴킷 - WebSocket 기반 실시간 Blender 제어 및 Mixamo 애니메이션 리타게팅
 
 ## 🎯 Features
 

@@ -1,0 +1,40 @@
+{
+  "description": "Blender automation toolkit with Mixamo animation retargeting",
+  "version": "1.0.0",
+  "author": "Dev GOM",
+  "lastUpdated": "2025-11-10",
+  "hooks": {
+    "SessionStart": [
+      {
+        "description": "Initialize plugin configuration at session start",
+        "priority": 100,
+        "enabled": true,
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/init-config.js",
+            "description": "Registers project in shared configuration and assigns port",
+            "continueOnError": true,
+            "suppressOutput": false
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "description": "Clean up plugin configuration at session end",
+        "priority": 100,
+        "enabled": true,
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/cleanup-config.js",
+            "description": "Removes project from shared configuration if autoCleanup enabled",
+            "continueOnError": true,
+            "suppressOutput": false
+          }
+        ]
+      }
+    ]
+  }
+}
