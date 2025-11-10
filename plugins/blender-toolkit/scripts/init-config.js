@@ -99,30 +99,17 @@ function sleep(ms) {
 
 /**
  * Get shared config file path
- * Priority: CLAUDE_PLUGIN_ROOT (from hook) > hardcoded fallback path
- * This ensures hook and CLI use the same config file
  */
 function getSharedConfigPath() {
-  // Try plugin root from environment first (provided by hook)
+  // Plugin root is provided by hook environment variable
   const pluginRoot = process.env.CLAUDE_PLUGIN_ROOT;
-  if (pluginRoot) {
-    return path.join(pluginRoot, 'skills', 'blender-config.json');
+  if (!pluginRoot) {
+    logger.error('Error: CLAUDE_PLUGIN_ROOT not set');
+    logger.close();
+    process.exit(1);
   }
 
-  // Fallback to hardcoded path when env var is not available
-  const { homedir } = require('os');
-  const homeDir = homedir();
-  return path.join(
-    homeDir,
-    '.claude',
-    'plugins',
-    'marketplaces',
-    'dev-gom-plugins',
-    'plugins',
-    'blender-toolkit',
-    'skills',
-    'blender-config.json'
-  );
+  return path.join(pluginRoot, 'skills', 'blender-config.json');
 }
 
 /**
