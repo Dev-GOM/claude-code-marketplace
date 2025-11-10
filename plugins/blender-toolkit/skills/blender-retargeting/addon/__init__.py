@@ -34,8 +34,14 @@ from .utils.bone_matching import (
 # Logging utilities
 from .utils.logger import get_logger
 
+# Security utilities
+from .utils.security import validate_port
+
 # 모듈 로거 초기화
 logger = get_logger('addon')
+
+# 보안 상수
+MAX_CONNECTIONS = 5  # 최대 동시 연결 수 (로컬 환경)
 
 
 # ============================================================================
@@ -46,7 +52,7 @@ class BlenderWebSocketServer:
     """WebSocket 서버 메인 클래스"""
 
     def __init__(self, port: int = 9400):
-        self.port = port
+        self.port = validate_port(port)
         self.app = None
         self.runner = None
         self.site = None
@@ -54,6 +60,19 @@ class BlenderWebSocketServer:
 
     async def handle_command(self, request):
         """WebSocket 연결 핸들러"""
+        # 로컬호스트만 허용 (보안)
+        peername = request.transport.get_extra_info('peername')
+        if peername:
+            host = peername[0]
+            if host not in ('127.0.0.1', '::1', 'localhost'):
+                logger.warning(f"Rejected connection from non-localhost: {host}")
+                return web.Response(status=403, text="Only localhost connections allowed")
+
+        # 최대 연결 수 제한 (DoS 방지)
+        if len(self.clients) >= MAX_CONNECTIONS:
+            logger.warning(f"Connection limit reached ({MAX_CONNECTIONS})")
+            return web.Response(status=503, text="Too many connections")
+
         ws = web.WebSocketResponse()
         await ws.prepare(request)
 
