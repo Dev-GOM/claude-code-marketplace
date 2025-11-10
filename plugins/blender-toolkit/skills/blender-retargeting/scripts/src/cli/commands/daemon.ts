@@ -4,6 +4,9 @@
 
 import { Command } from 'commander';
 import { DaemonManager } from '../../daemon/manager';
+import { spawn } from 'child_process';
+import { join } from 'path';
+import { existsSync } from 'fs';
 
 export function registerDaemonCommands(program: Command) {
   // Start daemon
@@ -65,6 +68,63 @@ export function registerDaemonCommands(program: Command) {
       try {
         const state = await manager.getStatus({ verbose: !options.quiet });
         process.exit(state ? 0 : 1);
+      } catch (error) {
+        console.error('Error:', error);
+        process.exit(1);
+      }
+    });
+
+  // Addon install
+  program
+    .command('addon-install')
+    .description('Install Blender Toolkit addon automatically')
+    .option('-b, --blender <path>', 'Blender executable path', 'blender')
+    .action(async (options) => {
+      try {
+        console.log('🔧 Installing Blender Toolkit addon...\n');
+
+        // Install script path
+        const scriptDir = join(__dirname, '..', '..', '..');
+        const installScript = join(scriptDir, 'install-addon.py');
+
+        if (!existsSync(installScript)) {
+          console.error(`❌ Error: Install script not found at ${installScript}`);
+          process.exit(1);
+        }
+
+        console.log(`📍 Script: ${installScript}`);
+        console.log(`📍 Blender: ${options.blender}\n`);
+
+        // Run Blender in background with install script
+        const blender = spawn(options.blender, [
+          '--background',
+          '--python', installScript
+        ], {
+          stdio: 'inherit'
+        });
+
+        blender.on('exit', (code) => {
+          if (code === 0) {
+            console.log('\n✅ Addon installation completed!');
+            console.log('\n📝 Next steps:');
+            console.log('   1. Start Blender normally');
+            console.log('   2. The WebSocket server will auto-start on port 9400');
+            console.log('   3. Start daemon: blender-toolkit daemon-start');
+            console.log('   4. Use CLI commands: blender-toolkit <command>');
+          } else {
+            console.error(`\n❌ Installation failed with code ${code}`);
+          }
+          process.exit(code || 0);
+        });
+
+        blender.on('error', (error) => {
+          console.error(`\n❌ Failed to run Blender: ${error.message}`);
+          console.error('\nTips:');
+          console.error('   - Make sure Blender is installed');
+          console.error('   - Use --blender flag to specify path: --blender /path/to/blender');
+          process.exit(1);
+        });
+
       } catch (error) {
         console.error('Error:', error);
         process.exit(1);

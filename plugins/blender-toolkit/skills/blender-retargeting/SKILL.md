@@ -46,13 +46,31 @@ Use blender-retargeting when tasks involve:
 
 **Required steps:**
 1. Install Blender 3.0 or higher
-2. Install Python addon:
+
+2. **Install Python addon (Choose one method):**
+
+   **Method A: Automatic Installation (Recommended)**
+   ```bash
+   cd plugins/blender-toolkit/skills/blender-retargeting/scripts
+   node dist/cli/cli.js addon-install
+
+   # Or specify Blender path if not in PATH:
+   node dist/cli/cli.js addon-install --blender /path/to/blender
+   ```
+
+   This will automatically:
+   - Install the addon to Blender's addon directory
+   - Enable the WebSocket server
+   - Save user preferences
+
+   **Method B: Manual Installation**
    - Open Blender → Edit → Preferences → Add-ons → Install
    - Select: \`plugins/blender-toolkit/skills/blender-retargeting/addon/__init__.py\`
    - Enable "Blender Toolkit WebSocket Server"
+
 3. Start WebSocket server:
-   - View3D → Sidebar (N key) → "Blender Toolkit" tab
-   - Click "Start Server" button
+   - After installation, the addon auto-starts the WebSocket server on port 9400
+   - Or manually: View3D → Sidebar (N key) → "Blender Toolkit" tab → Click "Start Server"
    - Verify port (default: 9400)
 
 ### 2. Local Scripts Initialization
