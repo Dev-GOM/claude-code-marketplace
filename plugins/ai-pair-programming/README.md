@@ -391,7 +391,7 @@ Feel free to customize this plugin:
 
 ## 📄 License
 
-MIT License - feel free to use and modify for your projects.
+Apache License 2.0 - See [LICENSE](../../LICENSE) for details
 
 ## 🙏 Credits
 

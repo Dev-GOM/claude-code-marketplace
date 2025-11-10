@@ -208,7 +208,7 @@ python -X utf8 scripts/changelog_generator.py 1.3.0 v1.2.0
 
 ## 라이선스
 
-MIT License - 자세한 내용은 [LICENSE](../../LICENSE)를 참고하세요.
+Apache License 2.0 - 자세한 내용은 [LICENSE](../../LICENSE) 참조
 
 ## 제작자
 

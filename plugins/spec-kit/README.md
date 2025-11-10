@@ -468,7 +468,7 @@ Contributions welcome! Please:
 
 ## License
 
-MIT License - see [LICENSE](LICENSE) file.
+Apache License 2.0 - See [LICENSE](../../LICENSE) for details
 
 ## Credits
 

@@ -31,7 +31,7 @@
     "scraping"
   ],
   "author": "",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "devDependencies": {
     "@types/node": "^24.9.2",
     "@types/ws": "^8.18.1",

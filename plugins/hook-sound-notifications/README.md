@@ -218,4 +218,4 @@ Sound files are stored in your home folder and are **safe from plugin updates**.
 
 ## License
 
-MIT
+Apache License 2.0 - See [LICENSE](../../LICENSE) for details

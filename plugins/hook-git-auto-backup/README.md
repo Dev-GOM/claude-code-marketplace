@@ -243,7 +243,7 @@ Feel free to customize this plugin:
 
 ## License
 
-MIT License - See [LICENSE](../../LICENSE) for details
+Apache License 2.0 - See [LICENSE](../../LICENSE) for details
 
 ## Credits
 

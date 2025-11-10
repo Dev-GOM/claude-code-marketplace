@@ -208,7 +208,7 @@ Contributions are welcome! Please see [CONTRIBUTING.md](../../CONTRIBUTING.md) f
 
 ## License
 
-MIT License - see [LICENSE](../../LICENSE) for details.
+Apache License 2.0 - See [LICENSE](../../LICENSE) for details
 
 ## Author
 

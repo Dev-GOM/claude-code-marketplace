@@ -1,0 +1,31 @@
+{
+  "name": "blender-toolkit",
+  "version": "1.3.0",
+  "description": "Blender automation toolkit with CLI for geometry, materials, modifiers, collections, animation retargeting, and WebSocket-based real-time control",
+  "author": {
+    "name": "Dev GOM",
+    "url": "https://github.com/Dev-GOM/claude-code-marketplace"
+  },
+  "homepage": "https://github.com/Dev-GOM/claude-code-marketplace",
+  "repository": "https://github.com/Dev-GOM/claude-code-marketplace.git",
+  "license": "Apache-2.0",
+  "keywords": [
+    "blender",
+    "3d",
+    "animation",
+    "rigging",
+    "retargeting",
+    "mixamo",
+    "websocket",
+    "automation",
+    "geometry",
+    "modeling",
+    "materials",
+    "modifiers",
+    "collections",
+    "cli"
+  ],
+  "skills": [
+    "./skills"
+  ]
+}

@@ -468,7 +468,7 @@ ls -la plugins/spec-kit/.claude-plugin/
 
 ## 라이선스
 
-MIT License - [LICENSE](LICENSE) 파일 참조.
+Apache License 2.0 - 자세한 내용은 [LICENSE](../../LICENSE) 참조
 
 ## 크레딧
 

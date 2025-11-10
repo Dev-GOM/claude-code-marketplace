@@ -654,7 +654,7 @@ Skills는 모델이 자동 호출하며 Claude가 사용 시기를 결정합니�
 
 ## 📄 라이선스
 
-MIT 라이선스 - 프로젝트에서 자유롭게 사용하고 수정할 수 있습니다.
+Apache License 2.0 - 자세한 내용은 [LICENSE](../../LICENSE) 참조
 
 ## 🎮 Unity 버전 호환성
 

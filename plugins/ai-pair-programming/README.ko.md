@@ -391,7 +391,7 @@ model: sonnet
 
 ## 📄 라이선스
 
-MIT 라이선스 - 자유롭게 사용하고 수정하세요.
+Apache License 2.0 - 자세한 내용은 [LICENSE](../../LICENSE) 참조
 
 ## 🙏 크레딧
 
