@@ -40,31 +40,91 @@ Claude Code를 위한 Blender 자동화 툴킷 - 도형, 머티리얼, 모디파
 
 ## 📦 Installation
 
-### 1. Blender 애드온 설치
+### 자동 설치 (권장)
+
+Blender Toolkit은 SessionStart 훅을 사용하여 프로젝트를 자동으로 초기화합니다:
+
+1. **플러그인 설치** - Claude Code 마켓플레이스 또는 수동 설치
+2. **세션 시작** - 훅이 자동으로:
+   - 설치된 Blender 버전 감지 (4.0+)
+   - 프로젝트 설정 생성 (포트 9400-9500)
+   - 로컬 TypeScript 스크립트 복사 및 빌드
+   - 백그라운드 애드온 설치 시도
+3. **상태 확인** - 설치 로그 확인:
+   ```bash
+   cat .blender-toolkit/init-log.txt
+   ```
+
+### 수동 애드온 설치
+
+자동 설치가 실패한 경우 수동으로 설치:
 
 ```bash
-# 1. Blender 3.0 이상 실행
+# 1. Blender 4.0+ 실행 (2023+)
 # 2. Edit > Preferences > Add-ons > Install
-# 3. 다음 파일 선택:
-plugins/blender-toolkit/skills/blender-retargeting/addon/__init__.py
-
+# 3. 선택: plugins/blender-toolkit/skills/addon/__init__.py
 # 4. "Blender Toolkit WebSocket Server" 활성화
+# 5. config 업데이트: "addonInstalled": true로 설정
 ```
 
-### 2. TypeScript 클라이언트 빌드
-
-```bash
-cd plugins/blender-toolkit/skills/blender-retargeting/scripts
-npm install
-npm run build
-```
-
-### 3. WebSocket 서버 시작
+### WebSocket 서버 시작
 
 Blender에서:
-1. 사이드바 > "Blender Toolkit" 탭
+1. 사이드바 (N키) > "Blender Toolkit" 탭
 2. "Start Server" 버튼 클릭
-3. 포트 확인 (기본: 9400)
+3. 콘솔에서 포트 확인 (기본: 9400)
+
+## ⚙️ 설정
+
+**공유 설정 파일 위치**: `~/.claude/plugins/marketplaces/dev-gom-plugins/blender-config.json`
+
+**설정 예시**:
+
+```json
+{
+  "blenderExecutable": "C:\\Program Files\\Blender Foundation\\Blender 4.2\\blender.exe",
+  "blenderVersion": "4.2.0",
+  "detectedBlenderVersions": [
+    {
+      "version": "4.2.0",
+      "path": "C:\\Program Files\\Blender Foundation\\Blender 4.2\\blender.exe",
+      "major": 4,
+      "minor": 2
+    }
+  ],
+  "addonInstalled": false,
+  "addonInstallAttempted": true,
+  "lastInstallAttempt": "2025-11-10 12:34:56",
+  "projects": {
+    "my-project": {
+      "rootPath": "D:\\Work\\my-project",
+      "port": 9400,
+      "outputDir": ".blender-toolkit",
+      "lastUsed": "2025-11-10 12:34:56",
+      "autoCleanup": false,
+      "autoRestore": true
+    }
+  }
+}
+```
+
+**설정 필드 설명**:
+
+| 필드 | 타입 | 설명 |
+|------|------|------|
+| `blenderExecutable` | string | Blender 실행 파일 경로 |
+| `blenderVersion` | string | 감지된 Blender 버전 |
+| `detectedBlenderVersions` | array | 감지된 모든 Blender 설치 버전 |
+| `addonInstalled` | boolean | 사용자 설정 애드온 설치 상태 플래그 |
+| `addonInstallAttempted` | boolean | 자동 설치 시도 여부 |
+| `lastInstallAttempt` | string | 마지막 설치 시도 시각 |
+| `projects` | object | 프로젝트별 설정 (포트, 경로 등) |
+
+**Blender 버전 변경 방법**:
+
+1. 위 경로의 설정 파일 열기
+2. `blenderExecutable`을 `detectedBlenderVersions`에서 원하는 버전으로 변경
+3. 저장 후 Claude Code 세션 재시작
 
 ## 🚀 Quick Start
 

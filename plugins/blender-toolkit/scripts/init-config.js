@@ -13,6 +13,7 @@ const path = require('path');
 const { execSync, spawn } = require('child_process');
 const { createLogger } = require('./logger');
 const processUtils = require('./process-utils');
+const blenderDetect = require('./detect-blender');
 
 // Get hookInput early to determine project name
 let hookInput = null;
@@ -576,6 +577,130 @@ async function initializeLocalScripts(projectRoot) {
 }
 
 /**
+ * Detect Blender installations and update config
+ */
+function detectAndConfigureBlender(sharedConfig) {
+  logger.log('[Blender Detection] Scanning for installed Blender versions...');
+
+  const detectedVersions = blenderDetect.detectBlenderVersions();
+
+  if (detectedVersions.length === 0) {
+    logger.warn('⚠️  No Blender installations found');
+    logger.log('   Please install Blender 4.0+ from https://www.blender.org');
+    sharedConfig.detectedBlenderVersions = [];
+    sharedConfig.blenderExecutable = null;
+    sharedConfig.blenderVersion = null;
+    return false;
+  }
+
+  logger.log(`✓ Found ${detectedVersions.length} Blender installation(s):`);
+  detectedVersions.forEach((v, idx) => {
+    const versionStr = `${v.version} ${blenderDetect.meetsMinimumVersion(v) ? '✓' : '✗ (< 4.0)'}`;
+    logger.log(`  ${idx + 1}. Blender ${versionStr} - ${v.path}`);
+  });
+
+  // Save all detected versions to config
+  sharedConfig.detectedBlenderVersions = detectedVersions.map(v => ({
+    version: v.version,
+    path: v.path,
+    major: v.major,
+    minor: v.minor
+  }));
+
+  // If blenderExecutable not set, use latest version meeting minimum requirement
+  if (!sharedConfig.blenderExecutable) {
+    const validVersions = detectedVersions.filter(v => blenderDetect.meetsMinimumVersion(v));
+
+    if (validVersions.length === 0) {
+      logger.warn('⚠️  No Blender 4.0+ found. Please upgrade to Blender 4.0+');
+      sharedConfig.blenderExecutable = detectedVersions[0].path; // Use latest anyway
+      sharedConfig.blenderVersion = detectedVersions[0].version;
+      return false;
+    }
+
+    // Use latest valid version
+    sharedConfig.blenderExecutable = validVersions[0].path;
+    sharedConfig.blenderVersion = validVersions[0].version;
+    logger.log(`✓ Default Blender set: ${validVersions[0].version} - ${validVersions[0].path}`);
+
+    if (detectedVersions.length > 1) {
+      logger.log('   Multiple versions detected. You can change the selection in config file.');
+    }
+  } else {
+    logger.log(`✓ Using configured Blender: ${sharedConfig.blenderExecutable}`);
+  }
+
+  return true;
+}
+
+/**
+ * Install Blender addon in background
+ */
+function installBlenderAddonBackground(sharedConfig, projectRoot) {
+  if (!sharedConfig.blenderExecutable) {
+    logger.log('[Addon Installation] Skipped - No Blender executable configured');
+    sharedConfig.addonInstalled = false;
+    sharedConfig.addonInstallAttempted = true;
+    sharedConfig.lastInstallAttempt = getLocalTimestamp();
+    return;
+  }
+
+  const pluginRoot = process.env.CLAUDE_PLUGIN_ROOT;
+  if (!pluginRoot) {
+    logger.error('[Addon Installation] CLAUDE_PLUGIN_ROOT not available');
+    return;
+  }
+
+  const addonPath = path.join(pluginRoot, 'skills', 'addon', '__init__.py');
+  const installScriptPath = path.join(pluginRoot, 'scripts', 'install_addon.py');
+
+  if (!fs.existsSync(addonPath)) {
+    logger.error(`[Addon Installation] Addon not found: ${addonPath}`);
+    return;
+  }
+
+  if (!fs.existsSync(installScriptPath)) {
+    logger.error(`[Addon Installation] Install script not found: ${installScriptPath}`);
+    return;
+  }
+
+  logger.log('[Addon Installation] Starting background installation...');
+  logger.log(`   Blender: ${sharedConfig.blenderExecutable}`);
+  logger.log(`   Addon: ${addonPath}`);
+
+  // Mark installation as attempted
+  sharedConfig.addonInstallAttempted = true;
+  sharedConfig.lastInstallAttempt = getLocalTimestamp();
+
+  // Run installation in background (non-blocking)
+  try {
+    const blenderPath = sharedConfig.blenderExecutable;
+    const installProcess = spawn(
+      blenderPath,
+      ['--background', '--python', installScriptPath, '--', addonPath],
+      {
+        detached: true,
+        stdio: 'ignore'
+      }
+    );
+
+    // Unref to allow parent to exit
+    installProcess.unref();
+
+    logger.log('⏳ Addon installation started in background');
+    logger.log('   Process will complete shortly. If you see connection errors,');
+    logger.log('   please check SKILL.md for manual installation guide.');
+
+    // Set flag to false initially (will be manually set to true by user after verification)
+    sharedConfig.addonInstalled = false;
+
+  } catch (error) {
+    logger.error('[Addon Installation] Failed to start: ' + error.message);
+    sharedConfig.addonInstalled = false;
+  }
+}
+
+/**
  * Initialize project configuration
  */
 async function initializeProject(hookInput) {
@@ -596,6 +721,14 @@ async function initializeProject(hookInput) {
 
   // Create CLI wrapper script
   createWrapperScript(projectRoot);
+
+  // Detect Blender installations and configure
+  const blenderDetected = detectAndConfigureBlender(sharedConfig);
+
+  // Attempt addon installation in background if Blender detected
+  if (blenderDetected) {
+    installBlenderAddonBackground(sharedConfig, projectRoot);
+  }
 
   // Normalize project root path for consistent comparison
   const normalizedProjectRoot = path.normalize(projectRoot);

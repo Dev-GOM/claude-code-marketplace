@@ -42,31 +42,91 @@ Blender automation toolkit for Claude Code - WebSocket-based real-time Blender c
 
 ## 📦 Installation
 
-### 1. Blender 애드온 설치
+### Automatic Setup (Recommended)
+
+Blender Toolkit uses SessionStart hooks to automatically initialize your project:
+
+1. **Install Plugin** via Claude Code marketplace or manually
+2. **Start Session** - Hook will automatically:
+   - Detect installed Blender versions (4.0+)
+   - Create project configuration (port 9400-9500)
+   - Copy and build local TypeScript scripts
+   - Attempt background addon installation
+3. **Check Status** - Review installation logs:
+   ```bash
+   cat .blender-toolkit/init-log.txt
+   ```
+
+### Manual Addon Installation
+
+If automatic installation fails, install manually:
 
 ```bash
-# 1. Blender 3.0 이상 실행
+# 1. Open Blender 4.0+ (2023+)
 # 2. Edit > Preferences > Add-ons > Install
-# 3. 다음 파일 선택:
-plugins/blender-toolkit/skills/blender-retargeting/addon/__init__.py
-
-# 4. "Blender Toolkit WebSocket Server" 활성화
+# 3. Select: plugins/blender-toolkit/skills/addon/__init__.py
+# 4. Enable "Blender Toolkit WebSocket Server"
+# 5. Update config: Set "addonInstalled": true
 ```
 
-### 2. TypeScript 클라이언트 빌드
+### Start WebSocket Server
 
-```bash
-cd plugins/blender-toolkit/skills/blender-retargeting/scripts
-npm install
-npm run build
+In Blender:
+1. Sidebar (N key) > "Blender Toolkit" tab
+2. Click "Start Server" button
+3. Port shown in console (default: 9400)
+
+## ⚙️ Configuration
+
+**Shared Config Location**: `~/.claude/plugins/marketplaces/dev-gom-plugins/blender-config.json`
+
+**Example Configuration**:
+
+```json
+{
+  "blenderExecutable": "C:\\Program Files\\Blender Foundation\\Blender 4.2\\blender.exe",
+  "blenderVersion": "4.2.0",
+  "detectedBlenderVersions": [
+    {
+      "version": "4.2.0",
+      "path": "C:\\Program Files\\Blender Foundation\\Blender 4.2\\blender.exe",
+      "major": 4,
+      "minor": 2
+    }
+  ],
+  "addonInstalled": false,
+  "addonInstallAttempted": true,
+  "lastInstallAttempt": "2025-11-10 12:34:56",
+  "projects": {
+    "my-project": {
+      "rootPath": "D:\\Work\\my-project",
+      "port": 9400,
+      "outputDir": ".blender-toolkit",
+      "lastUsed": "2025-11-10 12:34:56",
+      "autoCleanup": false,
+      "autoRestore": true
+    }
+  }
+}
 ```
 
-### 3. WebSocket 서버 시작
+**Configuration Fields**:
 
-Blender에서:
-1. 사이드바 (N키) > "Blender Toolkit" 탭
-2. "Start Server" 버튼 클릭
-3. 포트 확인 (기본: 9400)
+| Field | Type | Description |
+|-------|------|-------------|
+| `blenderExecutable` | string | Path to Blender executable |
+| `blenderVersion` | string | Detected Blender version |
+| `detectedBlenderVersions` | array | All detected Blender installations |
+| `addonInstalled` | boolean | User-set flag for addon installation status |
+| `addonInstallAttempted` | boolean | Whether automatic installation was attempted |
+| `lastInstallAttempt` | string | Timestamp of last installation attempt |
+| `projects` | object | Per-project configuration (port, paths, etc.) |
+
+**To Change Blender Version**:
+
+1. Open config file (path above)
+2. Edit `blenderExecutable` to desired version from `detectedBlenderVersions`
+3. Save and restart Claude Code session
 
 ## 🚀 Quick Start
 

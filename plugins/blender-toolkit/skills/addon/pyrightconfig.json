@@ -1,0 +1,22 @@
+{
+  "include": [
+    "."
+  ],
+  "exclude": [
+    "**/__pycache__",
+    ".venv",
+    "commands"
+  ],
+  "extraPaths": [
+    "D:/Blender/Blender_Launcher_v1.15.1_Windows_x64/stable/blender-4.5.4-lts.b3efe983cc58/4.5/scripts/modules",
+    "D:/Blender/Blender_Launcher_v1.15.1_Windows_x64/stable/blender-4.5.4-lts.b3efe983cc58/4.5/python/lib/site-packages"
+  ],
+  "typeCheckingMode": "basic",
+  "reportMissingImports": false,
+  "reportMissingModuleSource": false,
+  "reportUnknownParameterType": "warning",
+  "reportUnknownMemberType": "warning",
+  "reportMissingParameterType": "warning",
+  "pythonVersion": "3.11",
+  "pythonPlatform": "Windows"
+}
