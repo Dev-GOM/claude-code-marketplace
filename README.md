@@ -216,6 +216,21 @@ Control Unity Editor programmatically via WebSocket - Create GameObjects, manage
 
 </details>
 
+---
+
+### 14. 🎨 [Blender Toolkit](plugins/blender-toolkit/README.md)
+
+<details>
+<parameter name="summary"><strong>📖 Plugin Details</strong> (Click to expand)</summary>
+
+Blender automation toolkit with intelligent Mixamo animation retargeting using fuzzy bone matching and WebSocket-based real-time control.
+
+**Quick Info:** WebSocket-based Blender control (port 9400-9500) | Fuzzy bone matching (60+ bones) | 2-phase UI workflow | Logging system | **Status:** ✅ Release (v1.1.0) | **Features:** Animation retargeting, Auto bone mapping with quality reports, Rigify compatible, Modular architecture
+
+**[Read Full Documentation →](plugins/blender-toolkit/README.md)**
+
+</details>
+
 ## Installation
 
 ### Quick Start (Recommended)
