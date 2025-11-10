@@ -14,7 +14,6 @@ export interface ProjectConfig {
   outputDir: string;
   lastUsed: string | null;
   autoCleanup: boolean;
-  mixamoBearerToken?: string;  // Mixamo 인증 토큰 저장
 }
 
 export interface SharedBlenderConfig {
@@ -244,46 +243,6 @@ export async function getProjectPort(): Promise<number> {
 }
 
 /**
- * Mixamo Bearer 토큰 저장
- */
-export function saveMixamoBearerToken(token: string): void {
-  const projectRoot = findProjectRoot();
-  const projectName = getProjectName(projectRoot);
-  const sharedConfig = loadSharedConfig();
-
-  if (sharedConfig.projects[projectName]) {
-    sharedConfig.projects[projectName].mixamoBearerToken = token;
-    saveSharedConfig(sharedConfig);
-    console.log(`🔐 Mixamo bearer token saved for project: ${projectName}`);
-  }
-}
-
-/**
- * Mixamo Bearer 토큰 가져오기
- */
-export function getMixamoBearerToken(): string | undefined {
-  const projectRoot = findProjectRoot();
-  const projectName = getProjectName(projectRoot);
-  const sharedConfig = loadSharedConfig();
-
-  return sharedConfig.projects[projectName]?.mixamoBearerToken;
-}
-
-/**
- * 프로젝트 설정 초기화
- */
-export function resetProjectConfig(): void {
-  const projectRoot = findProjectRoot();
-  const projectName = getProjectName(projectRoot);
-  const sharedConfig = loadSharedConfig();
-
-  delete sharedConfig.projects[projectName];
-  saveSharedConfig(sharedConfig);
-
-  console.log(`🗑️  Removed config for project: ${projectName}`);
-}
-
-/**
  * 모든 프로젝트 목록
  */
 export function listProjects(): void {
@@ -301,9 +260,22 @@ export function listProjects(): void {
     console.log(`   ├─ Path: ${config.rootPath}`);
     console.log(`   ├─ Port: ${config.port}`);
     console.log(`   ├─ Output: ${config.outputDir}`);
-    console.log(`   ├─ Mixamo Token: ${config.mixamoBearerToken ? '✓ Set' : '✗ Not set'}`);
     console.log(`   └─ Last Used: ${config.lastUsed || 'Never'}\n`);
   });
+}
+
+/**
+ * 프로젝트 설정 초기화
+ */
+export function resetProjectConfig(): void {
+  const projectRoot = findProjectRoot();
+  const projectName = getProjectName(projectRoot);
+  const sharedConfig = loadSharedConfig();
+
+  delete sharedConfig.projects[projectName];
+  saveSharedConfig(sharedConfig);
+
+  console.log(`🗑️  Removed config for project: ${projectName}`);
 }
 
 /**

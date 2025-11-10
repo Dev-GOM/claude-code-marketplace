@@ -86,8 +86,15 @@ export class RetargetingController {
       );
     }
 
+    // 본 매핑 검증
+    if (!boneMap || Object.keys(boneMap).length === 0) {
+      throw new Error('Bone mapping is empty. Cannot proceed with retargeting.');
+    }
+
     // 리타게팅 실행
     console.log('🎬 Starting animation retargeting...');
+    console.log(`   Mapping ${Object.keys(boneMap).length} bones...`);
+
     await this.client.sendCommand(
       'Retargeting.retargetAnimation',
       {

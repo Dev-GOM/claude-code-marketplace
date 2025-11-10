@@ -65,8 +65,11 @@ export class BlenderClient extends EventEmitter {
                 this.emit('event', message as BlenderEvent);
                 this.emit(message.method, message.params);
               }
-            } catch (_error) {
-              // JSON 파싱 에러 무시
+            } catch (error) {
+              // JSON 파싱 에러는 무시하되 디버그 모드에서는 로깅
+              if (process.env.DEBUG) {
+                console.debug('[BlenderClient] Event JSON parse error:', error);
+              }
             }
           });
         }
@@ -101,6 +104,7 @@ export class BlenderClient extends EventEmitter {
 
     return new Promise((resolve, reject) => {
       const timeout = setTimeout(() => {
+        this.ws?.off('message', messageHandler);
         reject(new Error(`Command timeout: ${method}`));
       }, BLENDER.WS_TIMEOUT);
 
@@ -121,6 +125,10 @@ export class BlenderClient extends EventEmitter {
           }
         } catch (error) {
           // JSON 파싱 에러는 무시 (다른 메시지일 수 있음)
+          // 디버그 모드에서만 로깅
+          if (process.env.DEBUG) {
+            console.debug('[BlenderClient] JSON parse error:', error);
+          }
         }
       };
 

@@ -234,28 +234,73 @@ def auto_map_bones(source_armature: str, target_armature: str) -> Dict[str, str]
     if not source or not target:
         raise ValueError("Source or target armature not found")
 
-    # Mixamo 표준 본 이름
+    # Mixamo 표준 본 이름 (확장: 손가락, 발가락 포함)
     mixamo_bones = {
+        # 몸통
         "Hips": ["hips", "pelvis", "root"],
         "Spine": ["spine", "spine1"],
         "Spine1": ["spine1", "spine2"],
         "Spine2": ["spine2", "spine3", "chest"],
         "Neck": ["neck"],
         "Head": ["head"],
+
+        # 왼쪽 팔
         "LeftShoulder": ["shoulder.l", "clavicle.l", "leftshoulder"],
         "LeftArm": ["upper_arm.l", "leftarm", "upperarm.l"],
         "LeftForeArm": ["forearm.l", "leftforearm", "lowerarm.l"],
         "LeftHand": ["hand.l", "lefthand"],
+
+        # 오른쪽 팔
         "RightShoulder": ["shoulder.r", "clavicle.r", "rightshoulder"],
         "RightArm": ["upper_arm.r", "rightarm", "upperarm.r"],
         "RightForeArm": ["forearm.r", "rightforearm", "lowerarm.r"],
         "RightHand": ["hand.r", "righthand"],
+
+        # 왼쪽 다리
         "LeftUpLeg": ["thigh.l", "leftupleg", "upperleg.l"],
         "LeftLeg": ["shin.l", "leftleg", "lowerleg.l"],
         "LeftFoot": ["foot.l", "leftfoot"],
+        "LeftToeBase": ["toe.l", "lefttoebase", "foot.l.001"],
+
+        # 오른쪽 다리
         "RightUpLeg": ["thigh.r", "rightupleg", "upperleg.r"],
         "RightLeg": ["shin.r", "rightleg", "lowerleg.r"],
         "RightFoot": ["foot.r", "rightfoot"],
+        "RightToeBase": ["toe.r", "righttoebase", "foot.r.001"],
+
+        # 왼쪽 손가락
+        "LeftHandThumb1": ["thumb.01.l", "lefthandthumb1", "thumb_01.l"],
+        "LeftHandThumb2": ["thumb.02.l", "lefthandthumb2", "thumb_02.l"],
+        "LeftHandThumb3": ["thumb.03.l", "lefthandthumb3", "thumb_03.l"],
+        "LeftHandIndex1": ["f_index.01.l", "lefthandindex1", "index_01.l"],
+        "LeftHandIndex2": ["f_index.02.l", "lefthandindex2", "index_02.l"],
+        "LeftHandIndex3": ["f_index.03.l", "lefthandindex3", "index_03.l"],
+        "LeftHandMiddle1": ["f_middle.01.l", "lefthandmiddle1", "middle_01.l"],
+        "LeftHandMiddle2": ["f_middle.02.l", "lefthandmiddle2", "middle_02.l"],
+        "LeftHandMiddle3": ["f_middle.03.l", "lefthandmiddle3", "middle_03.l"],
+        "LeftHandRing1": ["f_ring.01.l", "lefthandring1", "ring_01.l"],
+        "LeftHandRing2": ["f_ring.02.l", "lefthandring2", "ring_02.l"],
+        "LeftHandRing3": ["f_ring.03.l", "lefthandring3", "ring_03.l"],
+        "LeftHandPinky1": ["f_pinky.01.l", "lefthandpinky1", "pinky_01.l"],
+        "LeftHandPinky2": ["f_pinky.02.l", "lefthandpinky2", "pinky_02.l"],
+        "LeftHandPinky3": ["f_pinky.03.l", "lefthandpinky3", "pinky_03.l"],
+
+        # 오른쪽 손가락
+        "RightHandThumb1": ["thumb.01.r", "righthandthumb1", "thumb_01.r"],
+        "RightHandThumb2": ["thumb.02.r", "righthandthumb2", "thumb_02.r"],
+        "RightHandThumb3": ["thumb.03.r", "righthandthumb3", "thumb_03.r"],
+        "RightHandIndex1": ["f_index.01.r", "righthandindex1", "index_01.r"],
+        "RightHandIndex2": ["f_index.02.r", "righthandindex2", "index_02.r"],
+        "RightHandIndex3": ["f_index.03.r", "righthandindex3", "index_03.r"],
+        "RightHandMiddle1": ["f_middle.01.r", "righthandmiddle1", "middle_01.r"],
+        "RightHandMiddle2": ["f_middle.02.r", "righthandmiddle2", "middle_02.r"],
+        "RightHandMiddle3": ["f_middle.03.r", "righthandmiddle3", "middle_03.r"],
+        "RightHandRing1": ["f_ring.01.r", "righthandring1", "ring_01.r"],
+        "RightHandRing2": ["f_ring.02.r", "righthandring2", "ring_02.r"],
+        "RightHandRing3": ["f_ring.03.r", "righthandring3", "ring_03.r"],
+        "RightHandPinky1": ["f_pinky.01.r", "righthandpinky1", "pinky_01.r"],
+        "RightHandPinky2": ["f_pinky.02.r", "righthandpinky2", "pinky_02.r"],
+        "RightHandPinky3": ["f_pinky.03.r", "righthandpinky3", "pinky_03.r"],
     }
 
     bone_map = {}
@@ -461,14 +506,24 @@ def load_bone_mapping(source_armature: str, target_armature: str) -> Dict[str, s
     scene = bpy.context.scene
 
     # 아마추어 검증
+    if not scene.bone_mapping_source_armature:
+        raise ValueError("No bone mapping stored. Please generate mapping first using BoneMapping.show command.")
+
     if (scene.bone_mapping_source_armature != source_armature or
         scene.bone_mapping_target_armature != target_armature):
-        raise ValueError("Stored bone mapping doesn't match requested armatures")
+        raise ValueError(
+            f"Stored mapping for ({scene.bone_mapping_source_armature} → "
+            f"{scene.bone_mapping_target_armature}) doesn't match requested "
+            f"({source_armature} → {target_armature})"
+        )
 
     # 매핑 로드
     bone_mapping = {}
     for item in scene.bone_mapping_items:
         bone_mapping[item.source_bone] = item.target_bone
+
+    if not bone_mapping:
+        raise ValueError("Bone mapping is empty. Please generate mapping first.")
 
     print(f"✅ Loaded bone mapping: {len(bone_mapping)} bones")
     return bone_mapping
@@ -510,8 +565,25 @@ class BLENDERTOOLKIT_OT_StartServer(bpy.types.Operator):
 
     def execute(self, context):
         port = context.scene.blender_toolkit_port
-        # 비동기 실행 (별도 구현 필요)
-        self.report({'INFO'}, f"Starting server on port {port}...")
+
+        # TODO: Implement WebSocket server startup using Blender's timer system
+        # Implementation strategy:
+        # 1. Create a modal operator that runs in background
+        # 2. Use bpy.app.timers to run async server loop
+        # 3. Store server instance in Scene property
+        # 4. Add server state indicator in UI
+        #
+        # Example implementation:
+        # server = BlenderWebSocketServer(port)
+        # bpy.app.timers.register(lambda: server.run_step())
+        # context.scene.blender_toolkit_server_running = True
+
+        self.report({'WARNING'},
+                   f"Server startup not implemented yet. "
+                   f"Please run Blender WebSocket server manually from Python console:\n"
+                   f"  import asyncio\n"
+                   f"  server = BlenderWebSocketServer({port})\n"
+                   f"  asyncio.run(server.start())")
         return {'FINISHED'}
 
 
@@ -521,7 +593,11 @@ class BLENDERTOOLKIT_OT_StopServer(bpy.types.Operator):
     bl_label = "Stop WebSocket Server"
 
     def execute(self, context):
-        self.report({'INFO'}, "Stopping server...")
+        # TODO: Implement server stop
+        # Should stop the server started by BLENDERTOOLKIT_OT_StartServer
+        # and clean up resources
+
+        self.report({'WARNING'}, "Server stop not implemented yet.")
         return {'FINISHED'}
 
 
