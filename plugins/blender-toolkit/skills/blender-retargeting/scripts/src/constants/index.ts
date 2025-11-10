@@ -38,17 +38,19 @@ export const FS = {
 
 /**
  * Mixamo 관련 상수
- * @property API_BASE_URL - Mixamo API 베이스 URL
- * @property DOWNLOAD_TIMEOUT - 다운로드 타임아웃
+ * Note: Mixamo does not provide an official API. Users must manually download files from Mixamo.com
+ * @property WEBSITE_URL - Mixamo 웹사이트 URL
  * @property SUPPORTED_FORMATS - 지원 파일 포맷
+ * @property RECOMMENDED_FORMAT - 권장 다운로드 포맷
+ * @property RECOMMENDED_SKIN - 권장 스킨 설정 (리타게팅용)
+ * @property RECOMMENDED_FPS - 권장 FPS
  */
 export const MIXAMO = {
-  API_BASE_URL: 'https://www.mixamo.com/api/v1',
-  DOWNLOAD_TIMEOUT: 120000, // 2 minutes
+  WEBSITE_URL: 'https://www.mixamo.com',
   SUPPORTED_FORMATS: ['fbx', 'dae'] as const,
-  DEFAULT_FORMAT: 'fbx' as const,
-  DEFAULT_SKIN: 'With Skin',
-  DEFAULT_FPS: 30,
+  RECOMMENDED_FORMAT: 'fbx' as const,
+  RECOMMENDED_SKIN: 'Without Skin', // Better for retargeting
+  RECOMMENDED_FPS: 30,
 } as const;
 
 /**
@@ -93,8 +95,9 @@ export const ERROR_MESSAGES = {
   IMPORT_FAILED: 'Failed to import animation',
   RETARGET_FAILED: 'Failed to retarget animation',
   NO_CHARACTER_SELECTED: 'No character selected',
-  MIXAMO_DOWNLOAD_FAILED: 'Failed to download animation from Mixamo',
+  ANIMATION_FILE_NOT_FOUND: 'Animation file not found. Please download from Mixamo.com first',
   INVALID_BONE_MAPPING: 'Invalid bone mapping',
+  BONE_MAPPING_CONFIRMATION_FAILED: 'Bone mapping confirmation failed',
 } as const;
 
 /**
@@ -103,6 +106,7 @@ export const ERROR_MESSAGES = {
 export const SUCCESS_MESSAGES = {
   CONNECTED: 'Connected to Blender',
   ANIMATION_IMPORTED: 'Animation imported successfully',
+  BONE_MAPPING_GENERATED: 'Bone mapping generated successfully',
+  BONE_MAPPING_SENT_TO_UI: 'Bone mapping sent to Blender UI for review',
   RETARGETING_COMPLETE: 'Animation retargeted successfully',
-  MIXAMO_DOWNLOADED: 'Mixamo animation downloaded',
 } as const;

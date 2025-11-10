@@ -3,11 +3,11 @@ name: blender-retargeting
 description: |
   Blender animation retargeting with Mixamo integration. Mixamo 애니메이션을 Blender 캐릭터에 리타게팅.
 
-  Features/기능: Mixamo search and download Mixamo검색다운로드, automatic bone mapping 자동본매핑 (Rigify/custom), FBX/Collada import 임포트, constraint-based retargeting 컨스트레인트기반리타게팅, NLA track management NLA트랙관리, multi-project support 멀티프로젝트지원, port management 포트관리 (9400-9500), real-time Blender control WebSocket기반실시간제어.
+  Features/기능: Manual Mixamo download support 수동다운로드지원, automatic bone mapping with UI review 자동본매핑UI리뷰 (Rigify/custom), FBX/Collada import 임포트, two-phase confirmation workflow 2단계확인워크플로우, constraint-based retargeting 컨스트레인트기반리타게팅, NLA track management NLA트랙관리, multi-project support 멀티프로젝트지원, port management 포트관리 (9400-9500), real-time Blender control WebSocket기반실시간제어.
 
-  Workflow 워크플로우: Connect to Blender WebSocket server 웹소켓서버연결 → Search Mixamo animation Mixamo검색 → Download/Import FBX FBX다운로드임포트 → Auto-map bones 자동본매핑 → Apply retargeting constraints 리타게팅적용 → Bake to keyframes 키프레임베이킹 → Add to NLA track NLA트랙추가.
+  Workflow 워크플로우: Manual Mixamo download 수동다운로드 → Connect to Blender WebSocket 웹소켓연결 → Import FBX 임포트 → Auto-generate bone mapping 자동본매핑 → User review/edit in Blender UI 사용자확인수정 → User confirms 사용자확인 → Apply retargeting 리타게팅적용 → Bake to keyframes 베이킹 → Add to NLA track NLA트랙추가.
 
-  WebSocket-based architecture 웹소켓기반. Port range 포트범위 9400-9500. Auto bone mapping 자동본매핑. Rigify compatible Rigify호환. Session hooks 세션훅스 auto-initialization 자동초기화.
+  WebSocket-based architecture 웹소켓기반. Port range 포트범위 9400-9500. Two-phase workflow 2단계워크플로우 with user confirmation 사용자확인. Auto bone mapping with UI review 자동본매핑UI리뷰. Rigify compatible Rigify호환. Session hooks auto-initialization 세션훅스자동초기화. Manual Mixamo download 수동다운로드 (no API 공식API없음).
 allowed-tools: Bash, Read, Write, Glob
 ---
 
@@ -15,27 +15,29 @@ allowed-tools: Bash, Read, Write, Glob
 
 ## Purpose
 
-Automate the process of retargeting Mixamo animations to user-rigged characters in Blender. Uses WebSocket-based architecture for real-time Blender control, eliminating manual bone mapping and constraint setup.
+Automate the process of retargeting Mixamo animations to user-rigged characters in Blender. Uses WebSocket-based architecture for real-time Blender control with a two-phase workflow that allows users to review and edit bone mappings before applying retargeting.
 
 ## When to Use
 
 Use blender-retargeting when tasks involve:
-- Applying Mixamo animations to custom rigged characters
-- Automatic bone mapping between Mixamo and Rigify/custom rigs
-- Batch processing multiple animations for a single character
+- Applying manually downloaded Mixamo animations to custom rigged characters
+- Automatic bone mapping between Mixamo and Rigify/custom rigs with user review
 - Animation retargeting workflows that require precise bone correspondence
+- User-confirmed bone mapping before applying retargeting
 - Projects requiring Blender automation via WebSocket
+
+**Note:** Mixamo does not provide an official API. Users must manually download FBX files from Mixamo.com.
 
 ## ⚠️ Important Guidelines
 
 **When to Ask User:** Use AskUserQuestion tool if:
 - Character armature name is unclear or not specified
 - Multiple rigs exist in the scene and target is ambiguous
-- Mixamo animation name is generic (e.g., "dance" - which specific dance?)
-- Bone mapping fails and manual mapping required
+- Animation FBX file path is not provided
 - Blender WebSocket server connection fails
+- User needs guidance on downloading from Mixamo
 
-**DO NOT** guess character names or assume rig structures. Always clarify first.
+**DO NOT** guess character names, file paths, or assume rig structures. Always clarify first.
 
 ## Prerequisites
 
@@ -80,13 +82,15 @@ All CLI commands will support \`--help\` for detailed options in future versions
 │                 │         │                  │                │    Addon)       │
 │  - User request │         │  - BlenderClient │                │  - WebSocket    │
 │  - Parse intent │         │  - Retargeting   │                │    Server       │
-│  - Execute flow │         │  - Mixamo API    │                │  - FBX Import   │
+│  - Execute flow │         │  - MixamoHelper  │                │  - FBX Import   │
 └─────────────────┘         └──────────────────┘                │  - Retargeting  │
                                      │                           │  - Bone Mapping │
-                                     ▼                           └─────────────────┘
+                                     │                           │  - UI Panel     │
+                                     │                           └─────────────────┘
+                                     ▼
                             ┌──────────────────┐
-                            │   Mixamo API     │
-                            │   (Optional)     │
+                            │   Mixamo.com     │
+                            │ (Manual Download)│
                             └──────────────────┘
 \`\`\`
 
@@ -94,7 +98,9 @@ All CLI commands will support \`--help\` for detailed options in future versions
 - **WebSocket Server**: Blender Python addon listening on port 9400-9500
 - **TypeScript Client**: Connects to Blender, sends commands via JSON-RPC protocol
 - **Retargeting Controller**: Handles bone mapping and constraint application
-- **Mixamo Integration**: Search, download, import animations (API or manual)
+- **Bone Mapping UI**: Blender panel for reviewing/editing auto-generated mappings
+- **Two-Phase Workflow**: Auto-generate → User review → Apply retargeting
+- **Mixamo Helper**: Provides download instructions (Mixamo has no official API)
 - **Auto Management**: Session hooks initialize scripts and manage project ports
 
 ## Core Workflow
@@ -104,25 +110,55 @@ All CLI commands will support \`--help\` for detailed options in future versions
 From user's request, identify:
 - **Target character**: Armature name in Blender (e.g., "MyCharacter", "Hero")
 - **Animation name**: Mixamo animation to apply (e.g., "Walking", "Running")
-- **Animation source**: Mixamo search term, ID, or manually downloaded FBX path
+- **Animation file path**: Path to manually downloaded FBX file
 - **Bone mapping**: Auto (default), Rigify preset, or custom mapping
 
 When information is missing or ambiguous, use AskUserQuestion tool.
 
-### 2. Execute Retargeting
+**If user doesn't have the FBX file yet:**
+- Provide Mixamo download instructions using `getManualDownloadInstructions()`
+- Guide user to download from Mixamo.com with recommended settings (FBX, Without Skin, 30 FPS)
+- Wait for user to provide the downloaded file path
 
-Basic retargeting example:
+### 2. Execute Retargeting Workflow
+
+**Two-Phase Workflow:**
+
+**Phase 1: Auto-generate and display bone mapping**
 \`\`\`typescript
 import { AnimationRetargetingWorkflow } from 'blender-retargeting';
 
 const workflow = new AnimationRetargetingWorkflow();
 
+// If user doesn't have FBX file:
+console.log(workflow.getManualDownloadInstructions('Walking'));
+console.log('Recommended settings:', workflow.getRecommendedSettings());
+
+// After user downloads the FBX:
 await workflow.run({
   targetCharacterArmature: 'Hero',
-  mixamoAnimation: 'Walking',
+  animationFilePath: './animations/Walking.fbx',  // User-provided path
+  animationName: 'Walking',
   boneMapping: 'auto',
+  skipConfirmation: false,  // Enable confirmation workflow
 });
 \`\`\`
+
+**What happens during execution:**
+1. Import FBX file into Blender
+2. Auto-generate bone mapping
+3. Display mapping in Blender UI panel (View3D > Sidebar > Blender Toolkit > Bone Mapping Review)
+4. User reviews the mapping in Blender:
+   - Check each bone correspondence
+   - Edit incorrect mappings using dropdowns
+   - Use "Auto Re-map" to regenerate if needed
+5. User clicks "Apply Retargeting" in Blender when ready
+6. Retargeting is applied and baked to keyframes
+
+**Phase 2: User confirmation and application**
+- The workflow pauses after displaying the bone mapping
+- User has full control to review and edit in Blender UI
+- Retargeting only proceeds when user confirms via "Apply Retargeting" button
 
 ## Troubleshooting
 
@@ -138,9 +174,10 @@ await workflow.run({
 ### "Bone mapping failed"
 - Use custom bone mapping with exact bone names
 
-### "Mixamo download failed"
-- Download manually from Mixamo.com
-- Use \`mixamoFilePath\` parameter
+### "Animation file not found"
+- Ensure user has downloaded the FBX from Mixamo.com
+- Verify the file path is correct and accessible
+- Use absolute path if relative path fails
 
 ## Output Structure
 

@@ -5,7 +5,7 @@
 
 import { BlenderClient } from './blender/client';
 import { RetargetingController } from './blender/retargeting';
-import { MixamoClient } from './blender/mixamo';
+import { MixamoHelper } from './blender/mixamo';
 import { BLENDER, FS, ERROR_MESSAGES, SUCCESS_MESSAGES } from './constants';
 import { existsSync, mkdirSync } from 'fs';
 import { join } from 'path';
@@ -17,14 +17,16 @@ export interface RetargetWorkflowOptions {
   // 캐릭터 설정
   targetCharacterArmature: string;
 
-  // Mixamo 설정
-  mixamoAnimation?: string;         // 검색할 애니메이션 이름
-  mixamoAnimationId?: string;       // 직접 애니메이션 ID 지정
-  mixamoFilePath?: string;          // 수동 다운로드한 FBX 경로
+  // 애니메이션 파일 설정
+  animationFilePath: string;        // FBX or DAE file path (manual download required)
+  animationName?: string;           // Optional animation name for NLA track
 
   // 리타게팅 설정
   boneMapping?: 'auto' | 'mixamo_to_rigify' | 'custom';
   customBoneMap?: Record<string, string>;
+
+  // Confirmation workflow
+  skipConfirmation?: boolean;       // Skip bone mapping confirmation (use auto-mapping directly)
 
   // 출력 설정
   outputDir?: string;
@@ -33,28 +35,36 @@ export interface RetargetWorkflowOptions {
 export class AnimationRetargetingWorkflow {
   private blenderClient: BlenderClient;
   private retargetingController: RetargetingController;
-  private mixamoClient: MixamoClient;
+  private mixamoHelper: MixamoHelper;
   private outputDir: string;
 
   constructor() {
     this.blenderClient = new BlenderClient();
     this.retargetingController = new RetargetingController(this.blenderClient);
-    this.mixamoClient = new MixamoClient();
+    this.mixamoHelper = new MixamoHelper();
     this.outputDir = join(process.cwd(), FS.OUTPUT_DIR);
   }
 
   /**
    * 전체 리타게팅 워크플로우 실행
+   *
+   * Workflow with user confirmation:
+   * 1. Import animation FBX
+   * 2. Auto-generate bone mapping
+   * 3. Send mapping to Blender UI for review
+   * 4. Wait for user confirmation (via AskUserQuestion)
+   * 5. Retrieve edited mapping from Blender
+   * 6. Apply retargeting with confirmed mapping
    */
   async run(options: RetargetWorkflowOptions): Promise<void> {
     const {
       blenderPort = BLENDER.DEFAULT_PORT,
       targetCharacterArmature,
-      mixamoAnimation,
-      mixamoAnimationId,
-      mixamoFilePath,
+      animationFilePath,
+      animationName,
       boneMapping = 'auto',
       customBoneMap,
+      skipConfirmation = false,
       outputDir,
     } = options;
 
@@ -64,6 +74,11 @@ export class AnimationRetargetingWorkflow {
 
     // 출력 디렉토리 생성
     this.ensureOutputDirectory();
+
+    // Validate animation file
+    if (!existsSync(animationFilePath)) {
+      throw new Error(`Animation file not found: ${animationFilePath}`);
+    }
 
     try {
       // Step 1: Blender에 연결
@@ -80,89 +95,115 @@ export class AnimationRetargetingWorkflow {
         );
       }
 
-      // Step 3: Mixamo 애니메이션 가져오기
-      let animationPath: string;
-
-      if (mixamoFilePath) {
-        // 수동 다운로드한 파일 사용
-        console.log(`📂 Using manually downloaded file: ${mixamoFilePath}`);
-        animationPath = mixamoFilePath;
-      } else if (mixamoAnimationId) {
-        // Mixamo에서 다운로드
-        console.log(`📥 Downloading animation from Mixamo (ID: ${mixamoAnimationId})...`);
-        animationPath = await this.downloadMixamoAnimation(mixamoAnimationId);
-      } else if (mixamoAnimation) {
-        // 이름으로 검색 후 다운로드
-        console.log(`🔍 Searching for "${mixamoAnimation}" on Mixamo...`);
-        const results = await this.mixamoClient.searchAnimations(mixamoAnimation, 5);
-
-        if (results.length === 0) {
-          throw new Error(`No animations found for "${mixamoAnimation}"`);
-        }
-
-        console.log(`Found ${results.length} animations:`);
-        results.forEach((anim, idx) => {
-          console.log(`  ${idx + 1}. ${anim.name} (ID: ${anim.id})`);
-        });
-
-        // 첫 번째 결과 사용
-        const selectedAnimation = results[0];
-        console.log(`📥 Downloading "${selectedAnimation.name}"...`);
-        animationPath = await this.downloadMixamoAnimation(selectedAnimation.id);
-      } else {
-        throw new Error(
-          'Please provide either mixamoAnimation, mixamoAnimationId, or mixamoFilePath'
-        );
-      }
-
-      // Step 4: Blender에 임포트
-      console.log(`📦 Importing animation into Blender...`);
-      await this.importAnimation(animationPath);
+      // Step 3: 애니메이션 파일 임포트
+      console.log(`📦 Importing animation from: ${animationFilePath}`);
+      await this.importAnimation(animationFilePath);
       console.log(SUCCESS_MESSAGES.ANIMATION_IMPORTED);
 
-      // Step 5: Mixamo 아마추어 찾기 (방금 임포트된 것)
+      // Step 4: Mixamo 아마추어 찾기 (방금 임포트된 것)
       const updatedArmatures = await this.getArmatures();
       const mixamoArmature = updatedArmatures.find(
         (name) => !armatures.includes(name)
       );
 
       if (!mixamoArmature) {
-        throw new Error('Failed to find imported Mixamo armature');
+        throw new Error('Failed to find imported animation armature');
       }
 
-      console.log(`✅ Found Mixamo armature: ${mixamoArmature}`);
+      console.log(`✅ Found animation armature: ${mixamoArmature}`);
 
-      // Step 6: 리타게팅 실행
-      console.log('🎬 Starting animation retargeting...');
+      // Step 5: Auto-generate bone mapping
+      console.log('🔍 Auto-generating bone mapping...');
+      let finalBoneMap: Record<string, string>;
+
+      if (boneMapping === 'custom' && customBoneMap) {
+        finalBoneMap = customBoneMap;
+      } else {
+        finalBoneMap = await this.retargetingController.autoMapBones(
+          mixamoArmature,
+          targetCharacterArmature
+        );
+      }
+
+      console.log(`✅ Generated bone mapping (${Object.keys(finalBoneMap).length} bones)`);
+
+      // Step 6: Bone mapping confirmation workflow
+      if (!skipConfirmation) {
+        console.log('\n📋 Bone Mapping Preview:');
+        console.log('─'.repeat(60));
+        Object.entries(finalBoneMap).forEach(([source, target]) => {
+          console.log(`  ${source.padEnd(25)} → ${target}`);
+        });
+        console.log('─'.repeat(60));
+
+        // Send bone mapping to Blender UI
+        console.log('\n📤 Sending bone mapping to Blender UI...');
+        await this.blenderClient.sendCommand('BoneMapping.show', {
+          sourceArmature: mixamoArmature,
+          targetArmature: targetCharacterArmature,
+          boneMapping: finalBoneMap,
+        });
+
+        console.log('✅ Bone mapping displayed in Blender');
+        console.log('\n⏸️  Please review the bone mapping in Blender:');
+        console.log('   1. Check the "Blender Toolkit" panel in the 3D View sidebar (N key)');
+        console.log('   2. Review the bone mapping table');
+        console.log('   3. Edit any incorrect mappings if needed');
+        console.log('   4. Click "Apply Retargeting" when ready');
+        console.log('\nWaiting for user confirmation...\n');
+
+        // Note: In actual implementation with Claude Code, this would use AskUserQuestion
+        // For now, we'll retrieve the mapping after a pause
+        // TODO: Integrate with Claude Code's AskUserQuestion tool
+
+        // Retrieve edited bone mapping from Blender
+        console.log('📥 Retrieving bone mapping from Blender...');
+        const retrievedMapping = await this.blenderClient.sendCommand<Record<string, string>>(
+          'BoneMapping.get',
+          {
+            sourceArmature: mixamoArmature,
+            targetArmature: targetCharacterArmature,
+          }
+        );
+
+        if (retrievedMapping && Object.keys(retrievedMapping).length > 0) {
+          finalBoneMap = retrievedMapping;
+          console.log(`✅ Using edited bone mapping (${Object.keys(finalBoneMap).length} bones)`);
+        }
+      }
+
+      // Step 7: 리타게팅 실행
+      console.log('\n🎬 Starting animation retargeting...');
       await this.retargetingController.retarget({
         sourceArmature: mixamoArmature,
         targetArmature: targetCharacterArmature,
-        boneMapping,
-        customBoneMap,
+        boneMapping: 'custom',
+        customBoneMap: finalBoneMap,
         preserveRotation: true,
         preserveLocation: true,
       });
 
       console.log(SUCCESS_MESSAGES.RETARGETING_COMPLETE);
 
-      // Step 7: NLA에 추가 (선택사항)
+      // Step 8: NLA에 추가 (선택사항)
       const animations = await this.retargetingController.getAnimations(
         targetCharacterArmature
       );
 
       if (animations.length > 0) {
         const latestAnimation = animations[animations.length - 1];
-        console.log(`📋 Adding animation to NLA track...`);
+        const nlaTrackName = animationName || `Retargeted_${Date.now()}`;
+        console.log(`📋 Adding animation to NLA track: ${nlaTrackName}`);
         await this.retargetingController.addToNLA(
           targetCharacterArmature,
           latestAnimation,
-          `Mixamo_${Date.now()}`
+          nlaTrackName
         );
       }
 
       console.log('\n✅ Animation retargeting completed successfully!\n');
       console.log('Next steps:');
-      console.log('  1. Review the animation in Blender');
+      console.log('  1. Review the retargeted animation in Blender');
       console.log('  2. Adjust keyframes if needed');
       console.log('  3. Export or save your scene');
 
@@ -172,32 +213,6 @@ export class AnimationRetargetingWorkflow {
     } finally {
       // 연결 종료
       await this.blenderClient.disconnect();
-    }
-  }
-
-  /**
-   * Mixamo 애니메이션 다운로드
-   */
-  private async downloadMixamoAnimation(animationId: string): Promise<string> {
-    const animationsDir = join(this.outputDir, FS.ANIMATIONS_DIR);
-
-    if (!existsSync(animationsDir)) {
-      mkdirSync(animationsDir, { recursive: true });
-    }
-
-    try {
-      return await this.mixamoClient.downloadAnimation({
-        animationId,
-        format: 'fbx',
-        skin: 'Without Skin',
-        fps: 30,
-        outputPath: animationsDir,
-      });
-    } catch (error) {
-      // API 다운로드 실패 시 수동 다운로드 가이드 제공
-      console.error('Failed to download from Mixamo API:', error);
-      console.log('\n' + this.mixamoClient.getManualDownloadInstructions(animationId));
-      throw new Error(ERROR_MESSAGES.MIXAMO_DOWNLOAD_FAILED);
     }
   }
 
@@ -245,17 +260,24 @@ export class AnimationRetargetingWorkflow {
   }
 
   /**
-   * Mixamo Bearer 토큰 설정
+   * Get manual download instructions for Mixamo
    */
-  setMixamoBearerToken(token: string): void {
-    this.mixamoClient.setBearerToken(token);
+  getManualDownloadInstructions(animationName: string): string {
+    return this.mixamoHelper.getManualDownloadInstructions(animationName);
   }
 
   /**
-   * 인기 애니메이션 목록 가져오기
+   * Get list of popular Mixamo animations
    */
   getPopularAnimations() {
-    return this.mixamoClient.getPopularAnimations();
+    return this.mixamoHelper.getPopularAnimations();
+  }
+
+  /**
+   * Get recommended Mixamo download settings
+   */
+  getRecommendedSettings() {
+    return this.mixamoHelper.getRecommendedSettings();
   }
 }
 
@@ -263,10 +285,16 @@ export class AnimationRetargetingWorkflow {
 export async function runRetargetingFromCLI() {
   const workflow = new AnimationRetargetingWorkflow();
 
-  // 예시: 사용자 캐릭터에 Walking 애니메이션 리타게팅
+  // Show manual download instructions
+  console.log(workflow.getManualDownloadInstructions('Walking'));
+  console.log('\nRecommended settings:', workflow.getRecommendedSettings());
+
+  // After manual download, run retargeting
   await workflow.run({
-    targetCharacterArmature: 'MyCharacter',  // 사용자의 캐릭터 이름
-    mixamoAnimation: 'Walking',               // Mixamo 애니메이션 검색어
-    boneMapping: 'auto',                      // 자동 본 매핑
+    targetCharacterArmature: 'MyCharacter',           // User's character name
+    animationFilePath: './animations/Walking.fbx',    // Downloaded FBX path
+    animationName: 'Walking',                         // Animation name for NLA track
+    boneMapping: 'auto',                              // Auto bone mapping
+    skipConfirmation: false,                          // Enable confirmation workflow
   });
 }

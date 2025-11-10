@@ -83,6 +83,8 @@ class BlenderWebSocketServer:
                 result = await self.handle_armature_command(method, params)
             elif method.startswith("Retargeting."):
                 result = await self.handle_retargeting_command(method, params)
+            elif method.startswith("BoneMapping."):
+                result = await self.handle_bonemapping_command(method, params)
             elif method.startswith("Animation."):
                 result = await self.handle_animation_command(method, params)
             elif method.startswith("Import."):
@@ -128,6 +130,22 @@ class BlenderWebSocketServer:
             return get_preset_bone_mapping(preset)
         else:
             raise ValueError(f"Unknown retargeting method: {method}")
+
+    async def handle_bonemapping_command(self, method: str, params: Dict) -> Any:
+        """본 매핑 명령 처리"""
+        if method == "BoneMapping.show":
+            return store_bone_mapping(
+                params.get("sourceArmature"),
+                params.get("targetArmature"),
+                params.get("boneMapping")
+            )
+        elif method == "BoneMapping.get":
+            return load_bone_mapping(
+                params.get("sourceArmature"),
+                params.get("targetArmature")
+            )
+        else:
+            raise ValueError(f"Unknown bone mapping method: {method}")
 
     async def handle_animation_command(self, method: str, params: Dict) -> Any:
         """애니메이션 명령 처리"""
@@ -417,6 +435,45 @@ def import_dae(filepath: str) -> str:
     return f"Imported {filepath}"
 
 
+def store_bone_mapping(source_armature: str, target_armature: str, bone_mapping: Dict[str, str]) -> str:
+    """본 매핑을 Scene 속성에 저장"""
+    scene = bpy.context.scene
+
+    # 기존 매핑 클리어
+    scene.bone_mapping_items.clear()
+
+    # 새 매핑 저장
+    for source_bone, target_bone in bone_mapping.items():
+        item = scene.bone_mapping_items.add()
+        item.source_bone = source_bone
+        item.target_bone = target_bone
+
+    # 아마추어 정보 저장
+    scene.bone_mapping_source_armature = source_armature
+    scene.bone_mapping_target_armature = target_armature
+
+    print(f"✅ Stored bone mapping: {len(bone_mapping)} bones")
+    return f"Bone mapping stored ({len(bone_mapping)} bones)"
+
+
+def load_bone_mapping(source_armature: str, target_armature: str) -> Dict[str, str]:
+    """Scene 속성에서 본 매핑 로드"""
+    scene = bpy.context.scene
+
+    # 아마추어 검증
+    if (scene.bone_mapping_source_armature != source_armature or
+        scene.bone_mapping_target_armature != target_armature):
+        raise ValueError("Stored bone mapping doesn't match requested armatures")
+
+    # 매핑 로드
+    bone_mapping = {}
+    for item in scene.bone_mapping_items:
+        bone_mapping[item.source_bone] = item.target_bone
+
+    print(f"✅ Loaded bone mapping: {len(bone_mapping)} bones")
+    return bone_mapping
+
+
 # ============================================================================
 # Blender UI Panel
 # ============================================================================
@@ -468,14 +525,166 @@ class BLENDERTOOLKIT_OT_StopServer(bpy.types.Operator):
         return {'FINISHED'}
 
 
+class BLENDERTOOLKIT_PT_BoneMappingPanel(bpy.types.Panel):
+    """본 매핑 리뷰 패널"""
+    bl_label = "Bone Mapping Review"
+    bl_idname = "BLENDERTOOLKIT_PT_bone_mapping"
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'UI'
+    bl_category = 'Blender Toolkit'
+    bl_options = {'DEFAULT_CLOSED'}
+
+    def draw(self, context):
+        layout = self.layout
+        scene = context.scene
+
+        # Show armature info
+        if scene.bone_mapping_source_armature and scene.bone_mapping_target_armature:
+            layout.label(text=f"Source: {scene.bone_mapping_source_armature}", icon='ARMATURE_DATA')
+            layout.label(text=f"Target: {scene.bone_mapping_target_armature}", icon='ARMATURE_DATA')
+            layout.separator()
+
+            # Bone mapping table
+            if len(scene.bone_mapping_items) > 0:
+                layout.label(text=f"Bone Mappings ({len(scene.bone_mapping_items)}):", icon='BONE_DATA')
+
+                # Header
+                box = layout.box()
+                row = box.row()
+                row.label(text="Source Bone")
+                row.label(text="→")
+                row.label(text="Target Bone")
+
+                # Mapping items (scrollable)
+                for i, item in enumerate(scene.bone_mapping_items):
+                    row = layout.row()
+                    row.label(text=item.source_bone)
+                    row.label(text="→")
+
+                    # Editable target bone dropdown
+                    target_armature = bpy.data.objects.get(scene.bone_mapping_target_armature)
+                    if target_armature and target_armature.type == 'ARMATURE':
+                        row.prop_search(item, "target_bone", target_armature.data, "bones", text="")
+                    else:
+                        row.prop(item, "target_bone", text="")
+
+                layout.separator()
+
+                # Auto re-map button
+                layout.operator("blendertoolkit.auto_remap", text="Auto Re-map", icon='FILE_REFRESH')
+
+                # Apply retargeting button
+                layout.separator()
+                layout.operator("blendertoolkit.apply_retargeting", text="Apply Retargeting", icon='PLAY')
+            else:
+                layout.label(text="No bone mapping data", icon='INFO')
+        else:
+            layout.label(text="No bone mapping loaded", icon='INFO')
+            layout.label(text="Waiting for Claude Code...", icon='TIME')
+
+
+class BLENDERTOOLKIT_OT_AutoRemap(bpy.types.Operator):
+    """자동 재매핑 오퍼레이터"""
+    bl_idname = "blendertoolkit.auto_remap"
+    bl_label = "Auto Re-map Bones"
+    bl_description = "Re-generate bone mapping automatically"
+
+    def execute(self, context):
+        scene = context.scene
+        source_armature = scene.bone_mapping_source_armature
+        target_armature = scene.bone_mapping_target_armature
+
+        if not source_armature or not target_armature:
+            self.report({'ERROR'}, "Source or target armature not set")
+            return {'CANCELLED'}
+
+        try:
+            # Auto-map bones
+            bone_map = auto_map_bones(source_armature, target_armature)
+
+            # Update scene properties
+            scene.bone_mapping_items.clear()
+            for source_bone, target_bone in bone_map.items():
+                item = scene.bone_mapping_items.add()
+                item.source_bone = source_bone
+                item.target_bone = target_bone
+
+            self.report({'INFO'}, f"Re-mapped {len(bone_map)} bones")
+        except Exception as e:
+            self.report({'ERROR'}, f"Auto re-mapping failed: {str(e)}")
+            return {'CANCELLED'}
+
+        return {'FINISHED'}
+
+
+class BLENDERTOOLKIT_OT_ApplyRetargeting(bpy.types.Operator):
+    """리타게팅 적용 오퍼레이터"""
+    bl_idname = "blendertoolkit.apply_retargeting"
+    bl_label = "Apply Retargeting"
+    bl_description = "Apply retargeting with current bone mapping"
+
+    def execute(self, context):
+        scene = context.scene
+        source_armature = scene.bone_mapping_source_armature
+        target_armature = scene.bone_mapping_target_armature
+
+        if not source_armature or not target_armature:
+            self.report({'ERROR'}, "Source or target armature not set")
+            return {'CANCELLED'}
+
+        # Build bone map from items
+        bone_map = {}
+        for item in scene.bone_mapping_items:
+            if item.target_bone:  # Skip empty mappings
+                bone_map[item.source_bone] = item.target_bone
+
+        if not bone_map:
+            self.report({'ERROR'}, "No bone mappings defined")
+            return {'CANCELLED'}
+
+        try:
+            result = retarget_animation(
+                source_armature,
+                target_armature,
+                bone_map,
+                preserve_rotation=True,
+                preserve_location=True
+            )
+            self.report({'INFO'}, result)
+        except Exception as e:
+            self.report({'ERROR'}, f"Retargeting failed: {str(e)}")
+            return {'CANCELLED'}
+
+        return {'FINISHED'}
+
+
+# ============================================================================
+# Property Groups
+# ============================================================================
+
+class BoneMappingItem(bpy.types.PropertyGroup):
+    """본 매핑 아이템"""
+    source_bone: bpy.props.StringProperty(name="Source Bone")
+    target_bone: bpy.props.StringProperty(name="Target Bone")
+
+
 # ============================================================================
 # 등록/해제
 # ============================================================================
 
 def register():
+    # Register property groups first
+    bpy.utils.register_class(BoneMappingItem)
+
+    # Register UI panels
     bpy.utils.register_class(BLENDERTOOLKIT_PT_Panel)
+    bpy.utils.register_class(BLENDERTOOLKIT_PT_BoneMappingPanel)
+
+    # Register operators
     bpy.utils.register_class(BLENDERTOOLKIT_OT_StartServer)
     bpy.utils.register_class(BLENDERTOOLKIT_OT_StopServer)
+    bpy.utils.register_class(BLENDERTOOLKIT_OT_AutoRemap)
+    bpy.utils.register_class(BLENDERTOOLKIT_OT_ApplyRetargeting)
 
     # 포트 설정 속성
     bpy.types.Scene.blender_toolkit_port = bpy.props.IntProperty(
@@ -486,14 +695,41 @@ def register():
         max=65535
     )
 
+    # 본 매핑 속성
+    bpy.types.Scene.bone_mapping_items = bpy.props.CollectionProperty(
+        type=BoneMappingItem,
+        name="Bone Mapping Items"
+    )
+    bpy.types.Scene.bone_mapping_source_armature = bpy.props.StringProperty(
+        name="Source Armature",
+        description="Source armature name"
+    )
+    bpy.types.Scene.bone_mapping_target_armature = bpy.props.StringProperty(
+        name="Target Armature",
+        description="Target armature name"
+    )
+
     print("✅ Blender Toolkit WebSocket Server registered")
 
 
 def unregister():
-    bpy.utils.unregister_class(BLENDERTOOLKIT_PT_Panel)
-    bpy.utils.unregister_class(BLENDERTOOLKIT_OT_StartServer)
+    # Unregister operators
+    bpy.utils.unregister_class(BLENDERTOOLKIT_OT_ApplyRetargeting)
+    bpy.utils.unregister_class(BLENDERTOOLKIT_OT_AutoRemap)
     bpy.utils.unregister_class(BLENDERTOOLKIT_OT_StopServer)
+    bpy.utils.unregister_class(BLENDERTOOLKIT_OT_StartServer)
 
+    # Unregister UI panels
+    bpy.utils.unregister_class(BLENDERTOOLKIT_PT_BoneMappingPanel)
+    bpy.utils.unregister_class(BLENDERTOOLKIT_PT_Panel)
+
+    # Unregister property groups
+    bpy.utils.unregister_class(BoneMappingItem)
+
+    # Delete properties
+    del bpy.types.Scene.bone_mapping_target_armature
+    del bpy.types.Scene.bone_mapping_source_armature
+    del bpy.types.Scene.bone_mapping_items
     del bpy.types.Scene.blender_toolkit_port
 
     print("🔌 Blender Toolkit WebSocket Server unregistered")
