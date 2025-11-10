@@ -223,9 +223,9 @@ Control Unity Editor programmatically via WebSocket - Create GameObjects, manage
 <details>
 <parameter name="summary"><strong>📖 Plugin Details</strong> (Click to expand)</summary>
 
-Blender automation toolkit with CLI-based geometry creation, animation retargeting, and WebSocket-based real-time control.
+**⚠️ Experimental Plugin** - Blender automation toolkit with CLI-based geometry creation, materials, modifiers, collections, animation retargeting, and WebSocket-based real-time control.
 
-**Quick Info:** CLI commands for geometry & objects | WebSocket control (port 9400-9500) | Fuzzy bone matching (60+ bones) | Vertex editing & modifiers | **Status:** ✅ Release (v1.2.0) | **Features:** Geometry creation (Cube, Sphere, etc.), Object manipulation, Vertex editing, Modifier support, Animation retargeting, Auto bone mapping with quality reports
+**Quick Info:** CLI commands for geometry, materials, modifiers & collections | WebSocket control (port 9400-9500) | Fuzzy bone matching (60+ bones) | Vertex editing | **Status:** 🧪 Experimental (v1.3.0) | **v1.3.0 Features:** Material management (Principled BSDF), Advanced modifier control (30+ modifiers), Collection management, 30+ new CLI commands | **Previous:** Geometry creation, Object manipulation, Animation retargeting with quality reports
 
 **[Read Full Documentation →](plugins/blender-toolkit/README.md)**
 

@@ -1,19 +1,42 @@
 # Blender Toolkit
 
-> **Status**: ✅ Release (v1.0.0)
+> **⚠️ 상태**: 🧪 실험 단계 (v1.3.0)
+>
+> **이 플러그인은 현재 실험 단계입니다. API와 기능이 변경될 수 있습니다.**
 
 **Language**: [English](README.md) | [한국어](README.ko.md)
 
-Claude Code를 위한 Blender 자동화 툴킷 - WebSocket 기반 실시간 Blender 제어 및 Mixamo 애니메이션 리타게팅
+Claude Code를 위한 Blender 자동화 툴킷 - 도형, 머티리얼, 모디파이어, 컬렉션, Mixamo 애니메이션 리타게팅을 포함한 WebSocket 기반 실시간 Blender 제어
 
 ## 🎯 Features
 
+### 핵심 기능
 - **🎬 Animation Retargeting**: Mixamo 애니메이션을 사용자 캐릭터에 자동 리타게팅
+- **🧠 Fuzzy Bone Matching**: 60+ bones 지원, 유사도 기반 자동 매칭 (손가락, 발가락 포함)
 - **🔌 WebSocket Integration**: 실시간 Blender 제어 (포트: 9400~9500)
-- **🤖 Auto Bone Mapping**: Mixamo 본을 사용자 리그에 자동 매핑
-- **📦 Mixamo Integration**: 애니메이션 검색 및 다운로드 (API 지원)
+- **✅ 2-Phase Workflow**: UI 확인 단계로 매핑 검증 가능
 - **🎨 Multi-Project Support**: 프로젝트별 독립적인 포트 및 설정 관리
 - **🔧 Rigify Compatible**: Rigify 리그 자동 지원
+
+### v1.3.0의 새 기능
+- **🎨 Material Management**: Principled BSDF 기반 머티리얼 생성, 속성 제어 (base color, metallic, roughness, emission)
+- **🔧 Advanced Modifier Control**: 30+ modifiers 지원, list/remove/toggle/modify/reorder 전체 제어
+- **📦 Collection Management**: 씬 계층 구조 관리 (create, add/remove objects, delete)
+- **🏗️ Modular Architecture**: 모디파이어를 별도 모듈로 분리하여 확장성 향상
+- **⚡ 30+ New CLI Commands**: material, modifier, collection 도메인에 걸친 새로운 명령
+
+### v1.2.0 기능
+- **🎨 Geometry Creation**: CLI 및 WebSocket을 통한 도형 생성 (Cube, Sphere, Cylinder, Plane, Cone, Torus)
+- **🔧 Object Manipulation**: 오브젝트 변형, 복제, 삭제 등 전체 제어
+- **⚡ Vertex Editing**: 버텍스 이동, 메쉬 세분화, 페이스 돌출 등 고급 편집
+- **🔩 Modifier Support**: 모디파이어 추가 및 적용 (Subdivision, Mirror, Array, etc.)
+- **💻 CLI Interface**: Browser-pilot 스타일의 명령줄 인터페이스
+
+### v1.1.0 기능
+- **📊 Logging System**: winston (TypeScript) + logging (Python) - 디버깅 및 모니터링
+- **🧩 Modular Architecture**: 확장 가능한 명령 핸들러 구조 (commands/, utils/)
+- **📚 Complete API Documentation**: WebSocket commands, bone mapping guide, workflow examples
+- **🎯 Quality Reports**: 매핑 품질 평가 시스템 (excellent/good/fair/poor)
 
 ## 📦 Installation
 

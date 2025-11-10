@@ -1,10 +1,12 @@
 # Blender Toolkit
 
-> **Status**: ✅ Release (v1.2.0)
+> **⚠️ Status**: 🧪 Experimental (v1.3.0)
+>
+> **This plugin is currently in experimental stage. APIs and features may change.**
 
 **Language**: [English](README.md) | [한국어](README.ko.md)
 
-Blender automation toolkit for Claude Code - WebSocket-based real-time Blender control, geometry creation, and Mixamo animation retargeting with intelligent fuzzy bone matching
+Blender automation toolkit for Claude Code - WebSocket-based real-time Blender control with geometry, materials, modifiers, collections, and Mixamo animation retargeting
 
 ## 🎯 Features
 
@@ -16,7 +18,14 @@ Blender automation toolkit for Claude Code - WebSocket-based real-time Blender c
 - **🎨 Multi-Project Support**: 프로젝트별 독립적인 포트 및 설정 관리
 - **🔧 Rigify Compatible**: Rigify 리그 자동 지원
 
-### New in v1.2.0
+### New in v1.3.0
+- **🎨 Material Management**: Principled BSDF 기반 머티리얼 생성, 속성 제어 (base color, metallic, roughness, emission)
+- **🔧 Advanced Modifier Control**: 30+ modifiers 지원, list/remove/toggle/modify/reorder 전체 제어
+- **📦 Collection Management**: 씬 계층 구조 관리 (create, add/remove objects, delete)
+- **🏗️ Modular Architecture**: 모디파이어를 별도 모듈로 분리하여 확장성 향상
+- **⚡ 30+ New CLI Commands**: material, modifier, collection 도메인에 걸친 새로운 명령
+
+### v1.2.0 Features
 - **🎨 Geometry Creation**: CLI 및 WebSocket을 통한 도형 생성 (Cube, Sphere, Cylinder, Plane, Cone, Torus)
 - **🔧 Object Manipulation**: 오브젝트 변형, 복제, 삭제 등 전체 제어
 - **⚡ Vertex Editing**: 버텍스 이동, 메쉬 세분화, 페이스 돌출 등 고급 편집
