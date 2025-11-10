@@ -78,6 +78,9 @@ export const log = {
   error: (message: string, ...meta: any[]) => logger.error(message, ...meta),
 };
 
+// Named export (코드베이스 호환성)
+export { logger };
+
 // 기본 export
 export default logger;
 
