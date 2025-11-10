@@ -18,7 +18,8 @@
   "author": "Dev GOM",
   "license": "MIT",
   "dependencies": {
-    "ws": "^8.14.0"
+    "ws": "^8.14.0",
+    "winston": "^3.11.0"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

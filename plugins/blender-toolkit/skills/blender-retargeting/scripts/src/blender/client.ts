@@ -6,6 +6,7 @@
 import WebSocket from 'ws';
 import { EventEmitter } from 'events';
 import { BLENDER } from '../constants';
+import { log } from '../utils/logger';
 
 export interface BlenderMessage {
   id: number;
@@ -41,6 +42,8 @@ export class BlenderClient extends EventEmitter {
    * Blender에 WebSocket으로 연결
    */
   async connect(): Promise<void> {
+    log.info(`Connecting to Blender WebSocket: ${this.wsUrl}`);
+
     return new Promise((resolve, reject) => {
       this.ws = new WebSocket(this.wsUrl);
 
@@ -48,11 +51,14 @@ export class BlenderClient extends EventEmitter {
         if (this.ws) {
           this.ws.terminate();
         }
-        reject(new Error(`Connection timeout (${BLENDER.WS_TIMEOUT}ms)`));
+        const errorMsg = `Connection timeout (${BLENDER.WS_TIMEOUT}ms)`;
+        log.error(errorMsg);
+        reject(new Error(errorMsg));
       }, BLENDER.WS_TIMEOUT);
 
       this.ws.on('open', () => {
         clearTimeout(timeout);
+        log.info('WebSocket connection established');
 
         // 전역 메시지 핸들러 설정 (이벤트 수신용)
         if (this.ws) {
@@ -79,10 +85,12 @@ export class BlenderClient extends EventEmitter {
 
       this.ws.on('error', (error) => {
         clearTimeout(timeout);
+        log.error(`WebSocket error: ${error.message}`);
         reject(error);
       });
 
       this.ws.on('close', () => {
+        log.info('WebSocket connection closed');
         this.emit('disconnected');
       });
     });
@@ -96,11 +104,15 @@ export class BlenderClient extends EventEmitter {
     params?: unknown
   ): Promise<T> {
     if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
-      throw new Error('Not connected to Blender');
+      const errorMsg = 'Not connected to Blender';
+      log.error(errorMsg);
+      throw new Error(errorMsg);
     }
 
     const id = ++this.messageId;
     const message: BlenderMessage = { id, method, params };
+
+    log.debug(`Sending command: ${method}`, params);
 
     return new Promise((resolve, reject) => {
       const timeout = setTimeout(() => {
@@ -118,8 +130,10 @@ export class BlenderClient extends EventEmitter {
             this.ws?.off('message', messageHandler);
 
             if (response.error) {
+              log.error(`Command ${method} failed: ${response.error.message}`);
               reject(new Error(response.error.message));
             } else {
+              log.debug(`Command ${method} completed successfully`);
               resolve(response.result as T);
             }
           }

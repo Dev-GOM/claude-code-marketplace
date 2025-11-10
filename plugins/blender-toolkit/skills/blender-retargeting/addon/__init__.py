@@ -25,6 +25,18 @@ import os
 from aiohttp import web
 from typing import Dict, Any, Optional
 
+# Fuzzy bone matching utilities
+from .utils.bone_matching import (
+    fuzzy_match_bones,
+    get_match_quality_report,
+)
+
+# Logging utilities
+from .utils.logger import get_logger
+
+# 모듈 로거 초기화
+logger = get_logger('addon')
+
 
 # ============================================================================
 # WebSocket Server
@@ -46,15 +58,18 @@ class BlenderWebSocketServer:
         await ws.prepare(request)
 
         self.clients.append(ws)
+        logger.info(f"Client connected (total: {len(self.clients)})")
         print(f"✅ Client connected (total: {len(self.clients)})")
 
         async for msg in ws:
             if msg.type == web.WSMsgType.TEXT:
                 try:
                     data = json.loads(msg.data)
+                    logger.debug(f"Received message: {data}")
                     response = await self.process_command(data)
                     await ws.send_json(response)
                 except Exception as e:
+                    logger.error(f"Error handling message: {e}", exc_info=True)
                     await ws.send_json({
                         "id": data.get("id"),
                         "error": {
@@ -63,9 +78,11 @@ class BlenderWebSocketServer:
                         }
                     })
             elif msg.type == web.WSMsgType.ERROR:
+                logger.error(f'WebSocket error: {ws.exception()}')
                 print(f'❌ WebSocket error: {ws.exception()}')
 
         self.clients.remove(ws)
+        logger.info(f"Client disconnected (total: {len(self.clients)})")
         print(f"🔌 Client disconnected (total: {len(self.clients)})")
         return ws
 
@@ -75,6 +92,8 @@ class BlenderWebSocketServer:
         params = data.get("params", {})
         msg_id = data.get("id")
 
+        logger.info(f"Processing command: {method}")
+        logger.debug(f"Command params: {params}")
         print(f"📨 Received command: {method}")
 
         try:
@@ -92,8 +111,10 @@ class BlenderWebSocketServer:
             else:
                 raise ValueError(f"Unknown method: {method}")
 
+            logger.info(f"Command {method} completed successfully")
             return {"id": msg_id, "result": result}
         except Exception as e:
+            logger.error(f"Error processing {method}: {str(e)}", exc_info=True)
             print(f"❌ Error processing {method}: {str(e)}")
             return {
                 "id": msg_id,
@@ -227,16 +248,19 @@ def get_bones(armature_name: str) -> list:
 
 
 def auto_map_bones(source_armature: str, target_armature: str) -> Dict[str, str]:
-    """자동 본 매핑 (Mixamo -> 사용자 캐릭터)"""
+    """
+    자동 본 매핑 (Mixamo -> 사용자 캐릭터)
+    Fuzzy matching 알고리즘 사용으로 정확도 개선
+    """
     source = bpy.data.objects.get(source_armature)
     target = bpy.data.objects.get(target_armature)
 
     if not source or not target:
         raise ValueError("Source or target armature not found")
 
-    # Mixamo 표준 본 이름 (확장: 손가락, 발가락 포함)
-    mixamo_bones = {
-        # 몸통
+    # Mixamo 표준 본 이름과 알려진 별칭 (확장: 손가락, 발가락 포함)
+    mixamo_bone_aliases = {
+        # 몸통 (6개)
         "Hips": ["hips", "pelvis", "root"],
         "Spine": ["spine", "spine1"],
         "Spine1": ["spine1", "spine2"],
@@ -244,31 +268,31 @@ def auto_map_bones(source_armature: str, target_armature: str) -> Dict[str, str]
         "Neck": ["neck"],
         "Head": ["head"],
 
-        # 왼쪽 팔
+        # 왼쪽 팔 (4개)
         "LeftShoulder": ["shoulder.l", "clavicle.l", "leftshoulder"],
         "LeftArm": ["upper_arm.l", "leftarm", "upperarm.l"],
         "LeftForeArm": ["forearm.l", "leftforearm", "lowerarm.l"],
         "LeftHand": ["hand.l", "lefthand"],
 
-        # 오른쪽 팔
+        # 오른쪽 팔 (4개)
         "RightShoulder": ["shoulder.r", "clavicle.r", "rightshoulder"],
         "RightArm": ["upper_arm.r", "rightarm", "upperarm.r"],
         "RightForeArm": ["forearm.r", "rightforearm", "lowerarm.r"],
         "RightHand": ["hand.r", "righthand"],
 
-        # 왼쪽 다리
+        # 왼쪽 다리 (4개)
         "LeftUpLeg": ["thigh.l", "leftupleg", "upperleg.l"],
         "LeftLeg": ["shin.l", "leftleg", "lowerleg.l"],
         "LeftFoot": ["foot.l", "leftfoot"],
         "LeftToeBase": ["toe.l", "lefttoebase", "foot.l.001"],
 
-        # 오른쪽 다리
+        # 오른쪽 다리 (4개)
         "RightUpLeg": ["thigh.r", "rightupleg", "upperleg.r"],
         "RightLeg": ["shin.r", "rightleg", "lowerleg.r"],
         "RightFoot": ["foot.r", "rightfoot"],
         "RightToeBase": ["toe.r", "righttoebase", "foot.r.001"],
 
-        # 왼쪽 손가락
+        # 왼쪽 손가락 (15개)
         "LeftHandThumb1": ["thumb.01.l", "lefthandthumb1", "thumb_01.l"],
         "LeftHandThumb2": ["thumb.02.l", "lefthandthumb2", "thumb_02.l"],
         "LeftHandThumb3": ["thumb.03.l", "lefthandthumb3", "thumb_03.l"],
@@ -285,7 +309,7 @@ def auto_map_bones(source_armature: str, target_armature: str) -> Dict[str, str]
         "LeftHandPinky2": ["f_pinky.02.l", "lefthandpinky2", "pinky_02.l"],
         "LeftHandPinky3": ["f_pinky.03.l", "lefthandpinky3", "pinky_03.l"],
 
-        # 오른쪽 손가락
+        # 오른쪽 손가락 (15개)
         "RightHandThumb1": ["thumb.01.r", "righthandthumb1", "thumb_01.r"],
         "RightHandThumb2": ["thumb.02.r", "righthandthumb2", "thumb_02.r"],
         "RightHandThumb3": ["thumb.03.r", "righthandthumb3", "thumb_03.r"],
@@ -303,22 +327,37 @@ def auto_map_bones(source_armature: str, target_armature: str) -> Dict[str, str]
         "RightHandPinky3": ["f_pinky.03.r", "righthandpinky3", "pinky_03.r"],
     }
 
-    bone_map = {}
-    target_bone_names = [b.name.lower() for b in target.data.bones]
+    # 소스 본 리스트 (실제로 존재하는 본만)
+    source_bones = [bone.name for bone in source.data.bones
+                    if bone.name in mixamo_bone_aliases]
 
-    for mixamo_bone, target_variants in mixamo_bones.items():
-        # Mixamo 본이 source에 있는지 확인
-        if mixamo_bone not in source.data.bones:
-            continue
+    # 타겟 본 리스트
+    target_bones = [bone.name for bone in target.data.bones]
 
-        # 타겟에서 매칭되는 본 찾기
-        for variant in target_variants:
-            if variant in target_bone_names:
-                actual_name = target.data.bones[target_bone_names.index(variant)].name
-                bone_map[mixamo_bone] = actual_name
-                break
+    # Fuzzy matching 실행 (정확한 매칭 우선, 그 다음 유사도 매칭)
+    logger.info("Running fuzzy bone matching algorithm...")
+    logger.debug(f"Source bones: {len(source_bones)}, Target bones: {len(target_bones)}")
 
-    print(f"✅ Auto-mapped {len(bone_map)} bones")
+    bone_map = fuzzy_match_bones(
+        source_bones=source_bones,
+        target_bones=target_bones,
+        known_aliases=mixamo_bone_aliases,
+        threshold=0.6,  # 60% 이상 유사도
+        prefer_exact=True  # 정확한 매칭 우선
+    )
+
+    # 매칭 품질 보고서
+    quality_report = get_match_quality_report(bone_map)
+    logger.info(f"Auto-mapped {quality_report['total_mappings']} bones")
+    logger.info(f"Quality: {quality_report['quality'].upper()}")
+    logger.info(f"Critical bones: {quality_report['critical_bones_mapped']}")
+    logger.debug(f"Bone mapping: {bone_map}")
+
+    # 콘솔 출력 (사용자에게 피드백)
+    print(f"✅ Auto-mapped {quality_report['total_mappings']} bones")
+    print(f"   Quality: {quality_report['quality'].upper()}")
+    print(f"   Critical bones: {quality_report['critical_bones_mapped']}")
+
     return bone_map
 
 
