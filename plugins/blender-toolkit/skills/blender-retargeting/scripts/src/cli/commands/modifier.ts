@@ -34,7 +34,7 @@ export function registerModifierCommands(program: Command) {
           properties.render_levels = options.renderLevels;
         }
 
-        const result = await client.sendCommand('Modifier.add', {
+        const result: any = await client.sendCommand('Modifier.add', {
           objectName: options.name,
           modifierType: options.type,
           name: options.modName,
@@ -64,7 +64,7 @@ export function registerModifierCommands(program: Command) {
       try {
         await client.connect(options.port);
 
-        const result = await client.sendCommand('Modifier.apply', {
+        const result: any = await client.sendCommand('Modifier.apply', {
           objectName: options.name,
           modifierName: options.modifier
         });
@@ -89,7 +89,7 @@ export function registerModifierCommands(program: Command) {
       try {
         await client.connect(options.port);
 
-        const result = await client.sendCommand('Modifier.list', {
+        const result: any = await client.sendCommand('Modifier.list', {
           objectName: options.name
         });
 
@@ -125,7 +125,7 @@ export function registerModifierCommands(program: Command) {
       try {
         await client.connect(options.port);
 
-        const result = await client.sendCommand('Modifier.remove', {
+        const result: any = await client.sendCommand('Modifier.remove', {
           objectName: options.name,
           modifierName: options.modifier
         });
@@ -165,7 +165,7 @@ export function registerModifierCommands(program: Command) {
           params.render = options.render === 'true';
         }
 
-        const result = await client.sendCommand('Modifier.toggle', params);
+        const result: any = await client.sendCommand('Modifier.toggle', params);
 
         console.log('✅ Modifier toggled:');
         console.log(`   Viewport: ${result.show_viewport}`);
@@ -203,7 +203,7 @@ export function registerModifierCommands(program: Command) {
         if (options.segments !== undefined) properties.segments = options.segments;
         if (options.count !== undefined) properties.count = options.count;
 
-        const result = await client.sendCommand('Modifier.modify', {
+        const result: any = await client.sendCommand('Modifier.modify', {
           objectName: options.name,
           modifierName: options.modifier,
           properties
@@ -231,7 +231,7 @@ export function registerModifierCommands(program: Command) {
       try {
         await client.connect(options.port);
 
-        const result = await client.sendCommand('Modifier.getInfo', {
+        const result: any = await client.sendCommand('Modifier.getInfo', {
           objectName: options.name,
           modifierName: options.modifier
         });
@@ -259,7 +259,7 @@ export function registerModifierCommands(program: Command) {
       try {
         await client.connect(options.port);
 
-        const result = await client.sendCommand('Modifier.reorder', {
+        const result: any = await client.sendCommand('Modifier.reorder', {
           objectName: options.name,
           modifierName: options.modifier,
           direction: options.direction.toUpperCase()

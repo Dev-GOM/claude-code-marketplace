@@ -20,7 +20,7 @@ export function registerObjectCommands(program: Command) {
       try {
         await client.connect(options.port);
 
-        const objects = await client.sendCommand('Object.list', {
+        const objects: any = await client.sendCommand('Object.list', {
           type: options.type
         });
 
@@ -91,7 +91,7 @@ export function registerObjectCommands(program: Command) {
           ];
         }
 
-        const result = await client.sendCommand('Object.transform', params);
+        const result: any = await client.sendCommand('Object.transform', params);
 
         console.log('✅ Object transformed successfully:');
         console.log(`   Name: ${result.name}`);
@@ -135,7 +135,7 @@ export function registerObjectCommands(program: Command) {
           ];
         }
 
-        const result = await client.sendCommand('Object.duplicate', params);
+        const result: any = await client.sendCommand('Object.duplicate', params);
 
         console.log('✅ Object duplicated successfully:');
         console.log(`   New Name: ${result.name}`);
@@ -160,7 +160,7 @@ export function registerObjectCommands(program: Command) {
       try {
         await client.connect(options.port);
 
-        const result = await client.sendCommand('Object.delete', {
+        const result: any = await client.sendCommand('Object.delete', {
           name: options.name
         });
 

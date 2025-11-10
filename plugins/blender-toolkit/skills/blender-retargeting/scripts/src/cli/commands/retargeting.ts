@@ -59,7 +59,7 @@ export function registerRetargetingCommands(program: Command) {
         const popularAnimations = workflow.getPopularAnimations();
         Object.entries(popularAnimations).forEach(([category, animations]) => {
           console.log(`\n${category}:`);
-          (animations as string[]).forEach((anim) => {
+          (animations as unknown as string[]).forEach((anim) => {
             console.log(`  • ${anim}`);
           });
         });
