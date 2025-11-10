@@ -856,24 +856,38 @@ class BLENDERTOOLKIT_OT_StartServer(bpy.types.Operator):
     def execute(self, context):
         port = context.scene.blender_toolkit_port
 
-        # TODO: Implement WebSocket server startup using Blender's timer system
-        # Implementation strategy:
-        # 1. Create a modal operator that runs in background
-        # 2. Use bpy.app.timers to run async server loop
-        # 3. Store server instance in Scene property
-        # 4. Add server state indicator in UI
-        #
-        # Example implementation:
-        # server = BlenderWebSocketServer(port)
-        # bpy.app.timers.register(lambda: server.run_step())
-        # context.scene.blender_toolkit_server_running = True
+        # Check if server is already running
+        if hasattr(bpy.types.Scene, '_blender_toolkit_server_thread'):
+            if bpy.types.Scene._blender_toolkit_server_thread and bpy.types.Scene._blender_toolkit_server_thread.is_alive():
+                self.report({'INFO'}, f"WebSocket server already running on port {port}")
+                return {'CANCELLED'}
 
-        self.report({'WARNING'},
-                   f"Server startup not implemented yet. "
-                   f"Please run Blender WebSocket server manually from Python console:\n"
-                   f"  import asyncio\n"
-                   f"  server = BlenderWebSocketServer({port})\n"
-                   f"  asyncio.run(server.start())")
+        # Start server in background thread
+        import threading
+        import asyncio
+
+        def run_server():
+            """서버를 별도 스레드에서 실행"""
+            try:
+                server = BlenderWebSocketServer(port)
+                # Create new event loop for this thread
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                # Run server
+                loop.run_until_complete(server.start())
+            except Exception as e:
+                print(f"Blender Toolkit Server Error: {e}")
+
+        # Start server thread
+        server_thread = threading.Thread(target=run_server, daemon=True)
+        server_thread.start()
+
+        # Store thread reference
+        bpy.types.Scene._blender_toolkit_server_thread = server_thread
+        bpy.types.Scene._blender_toolkit_server_port = port
+
+        self.report({'INFO'}, f"✓ WebSocket server started on port {port}")
+        print(f"Blender Toolkit: WebSocket server started on ws://127.0.0.1:{port}")
         return {'FINISHED'}
 
 
@@ -883,11 +897,34 @@ class BLENDERTOOLKIT_OT_StopServer(bpy.types.Operator):
     bl_label = "Stop WebSocket Server"
 
     def execute(self, context):
-        # TODO: Implement server stop
-        # Should stop the server started by BLENDERTOOLKIT_OT_StartServer
-        # and clean up resources
+        # Check if server is running
+        if not hasattr(bpy.types.Scene, '_blender_toolkit_server_thread'):
+            self.report({'WARNING'}, "WebSocket server is not running")
+            return {'CANCELLED'}
 
-        self.report({'WARNING'}, "Server stop not implemented yet.")
+        server_thread = bpy.types.Scene._blender_toolkit_server_thread
+        if not server_thread or not server_thread.is_alive():
+            self.report({'WARNING'}, "WebSocket server is not running")
+            # Clean up stale reference
+            if hasattr(bpy.types.Scene, '_blender_toolkit_server_thread'):
+                delattr(bpy.types.Scene, '_blender_toolkit_server_thread')
+            if hasattr(bpy.types.Scene, '_blender_toolkit_server_port'):
+                delattr(bpy.types.Scene, '_blender_toolkit_server_port')
+            return {'CANCELLED'}
+
+        # Note: Daemon threads will be terminated when Blender exits
+        # For graceful shutdown, we would need to implement a stop signal mechanism
+        # Current implementation: thread will stop when Blender closes
+
+        port = getattr(bpy.types.Scene, '_blender_toolkit_server_port', 'unknown')
+        self.report({'INFO'},
+                   f"WebSocket server on port {port} will stop when Blender closes.\n"
+                   f"For immediate stop, please restart Blender.")
+
+        # Clean up references
+        delattr(bpy.types.Scene, '_blender_toolkit_server_thread')
+        delattr(bpy.types.Scene, '_blender_toolkit_server_port')
+
         return {'FINISHED'}
 
 
