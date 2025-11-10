@@ -99,10 +99,17 @@ function sleep(ms) {
 
 /**
  * Get shared config file path
- * Uses same path as config.ts to ensure consistency between hook and CLI
- * Path: ~/.claude/plugins/marketplaces/dev-gom-plugins/plugins/blender-toolkit/skills/blender-config.json
+ * Priority: CLAUDE_PLUGIN_ROOT (from hook) > hardcoded fallback path
+ * This ensures hook and CLI use the same config file
  */
 function getSharedConfigPath() {
+  // Try plugin root from environment first (provided by hook)
+  const pluginRoot = process.env.CLAUDE_PLUGIN_ROOT;
+  if (pluginRoot) {
+    return path.join(pluginRoot, 'skills', 'blender-config.json');
+  }
+
+  // Fallback to hardcoded path when env var is not available
   const { homedir } = require('os');
   const homeDir = homedir();
   return path.join(
