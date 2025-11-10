@@ -316,7 +316,7 @@ claude-code-marketplace/
 
 ## 라이선스
 
-MIT License - 자세한 내용은 [LICENSE](../../LICENSE) 참조
+Apache License 2.0 - 자세한 내용은 [LICENSE](../../LICENSE) 참조
 
 ## 크레딧
 

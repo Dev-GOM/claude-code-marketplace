@@ -183,7 +183,7 @@ VSCode Diff 모드:
 
 ## 라이선스
 
-MIT © Dev GOM
+Apache License 2.0 - 자세한 내용은 [LICENSE](../../LICENSE) 참조
 
 ## 링크
 

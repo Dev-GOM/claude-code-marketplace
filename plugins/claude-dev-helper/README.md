@@ -183,7 +183,7 @@ See [`.claude/PLUGIN_WORKFLOW.md`](../../.claude/PLUGIN_WORKFLOW.md) for develop
 
 ## License
 
-MIT © Dev GOM
+Apache License 2.0 - See [LICENSE](../../LICENSE) for details
 
 ## Links
 

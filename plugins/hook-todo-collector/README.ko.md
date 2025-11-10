@@ -352,7 +352,7 @@ TODO를 검토하고 처리할 시간을 정기적으로 가지세요:
 
 ## 라이선스
 
-MIT License - 자세한 내용은 [LICENSE](../../LICENSE) 참조
+Apache License 2.0 - 자세한 내용은 [LICENSE](../../LICENSE) 참조
 
 ## 크레딧
 

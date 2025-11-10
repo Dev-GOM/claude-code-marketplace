@@ -654,7 +654,7 @@ Contributions are welcome! You can:
 
 ## 📄 License
 
-MIT License - free to use and modify for your projects.
+Apache License 2.0 - See [LICENSE](../../LICENSE) for details
 
 ## 🎮 Unity Version Compatibility
 

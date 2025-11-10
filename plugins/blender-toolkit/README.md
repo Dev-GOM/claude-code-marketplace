@@ -317,7 +317,7 @@ await mixamo.searchAnimations('walking');
 
 ## 📝 License
 
-MIT License - See LICENSE file for details
+Apache License 2.0 - See [LICENSE](../../LICENSE) file for details
 
 ## 🙏 Credits
 

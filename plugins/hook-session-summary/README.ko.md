@@ -365,7 +365,7 @@ Pull request 환영합니다! [CONTRIBUTING.md](../../CONTRIBUTING.md) 참조
 
 ## License
 
-MIT License - 자세한 내용은 [LICENSE](../../LICENSE) 참조
+Apache License 2.0 - 자세한 내용은 [LICENSE](../../LICENSE) 참조
 
 ## Credits
 
