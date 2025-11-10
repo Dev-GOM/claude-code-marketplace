@@ -2,7 +2,48 @@
 
 All notable changes to the Dev GOM Plugins marketplace will be documented in this file.
 
-> **Version**: 2.17.2 | **Last Updated**: 2025-11-09
+> **Version**: 2.17.3 | **Last Updated**: 2025-11-10
+
+---
+
+## [2.17.3] - 2025-11-10
+
+### Added
+- ✨ **Blender Toolkit v1.3.0**: Materials, Advanced Modifiers, and Collections
+  - **Material Management**: Principled BSDF-based material system
+    - Create, delete, and list materials
+    - Assign materials to objects
+    - Control base color, metallic, roughness, and emission properties
+    - Get detailed material properties
+    - Python: 9 material functions (`material.py`)
+    - TypeScript: 10 material CLI commands
+  - **Advanced Modifier Control**: Comprehensive modifier system (30+ modifier types supported)
+    - List all modifiers on objects with type-specific properties
+    - Remove modifiers from objects
+    - Toggle viewport/render visibility
+    - Modify properties dynamically (levels, width, segments, count, etc.)
+    - Get detailed modifier information
+    - Reorder modifiers in the stack (UP/DOWN)
+    - Supports: SUBSURF, MIRROR, ARRAY, BEVEL, BOOLEAN, SOLIDIFY, ARMATURE, LATTICE, CURVE, SIMPLE_DEFORM, CAST, DISPLACE, WAVE, and many more
+    - Python: 8 modifier functions (`modifier.py`)
+    - TypeScript: 8 modifier CLI commands
+  - **Collection Management**: Scene hierarchy organization
+    - Create and delete collections
+    - List all collections with object counts
+    - Add/remove objects to/from collections
+    - Python: 5 collection functions (`collection.py`)
+    - TypeScript: 5 collection CLI commands
+  - **Architecture Improvements**:
+    - Separated modifiers from `geometry.py` into dedicated `modifier.py` module
+    - Better code organization and extensibility
+    - Updated WebSocket handlers: `Material.*`, `Collection.*`, `Modifier.*`
+  - **Documentation**: Updated all READMEs with experimental status warning and v1.3.0 features
+  - **Statistics**: 30+ new CLI commands, 1568 lines added, 13 files changed
+
+### Changed
+- 🔧 **Blender Toolkit**: Status changed to 🧪 Experimental
+  - Added warning: "APIs and features may change"
+  - Updated all documentation with experimental status
 
 ---
 

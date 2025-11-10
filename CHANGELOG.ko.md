@@ -2,7 +2,48 @@
 
 Dev GOM Plugins 마켓플레이스의 모든 주요 변경사항이 이 파일에 문서화됩니다.
 
-> **버전**: 2.17.2 | **최종 업데이트**: 2025-11-09
+> **버전**: 2.17.3 | **최종 업데이트**: 2025-11-10
+
+---
+
+## [2.17.3] - 2025-11-10
+
+### 추가됨
+- ✨ **Blender Toolkit v1.3.0**: 머티리얼, 고급 모디파이어, 컬렉션 관리
+  - **머티리얼 관리**: Principled BSDF 기반 머티리얼 시스템
+    - 머티리얼 생성, 삭제, 목록 조회
+    - 오브젝트에 머티리얼 할당
+    - base color, metallic, roughness, emission 속성 제어
+    - 상세 머티리얼 속성 조회
+    - Python: 9개 머티리얼 함수 (`material.py`)
+    - TypeScript: 10개 머티리얼 CLI 명령
+  - **고급 모디파이어 제어**: 포괄적인 모디파이어 시스템 (30+ 모디파이어 타입 지원)
+    - 타입별 속성과 함께 오브젝트의 모든 모디파이어 목록 조회
+    - 오브젝트에서 모디파이어 제거
+    - 뷰포트/렌더 표시 여부 토글
+    - 속성 동적 수정 (levels, width, segments, count 등)
+    - 상세 모디파이어 정보 조회
+    - 모디파이어 스택에서 순서 변경 (UP/DOWN)
+    - 지원 모디파이어: SUBSURF, MIRROR, ARRAY, BEVEL, BOOLEAN, SOLIDIFY, ARMATURE, LATTICE, CURVE, SIMPLE_DEFORM, CAST, DISPLACE, WAVE 등 다수
+    - Python: 8개 모디파이어 함수 (`modifier.py`)
+    - TypeScript: 8개 모디파이어 CLI 명령
+  - **컬렉션 관리**: 씬 계층 구조 관리
+    - 컬렉션 생성 및 삭제
+    - 오브젝트 개수와 함께 모든 컬렉션 목록 조회
+    - 컬렉션에 오브젝트 추가/제거
+    - Python: 5개 컬렉션 함수 (`collection.py`)
+    - TypeScript: 5개 컬렉션 CLI 명령
+  - **아키텍처 개선**:
+    - `geometry.py`에서 모디파이어를 분리하여 전용 `modifier.py` 모듈로 구성
+    - 코드 구조 개선 및 확장성 향상
+    - WebSocket 핸들러 업데이트: `Material.*`, `Collection.*`, `Modifier.*`
+  - **문서화**: 실험 단계 경고 및 v1.3.0 기능을 포함한 모든 README 업데이트
+  - **통계**: 30+ 새로운 CLI 명령, 1568줄 추가, 13개 파일 변경
+
+### 변경됨
+- 🔧 **Blender Toolkit**: 상태를 🧪 실험 단계로 변경
+  - "API와 기능이 변경될 수 있습니다" 경고 추가
+  - 실험 단계 상태를 모든 문서에 반영
 
 ---
 
