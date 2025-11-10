@@ -156,19 +156,27 @@ export class AnimationRetargetingWorkflow {
         // For now, we'll retrieve the mapping after a pause
         // TODO: Integrate with Claude Code's AskUserQuestion tool
 
-        // Retrieve edited bone mapping from Blender
+        // Retrieve edited bone mapping from Blender (with error recovery)
         console.log('📥 Retrieving bone mapping from Blender...');
-        const retrievedMapping = await this.blenderClient.sendCommand<Record<string, string>>(
-          'BoneMapping.get',
-          {
-            sourceArmature: mixamoArmature,
-            targetArmature: targetCharacterArmature,
-          }
-        );
+        try {
+          const retrievedMapping = await this.blenderClient.sendCommand<Record<string, string>>(
+            'BoneMapping.get',
+            {
+              sourceArmature: mixamoArmature,
+              targetArmature: targetCharacterArmature,
+            }
+          );
 
-        if (retrievedMapping && Object.keys(retrievedMapping).length > 0) {
-          finalBoneMap = retrievedMapping;
-          console.log(`✅ Using edited bone mapping (${Object.keys(finalBoneMap).length} bones)`);
+          if (retrievedMapping && Object.keys(retrievedMapping).length > 0) {
+            finalBoneMap = retrievedMapping;
+            console.log(`✅ Using edited bone mapping (${Object.keys(finalBoneMap).length} bones)`);
+          } else {
+            console.log('⚠️  No edited mapping found, using auto-generated mapping');
+          }
+        } catch (error) {
+          console.warn('⚠️  Failed to retrieve edited mapping, using auto-generated mapping');
+          console.warn(`   Error: ${error}`);
+          // finalBoneMap already contains the auto-generated mapping, so no action needed
         }
       }
 

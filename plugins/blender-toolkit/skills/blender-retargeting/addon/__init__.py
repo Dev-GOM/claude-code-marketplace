@@ -575,6 +575,16 @@ class BLENDERTOOLKIT_PT_BoneMappingPanel(bpy.types.Panel):
 
                 # Apply retargeting button
                 layout.separator()
+
+                # Show status
+                if hasattr(scene, 'bone_mapping_status'):
+                    if scene.bone_mapping_status == "APPLYING":
+                        layout.label(text="⏳ Applying retargeting...", icon='TIME')
+                    elif scene.bone_mapping_status == "COMPLETED":
+                        layout.label(text="✓ Retargeting completed!", icon='CHECKMARK')
+                    elif scene.bone_mapping_status == "FAILED":
+                        layout.label(text="✗ Retargeting failed", icon='ERROR')
+
                 layout.operator("blendertoolkit.apply_retargeting", text="Apply Retargeting", icon='PLAY')
             else:
                 layout.label(text="No bone mapping data", icon='INFO')
@@ -643,6 +653,12 @@ class BLENDERTOOLKIT_OT_ApplyRetargeting(bpy.types.Operator):
             return {'CANCELLED'}
 
         try:
+            # Show progress in UI
+            self.report({'INFO'}, f"Applying retargeting to {len(bone_map)} bones...")
+
+            # Set status flag
+            scene.bone_mapping_status = "APPLYING"
+
             result = retarget_animation(
                 source_armature,
                 target_armature,
@@ -650,8 +666,13 @@ class BLENDERTOOLKIT_OT_ApplyRetargeting(bpy.types.Operator):
                 preserve_rotation=True,
                 preserve_location=True
             )
+
+            # Update status
+            scene.bone_mapping_status = "COMPLETED"
+
             self.report({'INFO'}, result)
         except Exception as e:
+            scene.bone_mapping_status = "FAILED"
             self.report({'ERROR'}, f"Retargeting failed: {str(e)}")
             return {'CANCELLED'}
 
@@ -708,6 +729,11 @@ def register():
         name="Target Armature",
         description="Target armature name"
     )
+    bpy.types.Scene.bone_mapping_status = bpy.props.StringProperty(
+        name="Bone Mapping Status",
+        description="Current status of bone mapping operation",
+        default=""
+    )
 
     print("✅ Blender Toolkit WebSocket Server registered")
 
@@ -727,6 +753,7 @@ def unregister():
     bpy.utils.unregister_class(BoneMappingItem)
 
     # Delete properties
+    del bpy.types.Scene.bone_mapping_status
     del bpy.types.Scene.bone_mapping_target_armature
     del bpy.types.Scene.bone_mapping_source_armature
     del bpy.types.Scene.bone_mapping_items

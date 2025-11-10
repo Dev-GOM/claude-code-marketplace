@@ -34,6 +34,7 @@ Use blender-retargeting when tasks involve:
 - Character armature name is unclear or not specified
 - Multiple rigs exist in the scene and target is ambiguous
 - Animation FBX file path is not provided
+- After displaying bone mapping in Blender UI, ask user to confirm when ready (e.g., "Please review the bone mapping in Blender and type 'ready' when you've clicked 'Apply Retargeting'")
 - Blender WebSocket server connection fails
 - User needs guidance on downloading from Mixamo
 
