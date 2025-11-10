@@ -3,8 +3,9 @@
  * Browser-Pilot의 config 시스템을 참고한 프로젝트별 설정 관리
  */
 
-import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
+import { existsSync, readFileSync, writeFileSync, mkdirSync, renameSync, unlinkSync, statSync } from 'fs';
 import { join, basename } from 'path';
+import { tmpdir } from 'os';
 import { createServer } from 'net';
 import { BLENDER, FS } from '../constants';
 
@@ -40,34 +41,52 @@ function getLocalTimestamp(): string {
 
 /**
  * 공유 설정 파일 경로 가져오기
- * ~/.claude/plugins/marketplaces/dev-gom-plugins/plugins/blender-toolkit/skills/
+ * Browser Pilot 패턴: CLAUDE_PLUGIN_ROOT 환경 변수 사용 (fallback 없음)
+ * 위치: $CLAUDE_PLUGIN_ROOT/skills/blender-config.json
  */
 function getSharedConfigPath(): string {
-  const { homedir } = require('os');
-  const homeDir = homedir();
-  return join(
-    homeDir,
-    '.claude',
-    'plugins',
-    'marketplaces',
-    'dev-gom-plugins',
-    'plugins',
-    'blender-toolkit',
-    'skills',
-    'blender-config.json'
-  );
+  const pluginRoot = process.env.CLAUDE_PLUGIN_ROOT;
+
+  if (!pluginRoot) {
+    console.error('Error: CLAUDE_PLUGIN_ROOT environment variable not set');
+    console.error('This tool must be run from Claude Code environment');
+    process.exit(1);
+  }
+
+  return join(pluginRoot, 'skills', 'blender-config.json');
 }
 
 /**
  * 프로젝트 루트 찾기
+ * Browser Pilot 패턴: 환경 변수 검증 후 fallback
  */
 export function findProjectRoot(): string {
   const projectDir = process.env.CLAUDE_PROJECT_DIR;
-  if (projectDir && existsSync(projectDir)) {
-    return projectDir;
+
+  if (projectDir) {
+    // 경로 존재 여부 확인
+    if (!existsSync(projectDir)) {
+      console.warn(`Warning: CLAUDE_PROJECT_DIR points to non-existent path: ${projectDir}`);
+      console.warn('Falling back to current working directory');
+      return process.cwd();
+    }
+
+    // 디렉토리인지 확인
+    try {
+      const stats = statSync(projectDir);
+      if (!stats.isDirectory()) {
+        console.error(`Error: CLAUDE_PROJECT_DIR is not a directory: ${projectDir}`);
+        process.exit(1);
+      }
+      return projectDir;
+    } catch (error) {
+      console.warn(`Warning: Cannot access CLAUDE_PROJECT_DIR: ${projectDir}`);
+      console.warn('Falling back to current working directory');
+      return process.cwd();
+    }
   }
 
-  // 현재 작업 디렉토리 사용
+  // 환경 변수 없으면 현재 작업 디렉토리 사용
   return process.cwd();
 }
 
@@ -134,17 +153,33 @@ export function loadSharedConfig(): SharedBlenderConfig {
 }
 
 /**
- * 공유 설정 저장
+ * 공유 설정 저장 (원자적 쓰기)
+ * Browser Pilot 패턴: 임시 파일에 쓴 후 rename으로 원자적 교체
  */
 export function saveSharedConfig(config: SharedBlenderConfig): void {
   const configPath = getSharedConfigPath();
+  const tempPath = join(tmpdir(), `blender-config-${Date.now()}-${process.pid}.tmp`);
 
   try {
-    writeFileSync(configPath, JSON.stringify(config, null, 2), 'utf-8');
+    // 1. Write to temporary file first
+    writeFileSync(tempPath, JSON.stringify(config, null, 2), 'utf-8');
+
+    // 2. Atomic rename (replaces existing file)
+    renameSync(tempPath, configPath);
   } catch (error) {
-    console.error('Failed to save shared config:', error);
+    // Clean up temporary file if it exists
+    if (existsSync(tempPath)) {
+      try {
+        unlinkSync(tempPath);
+      } catch (cleanupError) {
+        // Ignore cleanup errors
+      }
+    }
+
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error('Failed to save shared config:', errorMessage);
     console.warn(`Config path: ${configPath}`);
-    throw new Error('Configuration save failed. Please check file permissions.');
+    throw new Error(`Configuration save failed: ${errorMessage}`);
   }
 }
 

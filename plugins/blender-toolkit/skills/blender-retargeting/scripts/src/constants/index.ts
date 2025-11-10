@@ -94,6 +94,9 @@ export const DAEMON = {
   MAX_RETRIES: 3,
   RETRY_DELAY: 1000, // 1 second
   IDLE_CHECK_INTERVAL: 60000, // 1 minute
+  MAX_MESSAGE_SIZE: 10 * 1024 * 1024, // 10MB - Browser Pilot 패턴
+  CONNECT_TIMEOUT: 5000, // 5 seconds
+  SHUTDOWN_TIMEOUT: 5000, // 5 seconds for graceful shutdown
 } as const;
 
 /**

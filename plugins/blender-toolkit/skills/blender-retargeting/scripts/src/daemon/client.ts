@@ -60,14 +60,22 @@ export class IPCClient {
     }
 
     return new Promise((resolve, reject) => {
+      // Browser Pilot 패턴: 연결 타임아웃
+      const timeout = setTimeout(() => {
+        this.socket?.destroy();
+        reject(new Error(`Connection timeout after ${DAEMON.CONNECT_TIMEOUT}ms`));
+      }, DAEMON.CONNECT_TIMEOUT);
+
       this.socket = connect(this.socketPath);
 
       this.socket.on('connect', () => {
+        clearTimeout(timeout);
         this.setupSocket();
         resolve();
       });
 
       this.socket.on('error', (error) => {
+        clearTimeout(timeout);
         reject(new Error(`Connection failed: ${error.message}`));
       });
     });
@@ -81,6 +89,14 @@ export class IPCClient {
 
     this.socket.on('data', (data) => {
       this.buffer += data.toString();
+
+      // Browser Pilot 패턴: 메시지 크기 제한 (DoS 방지)
+      if (this.buffer.length > DAEMON.MAX_MESSAGE_SIZE) {
+        logger.error(`Message size exceeded limit: ${this.buffer.length} bytes`);
+        this.socket?.destroy();
+        this.rejectAllPending(new Error('Message size exceeded limit'));
+        return;
+      }
 
       // Process complete JSON messages (delimited by newline)
       const messages = this.buffer.split('\n');
@@ -101,9 +117,14 @@ export class IPCClient {
     this.socket.on('error', (error) => {
       logger.error('Socket error', error);
       this.rejectAllPending(new Error(`Socket error: ${error.message}`));
+      // Browser Pilot 패턴: 리소스 정리
+      this.buffer = '';
+      this.socket = null;
     });
 
     this.socket.on('close', () => {
+      // Browser Pilot 패턴: 리소스 정리
+      this.buffer = '';
       this.socket = null;
       this.rejectAllPending(new Error('Connection closed'));
     });
