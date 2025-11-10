@@ -1,0 +1,29 @@
+{
+  "name": "blender-retargeting",
+  "version": "1.0.0",
+  "description": "Blender animation retargeting with Mixamo integration",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "blender",
+    "animation",
+    "retargeting",
+    "mixamo",
+    "websocket"
+  ],
+  "author": "Dev GOM",
+  "license": "MIT",
+  "dependencies": {
+    "ws": "^8.14.0",
+    "axios": "^1.6.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/ws": "^8.5.0",
+    "typescript": "^5.0.0"
+  }
+}

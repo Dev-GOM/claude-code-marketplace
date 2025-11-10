@@ -1,0 +1,25 @@
+{
+  "name": "blender-toolkit",
+  "version": "1.0.0",
+  "description": "Blender automation toolkit with Mixamo animation retargeting, rigging tools, and WebSocket-based real-time control",
+  "author": {
+    "name": "Dev GOM",
+    "url": "https://github.com/Dev-GOM/claude-code-marketplace"
+  },
+  "homepage": "https://github.com/Dev-GOM/claude-code-marketplace",
+  "repository": "https://github.com/Dev-GOM/claude-code-marketplace.git",
+  "license": "MIT",
+  "keywords": [
+    "blender",
+    "3d",
+    "animation",
+    "rigging",
+    "retargeting",
+    "mixamo",
+    "websocket",
+    "automation"
+  ],
+  "skills": [
+    "./skills"
+  ]
+}
