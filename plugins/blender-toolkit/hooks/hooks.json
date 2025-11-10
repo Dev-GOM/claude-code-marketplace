@@ -1,6 +1,6 @@
 {
-  "description": "Blender automation toolkit with Mixamo animation retargeting",
-  "version": "1.0.0",
+  "description": "Blender automation toolkit with CLI for geometry creation, animation retargeting, and WebSocket-based real-time control",
+  "version": "1.2.0",
   "author": "Dev GOM",
   "lastUpdated": "2025-11-10",
   "hooks": {
@@ -13,7 +13,7 @@
           {
             "type": "command",
             "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/init-config.js",
-            "description": "Registers project in shared configuration and assigns port",
+            "description": "Registers project in shared configuration and creates wrapper script",
             "continueOnError": true,
             "suppressOutput": false
           }
