@@ -1,23 +1,38 @@
 {
-  "name": "blender-retargeting",
-  "version": "1.0.0",
-  "description": "Blender animation retargeting with Mixamo integration",
+  "name": "blender-toolkit-cli",
+  "version": "1.1.0",
+  "description": "Blender automation CLI with animation retargeting, geometry creation, and WebSocket-based control",
   "main": "dist/index.js",
+  "bin": {
+    "blender-toolkit": "./dist/cli/cli.js"
+  },
   "scripts": {
     "build": "tsc",
     "watch": "tsc --watch",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "bt:create-cube": "node dist/cli/cli.js create-cube",
+    "bt:create-sphere": "node dist/cli/cli.js create-sphere",
+    "bt:create-cylinder": "node dist/cli/cli.js create-cylinder",
+    "bt:create-plane": "node dist/cli/cli.js create-plane",
+    "bt:list-objects": "node dist/cli/cli.js list-objects",
+    "bt:transform": "node dist/cli/cli.js transform",
+    "bt:delete": "node dist/cli/cli.js delete",
+    "bt:retarget": "node dist/cli/cli.js retarget"
   },
   "keywords": [
     "blender",
     "animation",
     "retargeting",
     "mixamo",
-    "websocket"
+    "websocket",
+    "geometry",
+    "3d",
+    "automation"
   ],
   "author": "Dev GOM",
   "license": "Apache-2.0",
   "dependencies": {
+    "commander": "^14.0.2",
     "ws": "^8.14.0",
     "winston": "^3.11.0"
   },

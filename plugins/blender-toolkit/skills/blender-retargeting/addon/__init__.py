@@ -108,6 +108,12 @@ class BlenderWebSocketServer:
                 result = await self.handle_animation_command(method, params)
             elif method.startswith("Import."):
                 result = await self.handle_import_command(method, params)
+            elif method.startswith("Geometry."):
+                result = await self.handle_geometry_command(method, params)
+            elif method.startswith("Object."):
+                result = await self.handle_object_command(method, params)
+            elif method.startswith("Modifier."):
+                result = await self.handle_modifier_command(method, params)
             else:
                 raise ValueError(f"Unknown method: {method}")
 
@@ -198,6 +204,131 @@ class BlenderWebSocketServer:
             return import_dae(params.get("filepath"))
         else:
             raise ValueError(f"Unknown import method: {method}")
+
+    async def handle_geometry_command(self, method: str, params: Dict) -> Any:
+        """도형 생성 명령 처리"""
+        from .commands.geometry import (
+            create_cube, create_sphere, create_cylinder,
+            create_plane, create_cone, create_torus,
+            get_vertices, move_vertex, subdivide_mesh, extrude_face
+        )
+
+        if method == "Geometry.createCube":
+            return create_cube(
+                location=tuple(params.get("location", [0, 0, 0])),
+                size=params.get("size", 2.0),
+                name=params.get("name")
+            )
+        elif method == "Geometry.createSphere":
+            return create_sphere(
+                location=tuple(params.get("location", [0, 0, 0])),
+                radius=params.get("radius", 1.0),
+                segments=params.get("segments", 32),
+                ring_count=params.get("ringCount", 16),
+                name=params.get("name")
+            )
+        elif method == "Geometry.createCylinder":
+            return create_cylinder(
+                location=tuple(params.get("location", [0, 0, 0])),
+                radius=params.get("radius", 1.0),
+                depth=params.get("depth", 2.0),
+                vertices=params.get("vertices", 32),
+                name=params.get("name")
+            )
+        elif method == "Geometry.createPlane":
+            return create_plane(
+                location=tuple(params.get("location", [0, 0, 0])),
+                size=params.get("size", 2.0),
+                name=params.get("name")
+            )
+        elif method == "Geometry.createCone":
+            return create_cone(
+                location=tuple(params.get("location", [0, 0, 0])),
+                radius1=params.get("radius1", 1.0),
+                depth=params.get("depth", 2.0),
+                vertices=params.get("vertices", 32),
+                name=params.get("name")
+            )
+        elif method == "Geometry.createTorus":
+            return create_torus(
+                location=tuple(params.get("location", [0, 0, 0])),
+                major_radius=params.get("majorRadius", 1.0),
+                minor_radius=params.get("minorRadius", 0.25),
+                major_segments=params.get("majorSegments", 48),
+                minor_segments=params.get("minorSegments", 12),
+                name=params.get("name")
+            )
+        elif method == "Geometry.getVertices":
+            return get_vertices(params.get("name"))
+        elif method == "Geometry.moveVertex":
+            return move_vertex(
+                object_name=params.get("objectName"),
+                vertex_index=params.get("vertexIndex"),
+                new_position=tuple(params.get("newPosition"))
+            )
+        elif method == "Geometry.subdivideMesh":
+            return subdivide_mesh(
+                name=params.get("name"),
+                cuts=params.get("cuts", 1)
+            )
+        elif method == "Geometry.extrudeFace":
+            return extrude_face(
+                object_name=params.get("objectName"),
+                face_index=params.get("faceIndex"),
+                offset=params.get("offset", 1.0)
+            )
+        else:
+            raise ValueError(f"Unknown geometry method: {method}")
+
+    async def handle_object_command(self, method: str, params: Dict) -> Any:
+        """오브젝트 명령 처리"""
+        from .commands.geometry import (
+            delete_object, transform_object, duplicate_object, list_objects
+        )
+
+        if method == "Object.delete":
+            return delete_object(params.get("name"))
+        elif method == "Object.transform":
+            location = params.get("location")
+            rotation = params.get("rotation")
+            scale = params.get("scale")
+            return transform_object(
+                name=params.get("name"),
+                location=tuple(location) if location else None,
+                rotation=tuple(rotation) if rotation else None,
+                scale=tuple(scale) if scale else None
+            )
+        elif method == "Object.duplicate":
+            location = params.get("location")
+            return duplicate_object(
+                name=params.get("name"),
+                new_name=params.get("newName"),
+                location=tuple(location) if location else None
+            )
+        elif method == "Object.list":
+            return list_objects(params.get("type"))
+        else:
+            raise ValueError(f"Unknown object method: {method}")
+
+    async def handle_modifier_command(self, method: str, params: Dict) -> Any:
+        """모디파이어 명령 처리"""
+        from .commands.geometry import add_modifier, apply_modifier
+
+        if method == "Modifier.add":
+            properties = params.get("properties", {})
+            return add_modifier(
+                object_name=params.get("objectName"),
+                modifier_type=params.get("modifierType"),
+                name=params.get("name"),
+                **properties
+            )
+        elif method == "Modifier.apply":
+            return apply_modifier(
+                object_name=params.get("objectName"),
+                modifier_name=params.get("modifierName")
+            )
+        else:
+            raise ValueError(f"Unknown modifier method: {method}")
 
     async def start(self):
         """서버 시작"""

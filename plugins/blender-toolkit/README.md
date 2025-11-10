@@ -1,10 +1,10 @@
 # Blender Toolkit
 
-> **Status**: ✅ Release (v1.1.0)
+> **Status**: ✅ Release (v1.2.0)
 
 **Language**: [English](README.md) | [한국어](README.ko.md)
 
-Blender automation toolkit for Claude Code - WebSocket-based real-time Blender control and Mixamo animation retargeting with intelligent fuzzy bone matching
+Blender automation toolkit for Claude Code - WebSocket-based real-time Blender control, geometry creation, and Mixamo animation retargeting with intelligent fuzzy bone matching
 
 ## 🎯 Features
 
@@ -16,7 +16,15 @@ Blender automation toolkit for Claude Code - WebSocket-based real-time Blender c
 - **🎨 Multi-Project Support**: 프로젝트별 독립적인 포트 및 설정 관리
 - **🔧 Rigify Compatible**: Rigify 리그 자동 지원
 
-### New in v1.1.0
+### New in v1.2.0
+- **🎨 Geometry Creation**: CLI 및 WebSocket을 통한 도형 생성 (Cube, Sphere, Cylinder, Plane, Cone, Torus)
+- **🔧 Object Manipulation**: 오브젝트 변형, 복제, 삭제 등 전체 제어
+- **⚡ Vertex Editing**: 버텍스 이동, 메쉬 세분화, 페이스 돌출 등 고급 편집
+- **🔩 Modifier Support**: 모디파이어 추가 및 적용 (Subdivision, Mirror, Array, etc.)
+- **💻 CLI Interface**: Browser-pilot 스타일의 명령줄 인터페이스
+- **📚 Geometry API Documentation**: 전체 geometry API 레퍼런스 문서
+
+### v1.1.0 Features
 - **📊 Logging System**: winston (TypeScript) + logging (Python) - 디버깅 및 모니터링
 - **🧩 Modular Architecture**: 확장 가능한 명령 핸들러 구조 (commands/, utils/)
 - **📚 Complete API Documentation**: WebSocket commands, bone mapping guide, workflow examples
@@ -98,6 +106,97 @@ Mixamo는 공식 API를 제공하지 않으므로 수동 다운로드가 필요�
 9. 🎬 애니메이션 리타게팅
 10. 📋 NLA 트랙 추가
 
+## 💻 CLI Commands
+
+Blender Toolkit은 browser-pilot 스타일의 CLI 인터페이스를 제공합니다:
+
+### Geometry Creation
+
+```bash
+# Cube 생성
+npm run bt:create-cube -- -x 0 -y 0 -z 0 --size 2.0 --name "MyCube"
+
+# Sphere 생성
+npm run bt:create-sphere -- --radius 1.5 --segments 64 --rings 32
+
+# Cylinder 생성
+npm run bt:create-cylinder -- --radius 0.5 --depth 3.0
+
+# Plane 생성 (바닥)
+npm run bt:create-plane -- --size 10.0 --name "Ground"
+
+# Cone 생성
+blender-toolkit create-cone --radius 2.0 --depth 4.0
+
+# Torus 생성
+blender-toolkit create-torus --major-radius 2.0 --minor-radius 0.5
+```
+
+### Object Operations
+
+```bash
+# 오브젝트 목록 조회
+npm run bt:list-objects
+npm run bt:list-objects -- --type MESH
+
+# 오브젝트 변형
+npm run bt:transform -- --name "Cube" --loc-x 5.0 --loc-y 0 --loc-z 2.0
+npm run bt:transform -- --name "Sphere" --scale-x 2.0 --scale-y 2.0 --scale-z 2.0
+
+# 오브젝트 복제
+blender-toolkit duplicate --name "Cube" --new-name "CubeCopy" -x 5.0
+
+# 오브젝트 삭제
+npm run bt:delete -- --name "Cube"
+```
+
+### Vertex & Mesh Editing
+
+```bash
+# 버텍스 조회
+blender-toolkit get-vertices --name "Cube"
+
+# 버텍스 이동
+blender-toolkit move-vertex --name "Cube" --index 0 -x 2.0 -y 1.0 -z -1.0
+
+# 메쉬 세분화
+blender-toolkit subdivide --name "Cube" --cuts 2
+```
+
+### Modifiers
+
+```bash
+# Subdivision modifier 추가
+blender-toolkit add-modifier --name "Cube" --type SUBSURF --levels 2
+
+# Modifier 적용
+blender-toolkit apply-modifier --name "Cube" --modifier "Subdivision"
+```
+
+### Animation Retargeting
+
+```bash
+# 애니메이션 리타게팅
+npm run bt:retarget -- --target "MyCharacter" --file "./animations/Walking.fbx"
+
+# Mixamo 도움말
+blender-toolkit mixamo-help
+blender-toolkit mixamo-help "Walking"
+```
+
+### Claude Code와 함께 사용
+
+Claude에게 다음과 같이 요청할 수 있습니다:
+
+```
+"Blender에 큐브를 생성하고 크기를 3으로 설정해줘"
+"구를 만들고 위치를 (5, 0, 0)으로 이동시켜줘"
+"평면을 만들고 subdivision modifier를 추가해줘"
+"큐브를 복제하고 X축으로 5만큼 이동시켜줘"
+```
+
+Claude가 자동으로 적절한 CLI 명령이나 WebSocket API를 실행합니다.
+
 ## 🏗️ Architecture
 
 ```
@@ -128,9 +227,18 @@ Mixamo는 공식 API를 제공하지 않으므로 수동 다운로드가 필요�
   - `animation.py`: 애니메이션 관리
   - `bone_mapping.py`: 본 매핑 저장/로드
   - `import_.py`: FBX/DAE 임포트
+  - `geometry.py`: 도형 생성 및 메쉬 편집 (v1.2.0)
 - `utils/`: 유틸리티 모듈
   - `bone_matching.py`: Fuzzy matching 알고리즘
   - `logger.py`: Python logging 시스템
+
+**CLI Commands (v1.2.0):**
+- `cli/cli.ts`: Commander 기반 CLI 엔트리
+- `cli/commands/`:
+  - `geometry.ts`: 도형 생성 명령
+  - `object.ts`: 오브젝트 조작 명령
+  - `modifier.ts`: 모디파이어 명령
+  - `retargeting.ts`: 리타게팅 명령
 
 ## 🧠 Fuzzy Bone Matching
 
@@ -484,6 +592,16 @@ await controller.retarget({ sourceArmature, targetArmature, boneMapping });
 ```
 
 ## 🔄 Changelog
+
+### v1.2.0 (2025-11-10)
+- 🎨 Geometry creation API 추가 (Cube, Sphere, Cylinder, Plane, Cone, Torus)
+- 🔧 Object manipulation commands (transform, duplicate, delete, list)
+- ⚡ Vertex editing operations (move, get, subdivide, extrude)
+- 🔩 Modifier support (add, apply)
+- 💻 CLI interface 구현 (browser-pilot 스타일)
+- 📚 Geometry API 문서 작성 (geometry-api.md)
+- 📦 package.json에 bin 및 스크립트 명령 등록
+- 🧩 TypeScript CLI commands 모듈화 (geometry, object, modifier, retargeting)
 
 ### v1.1.0 (2025-11-10)
 - ✨ Fuzzy matching 알고리즘 구현 (60+ bones)
