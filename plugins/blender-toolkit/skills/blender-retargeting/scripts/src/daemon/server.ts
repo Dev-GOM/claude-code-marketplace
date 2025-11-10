@@ -30,6 +30,10 @@ class DaemonServer {
   private lastActivity: number;
   private blenderPort: number = 9400;
   private shutdownRequested: boolean = false;
+  // Browser Pilot 패턴: 활성 연결 추적
+  private activeSockets: Set<NetSocket> = new Set();
+  // Browser Pilot 패턴: shutdown Promise (race condition 방지)
+  private shutdownPromise: Promise<void> | null = null;
 
   constructor() {
     const outputDir = getOutputDir();
@@ -112,10 +116,21 @@ class DaemonServer {
    */
   private handleIPCConnection(socket: NetSocket): void {
     logger.info('CLI client connected');
+
+    // Browser Pilot 패턴: 활성 소켓 추적
+    this.activeSockets.add(socket);
+
     let buffer = '';
 
     socket.on('data', async (data) => {
       buffer += data.toString();
+
+      // Browser Pilot 패턴: 메시지 크기 제한 (DoS 방지)
+      if (buffer.length > DAEMON.MAX_MESSAGE_SIZE) {
+        logger.error(`Message size exceeded limit: ${buffer.length} bytes`);
+        socket.destroy();
+        return;
+      }
 
       // Process newline-delimited JSON
       const messages = buffer.split('\n');
@@ -137,10 +152,14 @@ class DaemonServer {
 
     socket.on('error', (error) => {
       logger.warn('IPC socket error:', error);
+      // Browser Pilot 패턴: 활성 소켓에서 제거
+      this.activeSockets.delete(socket);
     });
 
     socket.on('close', () => {
       logger.info('CLI client disconnected');
+      // Browser Pilot 패턴: 활성 소켓에서 제거
+      this.activeSockets.delete(socket);
     });
   }
 
@@ -233,7 +252,7 @@ class DaemonServer {
   private setupShutdownHandlers(): void {
     const shutdown = (signal: string) => {
       logger.info(`Received ${signal}, shutting down...`);
-      this.shutdown();
+      void this.shutdown();
     };
 
     process.on('SIGINT', () => shutdown('SIGINT'));
@@ -246,41 +265,81 @@ class DaemonServer {
 
   /**
    * Shutdown daemon
+   * Browser Pilot 패턴: Race condition 방지
    */
-  private shutdown(): void {
-    if (this.shutdownRequested) return;
-    this.shutdownRequested = true;
+  private shutdown(): Promise<void> {
+    // Race condition 방지: 이미 shutdown 중이면 기존 Promise 반환
+    if (this.shutdownPromise) {
+      return this.shutdownPromise;
+    }
 
+    this.shutdownRequested = true;
+    this.shutdownPromise = this.performShutdown();
+    return this.shutdownPromise;
+  }
+
+  /**
+   * 실제 shutdown 수행 (내부 메서드)
+   * Browser Pilot 패턴: Promise 기반 안전한 종료
+   */
+  private async performShutdown(): Promise<void> {
     logger.info('Shutting down daemon...');
 
-    // Close Blender connection
-    if (this.blenderClient.isConnected()) {
-      this.blenderClient.disconnect();
-      logger.info('Disconnected from Blender');
-    }
+    try {
+      // 1. Close all active client connections
+      logger.info(`Closing ${this.activeSockets.size} active connections...`);
+      for (const socket of this.activeSockets) {
+        try {
+          socket.destroy();
+        } catch (error) {
+          // Ignore individual socket errors
+        }
+      }
+      this.activeSockets.clear();
 
-    // Close IPC server
-    if (this.ipcServer) {
-      this.ipcServer.close();
-      logger.info('IPC server closed');
-    }
+      // 2. Close Blender connection
+      if (this.blenderClient.isConnected()) {
+        this.blenderClient.disconnect();
+        logger.info('Disconnected from Blender');
+      }
 
-    // Remove socket file (Unix only)
-    if (process.platform !== 'win32' && existsSync(this.socketPath)) {
-      unlinkSync(this.socketPath);
-      logger.info('Socket file removed');
-    }
+      // 3. Close IPC server with timeout
+      if (this.ipcServer) {
+        await new Promise<void>((resolve) => {
+          const timeout = setTimeout(() => {
+            logger.warn('IPC server close timeout, forcing...');
+            resolve();
+          }, DAEMON.SHUTDOWN_TIMEOUT);
 
-    // Remove PID file
-    if (existsSync(this.pidPath)) {
-      unlinkSync(this.pidPath);
-      logger.info('PID file removed');
-    }
+          this.ipcServer!.close(() => {
+            clearTimeout(timeout);
+            logger.info('IPC server closed');
+            resolve();
+          });
+        });
+      }
 
-    logger.info(' Daemon shutdown complete');
-    process.exit(0);
+      // 4. Remove socket file (Unix only)
+      if (process.platform !== 'win32' && existsSync(this.socketPath)) {
+        unlinkSync(this.socketPath);
+        logger.info('Socket file removed');
+      }
+
+      // 5. Remove PID file
+      if (existsSync(this.pidPath)) {
+        unlinkSync(this.pidPath);
+        logger.info('PID file removed');
+      }
+
+      logger.info('✓ Daemon shutdown complete');
+    } catch (error) {
+      logger.error('Error during shutdown:', error);
+    } finally {
+      process.exit(0);
+    }
   }
 }
+
 
 // Main entry point
 if (require.main === module) {

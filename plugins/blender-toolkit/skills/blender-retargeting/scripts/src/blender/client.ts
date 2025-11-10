@@ -31,17 +31,25 @@ export interface BlenderEvent {
 export class BlenderClient extends EventEmitter {
   private ws: WebSocket | null = null;
   private messageId = 0;
-  private readonly wsUrl: string;
+  private wsUrl: string;
+  private port: number;
 
   constructor(port: number = BLENDER.DEFAULT_PORT) {
     super();
+    this.port = port;
     this.wsUrl = `ws://${BLENDER.LOCALHOST}:${port}`;
   }
 
   /**
    * Blender에 WebSocket으로 연결
    */
-  async connect(): Promise<void> {
+  async connect(port?: number): Promise<void> {
+    // port가 제공되면 업데이트
+    if (port !== undefined) {
+      this.port = port;
+      this.wsUrl = `ws://${BLENDER.LOCALHOST}:${port}`;
+    }
+
     log.info(`Connecting to Blender WebSocket: ${this.wsUrl}`);
 
     return new Promise((resolve, reject) => {
@@ -99,7 +107,7 @@ export class BlenderClient extends EventEmitter {
   /**
    * Blender에 명령 전송 및 응답 대기
    */
-  async sendCommand<T = Record<string, unknown>>(
+  async sendCommand<T = any>(
     method: string,
     params?: unknown
   ): Promise<T> {
@@ -109,6 +117,8 @@ export class BlenderClient extends EventEmitter {
       throw new Error(errorMsg);
     }
 
+    // Capture ws reference for use in callbacks
+    const ws = this.ws;
     const id = ++this.messageId;
     const message: BlenderMessage = { id, method, params };
 
@@ -116,7 +126,7 @@ export class BlenderClient extends EventEmitter {
 
     return new Promise((resolve, reject) => {
       const timeout = setTimeout(() => {
-        this.ws?.off('message', messageHandler);
+        ws.off('message', messageHandler);
         reject(new Error(`Command timeout: ${method}`));
       }, BLENDER.WS_TIMEOUT);
 
@@ -127,7 +137,7 @@ export class BlenderClient extends EventEmitter {
 
           if (response.id === id) {
             clearTimeout(timeout);
-            this.ws?.off('message', messageHandler);
+            ws.off('message', messageHandler);
 
             if (response.error) {
               log.error(`Command ${method} failed: ${response.error.message}`);
@@ -146,13 +156,13 @@ export class BlenderClient extends EventEmitter {
         }
       };
 
-      this.ws.on('message', messageHandler);
+      ws.on('message', messageHandler);
 
       // 메시지 전송
-      this.ws.send(JSON.stringify(message), (error) => {
+      ws.send(JSON.stringify(message), (error) => {
         if (error) {
           clearTimeout(timeout);
-          this.ws?.off('message', messageHandler);
+          ws.off('message', messageHandler);
           reject(error);
         }
       });
@@ -163,6 +173,16 @@ export class BlenderClient extends EventEmitter {
    * WebSocket 연결 종료
    */
   async disconnect(): Promise<void> {
+    if (this.ws) {
+      this.ws.close();
+      this.ws = null;
+    }
+  }
+
+  /**
+   * 연결 종료 (disconnect의 alias)
+   */
+  close(): void {
     if (this.ws) {
       this.ws.close();
       this.ws = null;
