@@ -1,11 +1,13 @@
 ---
 name: blender-retargeting
 description: |
-  Blender animation retargeting with Mixamo integration. Automate character rigging, bone mapping, and animation transfer using WebSocket-based real-time control.
+  Blender animation retargeting with Mixamo integration. Mixamo 애니메이션을 Blender 캐릭터에 리타게팅.
 
-  Features: Mixamo search and download, automatic bone mapping (Rigify/custom), FBX/Collada import, constraint-based retargeting, NLA track management, multi-project support with port management (9400-9500), real-time Blender control via WebSocket.
+  Features/기능: Mixamo search and download Mixamo검색다운로드, automatic bone mapping 자동본매핑 (Rigify/custom), FBX/Collada import 임포트, constraint-based retargeting 컨스트레인트기반리타게팅, NLA track management NLA트랙관리, multi-project support 멀티프로젝트지원, port management 포트관리 (9400-9500), real-time Blender control WebSocket기반실시간제어.
 
-  Workflow: Connect to Blender WebSocket server → Search Mixamo animation → Download/Import FBX → Auto-map bones → Apply retargeting constraints → Bake to keyframes → Add to NLA track.
+  Workflow 워크플로우: Connect to Blender WebSocket server 웹소켓서버연결 → Search Mixamo animation Mixamo검색 → Download/Import FBX FBX다운로드임포트 → Auto-map bones 자동본매핑 → Apply retargeting constraints 리타게팅적용 → Bake to keyframes 키프레임베이킹 → Add to NLA track NLA트랙추가.
+
+  WebSocket-based architecture 웹소켓기반. Port range 포트범위 9400-9500. Auto bone mapping 자동본매핑. Rigify compatible Rigify호환. Session hooks 세션훅스 auto-initialization 자동초기화.
 allowed-tools: Bash, Read, Write, Glob
 ---
 
