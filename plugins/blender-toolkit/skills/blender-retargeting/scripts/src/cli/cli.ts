@@ -12,6 +12,7 @@ import { registerModifierCommands } from './commands/modifier';
 import { registerRetargetingCommands } from './commands/retargeting';
 import { registerMaterialCommands } from './commands/material';
 import { registerCollectionCommands } from './commands/collection';
+import { registerDaemonCommands } from './commands/daemon';
 
 const program = new Command();
 
@@ -28,6 +29,7 @@ registerModifierCommands(program);
 registerMaterialCommands(program);
 registerCollectionCommands(program);
 registerRetargetingCommands(program);
+registerDaemonCommands(program);
 
 // Parse command line arguments
 program.parse();

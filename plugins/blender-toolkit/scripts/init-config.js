@@ -109,7 +109,7 @@ function getSharedConfigPath() {
     process.exit(1);
   }
 
-  return path.join(pluginRoot, 'skills', 'blender-toolkit-config.json');
+  return path.join(pluginRoot, 'skills', 'blender-config.json');
 }
 
 /**
