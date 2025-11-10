@@ -74,6 +74,26 @@ export const TIMING = {
   RETARGET_TIMEOUT: 120000, // 2 minutes
   RENDER_TIMEOUT: 300000, // 5 minutes
   POLLING_INTERVAL: 1000, // 1 second
+  DAEMON_IDLE_TIMEOUT: 1800000, // 30 minutes
+  DAEMON_PING_INTERVAL: 5000, // 5 seconds
+  HOOK_INPUT_TIMEOUT: 100, // 100ms for reading stdin
+  ACTION_DELAY_SHORT: 50, // 50ms
+  ACTION_DELAY_MEDIUM: 100, // 100ms
+  ACTION_DELAY_LONG: 500, // 500ms
+  POLLING_INTERVAL_FAST: 100, // 100ms
+  POLLING_INTERVAL_STANDARD: 500, // 500ms
+  POLLING_INTERVAL_SLOW: 1000, // 1s
+  WAIT_FOR_BLENDER: 5000, // 5s - wait for Blender connection
+} as const;
+
+/**
+ * Daemon 관련 상수
+ */
+export const DAEMON = {
+  IPC_TIMEOUT: 5000, // 5 seconds
+  MAX_RETRIES: 3,
+  RETRY_DELAY: 1000, // 1 second
+  IDLE_CHECK_INTERVAL: 60000, // 1 minute
 } as const;
 
 /**
