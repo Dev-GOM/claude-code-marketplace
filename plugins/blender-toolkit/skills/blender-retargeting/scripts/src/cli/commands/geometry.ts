@@ -24,7 +24,7 @@ export function registerGeometryCommands(program: Command) {
       try {
         await client.connect(options.port);
 
-        const result = await client.sendCommand('Geometry.createCube', {
+        const result: any = await client.sendCommand('Geometry.createCube', {
           location: [options.x, options.y, options.z],
           size: options.size,
           name: options.name
@@ -60,7 +60,7 @@ export function registerGeometryCommands(program: Command) {
       try {
         await client.connect(options.port);
 
-        const result = await client.sendCommand('Geometry.createSphere', {
+        const result: any = await client.sendCommand('Geometry.createSphere', {
           location: [options.x, options.y, options.z],
           radius: options.radius,
           segments: options.segments,
@@ -98,7 +98,7 @@ export function registerGeometryCommands(program: Command) {
       try {
         await client.connect(options.port);
 
-        const result = await client.sendCommand('Geometry.createCylinder', {
+        const result: any = await client.sendCommand('Geometry.createCylinder', {
           location: [options.x, options.y, options.z],
           radius: options.radius,
           depth: options.depth,
@@ -134,7 +134,7 @@ export function registerGeometryCommands(program: Command) {
       try {
         await client.connect(options.port);
 
-        const result = await client.sendCommand('Geometry.createPlane', {
+        const result: any = await client.sendCommand('Geometry.createPlane', {
           location: [options.x, options.y, options.z],
           size: options.size,
           name: options.name
@@ -170,7 +170,7 @@ export function registerGeometryCommands(program: Command) {
       try {
         await client.connect(options.port);
 
-        const result = await client.sendCommand('Geometry.createCone', {
+        const result: any = await client.sendCommand('Geometry.createCone', {
           location: [options.x, options.y, options.z],
           radius1: options.radius,
           depth: options.depth,
@@ -209,7 +209,7 @@ export function registerGeometryCommands(program: Command) {
       try {
         await client.connect(options.port);
 
-        const result = await client.sendCommand('Geometry.createTorus', {
+        const result: any = await client.sendCommand('Geometry.createTorus', {
           location: [options.x, options.y, options.z],
           majorRadius: options.majorRadius,
           minorRadius: options.minorRadius,
@@ -243,7 +243,7 @@ export function registerGeometryCommands(program: Command) {
       try {
         await client.connect(options.port);
 
-        const result = await client.sendCommand('Geometry.subdivideMesh', {
+        const result: any = await client.sendCommand('Geometry.subdivideMesh', {
           name: options.name,
           cuts: options.cuts
         });
@@ -272,7 +272,7 @@ export function registerGeometryCommands(program: Command) {
       try {
         await client.connect(options.port);
 
-        const vertices = await client.sendCommand('Geometry.getVertices', {
+        const vertices: any = await client.sendCommand('Geometry.getVertices', {
           name: options.name
         });
 
@@ -318,7 +318,7 @@ export function registerGeometryCommands(program: Command) {
       try {
         await client.connect(options.port);
 
-        const result = await client.sendCommand('Geometry.moveVertex', {
+        const result: any = await client.sendCommand('Geometry.moveVertex', {
           objectName: options.name,
           vertexIndex: options.index,
           newPosition: [options.x, options.y, options.z]
