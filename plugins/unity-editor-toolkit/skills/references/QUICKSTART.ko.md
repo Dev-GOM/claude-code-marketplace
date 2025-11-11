@@ -302,7 +302,7 @@ https://github.com/Dev-GOM/claude-code-marketplace/issues
 ### 여러 프로젝트
 
 여러 Unity 프로젝트를 동시에 실행하는 경우:
-- 각 프로젝트에서 다른 포트 사용 (9500, 9301, 9302...)
+- 각 프로젝트에서 다른 포트 사용 (9500, 9501, 9502...)
 - `unity-editor --port <번호>` 명령어로 특정 포트 지정
 
 ### 성능 최적화

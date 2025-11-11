@@ -133,14 +133,19 @@ class BLENDERTOOLKIT_OT_StopServer(bpy.types.Operator):
         try:
             # Schedule server stop in the event loop thread
             def stop_server():
-                """이벤트 루프에서 서버 종료"""
-                try:
-                    # Run stop() coroutine
-                    asyncio.ensure_future(server.stop())
-                    # Stop event loop
-                    loop.stop()
-                except (RuntimeError, ValueError) as e:
-                    print(f"Error stopping server: {e}")
+                """이벤트 루프에서 서버를 안전하게 종료합니다."""
+                async def _shutdown():
+                    try:
+                        # 서버의 비동기 중지 메서드를 호출하고 완료될 때까지 기다립니다.
+                        await server.stop()
+                    except (RuntimeError, ValueError) as e:
+                        print(f"Error stopping server: {e}")
+                    finally:
+                        # 서버가 완전히 중지된 후에 이벤트 루프를 멈춥니다.
+                        loop.stop()
+
+                # 스레드 안전하게 비동기 종료 시퀀스를 스케줄링합니다.
+                asyncio.ensure_future(_shutdown())
 
             # Call stop_server() in the event loop thread (thread-safe)
             loop.call_soon_threadsafe(stop_server)
