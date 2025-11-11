@@ -67,13 +67,26 @@ class BLENDERTOOLKIT_OT_StartServer(bpy.types.Operator):
             """서버를 별도 스레드에서 실행"""
             try:
                 server = BlenderWebSocketServer(port)
+                # Store server instance globally
+                bpy.types.Scene._blender_toolkit_server = server
+
                 # Create new event loop for this thread
                 loop = asyncio.new_event_loop()
                 asyncio.set_event_loop(loop)
-                # Run server
+
+                # Store loop reference for graceful shutdown
+                bpy.types.Scene._blender_toolkit_event_loop = loop
+
+                # Run server until stopped
                 loop.run_until_complete(server.start())
+
+                # Keep loop running until stop() is called
+                loop.run_forever()
             except (RuntimeError, OSError, ValueError) as e:
                 print(f"Blender Toolkit Server Error: {e}")
+            finally:
+                # Cleanup
+                loop.close()
 
         # Start server thread
         server_thread = threading.Thread(target=run_server, daemon=True)
@@ -103,27 +116,57 @@ class BLENDERTOOLKIT_OT_StopServer(bpy.types.Operator):
         server_thread = bpy.types.Scene._blender_toolkit_server_thread
         if not server_thread or not server_thread.is_alive():
             self.report({'WARNING'}, "WebSocket server is not running")
-            # Clean up stale reference
-            if hasattr(bpy.types.Scene, '_blender_toolkit_server_thread'):
-                delattr(bpy.types.Scene, '_blender_toolkit_server_thread')
-            if hasattr(bpy.types.Scene, '_blender_toolkit_server_port'):
-                delattr(bpy.types.Scene, '_blender_toolkit_server_port')
+            # Clean up stale references
+            self._cleanup_references()
             return {'CANCELLED'}
 
-        # Note: Daemon threads will be terminated when Blender exits
-        # For graceful shutdown, we would need to implement a stop signal mechanism
-        # Current implementation: thread will stop when Blender closes
-
+        # Get server instance and event loop
+        server = getattr(bpy.types.Scene, '_blender_toolkit_server', None)
+        loop = getattr(bpy.types.Scene, '_blender_toolkit_event_loop', None)
         port = getattr(bpy.types.Scene, '_blender_toolkit_server_port', 'unknown')
-        self.report({'INFO'},
-                   f"WebSocket server on port {port} will stop when Blender closes.\n"
-                   f"For immediate stop, please restart Blender.")
 
-        # Clean up references
-        delattr(bpy.types.Scene, '_blender_toolkit_server_thread')
-        delattr(bpy.types.Scene, '_blender_toolkit_server_port')
+        if not server or not loop:
+            self.report({'WARNING'}, "Server instance not found. Please restart Blender to fully stop the server.")
+            self._cleanup_references()
+            return {'CANCELLED'}
+
+        try:
+            # Schedule server stop in the event loop thread
+            def stop_server():
+                """이벤트 루프에서 서버 종료"""
+                try:
+                    # Run stop() coroutine
+                    asyncio.ensure_future(server.stop())
+                    # Stop event loop
+                    loop.stop()
+                except (RuntimeError, ValueError) as e:
+                    print(f"Error stopping server: {e}")
+
+            # Call stop_server() in the event loop thread (thread-safe)
+            loop.call_soon_threadsafe(stop_server)
+
+            self.report({'INFO'}, f"✓ WebSocket server on port {port} stopped successfully")
+            print(f"Blender Toolkit: WebSocket server on port {port} stopped")
+        except (RuntimeError, ValueError, AttributeError) as e:
+            self.report({'ERROR'}, f"Failed to stop server: {str(e)}")
+            print(f"Blender Toolkit: Error stopping server: {e}")
+            return {'CANCELLED'}
+        finally:
+            # Clean up all references
+            self._cleanup_references()
 
         return {'FINISHED'}
+
+    def _cleanup_references(self):
+        """Clean up all server references"""
+        if hasattr(bpy.types.Scene, '_blender_toolkit_server'):
+            delattr(bpy.types.Scene, '_blender_toolkit_server')
+        if hasattr(bpy.types.Scene, '_blender_toolkit_event_loop'):
+            delattr(bpy.types.Scene, '_blender_toolkit_event_loop')
+        if hasattr(bpy.types.Scene, '_blender_toolkit_server_thread'):
+            delattr(bpy.types.Scene, '_blender_toolkit_server_thread')
+        if hasattr(bpy.types.Scene, '_blender_toolkit_server_port'):
+            delattr(bpy.types.Scene, '_blender_toolkit_server_port')
 
 
 class BLENDERTOOLKIT_PT_BoneMappingPanel(bpy.types.Panel):

@@ -72,12 +72,13 @@ Claude Code 설정을 열고 다음을 추가하세요:
    - 클릭하여 추가
 
 3. 설정 구성:
-   - **Port**: 9300 (기본값, 필요시 변경 가능)
+   - **Port**: 9500 (기본값, 필요시 변경 가능)
    - **Auto Start**: ✓ 체크
 
-4. Play Mode 진입:
-   - Play 버튼 클릭 (또는 Ctrl+P)
-   - Console 확인: `✓ Unity Editor Server started on ws://127.0.0.1:9300`
+4. 서버 자동 시작:
+   - 서버는 Edit Mode와 Play Mode 모두에서 자동 시작됩니다
+   - Console 확인: `✓ Unity Editor Server started on ws://127.0.0.1:9500`
+   - Play Mode 진입 불필요
 
 ## 첫 명령어
 
@@ -92,7 +93,7 @@ unity-editor status
 예상 출력:
 ```
 ✓ Connected to Unity Editor
-WebSocket: ws://127.0.0.1:9300
+WebSocket: ws://127.0.0.1:9500
 Status: Running
 ```
 
@@ -159,8 +160,8 @@ unity-editor console logs --count 10
 - [ ] Unity 패키지 성공적으로 임포트됨
 - [ ] websocket-sharp.dll이 올바른 위치에 있음
 - [ ] UnityEditorServer GameObject 생성됨
-- [ ] 서버 컴포넌트 구성됨 (포트 9300, 자동 시작)
-- [ ] Play Mode 활성화
+- [ ] 서버 컴포넌트 구성됨 (포트 9500, 자동 시작)
+- [ ] 서버 시작됨 (Edit Mode와 Play Mode 모두 작동)
 - [ ] Console에 "✓ Unity Editor Server started" 표시
 - [ ] `unity-editor status` 명령어 작동
 - [ ] GameObject 생성/찾기 가능
@@ -172,9 +173,9 @@ unity-editor console logs --count 10
 ### "Server not found" 또는 "Connection refused"
 
 **확인사항:**
-1. Unity가 Play Mode에 있는지
+1. Unity Editor가 열려 있는지 (Edit Mode 또는 Play Mode)
 2. Console에 서버 시작 메시지가 표시되는지
-3. 포트 9300이 방화벽에 차단되지 않았는지
+3. 포트 9500이 방화벽에 차단되지 않았는지
 4. UnityEditorServer 컴포넌트가 GameObject에 있는지
 
 **해결방법:**
@@ -301,7 +302,7 @@ https://github.com/Dev-GOM/claude-code-marketplace/issues
 ### 여러 프로젝트
 
 여러 Unity 프로젝트를 동시에 실행하는 경우:
-- 각 프로젝트에서 다른 포트 사용 (9300, 9301, 9302...)
+- 각 프로젝트에서 다른 포트 사용 (9500, 9301, 9302...)
 - `unity-editor --port <번호>` 명령어로 특정 포트 지정
 
 ### 성능 최적화

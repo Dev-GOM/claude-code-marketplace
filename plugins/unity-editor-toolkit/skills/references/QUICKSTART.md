@@ -72,12 +72,13 @@ The package requires websocket-sharp DLL. Find the installation scripts in Packa
    - Click to add
 
 3. Configure Settings:
-   - **Port**: 9300 (default, can change if needed)
+   - **Port**: 9500 (default, can change if needed)
    - **Auto Start**: ✓ Checked
 
-4. Enter Play Mode:
-   - Click Play button (or Ctrl+P)
-   - Check Console for: `✓ Unity Editor Server started on ws://127.0.0.1:9300`
+4. Server Auto-Start:
+   - Server starts automatically in both Edit Mode and Play Mode
+   - Check Console for: `✓ Unity Editor Server started on ws://127.0.0.1:9500`
+   - No need to enter Play Mode
 
 ## First Commands
 
@@ -92,7 +93,7 @@ unity-editor status
 Expected output:
 ```
 ✓ Connected to Unity Editor
-WebSocket: ws://127.0.0.1:9300
+WebSocket: ws://127.0.0.1:9500
 Status: Running
 ```
 
@@ -159,8 +160,8 @@ Shows last 10 console log entries.
 - [ ] Unity package imported successfully
 - [ ] websocket-sharp.dll in correct location
 - [ ] UnityEditorServer GameObject created
-- [ ] Server component configured (port 9300, auto-start)
-- [ ] Play Mode active
+- [ ] Server component configured (port 9500, auto-start)
+- [ ] Server started (works in both Edit Mode and Play Mode)
 - [ ] Console shows "✓ Unity Editor Server started"
 - [ ] `unity-editor status` command works
 - [ ] Can create/find GameObjects
@@ -172,9 +173,9 @@ Shows last 10 console log entries.
 ### "Server not found" or "Connection refused"
 
 **Check:**
-1. Unity is in Play Mode
+1. Unity Editor is open (Edit Mode or Play Mode)
 2. Console shows server started message
-3. Port 9300 is not blocked by firewall
+3. Port 9500 is not blocked by firewall
 4. UnityEditorServer component is on a GameObject
 
 **Fix:**

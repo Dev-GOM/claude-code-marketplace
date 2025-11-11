@@ -25,14 +25,14 @@ For easier customization, copy this folder to `Assets/UnityEditorToolkit/`
 1. Create new GameObject: `GameObject → Create Empty`
 2. Rename to "UnityEditorServer"
 3. Add component: `UnityEditorServer`
-4. Configure port (default: 9300)
+4. Configure port (default: 9500)
 5. Enable "Auto Start"
 
 ### 2. Start Server
 
-1. Enter Play Mode
-2. Server automatically starts on configured port
-3. Check Console for confirmation: `✓ Unity Editor Server started on ws://127.0.0.1:9300`
+1. Server automatically starts when scene loads (Edit Mode or Play Mode)
+2. Starts on configured port (default: 9500)
+3. Check Console for confirmation: `✓ Unity Editor Server started on ws://127.0.0.1:9500`
 
 ### 3. Connect from Claude Code
 
@@ -189,16 +189,16 @@ Add via NuGet for Unity:
 ### Server Won't Start
 
 1. Check Console for error messages
-2. Verify port 9300 is not in use
+2. Verify port 9500 is not in use
 3. Ensure websocket-sharp.dll is installed
 4. Try different port number
 
 ### Cannot Connect
 
 1. Verify server is running (check Console)
-2. Confirm WebSocket URL: `ws://127.0.0.1:9300`
+2. Confirm WebSocket URL: `ws://127.0.0.1:9500`
 3. Check firewall settings
-4. Ensure Play Mode is active
+4. Ensure Unity Editor is open (Edit Mode or Play Mode)
 
 ### Commands Fail
 
