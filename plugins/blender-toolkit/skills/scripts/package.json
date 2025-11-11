@@ -1,6 +1,6 @@
 {
   "name": "blender-toolkit-cli",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "Blender automation CLI with geometry, materials, modifiers, collections, animation retargeting, and WebSocket-based control",
   "main": "dist/index.js",
   "bin": {
@@ -9,15 +9,7 @@
   "scripts": {
     "build": "tsc",
     "watch": "tsc --watch",
-    "clean": "rm -rf dist",
-    "bt:create-cube": "node dist/cli/cli.js create-cube",
-    "bt:create-sphere": "node dist/cli/cli.js create-sphere",
-    "bt:create-cylinder": "node dist/cli/cli.js create-cylinder",
-    "bt:create-plane": "node dist/cli/cli.js create-plane",
-    "bt:list-objects": "node dist/cli/cli.js list-objects",
-    "bt:transform": "node dist/cli/cli.js transform",
-    "bt:delete": "node dist/cli/cli.js delete",
-    "bt:retarget": "node dist/cli/cli.js retarget"
+    "clean": "rm -rf dist"
   },
   "keywords": [
     "blender",

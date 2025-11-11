@@ -1,6 +1,6 @@
 # Blender Toolkit
 
-> **⚠️ 상태**: 🧪 실험 단계 (v1.3.0)
+> **⚠️ 상태**: 🧪 실험 단계 (v1.4.0)
 >
 > **이 플러그인은 현재 실험 단계입니다. API와 기능이 변경될 수 있습니다.**
 
@@ -55,16 +55,51 @@ Blender Toolkit은 SessionStart 훅을 사용하여 프로젝트를 자동으로
    cat .blender-toolkit/init-log.txt
    ```
 
+### 애드온 패키지 빌드
+
+SessionStart 훅이 자동으로 `.blender-toolkit/`에 배포용 ZIP 패키지를 생성합니다:
+- **자동 생성**: 세션 초기화 시 자동으로 생성
+- **버전 추적**: 플러그인 버전이 변경될 때만 재빌드
+- **생성 위치**: `.blender-toolkit/blender-toolkit-addon-v{버전}.zip`
+
+**수동 빌드**:
+```bash
+# 애드온 ZIP 빌드
+node .blender-toolkit/bt addon-build
+
+# 강제 재빌드 (버전 체크 무시)
+node .blender-toolkit/bt addon-build --force
+
+# 사용 가능한 명령 확인
+node .blender-toolkit/bt --help
+```
+
+**패키지 포함 내용**:
+- ✅ 모든 애드온 Python 파일 (`*.py`)
+- ✅ 명령 모듈 (`commands/`)
+- ✅ 유틸리티 모듈 (`utils/`)
+- ✅ WebSocket 서버 구현
+- ❌ 개발 설정 파일 (`.pylintrc`, `pyrightconfig.json`)
+- ❌ Python 캐시 (`__pycache__`, `*.pyc`)
+
 ### 수동 애드온 설치
 
 자동 설치가 실패한 경우 수동으로 설치:
 
+**방법 1: ZIP에서 설치 (권장)**
 ```bash
-# 1. Blender 4.0+ 실행 (2023+)
+# 1. Blender 4.0+ 실행
+# 2. Edit > Preferences > Add-ons > Install
+# 3. 선택: .blender-toolkit/blender-toolkit-addon-v*.zip
+# 4. "Blender Toolkit WebSocket Server" 활성화
+```
+
+**방법 2: 소스에서 설치**
+```bash
+# 1. Blender 4.0+ 실행
 # 2. Edit > Preferences > Add-ons > Install
 # 3. 선택: plugins/blender-toolkit/skills/addon/__init__.py
 # 4. "Blender Toolkit WebSocket Server" 활성화
-# 5. config 업데이트: "addonInstalled": true로 설정
 ```
 
 ### WebSocket 서버 시작

@@ -14,6 +14,7 @@ const { execSync, spawn } = require('child_process');
 const { createLogger } = require('./logger');
 const processUtils = require('./process-utils');
 const blenderDetect = require('./detect-blender');
+const { buildAddonZip } = require('./build-addon');
 
 // Get hookInput early to determine project name
 let hookInput = null;
@@ -186,7 +187,7 @@ async function findAvailablePort(usedPorts, basePort = 9400) {
 }
 
 /**
- * Create .blender-toolkit output directory in project root
+ * Create .blender-toolkit output directory and animations folder in project root
  */
 function createOutputDirectory(projectRoot) {
   const outputDir = path.join(projectRoot, '.blender-toolkit');
@@ -203,6 +204,27 @@ function createOutputDirectory(projectRoot) {
 *
 `;
     fs.writeFileSync(gitignorePath, gitignoreContent, 'utf-8');
+  }
+
+  // Create animations directory for Mixamo FBX files
+  const animationsDir = path.join(projectRoot, 'animations');
+  if (!fs.existsSync(animationsDir)) {
+    fs.mkdirSync(animationsDir, { recursive: true });
+    logger.log('Created animations directory for Mixamo FBX files');
+  }
+
+  // Create .gitignore in animations folder to ignore FBX files
+  const animationsGitignorePath = path.join(animationsDir, '.gitignore');
+  if (!fs.existsSync(animationsGitignorePath)) {
+    const animationsGitignoreContent = `# Mixamo animation files (can be large)
+*.fbx
+*.dae
+
+# Keep this directory in Git
+!.gitignore
+`;
+    fs.writeFileSync(animationsGitignorePath, animationsGitignoreContent, 'utf-8');
+    logger.log('Created .gitignore in animations folder');
   }
 }
 
@@ -721,6 +743,13 @@ async function initializeProject(hookInput) {
 
   // Create CLI wrapper script
   createWrapperScript(projectRoot);
+
+  // Build addon ZIP for distribution
+  try {
+    buildAddonZip(projectRoot);
+  } catch (error) {
+    logger.warn('Failed to build addon ZIP: ' + error.message);
+  }
 
   // Detect Blender installations and configure
   const blenderDetected = detectAndConfigureBlender(sharedConfig);

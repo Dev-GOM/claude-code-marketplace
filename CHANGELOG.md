@@ -2,7 +2,40 @@
 
 All notable changes to the Dev GOM Plugins marketplace will be documented in this file.
 
-> **Version**: 2.17.3 | **Last Updated**: 2025-11-10
+> **Version**: 2.18.1 | **Last Updated**: 2025-11-11
+
+---
+
+## [2.18.1] - 2025-11-11
+
+### Added
+- ✨ **Blender Toolkit v1.4.0**: Addon Distribution and Project Structure
+  - **Addon Package Builder**: ZIP packaging system for Blender addon distribution
+    - `build-addon.js` script for creating distributable addon packages
+    - Automatic version tracking (rebuilds only when version changes)
+    - Smart cleanup of old ZIP files
+    - Python-based ZIP creation for cross-platform compatibility
+    - Excludes development files (`.pylintrc`, `pyrightconfig.json`, `__pycache__`)
+    - Output: `.blender-toolkit/blender-toolkit-addon-v{version}.zip`
+  - **CLI Command**: `addon-build` command via bt wrapper
+    - `node .blender-toolkit/bt addon-build` - Build addon ZIP
+    - `node .blender-toolkit/bt addon-build --force` - Force rebuild
+    - Automatically invoked during SessionStart initialization
+  - **Project Structure**: Animations folder auto-creation
+    - Creates `animations/` directory for Mixamo FBX files
+    - Includes `.gitignore` to exclude large animation files (`*.fbx`, `*.dae`)
+    - Supports workflow paths like `./Walking.fbx` from documentation
+  - **Documentation**: Comprehensive addon distribution guide
+    - Installation from ZIP (recommended method)
+    - Manual build instructions
+    - Package contents and exclusions
+    - Added to both English and Korean READMEs
+
+### Changed
+- 🔧 **Blender Toolkit**: Init script improvements
+  - `init-config.js` now calls `buildAddonZip()` during initialization
+  - Automatic ZIP generation on session start (with version check)
+  - Better project structure setup with animations folder
 
 ---
 
