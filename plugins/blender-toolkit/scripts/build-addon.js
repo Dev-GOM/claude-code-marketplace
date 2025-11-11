@@ -57,13 +57,15 @@ function getVersion() {
  * Create ZIP file using Python (cross-platform)
  */
 function createZipWithPython(addonRoot, outputPath) {
-  const pythonScript = `
-import sys
+  const pythonScript = `import sys
 import zipfile
 from pathlib import Path
 
 addon_root = Path(r"${addonRoot.replace(/\\/g, '\\\\')}")
 output_path = Path(r"${outputPath.replace(/\\/g, '\\\\')}")
+
+# Ensure output directory exists
+output_path.parent.mkdir(parents=True, exist_ok=True)
 
 # Collect files
 files_to_add = []
@@ -89,15 +91,38 @@ with zipfile.ZipFile(output_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
 print(f"Added {len(files_to_add)} files to ZIP")
 `;
 
+  // Write Python script to temporary file
+  const tempScriptPath = path.join(__dirname, 'build-addon-temp.py');
+
   try {
-    const result = execSync('python -X utf8 -c "' + pythonScript.replace(/"/g, '\\"') + '"', {
+    fs.writeFileSync(tempScriptPath, pythonScript, 'utf-8');
+
+    const result = execSync(`python -X utf8 "${tempScriptPath}"`, {
       encoding: 'utf-8',
       stdio: ['pipe', 'pipe', 'pipe']
     });
+
     logger.log(result.trim());
+
+    // Clean up temp file
+    fs.unlinkSync(tempScriptPath);
+
     return true;
   } catch (error) {
     logger.error('Python ZIP creation failed: ' + error.message);
+    if (error.stderr) {
+      logger.error('Python stderr: ' + error.stderr);
+    }
+
+    // Clean up temp file on error
+    try {
+      if (fs.existsSync(tempScriptPath)) {
+        fs.unlinkSync(tempScriptPath);
+      }
+    } catch (cleanupError) {
+      // Ignore cleanup errors
+    }
+
     return false;
   }
 }
