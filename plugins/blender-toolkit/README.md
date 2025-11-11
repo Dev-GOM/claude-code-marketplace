@@ -1,6 +1,6 @@
 # Blender Toolkit
 
-> **⚠️ Status**: 🧪 Experimental (v1.3.0)
+> **⚠️ Status**: 🧪 Experimental (v1.4.0)
 >
 > **This plugin is currently in experimental stage. APIs and features may change.**
 
@@ -57,16 +57,51 @@ Blender Toolkit uses SessionStart hooks to automatically initialize your project
    cat .blender-toolkit/init-log.txt
    ```
 
+### Building Addon Package
+
+The SessionStart hook automatically creates a ZIP package in `.blender-toolkit/` for distribution:
+- **Auto-generated**: Created during session initialization
+- **Version tracking**: Only rebuilds when plugin version changes
+- **Location**: `.blender-toolkit/blender-toolkit-addon-v{version}.zip`
+
+**Manual Build**:
+```bash
+# Build addon ZIP
+node .blender-toolkit/bt addon-build
+
+# Force rebuild (ignore version check)
+node .blender-toolkit/bt addon-build --force
+
+# Check available commands
+node .blender-toolkit/bt --help
+```
+
+**Package Contents**:
+- ✅ All addon Python files (`*.py`)
+- ✅ Command modules (`commands/`)
+- ✅ Utility modules (`utils/`)
+- ✅ WebSocket server implementation
+- ❌ Development configs (`.pylintrc`, `pyrightconfig.json`)
+- ❌ Python cache (`__pycache__`, `*.pyc`)
+
 ### Manual Addon Installation
 
 If automatic installation fails, install manually:
 
+**Option 1: Install from ZIP (Recommended)**
 ```bash
-# 1. Open Blender 4.0+ (2023+)
+# 1. Open Blender 4.0+
+# 2. Edit > Preferences > Add-ons > Install
+# 3. Select: .blender-toolkit/blender-toolkit-addon-v*.zip
+# 4. Enable "Blender Toolkit WebSocket Server"
+```
+
+**Option 2: Install from Source**
+```bash
+# 1. Open Blender 4.0+
 # 2. Edit > Preferences > Add-ons > Install
 # 3. Select: plugins/blender-toolkit/skills/addon/__init__.py
 # 4. Enable "Blender Toolkit WebSocket Server"
-# 5. Update config: Set "addonInstalled": true
 ```
 
 ### Start WebSocket Server

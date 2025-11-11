@@ -2,7 +2,40 @@
 
 Dev GOM Plugins 마켓플레이스의 모든 주요 변경사항이 이 파일에 문서화됩니다.
 
-> **버전**: 2.17.3 | **최종 업데이트**: 2025-11-10
+> **버전**: 2.18.1 | **최종 업데이트**: 2025-11-11
+
+---
+
+## [2.18.1] - 2025-11-11
+
+### 추가됨
+- ✨ **Blender Toolkit v1.4.0**: 애드온 배포 및 프로젝트 구조
+  - **애드온 패키지 빌더**: Blender 애드온 배포를 위한 ZIP 패키징 시스템
+    - 배포 가능한 애드온 패키지 생성을 위한 `build-addon.js` 스크립트
+    - 자동 버전 추적 (버전 변경 시에만 재빌드)
+    - 구버전 ZIP 파일 자동 정리
+    - 크로스 플랫폼 호환성을 위한 Python 기반 ZIP 생성
+    - 개발 파일 제외 (`.pylintrc`, `pyrightconfig.json`, `__pycache__`)
+    - 출력: `.blender-toolkit/blender-toolkit-addon-v{버전}.zip`
+  - **CLI 명령**: bt 래퍼를 통한 `addon-build` 명령
+    - `node .blender-toolkit/bt addon-build` - 애드온 ZIP 빌드
+    - `node .blender-toolkit/bt addon-build --force` - 강제 재빌드
+    - SessionStart 초기화 중 자동 실행
+  - **프로젝트 구조**: 애니메이션 폴더 자동 생성
+    - Mixamo FBX 파일용 `animations/` 디렉토리 생성
+    - 대용량 애니메이션 파일 제외를 위한 `.gitignore` 포함 (`*.fbx`, `*.dae`)
+    - 문서의 `./Walking.fbx`와 같은 워크플로우 경로 지원
+  - **문서화**: 포괄적인 애드온 배포 가이드
+    - ZIP에서 설치 (권장 방법)
+    - 수동 빌드 지침
+    - 패키지 포함 내용 및 제외 항목
+    - 영문 및 한글 README에 추가
+
+### 변경됨
+- 🔧 **Blender Toolkit**: Init 스크립트 개선
+  - `init-config.js`에서 초기화 중 `buildAddonZip()` 호출
+  - 세션 시작 시 자동 ZIP 생성 (버전 체크 포함)
+  - 애니메이션 폴더를 포함한 더 나은 프로젝트 구조 설정
 
 ---
 

@@ -1,0 +1,285 @@
+#!/usr/bin/env node
+
+/**
+ * Blender Addon Builder
+ *
+ * Packages the addon folder into a ZIP file for distribution.
+ * Can be run standalone or called from init-config.js during SessionStart.
+ *
+ * Usage:
+ *   node build-addon.js [--project-root <path>] [--output-dir <path>]
+ */
+
+const fs = require('fs');
+const path = require('path');
+const { execSync } = require('child_process');
+
+// Import logger
+const logger = require('./logger');
+
+/**
+ * Get plugin root directory
+ */
+function getPluginRoot() {
+  const pluginRoot = process.env.CLAUDE_PLUGIN_ROOT;
+  if (pluginRoot) {
+    return pluginRoot;
+  }
+  // Fallback: assume script is in scripts/ folder
+  return path.resolve(__dirname, '..');
+}
+
+/**
+ * Get version from plugin.json
+ */
+function getVersion() {
+  const pluginRoot = getPluginRoot();
+  const pluginJsonPath = path.join(pluginRoot, '.claude-plugin', 'plugin.json');
+
+  if (!fs.existsSync(pluginJsonPath)) {
+    logger.log('Warning: plugin.json not found, using version "unknown"');
+    return 'unknown';
+  }
+
+  try {
+    const pluginJson = JSON.parse(fs.readFileSync(pluginJsonPath, 'utf-8'));
+    return pluginJson.version || 'unknown';
+  } catch (error) {
+    logger.log(`Warning: Could not read version from plugin.json: ${error.message}`);
+    return 'unknown';
+  }
+}
+
+/**
+ * Check if file should be included in ZIP
+ */
+function shouldIncludeFile(filePath, addonRoot) {
+  const relativePath = path.relative(addonRoot, filePath);
+  const name = path.basename(filePath);
+
+  // Exclude development config files
+  const excludeFiles = new Set(['.pylintrc', 'pyrightconfig.json', '.pyc']);
+
+  if (excludeFiles.has(name) || name.endsWith('.pyc')) {
+    return false;
+  }
+
+  // Exclude __pycache__ directories
+  if (relativePath.includes('__pycache__')) {
+    return false;
+  }
+
+  // Include Python files
+  if (path.extname(filePath) === '.py') {
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * Get all files recursively
+ */
+function getFilesRecursive(dir) {
+  const files = [];
+  const items = fs.readdirSync(dir, { withFileTypes: true });
+
+  for (const item of items) {
+    const fullPath = path.join(dir, item.name);
+    if (item.isDirectory()) {
+      files.push(...getFilesRecursive(fullPath));
+    } else {
+      files.push(fullPath);
+    }
+  }
+
+  return files;
+}
+
+/**
+ * Create ZIP file using Python (cross-platform)
+ */
+function createZipWithPython(addonRoot, outputPath, version) {
+  const pythonScript = `
+import sys
+import zipfile
+from pathlib import Path
+
+addon_root = Path(r"${addonRoot.replace(/\\/g, '\\\\')}")
+output_path = Path(r"${outputPath.replace(/\\/g, '\\\\')}")
+
+# Collect files
+files_to_add = []
+for file_path in addon_root.rglob('*'):
+    if not file_path.is_file():
+        continue
+
+    # Skip development files
+    name = file_path.name
+    if name in {'.pylintrc', 'pyrightconfig.json'} or name.endswith('.pyc'):
+        continue
+
+    # Skip __pycache__
+    if '__pycache__' in file_path.parts:
+        continue
+
+    # Include .py files
+    if file_path.suffix == '.py':
+        files_to_add.append(file_path)
+
+# Create ZIP
+with zipfile.ZipFile(output_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+    for file_path in files_to_add:
+        arcname = 'blender_toolkit_addon' / file_path.relative_to(addon_root)
+        zipf.write(file_path, arcname)
+
+print(f"Added {len(files_to_add)} files to ZIP")
+`;
+
+  try {
+    const result = execSync('python -X utf8 -c "' + pythonScript.replace(/"/g, '\\"') + '"', {
+      encoding: 'utf-8',
+      stdio: ['pipe', 'pipe', 'pipe']
+    });
+    logger.log(result.trim());
+    return true;
+  } catch (error) {
+    logger.error('Python ZIP creation failed: ' + error.message);
+    return false;
+  }
+}
+
+/**
+ * Check if ZIP already exists with the same version
+ */
+function zipExistsForVersion(outputDir, version) {
+  const zipFilename = `blender-toolkit-addon-v${version}.zip`;
+  const zipPath = path.join(outputDir, zipFilename);
+  return fs.existsSync(zipPath);
+}
+
+/**
+ * Build addon ZIP file
+ */
+function buildAddonZip(projectRoot = null, outputDir = null, force = false) {
+  // Determine paths
+  if (!projectRoot) {
+    projectRoot = process.cwd();
+  }
+
+  if (!outputDir) {
+    outputDir = path.join(projectRoot, '.blender-toolkit');
+  }
+
+  // Create output directory
+  if (!fs.existsSync(outputDir)) {
+    fs.mkdirSync(outputDir, { recursive: true });
+  }
+
+  // Get current version
+  const version = getVersion();
+  const zipFilename = `blender-toolkit-addon-v${version}.zip`;
+  const zipPath = path.join(outputDir, zipFilename);
+
+  // Check if ZIP already exists for this version
+  if (!force && zipExistsForVersion(outputDir, version)) {
+    logger.log(`✓ Addon ZIP already exists for v${version}`);
+    logger.log(`  Path: ${zipPath}`);
+    return zipPath;
+  }
+
+  logger.log('Building Blender addon ZIP...');
+
+  // Addon source directory
+  const pluginRoot = getPluginRoot();
+  const addonRoot = path.join(pluginRoot, 'skills', 'addon');
+
+  if (!fs.existsSync(addonRoot)) {
+    logger.error(`Addon directory not found: ${addonRoot}`);
+    return null;
+  }
+
+  logger.log(`  Source: ${addonRoot}`);
+  logger.log(`  Output: ${zipPath}`);
+
+  // Remove old ZIP files with different versions
+  try {
+    const files = fs.readdirSync(outputDir);
+    for (const file of files) {
+      if (file.startsWith('blender-toolkit-addon-v') && file.endsWith('.zip') && file !== zipFilename) {
+        const oldZipPath = path.join(outputDir, file);
+        fs.unlinkSync(oldZipPath);
+        logger.log(`  Removed old ZIP: ${file}`);
+      }
+    }
+  } catch (error) {
+    logger.log(`  Warning: Could not clean old ZIPs: ${error.message}`);
+  }
+
+  // Create ZIP using Python for better cross-platform support
+  const success = createZipWithPython(addonRoot, zipPath, version);
+
+  if (!success) {
+    logger.error('Failed to create addon ZIP');
+    return null;
+  }
+
+  // Print summary
+  const stats = fs.statSync(zipPath);
+  const sizeKB = (stats.size / 1024).toFixed(1);
+
+  logger.log('');
+  logger.log('✓ Addon ZIP created successfully!');
+  logger.log(`  Version: ${version}`);
+  logger.log(`  Size: ${sizeKB} KB`);
+  logger.log(`  Path: ${zipPath}`);
+
+  return zipPath;
+}
+
+/**
+ * Main entry point
+ */
+function main() {
+  const args = process.argv.slice(2);
+  let projectRoot = null;
+  let outputDir = null;
+  let force = false;
+
+  // Parse arguments
+  for (let i = 0; i < args.length; i++) {
+    if (args[i] === '--project-root' && i + 1 < args.length) {
+      projectRoot = args[i + 1];
+      i++;
+    } else if (args[i] === '--output-dir' && i + 1 < args.length) {
+      outputDir = args[i + 1];
+      i++;
+    } else if (args[i] === '--force' || args[i] === '-f') {
+      force = true;
+    }
+  }
+
+  try {
+    const zipPath = buildAddonZip(projectRoot, outputDir, force);
+    if (zipPath) {
+      logger.close();
+      process.exit(0);
+    } else {
+      logger.error('Build failed');
+      logger.close();
+      process.exit(1);
+    }
+  } catch (error) {
+    logger.error(`Error: ${error.message}`);
+    logger.close();
+    process.exit(1);
+  }
+}
+
+// Export for use in other scripts
+module.exports = { buildAddonZip };
+
+// Run if executed directly
+if (require.main === module) {
+  main();
+}

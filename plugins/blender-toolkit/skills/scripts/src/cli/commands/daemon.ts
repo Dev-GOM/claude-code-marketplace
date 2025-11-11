@@ -130,4 +130,67 @@ export function registerDaemonCommands(program: Command) {
         process.exit(1);
       }
     });
+
+  // Addon build
+  program
+    .command('addon-build')
+    .description('Build Blender addon ZIP package for distribution')
+    .option('-o, --output-dir <path>', 'Output directory for ZIP file')
+    .option('-f, --force', 'Force rebuild even if ZIP already exists')
+    .action(async (options) => {
+      try {
+        console.log('📦 Building Blender addon ZIP...\n');
+
+        // Build script path (plugins/blender-toolkit/scripts/build-addon.js)
+        const pluginRoot = process.env.CLAUDE_PLUGIN_ROOT;
+        if (!pluginRoot) {
+          console.error('❌ Error: CLAUDE_PLUGIN_ROOT environment variable not set');
+          process.exit(1);
+        }
+
+        const buildScript = join(pluginRoot, 'scripts', 'build-addon.js');
+        if (!existsSync(buildScript)) {
+          console.error(`❌ Error: Build script not found at ${buildScript}`);
+          process.exit(1);
+        }
+
+        const projectRoot = process.env.CLAUDE_PROJECT_DIR || process.cwd();
+        console.log(`📍 Project: ${projectRoot}`);
+        console.log(`📍 Script: ${buildScript}\n`);
+
+        // Prepare arguments
+        const args = ['--project-root', projectRoot];
+        if (options.outputDir) {
+          args.push('--output-dir', options.outputDir);
+        }
+        if (options.force) {
+          args.push('--force');
+        }
+
+        // Run build script
+        const buildProcess = spawn('node', [buildScript, ...args], {
+          stdio: 'inherit'
+        });
+
+        buildProcess.on('exit', (code) => {
+          if (code === 0) {
+            console.log('\n📝 Next steps:');
+            console.log('   1. Open Blender 4.0+');
+            console.log('   2. Edit > Preferences > Add-ons > Install');
+            console.log('   3. Select: .blender-toolkit/blender-toolkit-addon-v*.zip');
+            console.log('   4. Enable "Blender Toolkit WebSocket Server"');
+          }
+          process.exit(code || 0);
+        });
+
+        buildProcess.on('error', (error) => {
+          console.error(`\n❌ Failed to run build script: ${error.message}`);
+          process.exit(1);
+        });
+
+      } catch (error) {
+        console.error('Error:', error);
+        process.exit(1);
+      }
+    });
 }
