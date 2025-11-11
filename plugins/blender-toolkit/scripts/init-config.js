@@ -202,20 +202,18 @@ function createOutputDirectory(projectRoot) {
   if (!fs.existsSync(gitignorePath)) {
     const gitignoreContent = `# Blender Toolkit generated files
 *
+!animations/
 `;
     fs.writeFileSync(gitignorePath, gitignoreContent, 'utf-8');
   }
 
-  // Create animations directory for Mixamo FBX files
-  const animationsDir = path.join(projectRoot, 'animations');
+  // Create animations directory for Mixamo FBX files (inside .blender-toolkit)
+  const animationsDir = path.join(outputDir, 'animations');
   if (!fs.existsSync(animationsDir)) {
     fs.mkdirSync(animationsDir, { recursive: true });
-    logger.log('Created animations directory for Mixamo FBX files');
-  }
+    logger.log('Created .blender-toolkit/animations directory for Mixamo FBX files');
 
-  // Create .gitignore in animations folder to ignore FBX files
-  const animationsGitignorePath = path.join(animationsDir, '.gitignore');
-  if (!fs.existsSync(animationsGitignorePath)) {
+    // Create .gitignore in animations folder to ignore FBX files
     const animationsGitignoreContent = `# Mixamo animation files (can be large)
 *.fbx
 *.dae
@@ -223,7 +221,7 @@ function createOutputDirectory(projectRoot) {
 # Keep this directory in Git
 !.gitignore
 `;
-    fs.writeFileSync(animationsGitignorePath, animationsGitignoreContent, 'utf-8');
+    fs.writeFileSync(path.join(animationsDir, '.gitignore'), animationsGitignoreContent, 'utf-8');
     logger.log('Created .gitignore in animations folder');
   }
 }

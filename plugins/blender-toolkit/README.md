@@ -113,7 +113,27 @@ In Blender:
 
 ## ⚙️ Configuration
 
-**Shared Config Location**: `~/.claude/plugins/marketplaces/dev-gom-plugins/blender-config.json`
+**Shared Config Location**: `~/.claude/plugins/marketplaces/dev-gom-plugins/plugins/blender-toolkit/skills/blender-config.json`
+
+### Manual Blender Path Configuration
+
+If Blender is not automatically detected, you can manually specify the path:
+
+1. Open the config file: `~/.claude/plugins/marketplaces/dev-gom-plugins/plugins/blender-toolkit/skills/blender-config.json`
+2. Add or update the `blenderExecutable` field:
+
+```json
+{
+  "blenderExecutable": "C:\\Program Files\\Blender Foundation\\Blender 4.2\\blender.exe",
+  "blenderVersion": "4.2.0",
+  "projects": { ... }
+}
+```
+
+**Common Blender Paths:**
+- **Windows**: `C:\Program Files\Blender Foundation\Blender 4.x\blender.exe`
+- **macOS**: `/Applications/Blender.app/Contents/MacOS/Blender`
+- **Linux**: `/usr/bin/blender` or `~/blender/blender`
 
 **Example Configuration**:
 

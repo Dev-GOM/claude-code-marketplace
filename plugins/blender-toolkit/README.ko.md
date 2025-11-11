@@ -111,7 +111,27 @@ Blender에서:
 
 ## ⚙️ 설정
 
-**공유 설정 파일 위치**: `~/.claude/plugins/marketplaces/dev-gom-plugins/blender-config.json`
+**공유 설정 파일 위치**: `~/.claude/plugins/marketplaces/dev-gom-plugins/plugins/blender-toolkit/skills/blender-config.json`
+
+### 블렌더 경로 수동 설정
+
+블렌더가 자동으로 감지되지 않는 경우, 수동으로 경로를 지정할 수 있습니다:
+
+1. 설정 파일 열기: `~/.claude/plugins/marketplaces/dev-gom-plugins/plugins/blender-toolkit/skills/blender-config.json`
+2. `blenderExecutable` 필드 추가 또는 업데이트:
+
+```json
+{
+  "blenderExecutable": "C:\\Program Files\\Blender Foundation\\Blender 4.2\\blender.exe",
+  "blenderVersion": "4.2.0",
+  "projects": { ... }
+}
+```
+
+**일반적인 블렌더 경로:**
+- **Windows**: `C:\Program Files\Blender Foundation\Blender 4.x\blender.exe`
+- **macOS**: `/Applications/Blender.app/Contents/MacOS/Blender`
+- **Linux**: `/usr/bin/blender` 또는 `~/blender/blender`
 
 **설정 예시**:
 
