@@ -20,6 +20,10 @@ namespace UnityEditorToolkit.Editor
         private bool wasPlaying = false;
         private float lastUpdateTime = 0f;
 
+        // Constants
+        private const int LockFileStaleMinutes = 10;
+        private const int MaxParentSearchLevels = 5;
+
         // CLI management
         private string pluginVersion = null;
         private string localCLIVersion = null;
@@ -359,13 +363,13 @@ namespace UnityEditorToolkit.Editor
                     }
                     catch (ArgumentException) { return true; /* Process not found, stale */ }
                     catch (InvalidOperationException) { return true; /* Process has exited, stale */ }
-                    catch (Exception) { /* Other error checking process, fallback to timestamp */ }
+                    catch (Exception ex) { UnityEngine.Debug.LogWarning($"Error checking process lock, falling back to timestamp: {ex.Message}"); }
                 }
 
                 // 2. Fallback to timestamp written inside the lock file
                 if (DateTime.TryParse(lines[1], out DateTime lockTimestamp))
                 {
-                    if ((DateTime.Now - lockTimestamp).TotalMinutes > 10)
+                    if ((DateTime.Now - lockTimestamp).TotalMinutes > LockFileStaleMinutes)
                     {
                         return true; // Stale by time
                     }
@@ -783,8 +787,8 @@ namespace UnityEditorToolkit.Editor
 
             string rootLimit = Path.GetPathRoot(currentDir);
 
-            // Search up to 5 levels up from the package.json location
-            for (int i = 0; i < 5 && currentDir != null && currentDir != rootLimit; i++)
+            // Search up to MaxParentSearchLevels levels up from the package.json location
+            for (int i = 0; i < MaxParentSearchLevels && currentDir != null && currentDir != rootLimit; i++)
             {
                 string scriptsPath = Path.Combine(currentDir, "scripts");
                 if (Directory.Exists(scriptsPath) && File.Exists(Path.Combine(scriptsPath, "package.json")))
