@@ -54,31 +54,36 @@ The addon needs to be installed manually. Follow these steps:
 
 **Manual Installation Steps**:
 
-1. **Open Blender 4.0+**
+**Method 1: Install from ZIP (Recommended)**
+```bash
+# 1. Open Blender 4.0+
+# 2. Edit > Preferences > Add-ons > Install
+# 3. Select: .blender-toolkit/blender-toolkit-addon-v*.zip
+# 4. Enable "Blender Toolkit WebSocket Server"
+```
 
-2. **Install Addon**:
-   - Edit → Preferences → Add-ons → Install
-   - Navigate to: `plugins/blender-toolkit/skills/addon/__init__.py`
-   - Click "Install Add-on from File"
+**Method 2: Install from Source**
+```bash
+# 1. Open Blender 4.0+
+# 2. Edit > Preferences > Add-ons > Install
+# 3. Select: plugins/blender-toolkit/skills/addon/__init__.py
+# 4. Enable "Blender Toolkit WebSocket Server"
+```
 
-3. **Enable Addon**:
-   - Search for "Blender Toolkit WebSocket Server" in Add-ons list
-   - Check the checkbox to enable it
+**Start WebSocket Server**:
+1. Open 3D View → Sidebar (press N key)
+2. Find "Blender Toolkit" tab
+3. Click "Start Server" button
+4. Default port: 9400 (auto-assigned per project)
 
-4. **Start WebSocket Server**:
-   - Open 3D View → Sidebar (press N key)
-   - Find "Blender Toolkit" tab
-   - Click "Start Server" button
-   - Default port: 9400 (auto-assigned per project)
+**Update Config**:
+- Open config file (path shown above)
+- Set `"addonInstalled": true`
+- Save file
 
-5. **Update Config**:
-   - Open config file (path shown above)
-   - Set `"addonInstalled": true`
-   - Save file
-
-6. **Verify Connection**:
-   - Try a simple command: `node .blender-toolkit/bt.js list-objects`
-   - If successful, you'll see a list of objects in your scene
+**Verify Connection**:
+- Try a simple command: `node .blender-toolkit/bt.js list-objects`
+- If successful, you'll see a list of objects in your scene
 
 **Troubleshooting**:
 - If Blender path is incorrect: Update `blenderExecutable` in config

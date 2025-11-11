@@ -54,6 +54,38 @@ function getVersion() {
 }
 
 /**
+ * Install dependencies to libs folder
+ */
+function installDependencies(addonRoot) {
+  const libsDir = path.join(addonRoot, 'libs');
+
+  logger.log('Installing Python dependencies...');
+
+  // Create libs directory if it doesn't exist
+  if (!fs.existsSync(libsDir)) {
+    fs.mkdirSync(libsDir, { recursive: true });
+  }
+
+  try {
+    // Install aiohttp and its dependencies
+    // Use --trusted-host to bypass SSL certificate issues
+    execSync(`python -m pip install --target "${libsDir}" --trusted-host pypi.org --trusted-host files.pythonhosted.org aiohttp`, {
+      encoding: 'utf-8',
+      stdio: ['pipe', 'pipe', 'pipe']
+    });
+
+    logger.log('✓ Dependencies installed to libs folder');
+    return true;
+  } catch (error) {
+    logger.error('Failed to install dependencies: ' + error.message);
+    if (error.stderr) {
+      logger.error('stderr: ' + error.stderr);
+    }
+    return false;
+  }
+}
+
+/**
  * Create ZIP file using Python (cross-platform)
  */
 function createZipWithPython(addonRoot, outputPath) {
@@ -75,9 +107,14 @@ for file_path in addon_root.rglob('*'):
 
     # Skip development files and caches
     name = file_path.name
+    rel_parts = file_path.relative_to(addon_root).parts
+
     if (name in {'.pylintrc', 'pyrightconfig.json'} or
             name.endswith('.pyc') or
-            '__pycache__' in file_path.parts):
+            '__pycache__' in file_path.parts or
+            name.endswith('.dist-info') or
+            (len(rel_parts) > 1 and rel_parts[0] == 'libs' and
+             any(part.endswith('.dist-info') for part in rel_parts))):
         continue
 
     files_to_add.append(file_path)
@@ -192,6 +229,13 @@ function buildAddonZip(projectRoot = null, outputDir = null, force = false) {
     }
   } catch (error) {
     logger.log(`  Warning: Could not clean old ZIPs: ${error.message}`);
+  }
+
+  // Install Python dependencies to libs folder
+  const depsInstalled = installDependencies(addonRoot);
+  if (!depsInstalled) {
+    logger.error('Failed to install dependencies - addon may not work properly');
+    // Continue anyway - user can install manually
   }
 
   // Create ZIP using Python for better cross-platform support
