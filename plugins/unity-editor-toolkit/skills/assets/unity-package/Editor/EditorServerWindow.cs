@@ -343,44 +343,45 @@ namespace UnityEditorToolkit.Editor
             try
             {
                 string[] lines = File.ReadAllLines(lockPath);
-                if (lines.Length >= 2)
-                {
-                    int pid = int.Parse(lines[0]);
+                if (lines.Length < 2) return true; // Invalid format, assume stale
 
-                    // Check if process with this PID still exists
+                // 1. Check if process is a running Unity instance
+                if (int.TryParse(lines[0], out int pid))
+                {
                     try
                     {
                         Process process = Process.GetProcessById(pid);
-
-                        // Additional check: is it actually Unity?
                         if (process.ProcessName.Contains("Unity"))
                         {
                             return false; // Process alive and is Unity, lock is valid
                         }
+                        return true; // Process exists but is not Unity, lock is stale
                     }
-                    catch (ArgumentException)
-                    {
-                        // Process not found
-                    }
-                    catch (InvalidOperationException)
-                    {
-                        // Process has exited
-                    }
+                    catch (ArgumentException) { return true; /* Process not found, stale */ }
+                    catch (InvalidOperationException) { return true; /* Process has exited, stale */ }
+                    catch (Exception) { /* Other error checking process, fallback to timestamp */ }
                 }
 
-                // Check timestamp (older than 10 minutes?)
-                FileInfo lockInfo = new FileInfo(lockPath);
-                if ((DateTime.Now - lockInfo.CreationTime).TotalMinutes > 10)
+                // 2. Fallback to timestamp written inside the lock file
+                if (DateTime.TryParse(lines[1], out DateTime lockTimestamp))
                 {
-                    return true; // Stale by time
+                    if ((DateTime.Now - lockTimestamp).TotalMinutes > 10)
+                    {
+                        return true; // Stale by time
+                    }
                 }
+                else
+                {
+                    return true; // Unreadable timestamp, assume stale
+                }
+
+                // If process check was inconclusive but timestamp is recent, assume lock is valid to be safe.
+                return false;
             }
             catch (Exception)
             {
-                return true; // Can't read lock, assume stale
+                return true; // Can't read lock, assume stale for recovery
             }
-
-            return true; // Default: assume stale
         }
 
         private void ClearInstallationLock()
@@ -777,32 +778,20 @@ namespace UnityEditorToolkit.Editor
                 return null;
             }
 
-            string packageDir = Path.GetDirectoryName(packagePath);
+            string currentDir = Path.GetDirectoryName(packagePath);
+            if (currentDir == null) return null;
 
-            // Check if scripts folder exists in package directory (should be in parent directory for marketplace structure)
-            string scriptsPath = Path.Combine(packageDir, "..", "..", "scripts");
-            scriptsPath = Path.GetFullPath(scriptsPath); // Normalize path
+            string rootLimit = Path.GetPathRoot(currentDir);
 
-            // Validate path exists and is accessible
-            try
+            // Search up to 5 levels up from the package.json location
+            for (int i = 0; i < 5 && currentDir != null && currentDir != rootLimit; i++)
             {
-                if (Directory.Exists(scriptsPath))
+                string scriptsPath = Path.Combine(currentDir, "scripts");
+                if (Directory.Exists(scriptsPath) && File.Exists(Path.Combine(scriptsPath, "package.json")))
                 {
-                    // Additional validation: check if it has expected files
-                    string packageJson = Path.Combine(scriptsPath, "package.json");
-                    if (File.Exists(packageJson))
-                    {
-                        return scriptsPath;
-                    }
+                    return scriptsPath;
                 }
-            }
-            catch (UnauthorizedAccessException e)
-            {
-                UnityEngine.Debug.LogError($"Unity Editor Toolkit: Access denied to scripts path: {scriptsPath} - {e.Message}");
-            }
-            catch (IOException e)
-            {
-                UnityEngine.Debug.LogError($"Unity Editor Toolkit: IO error accessing scripts path: {e.Message}");
+                currentDir = Path.GetDirectoryName(currentDir);
             }
 
             return null;

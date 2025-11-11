@@ -404,7 +404,7 @@ Contributions welcome! Please read [CONTRIBUTING.md](../../CONTRIBUTING.md) for 
 
 ---
 
-**Version**: 0.3.0
+**Version**: 0.3.1
 **Last Updated**: 2025-11-12
 **Author**: Dev GOM
 **Marketplace**: [dev-gom-plugins](https://github.com/Dev-GOM/claude-code-marketplace)
