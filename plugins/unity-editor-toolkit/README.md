@@ -71,7 +71,7 @@ The Unity C# WebSocket server package is under development. Once released:
 
 ### CLI Commands
 
-See [COMMANDS.md](./COMMANDS.md) for complete 500+ command reference.
+See [COMMANDS.md](./skills/references/COMMANDS.md) for complete 500+ command reference.
 
 #### Currently Implemented (15 commands)
 
@@ -164,7 +164,7 @@ unity-editor --port 9301 status
 
 #### Coming Soon (500+ commands)
 
-See [COMMANDS.md](./COMMANDS.md) for full command reference including:
+See [COMMANDS.md](./skills/references/COMMANDS.md) for full command reference including:
 
 - **Component**: Add, remove, configure components with property access
 - **Material**: Colors, textures, shaders, renderer settings
@@ -291,24 +291,39 @@ unity-editor-toolkit/
 │   ├── init-config.js           # SessionStart hook
 │   └── cleanup-config.js        # SessionEnd hook
 ├── skills/
-│   └── scripts/
-│       ├── src/
-│       │   ├── cli/
-│       │   │   ├── cli.ts       # Main CLI entry point
-│       │   │   └── commands/    # Command implementations
-│       │   ├── constants/
-│       │   │   └── index.ts     # Centralized constants
-│       │   ├── unity/
-│       │   │   ├── client.ts    # WebSocket client
-│       │   │   └── protocol.ts  # JSON-RPC types
-│       │   └── utils/
-│       │       ├── config.ts    # Configuration management
-│       │       └── logger.ts    # Logging utilities
-│       ├── package.json
-│       └── tsconfig.json
-├── COMMANDS.md                  # Complete command reference (500+)
-├── COMMANDS.ko.md               # Korean command reference
-└── README.md                    # This file
+│   ├── SKILL.md                 # Skill documentation
+│   ├── scripts/
+│   │   ├── src/
+│   │   │   ├── cli/
+│   │   │   │   ├── cli.ts       # Main CLI entry point
+│   │   │   │   └── commands/    # Command implementations
+│   │   │   ├── constants/
+│   │   │   │   └── index.ts     # Centralized constants
+│   │   │   ├── unity/
+│   │   │   │   ├── client.ts    # WebSocket client
+│   │   │   │   └── protocol.ts  # JSON-RPC types
+│   │   │   └── utils/
+│   │   │       ├── config.ts    # Configuration management
+│   │   │       └── logger.ts    # Logging utilities
+│   │   ├── package.json
+│   │   └── tsconfig.json
+│   ├── references/              # Documentation
+│   │   ├── QUICKSTART.md        # Quick setup guide
+│   │   ├── QUICKSTART.ko.md     # Korean quick setup guide
+│   │   ├── COMMANDS.md          # Complete command reference (500+)
+│   │   ├── COMMANDS.ko.md       # Korean command reference
+│   │   ├── API_COMPATIBILITY.md # Unity version compatibility
+│   │   ├── TEST_GUIDE.md        # Testing guide
+│   │   └── TEST_GUIDE.ko.md     # Korean testing guide
+│   └── assets/                  # Unity packages
+│       └── unity-package/       # Unity C# WebSocket server
+│           ├── Runtime/         # Core handlers & protocol
+│           ├── Editor/          # Editor window
+│           ├── Tests/           # Unit tests (66 tests)
+│           ├── ThirdParty/      # websocket-sharp
+│           └── package.json     # Unity package manifest
+├── README.md                    # This file
+└── README.ko.md                 # Korean README
 ```
 
 ### Building
@@ -331,7 +346,7 @@ Unity C# server implementation required for end-to-end testing. Unit tests comin
 **Phase 4**: Build, Profiler, Test Runner - 100+ commands
 **Phase 5**: Advanced features (Timeline, UI Toolkit, VCS) - 150+ commands
 
-See [COMMANDS.md](./COMMANDS.md) for detailed roadmap.
+See [COMMANDS.md](./skills/references/COMMANDS.md) for detailed roadmap.
 
 ## Coming Soon
 
@@ -384,8 +399,8 @@ Contributions welcome! Please read [CONTRIBUTING.md](../../CONTRIBUTING.md) for 
 
 ## Documentation
 
-- [COMMANDS.md](./COMMANDS.md) - Complete command reference (500+ commands)
-- [COMMANDS.ko.md](./COMMANDS.ko.md) - Korean command reference
+- [COMMANDS.md](./skills/references/COMMANDS.md) - Complete command reference (500+ commands)
+- [COMMANDS.ko.md](./skills/references/COMMANDS.ko.md) - Korean command reference
 
 ---
 

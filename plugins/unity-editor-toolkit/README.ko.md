@@ -71,7 +71,7 @@ Unity C# WebSocket 서버 패키지는 현재 개발 중입니다. 출시되면:
 
 ### CLI 명령어
 
-전체 500+ 명령어 레퍼런스는 [COMMANDS.md](./COMMANDS.md) 또는 [COMMANDS.ko.md](./COMMANDS.ko.md)를 참조하세요.
+전체 500+ 명령어 레퍼런스는 [COMMANDS.md](./skills/references/COMMANDS.md) 또는 [COMMANDS.ko.md](./skills/references/COMMANDS.ko.md)를 참조하세요.
 
 #### 현재 구현됨 (15개 명령어)
 
@@ -164,7 +164,7 @@ unity-editor --port 9301 status
 
 #### 개발 예정 (500+ 명령어)
 
-전체 명령어 레퍼런스는 [COMMANDS.md](./COMMANDS.md)를 참조하세요:
+전체 명령어 레퍼런스는 [COMMANDS.md](./skills/references/COMMANDS.md)를 참조하세요:
 
 - **Component**: 속성 접근을 통한 컴포넌트 추가, 제거, 설정
 - **Material**: 색상, 텍스처, Shader, Renderer 설정
@@ -291,24 +291,39 @@ unity-editor-toolkit/
 │   ├── init-config.js           # SessionStart 훅
 │   └── cleanup-config.js        # SessionEnd 훅
 ├── skills/
-│   └── scripts/
-│       ├── src/
-│       │   ├── cli/
-│       │   │   ├── cli.ts       # 메인 CLI 진입점
-│       │   │   └── commands/    # 명령어 구현
-│       │   ├── constants/
-│       │   │   └── index.ts     # 중앙 집중식 상수
-│       │   ├── unity/
-│       │   │   ├── client.ts    # WebSocket 클라이언트
-│       │   │   └── protocol.ts  # JSON-RPC 타입
-│       │   └── utils/
-│       │       ├── config.ts    # 설정 관리
-│       │       └── logger.ts    # 로깅 유틸리티
-│       ├── package.json
-│       └── tsconfig.json
-├── COMMANDS.md                  # 완전한 명령어 레퍼런스 (500+)
-├── COMMANDS.ko.md               # 한국어 명령어 레퍼런스
-└── README.md                    # 영문 README
+│   ├── SKILL.md                 # 스킬 문서
+│   ├── scripts/
+│   │   ├── src/
+│   │   │   ├── cli/
+│   │   │   │   ├── cli.ts       # 메인 CLI 진입점
+│   │   │   │   └── commands/    # 명령어 구현
+│   │   │   ├── constants/
+│   │   │   │   └── index.ts     # 중앙 집중식 상수
+│   │   │   ├── unity/
+│   │   │   │   ├── client.ts    # WebSocket 클라이언트
+│   │   │   │   └── protocol.ts  # JSON-RPC 타입
+│   │   │   └── utils/
+│   │   │       ├── config.ts    # 설정 관리
+│   │   │       └── logger.ts    # 로깅 유틸리티
+│   │   ├── package.json
+│   │   └── tsconfig.json
+│   ├── references/              # 문서
+│   │   ├── QUICKSTART.md        # 빠른 시작 가이드
+│   │   ├── QUICKSTART.ko.md     # 한국어 빠른 시작 가이드
+│   │   ├── COMMANDS.md          # 완전한 명령어 레퍼런스 (500+)
+│   │   ├── COMMANDS.ko.md       # 한국어 명령어 레퍼런스
+│   │   ├── API_COMPATIBILITY.md # Unity 버전 호환성
+│   │   ├── TEST_GUIDE.md        # 테스트 가이드
+│   │   └── TEST_GUIDE.ko.md     # 한국어 테스트 가이드
+│   └── assets/                  # Unity 패키지
+│       └── unity-package/       # Unity C# WebSocket 서버
+│           ├── Runtime/         # 핵심 핸들러 & 프로토콜
+│           ├── Editor/          # 에디터 창
+│           ├── Tests/           # 유닛 테스트 (66개 테스트)
+│           ├── ThirdParty/      # websocket-sharp
+│           └── package.json     # Unity 패키지 매니페스트
+├── README.md                    # 영문 README
+└── README.ko.md                 # 이 파일
 ```
 
 ### 빌드
@@ -331,7 +346,7 @@ npm run build
 **Phase 4**: Build, Profiler, Test Runner - 100+ 명령어
 **Phase 5**: 고급 기능 (Timeline, UI Toolkit, VCS) - 150+ 명령어
 
-자세한 로드맵은 [COMMANDS.md](./COMMANDS.md) 또는 [COMMANDS.ko.md](./COMMANDS.ko.md)를 참조하세요.
+자세한 로드맵은 [COMMANDS.md](./skills/references/COMMANDS.md) 또는 [COMMANDS.ko.md](./skills/references/COMMANDS.ko.md)를 참조하세요.
 
 ## 개발 예정
 
@@ -384,8 +399,8 @@ Apache License 2.0 - 자세한 내용은 [LICENSE](../../LICENSE)를 참조하�
 
 ## 문서
 
-- [COMMANDS.md](./COMMANDS.md) - 완전한 명령어 레퍼런스 (500+ 명령어)
-- [COMMANDS.ko.md](./COMMANDS.ko.md) - 한국어 명령어 레퍼런스
+- [COMMANDS.md](./skills/references/COMMANDS.md) - 완전한 명령어 레퍼런스 (500+ 명령어)
+- [COMMANDS.ko.md](./skills/references/COMMANDS.ko.md) - 한국어 명령어 레퍼런스
 
 ---
 

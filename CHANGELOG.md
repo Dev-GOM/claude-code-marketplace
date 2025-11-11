@@ -2,7 +2,30 @@
 
 All notable changes to the Dev GOM Plugins marketplace will be documented in this file.
 
-> **Version**: 2.19.0 | **Last Updated**: 2025-11-12
+> **Version**: 2.19.1 | **Last Updated**: 2025-11-12
+
+---
+
+## [2.19.1] - 2025-11-12
+
+### Fixed
+- 🐛 **Unity Editor Toolkit v0.2.1**: Code Review Feedback - 4 Issues Resolved
+  - **Critical Fix**: Added missing `ToJson()` and `FromJson()` methods to `JsonRpcRequest` class
+    - Required by `JsonRpcProtocolTests` for serialization/deserialization
+    - Implements proper JSON-RPC request serialization with `NullValueHandling.Ignore`
+  - **High Fix**: Changed `FindGameObject()` method visibility from `protected` to `public`
+    - Enables test class `GameObjectCachingTests` to access the method
+    - Changed exception throwing to `null` return for null/empty GameObject names
+    - Aligns with test expectations and improves API usability
+  - **High Fix**: Updated `GetParams_Should_ThrowOnInvalidFormat` test to `GetParams_Should_HandleUnknownFields`
+    - `JsonConvert` ignores unknown fields by default (doesn't throw exceptions)
+    - Test now verifies that unknown fields are ignored and expected fields are null
+    - Corrects test logic to match actual deserialization behavior
+  - **Medium Fix**: Improved cache eviction logic in `BaseHandler`
+    - Added `System.Linq` namespace for `Keys.First()` support
+    - Now properly removes oldest entries when cache exceeds 100 items
+    - Ensures cache size limit is maintained even when all entries are alive
+    - Prevents unbounded cache growth with comment alignment
 
 ---
 

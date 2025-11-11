@@ -2,7 +2,30 @@
 
 Dev GOM Plugins 마켓플레이스의 모든 주요 변경사항이 이 파일에 문서화됩니다.
 
-> **버전**: 2.19.0 | **최종 업데이트**: 2025-11-12
+> **버전**: 2.19.1 | **최종 업데이트**: 2025-11-12
+
+---
+
+## [2.19.1] - 2025-11-12
+
+### 수정됨
+- 🐛 **Unity Editor Toolkit v0.2.1**: 코드 리뷰 피드백 - 4개 이슈 해결
+  - **Critical 수정**: `JsonRpcRequest` 클래스에 누락된 `ToJson()` 및 `FromJson()` 메서드 추가
+    - 직렬화/역직렬화를 위해 `JsonRpcProtocolTests`에서 필요
+    - `NullValueHandling.Ignore`를 사용한 적절한 JSON-RPC 요청 직렬화 구현
+  - **High 수정**: `FindGameObject()` 메서드 접근성을 `protected`에서 `public`으로 변경
+    - 테스트 클래스 `GameObjectCachingTests`에서 메서드 접근 가능하도록 수정
+    - null/empty GameObject 이름에 대해 예외 발생 대신 `null` 반환으로 변경
+    - 테스트 기대값과 일치하며 API 사용성 향상
+  - **High 수정**: `GetParams_Should_ThrowOnInvalidFormat` 테스트를 `GetParams_Should_HandleUnknownFields`로 업데이트
+    - `JsonConvert`는 기본적으로 알 수 없는 필드를 무시 (예외 발생하지 않음)
+    - 테스트가 이제 알 수 없는 필드가 무시되고 예상 필드가 null인지 검증
+    - 실제 역직렬화 동작에 맞게 테스트 로직 수정
+  - **Medium 수정**: `BaseHandler`의 캐시 제거 로직 개선
+    - `Keys.First()` 지원을 위해 `System.Linq` 네임스페이스 추가
+    - 캐시가 100개 항목을 초과할 때 가장 오래된 항목을 적절히 제거
+    - 모든 항목이 유효한 경우에도 캐시 크기 제한 유지 보장
+    - 주석 정렬과 함께 무제한 캐시 증가 방지
 
 ---
 

@@ -35,11 +35,11 @@ Open Claude Code settings and add:
 3. Click `+` button (top-left) → `Add package from git URL`
 4. Enter this URL:
    ```
-   https://github.com/Dev-GOM/claude-code-marketplace.git?path=/plugins/unity-editor-toolkit/unity-package
+   https://github.com/Dev-GOM/claude-code-marketplace.git?path=/plugins/unity-editor-toolkit/skills/assets/unity-package
    ```
 5. Click `Add` and wait for installation
 
-> **Alternative**: If you prefer to install in Assets folder (for easier customization), copy `plugins/unity-editor-toolkit/unity-package/` to `Assets/UnityEditorToolkit/`
+> **Alternative**: If you prefer to install in Assets folder (for easier customization), copy `plugins/unity-editor-toolkit/skills/assets/unity-package/` to `Assets/UnityEditorToolkit/`
 
 ### 3. Install websocket-sharp DLL
 
@@ -281,7 +281,7 @@ https://github.com/Dev-GOM/claude-code-marketplace/issues
 **Documentation:**
 - [Full README](./README.md)
 - [Command Reference](./COMMANDS.md)
-- [Unity Package Docs](./unity-package/README.md)
+- [Unity Package Docs](../assets/unity-package/README.md)
 
 ---
 
