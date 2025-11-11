@@ -24,6 +24,14 @@ bl_info = {  # type: ignore[misc]
     "category": "Animation",
 }
 
+# Add bundled dependencies to sys.path
+import sys
+import os
+_addon_dir = os.path.dirname(os.path.realpath(__file__))
+_libs_dir = os.path.join(_addon_dir, 'libs')
+if os.path.exists(_libs_dir) and _libs_dir not in sys.path:
+    sys.path.insert(0, _libs_dir)
+
 import bpy
 
 # Logging utilities

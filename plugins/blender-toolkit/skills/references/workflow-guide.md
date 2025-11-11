@@ -48,8 +48,14 @@ Blender Toolkit provides a complete workflow for retargeting Mixamo animations t
 ```
 1. Install Blender 4.0 or higher (2023+)
 2. Install Python addon:
+   Method 1 (Recommended): Install from ZIP
    - Edit → Preferences → Add-ons → Install
-   - Select: plugins/blender-toolkit/skills/blender-retargeting/addon/__init__.py
+   - Select: .blender-toolkit/blender-toolkit-addon-v*.zip
+   - Enable "Blender Toolkit WebSocket Server"
+
+   Method 2: Install from Source
+   - Edit → Preferences → Add-ons → Install
+   - Select: plugins/blender-toolkit/skills/addon/__init__.py
    - Enable "Blender Toolkit WebSocket Server"
 3. Start WebSocket server:
    - View3D → Sidebar (N key) → "Blender Toolkit" tab

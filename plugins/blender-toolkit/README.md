@@ -1,6 +1,6 @@
 # Blender Toolkit
 
-> **⚠️ Status**: 🧪 Experimental (v1.4.0)
+> **⚠️ Status**: 🧪 Experimental (v1.4.1)
 >
 > **This plugin is currently in experimental stage. APIs and features may change.**
 
