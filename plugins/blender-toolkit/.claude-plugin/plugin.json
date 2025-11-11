@@ -1,6 +1,6 @@
 {
   "name": "blender-toolkit",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "description": "Blender automation toolkit with CLI for geometry, materials, modifiers, collections, animation retargeting, and WebSocket-based real-time control",
   "author": {
     "name": "Dev GOM",

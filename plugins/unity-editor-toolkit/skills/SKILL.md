@@ -5,7 +5,7 @@ description: |
 
   Features/기능: GameObject control 게임오브젝트제어, Transform manipulation 트랜스폼조작, Component management 컴포넌트관리, Scene management 씬관리, Material/Rendering 머티리얼/렌더링, Prefab system 프리팹시스템, Asset Database 애셋데이터베이스, Animation 애니메이션, Physics 물리, Console logging 콘솔로깅, Editor automation 에디터자동화, Build pipeline 빌드파이프라인, Lighting 라이팅, Camera 카메라, Audio 오디오, Navigation 네비게이션, Particles 파티클, Timeline 타임라인, UI Toolkit, Profiler 프로파일러, Test Runner 테스트러너.
 
-  Protocol 프로토콜: JSON-RPC 2.0 over WebSocket (port 9300-9400). 500+ commands 명령어, 25 categories 카테고리. Real-time bidirectional communication 실시간양방향통신.
+  Protocol 프로토콜: JSON-RPC 2.0 over WebSocket (port 9500-9600). 500+ commands 명령어, 25 categories 카테고리. Real-time bidirectional communication 실시간양방향통신.
 
   Security 보안: Defense-in-depth 심층방어 (path traversal protection 경로순회방지, command injection defense 명령어인젝션방어, JSON injection prevention JSON인젝션방지). Localhost-only connections 로컬호스트전용. Cross-platform 크로스플랫폼 (Windows, macOS, Linux).
 ---
@@ -60,8 +60,8 @@ The Unity C# WebSocket server package is under development. Once released:
 
 2. **Add Server Component**
    - Add `UnityEditorServer` component to a GameObject in your scene
-   - Server automatically starts on port 9300 (configurable: 9300-9400 range)
-   - WebSocket connection available at `ws://localhost:9300`
+   - Server automatically starts on port 9500 (configurable: 9500-9600 range)
+   - WebSocket connection available at `ws://localhost:9500`
 
 3. **Dependencies**
    - websocket-sharp (automatically installed with package)
@@ -82,7 +82,7 @@ The Unity Editor Toolkit plugin is automatically initialized via SessionStart ho
 When you start a Claude Code session in a project, the Unity Editor Toolkit automatically:
 
 - Creates `.unity-editor/` directory with CLI scripts
-- Detects available port (9300-9400 range)
+- Detects available port (9500-9600 range)
 - Establishes WebSocket connection if Unity Editor is running
 
 ### 2. Execute Commands
@@ -208,7 +208,7 @@ done
 
 5. **Security Considerations**
    - Unity Editor Toolkit uses localhost-only connections (127.0.0.1)
-   - Port range limited to 9300-9400 to avoid conflicts
+   - Port range limited to 9500-9600 to avoid conflicts
    - Input validation prevents path traversal and injection attacks
 
 6. **Error Handling**
@@ -216,7 +216,7 @@ done
    - Check exit codes and error messages in automation scripts
 
 7. **Port Management**
-   - Default port 9300 works for most projects
+   - Default port 9500 works for most projects
    - Use `--port` flag if running multiple Unity Editor instances
    - Plugin avoids conflicts with Browser Pilot (9222-9322) and Blender Toolkit (9400-9500)
 
@@ -245,4 +245,4 @@ Unity C# server package available in `assets/unity-package/` - install via Unity
 **Version**: 0.2.1
 **Unity Version Support**: 2020.3 - Unity 6
 **Protocol**: JSON-RPC 2.0 over WebSocket
-**Port Range**: 9300-9400
+**Port Range**: 9500-9600

@@ -5,7 +5,7 @@ Complete Unity Editor control and automation toolkit for Claude Code. Command 50
 ## Features
 
 - **500+ Commands**: Comprehensive control across 25 Unity Editor categories
-- **Real-time WebSocket**: Instant bidirectional communication (port 9300-9400)
+- **Real-time WebSocket**: Instant bidirectional communication (port 9500-9600)
 - **GameObject & Hierarchy**: Create, destroy, manipulate, query hierarchies with tree visualization
 - **Transform Control**: Precise Vector3 manipulation for position, rotation, scale
 - **Component Management**: Add, remove, configure components with property access
@@ -67,7 +67,7 @@ The Unity C# WebSocket server package is under development. Once released:
 
 1. Install Unity Editor Toolkit Server package via Package Manager
 2. Add `UnityEditorServer` component to a GameObject
-3. Server automatically starts on port 9300 (configurable)
+3. Server automatically starts on port 9500 (configurable)
 
 ### CLI Commands
 
@@ -258,7 +258,7 @@ JSON-RPC 2.0 over WebSocket:
 
 ### Port Allocation
 
-- **Range**: 9300-9400 (100 ports)
+- **Range**: 9500-9600 (100 ports)
 - **No Conflicts**: Avoids Browser Pilot (9222-9322) and Blender Toolkit (9400-9500)
 - **Auto-selection**: Finds available port on initialization
 
@@ -271,7 +271,7 @@ Defense-in-depth security implementation:
 - **JSON Injection Prevention**: Runtime type validation for all structures
 - **Log Injection Defense**: Message sanitization prevents log manipulation
 - **WebSocket Security**: Localhost-only connections
-- **Port Validation**: Enforced 9300-9400 range
+- **Port Validation**: Enforced 9500-9600 range
 - **Atomic Operations**: Race-condition-free lock acquisition (`{ flag: 'wx' }`)
 - **Memory Safety**: Proper event listener cleanup
 

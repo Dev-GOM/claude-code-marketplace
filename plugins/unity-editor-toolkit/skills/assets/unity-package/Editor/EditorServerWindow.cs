@@ -50,10 +50,12 @@ namespace UnityEditorToolkit.Editor
                 }
                 else
                 {
-                    var isRunning = server != null && Application.isPlaying;
+                    // Server can run in both Edit Mode and Play Mode
+                    var isRunning = server != null;
                     EditorGUILayout.LabelField("Status:", isRunning ? "Running ✓" : "Stopped");
                     EditorGUILayout.LabelField("Port:", server.port.ToString());
                     EditorGUILayout.LabelField("WebSocket URL:", $"ws://127.0.0.1:{server.port}");
+                    EditorGUILayout.LabelField("Mode:", Application.isPlaying ? "Play Mode" : "Edit Mode");
                 }
             }
             EditorGUILayout.EndVertical();
@@ -67,19 +69,20 @@ namespace UnityEditorToolkit.Editor
                 {
                     GUILayout.Label("Controls", EditorStyles.boldLabel);
 
-                    // Port settings (only editable when not playing)
-                    EditorGUI.BeginDisabledGroup(Application.isPlaying);
+                    // Port settings (only editable when server is stopped)
+                    EditorGUI.BeginDisabledGroup(server != null);
                     server.port = EditorGUILayout.IntField("Port:", server.port);
                     server.autoStart = EditorGUILayout.Toggle("Auto-Start:", server.autoStart);
                     EditorGUI.EndDisabledGroup();
 
                     EditorGUILayout.Space(5);
 
-                    // Start/Stop buttons
-                    if (!Application.isPlaying)
-                    {
-                        EditorGUILayout.HelpBox("Enter Play Mode to start the server.", MessageType.Info);
-                    }
+                    // Server works in both Edit Mode and Play Mode
+                    EditorGUILayout.HelpBox(
+                        "Server works in both Edit Mode and Play Mode.\n" +
+                        "Auto-Start is enabled when this GameObject is loaded.",
+                        MessageType.Info
+                    );
                 }
                 EditorGUILayout.EndVertical();
             }

@@ -17,6 +17,7 @@ namespace UnityEditorToolkit.Server
     /// Unity Editor WebSocket Server
     /// Provides JSON-RPC 2.0 API for controlling Unity Editor via WebSocket
     /// </summary>
+    [ExecuteAlways]
     public class UnityEditorServer : MonoBehaviour
     {
         public enum LogLevel
@@ -29,8 +30,8 @@ namespace UnityEditorToolkit.Server
         }
 
         [Header("Server Settings")]
-        [Tooltip("WebSocket server port (default: 9300)")]
-        public int port = 9300;
+        [Tooltip("WebSocket server port (default: 9500)")]
+        public int port = 9500;
 
         [Tooltip("Auto-start server on scene load")]
         public bool autoStart = true;

@@ -1,6 +1,6 @@
 {
   "name": "unity-editor-toolkit-cli",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Unity Editor control toolkit CLI with comprehensive editor automation",
   "main": "dist/cli/cli.js",
   "bin": {
