@@ -600,6 +600,58 @@ async function initializeLocalScripts(projectRoot) {
  * Detect Blender installations and update config
  */
 function detectAndConfigureBlender(sharedConfig) {
+  // Check if manually configured Blender path exists
+  const hasManualConfig = sharedConfig.blenderExecutable && fs.existsSync(sharedConfig.blenderExecutable);
+
+  if (hasManualConfig) {
+    logger.log('[Blender Detection] Using manually configured Blender path');
+    logger.log(`   Path: ${sharedConfig.blenderExecutable}`);
+
+    // Extract version info from manually configured path
+    const versionInfo = blenderDetect.getBlenderVersion(sharedConfig.blenderExecutable);
+    if (versionInfo) {
+      sharedConfig.blenderVersion = versionInfo.version;
+      logger.log(`   Version: ${versionInfo.version}`);
+
+      // Also update detectedBlenderVersions to include manual config
+      const manualEntry = {
+        version: versionInfo.version,
+        path: sharedConfig.blenderExecutable,
+        major: versionInfo.major,
+        minor: versionInfo.minor
+      };
+
+      // Run detection to find other installations
+      const detectedVersions = blenderDetect.detectBlenderVersions();
+
+      // Combine manual config with detected versions (avoid duplicates)
+      const allVersions = [manualEntry];
+      for (const v of detectedVersions) {
+        if (v.path !== sharedConfig.blenderExecutable) {
+          allVersions.push({
+            version: v.version,
+            path: v.path,
+            major: v.major,
+            minor: v.minor
+          });
+        }
+      }
+
+      sharedConfig.detectedBlenderVersions = allVersions;
+
+      if (detectedVersions.length > 0) {
+        logger.log(`   Also found ${detectedVersions.length} other installation(s) (not used)`);
+      }
+
+      return true;
+    } else {
+      logger.warn(`⚠️  Could not extract version from: ${sharedConfig.blenderExecutable}`);
+      logger.warn('   Will attempt automatic detection...');
+      // Continue to automatic detection
+    }
+  }
+
+  // Automatic detection
   logger.log('[Blender Detection] Scanning for installed Blender versions...');
 
   const detectedVersions = blenderDetect.detectBlenderVersions();
@@ -607,9 +659,15 @@ function detectAndConfigureBlender(sharedConfig) {
   if (detectedVersions.length === 0) {
     logger.warn('⚠️  No Blender installations found');
     logger.log('   Please install Blender 4.0+ from https://www.blender.org');
-    sharedConfig.detectedBlenderVersions = [];
-    sharedConfig.blenderExecutable = null;
-    sharedConfig.blenderVersion = null;
+    logger.log('   Or manually set "blenderExecutable" in config file');
+
+    // Only clear if there was no manual config
+    if (!hasManualConfig) {
+      sharedConfig.detectedBlenderVersions = [];
+      sharedConfig.blenderExecutable = null;
+      sharedConfig.blenderVersion = null;
+    }
+
     return false;
   }
 
@@ -646,8 +704,6 @@ function detectAndConfigureBlender(sharedConfig) {
     if (detectedVersions.length > 1) {
       logger.log('   Multiple versions detected. You can change the selection in config file.');
     }
-  } else {
-    logger.log(`✓ Using configured Blender: ${sharedConfig.blenderExecutable}`);
   }
 
   return true;
