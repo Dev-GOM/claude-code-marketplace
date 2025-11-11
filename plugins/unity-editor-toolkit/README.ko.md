@@ -404,7 +404,7 @@ Apache License 2.0 - 자세한 내용은 [LICENSE](../../LICENSE)를 참조하�
 
 ---
 
-**버전**: 0.3.0
+**버전**: 0.3.1
 **마지막 업데이트**: 2025-11-12
 **제작자**: Dev GOM
 **마켓플레이스**: [dev-gom-plugins](https://github.com/Dev-GOM/claude-code-marketplace)

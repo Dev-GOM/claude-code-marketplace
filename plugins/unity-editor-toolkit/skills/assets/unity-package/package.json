@@ -1,6 +1,6 @@
 {
   "name": "com.devgom.unity-editor-toolkit",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "displayName": "Unity Editor Toolkit",
   "description": "Real-time Unity Editor control and automation via WebSocket for Claude Code integration. Provides 500+ commands for GameObject, Transform, Scene, Component, Material, and more.",
   "unity": "2020.3",
