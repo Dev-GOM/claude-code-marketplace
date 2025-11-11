@@ -15,7 +15,10 @@ const path = require('path');
 const { execSync } = require('child_process');
 
 // Import logger
-const logger = require('./logger');
+const { createLogger } = require('./logger');
+
+// Create logger instance
+const logger = createLogger('build-addon-log.txt', 'Blender Addon Build Log');
 
 /**
  * Get plugin root directory
