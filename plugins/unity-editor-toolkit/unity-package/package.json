@@ -1,0 +1,35 @@
+{
+  "name": "com.devgom.unity-editor-toolkit",
+  "version": "0.1.0",
+  "displayName": "Unity Editor Toolkit",
+  "description": "Real-time Unity Editor control and automation via WebSocket for Claude Code integration. Provides 500+ commands for GameObject, Transform, Scene, Component, Material, and more.",
+  "unity": "2020.3",
+  "keywords": [
+    "editor",
+    "automation",
+    "websocket",
+    "rpc",
+    "gameobject",
+    "transform",
+    "scene",
+    "component",
+    "claude",
+    "ai"
+  ],
+  "author": {
+    "name": "Dev GOM",
+    "email": "dev@gom.example",
+    "url": "https://github.com/Dev-GOM/claude-code-marketplace"
+  },
+  "dependencies": {},
+  "testables": [
+    "com.unity.test-framework"
+  ],
+  "samples": [
+    {
+      "displayName": "Basic Examples",
+      "description": "Basic examples of Unity Editor Toolkit server setup",
+      "path": "Samples~/BasicExamples"
+    }
+  ]
+}

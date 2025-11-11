@@ -1,0 +1,38 @@
+{
+  "name": "unity-editor-toolkit-cli",
+  "version": "0.1.0",
+  "description": "Unity Editor control toolkit CLI with comprehensive editor automation",
+  "main": "dist/cli/cli.js",
+  "bin": {
+    "unity-editor": "./dist/cli/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "type-check": "tsc --noEmit"
+  },
+  "keywords": [
+    "unity",
+    "websocket",
+    "editor",
+    "automation",
+    "gameobject"
+  ],
+  "author": "Dev GOM",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@types/node": "^24.9.2",
+    "@types/ws": "^8.18.1",
+    "@typescript-eslint/eslint-plugin": "^8.46.3",
+    "@typescript-eslint/parser": "^8.46.3",
+    "eslint": "^9.39.1",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "commander": "^14.0.2",
+    "ws": "^8.18.3"
+  }
+}

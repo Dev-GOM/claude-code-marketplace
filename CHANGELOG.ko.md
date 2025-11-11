@@ -2,7 +2,71 @@
 
 Dev GOM Plugins 마켓플레이스의 모든 주요 변경사항이 이 파일에 문서화됩니다.
 
-> **버전**: 2.18.1 | **최종 업데이트**: 2025-11-11
+> **버전**: 2.19.0 | **최종 업데이트**: 2025-11-12
+
+---
+
+## [2.19.0] - 2025-11-12
+
+### 추가됨
+- ✨ **Unity Editor Toolkit v0.2.0**: Unity Test Framework 자동화 테스트 추가 (🧪 실험 단계)
+  - **포괄적인 테스트 스위트**: 핵심 기능을 커버하는 66개 자동화 테스트
+    - **UnityMainThreadDispatcherTests** (10개 테스트): 스레드 안전성 검증
+      - 싱글톤 인스턴스 생성 및 생명주기
+      - Unity API 호출에 대한 메인 스레드 실행 보장
+      - 적절한 순서로 액션 큐 처리
+      - 큐잉된 액션의 예외 처리
+      - 동시 접근 안전성 (5개 동시 스레드)
+      - 백그라운드 스레드에서 Unity API 호출 안전성
+    - **GameObjectCachingTests** (13개 테스트): 성능 최적화 검증
+      - WeakReference 캐싱을 사용한 GameObject 검색
+      - 캐시 히트 성능 (캐시 미사용 대비 10배-100배 빠름)
+      - GameObject 파괴 시 캐시 무효화
+      - 비활성 GameObject 처리
+      - 중첩된 GameObject 지원 (부모/자식 관계)
+      - 대규모 캐싱 성능 (100개 이상 오브젝트)
+    - **Vector3ValidationTests** (20개 테스트): 보안 및 데이터 무결성
+      - x, y, z 좌표에 대한 NaN 감지
+      - PositiveInfinity 감지
+      - NegativeInfinity 감지
+      - 유효한 값 허용 (0, 양수, 음수)
+      - Float 정밀도 보존
+      - 엣지 케이스 (MaxValue, MinValue, Epsilon)
+    - **JsonRpcProtocolTests** (23개 테스트): 프로토콜 준수 검증
+      - 요청 직렬화/역직렬화
+      - 결과 처리를 포함한 응답 직렬화
+      - 요청 ID 보존을 포함한 에러 응답
+      - 에러 코드: Parse error (-32700), Invalid request (-32600), Method not found (-32601), Invalid params (-32602), Internal error (-32603)
+      - 파라미터 역직렬화 (단순 및 복잡한 타입)
+      - JSON-RPC 2.0 명세 준수
+  - **Assembly Definitions**: 적절한 테스트 격리 및 컴파일
+    - `UnityEditorToolkit.Editor.Tests.asmdef`: EditMode 테스트 어셈블리
+    - `UnityEditorToolkit.Tests.asmdef`: Runtime 테스트 어셈블리 (향후 PlayMode 테스트용)
+    - NUnit 3.5 프레임워크 및 Unity Test Runner 참조
+    - `UNITY_INCLUDE_TESTS` define 제약 조건
+  - **버전 호환성**: Unity 2020.3 - Unity 6+ (조건부 컴파일 불필요)
+    - 모든 Unity 버전에서 동일한 NUnit 3.5 사용
+    - 모든 Unity API는 Unity 2017.1 이상에서 사용 가능
+    - Unity 2019.2부터 Test Framework 자동 포함
+    - Unity 6에서는 Test Framework를 "Core Package"로 분류 (버전 고정)
+  - **문서화**: 포괄적인 테스트 가이드
+    - `TEST_GUIDE.md` (영문): 설정, 실행, 문제 해결을 포함한 완벽한 테스트 가이드
+    - `TEST_GUIDE.ko.md` (한글): 테스트 가이드 한글 번역
+    - `API_COMPATIBILITY.md`: 버전 호환성 분석 및 검증
+    - Unity Test Framework 정보가 포함된 `README.md` 업데이트
+    - Unity 2020.3-2022.x용 `testables` 필드가 포함된 `package.json` 업데이트
+  - **package.json 업데이트**: Test Framework 통합
+    - Unity 2020.3-2022.x용 `testables: ["com.unity.test-framework"]` 추가
+    - 최소 Unity 버전: `"unity": "2020.3"`
+- **마켓플레이스 통합**: Unity Editor Toolkit이 마켓플레이스에 추가됨
+  - 플러그인 카테고리: `game-development`
+  - 상태: 🧪 실험 단계 (API가 변경될 수 있음)
+  - 키워드: unity, websocket, editor, testing, automation, gameobject, transform, scene, console, experimental
+
+### 변경됨
+- **Unity Editor Toolkit**: 상태를 🧪 실험 단계로 변경
+  - 경고: "API와 기능이 변경될 수 있습니다"
+  - 실험 단계 상태를 모든 문서에 반영
 
 ---
 

@@ -1,6 +1,6 @@
 # Claude Code Plugins
 
-> **Version**: 2.18.2 | **Last Updated**: 2025-11-11
+> **Version**: 2.19.0 | **Last Updated**: 2025-11-12
 >
 > **Language**: [English](README.md) | [한국어](README.ko.md)
 >
@@ -231,6 +231,21 @@ Control Unity Editor programmatically via WebSocket - Create GameObjects, manage
 
 </details>
 
+---
+
+### 15. 🎮 [Unity Editor Toolkit](plugins/unity-editor-toolkit/README.md)
+
+<details>
+<summary><strong>📖 Plugin Details</strong> (Click to expand)</summary>
+
+**⚠️ Experimental Plugin** - Real-time Unity Editor control via WebSocket with comprehensive automated testing.
+
+**Quick Info:** WebSocket-based Unity Editor control (port 9300) | GameObject/Transform/Scene/Console management | 66 automated tests with Unity Test Framework | **Status:** 🧪 Experimental (v0.2.0) | **Unity Compatibility:** Unity 2020.3 - Unity 6+ | **Features:** Real-time editor communication, JSON-RPC 2.0 protocol, Thread-safe operations, Test coverage (UnityMainThreadDispatcher, GameObject caching, Vector3 validation, Protocol compliance) | **APIs:** GameObject.Find/Create/Destroy/SetActive, Transform.Get/SetPosition/Rotation/Scale, Scene.GetCurrent/GetAll/Load, Console.GetLogs/Clear, Hierarchy.Get
+
+**[Read Full Documentation →](plugins/unity-editor-toolkit/README.md)**
+
+</details>
+
 ## Installation
 
 ### Quick Start (Recommended)
@@ -276,6 +291,9 @@ Control Unity Editor programmatically via WebSocket - Create GameObjects, manage
    ```
    ```bash
    /plugin install browser-pilot@dev-gom-plugins
+   ```
+   ```bash
+   /plugin install unity-editor-toolkit@dev-gom-plugins
    ```
 
    > **Note**: Unity Editor Pilot is under development and not yet available for installation.
