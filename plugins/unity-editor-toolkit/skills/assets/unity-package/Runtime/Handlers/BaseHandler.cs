@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditorToolkit.Protocol;
 
 namespace UnityEditorToolkit.Handlers
@@ -69,11 +70,11 @@ namespace UnityEditorToolkit.Handlers
         /// <summary>
         /// Find GameObject by name or path (캐싱 적용)
         /// </summary>
-        protected UnityEngine.GameObject FindGameObject(string name)
+        public UnityEngine.GameObject FindGameObject(string name)
         {
             if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentException("GameObject name cannot be empty");
+                return null;
             }
 
             // 캐시 확인
@@ -132,7 +133,7 @@ namespace UnityEditorToolkit.Handlers
                 // 캐시 크기 제한 (최대 100개)
                 if (gameObjectCache.Count > 100)
                 {
-                    // 가장 오래된 캐시 항목 제거 (간단한 구현)
+                    // 만료된(파괴된) 캐시 항목 제거
                     var toRemove = new List<string>();
                     foreach (var kvp in gameObjectCache)
                     {
@@ -141,9 +142,21 @@ namespace UnityEditorToolkit.Handlers
                             toRemove.Add(kvp.Key);
                         }
                     }
-                    foreach (var key in toRemove)
+                    if (toRemove.Count > 0)
                     {
-                        gameObjectCache.Remove(key);
+                        foreach (var key in toRemove)
+                        {
+                            gameObjectCache.Remove(key);
+                        }
+                    }
+
+                    // 여전히 캐시 크기가 100개를 초과하면, 일부 항목을 제거하여 공간 확보
+                    while (gameObjectCache.Count > 100)
+                    {
+                        // 가장 간단한 방법으로 첫 번째 항목 제거
+                        // 더 나은 방법은 LRU(Least Recently Used) 정책을 구현하는 것입니다
+                        var keyToRemove = gameObjectCache.Keys.First();
+                        gameObjectCache.Remove(keyToRemove);
                     }
                 }
             }

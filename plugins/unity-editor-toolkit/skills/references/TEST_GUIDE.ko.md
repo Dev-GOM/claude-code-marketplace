@@ -68,7 +68,7 @@ Window → Package Manager → + → Add package from git URL
 
 다음 URL 입력:
 ```
-https://github.com/Dev-GOM/claude-code-marketplace.git?path=/plugins/unity-editor-toolkit/unity-package
+https://github.com/Dev-GOM/claude-code-marketplace.git?path=/plugins/unity-editor-toolkit/skills/assets/unity-package
 ```
 
 ### 2. Test Framework 확인

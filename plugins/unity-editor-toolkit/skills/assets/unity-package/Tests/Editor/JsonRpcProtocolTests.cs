@@ -202,7 +202,7 @@ namespace UnityEditorToolkit.Tests
         }
 
         [Test]
-        public void GetParams_Should_ThrowOnInvalidFormat()
+        public void GetParams_Should_HandleUnknownFields()
         {
             // Arrange
             var json = @"{
@@ -213,11 +213,12 @@ namespace UnityEditorToolkit.Tests
             }";
             var request = JsonRpcRequest.FromJson(json);
 
-            // Act & Assert
-            Assert.Throws<System.ArgumentException>(() =>
-            {
-                var param = request.GetParams<FindParams>();
-            });
+            // Act
+            var param = request.GetParams<FindParams>();
+
+            // Assert: JsonConvert ignores unknown fields, so param is not null but name is null
+            Assert.IsNotNull(param);
+            Assert.IsNull(param.name);
         }
 
         [Test]

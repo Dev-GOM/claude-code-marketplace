@@ -35,11 +35,11 @@ Claude Code 설정을 열고 다음을 추가하세요:
 3. 좌측 상단 `+` 버튼 클릭 → `Add package from git URL` 선택
 4. 다음 URL 입력:
    ```
-   https://github.com/Dev-GOM/claude-code-marketplace.git?path=/plugins/unity-editor-toolkit/unity-package
+   https://github.com/Dev-GOM/claude-code-marketplace.git?path=/plugins/unity-editor-toolkit/skills/assets/unity-package
    ```
 5. `Add` 클릭 후 설치 완료까지 대기
 
-> **대안**: Assets 폴더에 설치하고 싶다면 (커스터마이징 용이), `plugins/unity-editor-toolkit/unity-package/`를 `Assets/UnityEditorToolkit/`에 복사하세요
+> **대안**: Assets 폴더에 설치하고 싶다면 (커스터마이징 용이), `plugins/unity-editor-toolkit/skills/assets/unity-package/`를 `Assets/UnityEditorToolkit/`에 복사하세요
 
 ### 3. websocket-sharp DLL 설치
 
@@ -281,7 +281,7 @@ https://github.com/Dev-GOM/claude-code-marketplace/issues
 **문서:**
 - [전체 README](./README.ko.md)
 - [명령어 레퍼런스](./COMMANDS.ko.md)
-- [Unity 패키지 문서](./unity-package/README.md)
+- [Unity 패키지 문서](../assets/unity-package/README.md)
 
 ---
 

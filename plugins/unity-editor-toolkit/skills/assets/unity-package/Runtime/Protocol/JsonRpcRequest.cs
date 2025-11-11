@@ -57,5 +57,24 @@ namespace UnityEditorToolkit.Protocol
         {
             return JsonRpc == "2.0" && !string.IsNullOrEmpty(Method);
         }
+
+        /// <summary>
+        /// Serialize request to JSON string
+        /// </summary>
+        public string ToJson()
+        {
+            return JsonConvert.SerializeObject(this, Formatting.None, new JsonSerializerSettings
+            {
+                NullValueHandling = NullValueHandling.Ignore
+            });
+        }
+
+        /// <summary>
+        /// Deserialize JSON string to request object
+        /// </summary>
+        public static JsonRpcRequest FromJson(string json)
+        {
+            return JsonConvert.DeserializeObject<JsonRpcRequest>(json);
+        }
     }
 }
