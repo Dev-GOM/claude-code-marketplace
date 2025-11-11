@@ -54,55 +54,9 @@ function getVersion() {
 }
 
 /**
- * Check if file should be included in ZIP
- */
-function shouldIncludeFile(filePath, addonRoot) {
-  const relativePath = path.relative(addonRoot, filePath);
-  const name = path.basename(filePath);
-
-  // Exclude development config files
-  const excludeFiles = new Set(['.pylintrc', 'pyrightconfig.json', '.pyc']);
-
-  if (excludeFiles.has(name) || name.endsWith('.pyc')) {
-    return false;
-  }
-
-  // Exclude __pycache__ directories
-  if (relativePath.includes('__pycache__')) {
-    return false;
-  }
-
-  // Include Python files
-  if (path.extname(filePath) === '.py') {
-    return true;
-  }
-
-  return false;
-}
-
-/**
- * Get all files recursively
- */
-function getFilesRecursive(dir) {
-  const files = [];
-  const items = fs.readdirSync(dir, { withFileTypes: true });
-
-  for (const item of items) {
-    const fullPath = path.join(dir, item.name);
-    if (item.isDirectory()) {
-      files.push(...getFilesRecursive(fullPath));
-    } else {
-      files.push(fullPath);
-    }
-  }
-
-  return files;
-}
-
-/**
  * Create ZIP file using Python (cross-platform)
  */
-function createZipWithPython(addonRoot, outputPath, version) {
+function createZipWithPython(addonRoot, outputPath) {
   const pythonScript = `
 import sys
 import zipfile
@@ -117,24 +71,20 @@ for file_path in addon_root.rglob('*'):
     if not file_path.is_file():
         continue
 
-    # Skip development files
+    # Skip development files and caches
     name = file_path.name
-    if name in {'.pylintrc', 'pyrightconfig.json'} or name.endswith('.pyc'):
+    if (name in {'.pylintrc', 'pyrightconfig.json'} or
+            name.endswith('.pyc') or
+            '__pycache__' in file_path.parts):
         continue
 
-    # Skip __pycache__
-    if '__pycache__' in file_path.parts:
-        continue
-
-    # Include .py files
-    if file_path.suffix == '.py':
-        files_to_add.append(file_path)
+    files_to_add.append(file_path)
 
 # Create ZIP
 with zipfile.ZipFile(output_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
     for file_path in files_to_add:
-        arcname = 'blender_toolkit_addon' / file_path.relative_to(addon_root)
-        zipf.write(file_path, arcname)
+        arcname = Path('blender_toolkit_addon') / file_path.relative_to(addon_root)
+        zipf.write(file_path, str(arcname))
 
 print(f"Added {len(files_to_add)} files to ZIP")
 `;
@@ -220,7 +170,7 @@ function buildAddonZip(projectRoot = null, outputDir = null, force = false) {
   }
 
   // Create ZIP using Python for better cross-platform support
-  const success = createZipWithPython(addonRoot, zipPath, version);
+  const success = createZipWithPython(addonRoot, zipPath);
 
   if (!success) {
     logger.error('Failed to create addon ZIP');
