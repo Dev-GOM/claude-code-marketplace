@@ -2,7 +2,71 @@
 
 All notable changes to the Dev GOM Plugins marketplace will be documented in this file.
 
-> **Version**: 2.18.1 | **Last Updated**: 2025-11-11
+> **Version**: 2.19.0 | **Last Updated**: 2025-11-12
+
+---
+
+## [2.19.0] - 2025-11-12
+
+### Added
+- ✨ **Unity Editor Toolkit v0.2.0**: Automated Testing with Unity Test Framework (🧪 Experimental)
+  - **Comprehensive Test Suite**: 66 automated tests covering core functionality
+    - **UnityMainThreadDispatcherTests** (10 tests): Thread safety verification
+      - Singleton instance creation and lifecycle
+      - Main thread execution guarantee for Unity API calls
+      - Action queue processing with proper ordering
+      - Exception handling in queued actions
+      - Concurrent access safety (5 simultaneous threads)
+      - Background thread Unity API call safety
+    - **GameObjectCachingTests** (13 tests): Performance optimization validation
+      - GameObject search with WeakReference caching
+      - Cache hit performance (10x-100x faster than uncached)
+      - Cache invalidation when GameObject destroyed
+      - Inactive GameObject handling
+      - Nested GameObject support (parent/child relationships)
+      - Large-scale caching performance (100+ objects)
+    - **Vector3ValidationTests** (20 tests): Security and data integrity
+      - NaN detection for x, y, z coordinates
+      - PositiveInfinity detection
+      - NegativeInfinity detection
+      - Valid value acceptance (zero, positive, negative)
+      - Float precision preservation
+      - Edge cases (MaxValue, MinValue, Epsilon)
+    - **JsonRpcProtocolTests** (23 tests): Protocol compliance verification
+      - Request serialization/deserialization
+      - Response serialization with result handling
+      - Error response with request ID preservation
+      - Error codes: Parse error (-32700), Invalid request (-32600), Method not found (-32601), Invalid params (-32602), Internal error (-32603)
+      - Parameter deserialization (simple and complex types)
+      - JSON-RPC 2.0 specification compliance
+  - **Assembly Definitions**: Proper test isolation and compilation
+    - `UnityEditorToolkit.Editor.Tests.asmdef`: EditMode test assembly
+    - `UnityEditorToolkit.Tests.asmdef`: Runtime test assembly (for future PlayMode tests)
+    - References to NUnit 3.5 framework and Unity Test Runner
+    - `UNITY_INCLUDE_TESTS` define constraint
+  - **Version Compatibility**: Unity 2020.3 - Unity 6+ (no conditional compilation needed)
+    - Same NUnit 3.5 across all Unity versions
+    - All Unity APIs available since Unity 2017.1+
+    - Test Framework auto-included since Unity 2019.2
+    - Unity 6 classifies Test Framework as "Core Package" (version locked)
+  - **Documentation**: Comprehensive test guides
+    - `TEST_GUIDE.md` (English): Complete testing guide with setup, execution, troubleshooting
+    - `TEST_GUIDE.ko.md` (Korean): Korean translation of testing guide
+    - `API_COMPATIBILITY.md`: Version compatibility analysis and verification
+    - Updated `README.md` with Unity Test Framework information
+    - Updated `package.json` with `testables` field for Unity 2020.3-2022.x
+  - **package.json Updates**: Test Framework integration
+    - Added `testables: ["com.unity.test-framework"]` for Unity 2020.3-2022.x
+    - Minimum Unity version: `"unity": "2020.3"`
+- **Marketplace Integration**: Unity Editor Toolkit added to marketplace
+  - Plugin category: `game-development`
+  - Status: 🧪 Experimental (APIs may change)
+  - Keywords: unity, websocket, editor, testing, automation, gameobject, transform, scene, console, experimental
+
+### Changed
+- **Unity Editor Toolkit**: Status changed to 🧪 Experimental
+  - Warning: "APIs and features may change"
+  - All documentation updated with experimental status
 
 ---
 

@@ -1,6 +1,6 @@
 # Claude Code 플러그인
 
-> **버전**: 2.18.2 | **최종 업데이트**: 2025-11-11
+> **버전**: 2.19.0 | **최종 업데이트**: 2025-11-12
 >
 > **언어**: [English](README.md) | [한국어](README.ko.md)
 >
@@ -216,6 +216,21 @@ WebSocket을 통해 Unity Editor를 프로그래밍 방식으로 제어 - GameOb
 
 </details>
 
+---
+
+### 14. 🎮 [Unity Editor Toolkit](plugins/unity-editor-toolkit/README.md)
+
+<details>
+<summary><strong>📖 플러그인 상세</strong> (펼치기)</summary>
+
+**⚠️ 실험 단계 플러그인** - WebSocket을 통한 실시간 Unity Editor 제어 및 포괄적인 자동화된 테스트 제공.
+
+**요약:** WebSocket 기반 Unity Editor 제어 (포트 9300) | GameObject/Transform/Scene/Console 관리 | Unity Test Framework로 66개 자동화 테스트 | **상태:** 🧪 실험 단계 (v0.2.0) | **Unity 호환성:** Unity 2020.3 - Unity 6+ | **기능:** 실시간 에디터 통신, JSON-RPC 2.0 프로토콜, 스레드 안전 작업, 테스트 커버리지 (UnityMainThreadDispatcher, GameObject 캐싱, Vector3 검증, 프로토콜 준수) | **API:** GameObject.Find/Create/Destroy/SetActive, Transform.Get/SetPosition/Rotation/Scale, Scene.GetCurrent/GetAll/Load, Console.GetLogs/Clear, Hierarchy.Get
+
+**[전체 문서 보기 →](plugins/unity-editor-toolkit/README.md)**
+
+</details>
+
 ## 설치
 
 ### 빠른 시작 (권장)
@@ -261,6 +276,9 @@ WebSocket을 통해 Unity Editor를 프로그래밍 방식으로 제어 - GameOb
    ```
    ```bash
    /plugin install browser-pilot@dev-gom-plugins
+   ```
+   ```bash
+   /plugin install unity-editor-toolkit@dev-gom-plugins
    ```
 
    > **참고**: Unity Editor Pilot은 개발 중이며 아직 설치할 수 없습니다.
