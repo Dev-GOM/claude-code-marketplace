@@ -44,38 +44,22 @@ See [CHANGELOG.md](./CHANGELOG.md) for full release notes.
 
 This plugin is part of the [Dev GOM Plugins](https://github.com/Dev-GOM/claude-code-marketplace) marketplace.
 
-### Install from Marketplace
+### Install from Marketplace (Recommended)
 
-Add the marketplace to your Claude Code settings:
+```bash
+# Add marketplace
+/plugin marketplace add https://github.com/Dev-GOM/claude-code-marketplace.git
 
-```json
-{
-  "plugins": {
-    "marketplaces": [
-      {
-        "name": "dev-gom-plugins",
-        "url": "https://github.com/Dev-GOM/claude-code-marketplace"
-      }
-    ]
-  }
-}
+# Install plugin
+/plugin install unity-editor-toolkit@dev-gom-plugins
 ```
 
-Then enable the plugin:
+### Direct Installation
 
-```json
-{
-  "plugins": {
-    "enabled": ["dev-gom-plugins:unity-editor-toolkit"]
-  }
-}
+```bash
+# Install directly from repository
+/plugin add https://github.com/Dev-GOM/claude-code-marketplace/tree/main/plugins/unity-editor-toolkit
 ```
-
-### Manual Installation
-
-1. Clone this repository
-2. Copy `plugins/unity-editor-toolkit` to your Claude Code plugins directory
-3. Restart Claude Code
 
 ## Usage
 

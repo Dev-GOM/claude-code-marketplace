@@ -75,21 +75,28 @@ Claude handles all the command execution through the SKILL.md interface - you ju
 
 ## Installation
 
+### Install Plugin
+
+```bash
+# Add marketplace
+/plugin marketplace add https://github.com/Dev-GOM/claude-code-marketplace.git
+
+# Install plugin
+/plugin install browser-pilot@dev-gom-plugins
+```
+
+**Or install directly**:
+```bash
+/plugin add https://github.com/Dev-GOM/claude-code-marketplace/tree/main/plugins/browser-pilot
+```
+
+The plugin will auto-initialize when you start a Claude Code session (via SessionStart hook).
+
 ### Prerequisites
 
 1. **Google Chrome** (latest version recommended)
 2. **Node.js** 18+ ([nodejs.org](https://nodejs.org))
 3. **Git Bash** (Windows) or Terminal (macOS/Linux)
-
-### Quick Installation
-
-```bash
-cd plugins/browser-pilot/skills/scripts
-npm install
-npm run build
-```
-
-The plugin will auto-initialize when you start a Claude Code session (via SessionStart hook).
 
 ## Quick Start
 
