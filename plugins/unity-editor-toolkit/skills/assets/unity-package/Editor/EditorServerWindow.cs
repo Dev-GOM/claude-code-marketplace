@@ -363,7 +363,7 @@ namespace UnityEditorToolkit.Editor
                     }
                     catch (ArgumentException) { return true; /* Process not found, stale */ }
                     catch (InvalidOperationException) { return true; /* Process has exited, stale */ }
-                    catch (Exception ex) { UnityEngine.Debug.LogWarning($"Error checking process lock, falling back to timestamp: {ex.Message}"); }
+                    catch (Exception ex) { UnityEngine.Debug.LogWarning($"Error checking process lock, falling back to timestamp: {ex}"); }
                 }
 
                 // 2. Fallback to timestamp written inside the lock file
