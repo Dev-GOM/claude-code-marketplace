@@ -9,6 +9,7 @@ using UnityEngine;
 using UnityEngine.TestTools;
 using System.Collections;
 using System.Threading;
+using UnityEditorToolkit.Utils;
 
 namespace UnityEditorToolkit.Tests
 {
