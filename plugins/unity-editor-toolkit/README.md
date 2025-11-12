@@ -66,6 +66,15 @@ This plugin is part of the [Dev GOM Plugins](https://github.com/Dev-GOM/claude-c
 ### Unity Setup
 
 1. **Install Unity Package**:
+
+   **Recommended: Unity Package Manager (Git URL)**
+   - Open Unity Editor
+   - Window → Package Manager
+   - Click `+` → Add package from git URL
+   - Enter: `https://github.com/Dev-GOM/claude-code-marketplace.git?path=/plugins/unity-editor-toolkit/skills/assets/unity-package`
+   - Click Add
+
+   **Alternative Methods:**
    - Add Unity package from `skills/assets/unity-package` via Package Manager (Add package from disk)
    - Or copy the package folder directly into your project's `Packages` directory
 

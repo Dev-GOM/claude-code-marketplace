@@ -66,6 +66,15 @@ Claude Code를 위한 완벽한 Unity Editor 제어 및 자동화 툴킷. 25개 
 ### Unity 설정
 
 1. **Unity 패키지 설치**:
+
+   **권장: Unity Package Manager (Git URL)**
+   - Unity Editor 열기
+   - Window → Package Manager
+   - `+` 클릭 → Add package from git URL
+   - 입력: `https://github.com/Dev-GOM/claude-code-marketplace.git?path=/plugins/unity-editor-toolkit/skills/assets/unity-package`
+   - Add 클릭
+
+   **대안 방법:**
    - `skills/assets/unity-package`에서 Package Manager를 통해 Unity 패키지 추가 (Add package from disk)
    - 또는 프로젝트의 `Packages` 디렉토리에 패키지 폴더를 직접 복사
 
