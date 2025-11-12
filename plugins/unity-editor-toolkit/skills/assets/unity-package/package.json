@@ -21,7 +21,9 @@
     "email": "dev@gom.example",
     "url": "https://github.com/Dev-GOM/claude-code-marketplace"
   },
-  "dependencies": {},
+  "dependencies": {
+    "com.unity.nuget.newtonsoft-json": "3.2.2"
+  },
   "testables": [
     "com.unity.test-framework"
   ],

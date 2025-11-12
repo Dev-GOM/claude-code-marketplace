@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 using UnityEditorToolkit.Protocol;
 using UnityEditorToolkit.Handlers;
@@ -370,7 +371,7 @@ namespace UnityEditorToolkit.Server
                 });
             }
 
-            protected override void OnError(ErrorEventArgs e)
+            protected override void OnError(WebSocketSharp.ErrorEventArgs e)
             {
                 server.Log($"WebSocket Error: {e.Message}", LogLevel.Error);
             }

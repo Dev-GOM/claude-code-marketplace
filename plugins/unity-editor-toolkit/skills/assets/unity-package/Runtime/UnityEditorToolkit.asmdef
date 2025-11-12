@@ -1,7 +1,9 @@
 {
   "name": "UnityEditorToolkit",
   "rootNamespace": "UnityEditorToolkit",
-  "references": [],
+  "references": [
+    "Unity.Nuget.Newtonsoft-Json"
+  ],
   "includePlatforms": [],
   "excludePlatforms": [],
   "allowUnsafeCode": false,
