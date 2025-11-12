@@ -9,7 +9,7 @@ Real-time Unity Editor control via WebSocket for Claude Code integration.
 1. Open Unity Editor
 2. Window → Package Manager
 3. Click `+` → Add package from git URL
-4. Enter: `https://github.com/Dev-GOM/claude-code-marketplace.git?path=/plugins/unity-editor-toolkit/unity-package`
+4. Enter: `https://github.com/Dev-GOM/claude-code-marketplace.git?path=/plugins/unity-editor-toolkit/skills/assets/unity-package`
 5. Click Add
 
 ### Alternative: Assets Folder
@@ -20,30 +20,41 @@ For easier customization, copy this folder to `Assets/UnityEditorToolkit/`
 
 ## Quick Start
 
-### 1. Add Server Component
+### 1. Open Server Window
 
-1. Create new GameObject: `GameObject → Create Empty`
-2. Rename to "UnityEditorServer"
-3. Add component: `UnityEditorServer`
-4. Configure port (default: 9500)
-5. Enable "Auto Start"
+1. Unity menu: `Tools > Unity Editor Toolkit > Server Window`
+2. A new window will appear in the editor
 
-### 2. Start Server
+### 2. Configure Plugin Scripts Path
 
-1. Server automatically starts when scene loads (Edit Mode or Play Mode)
-2. Starts on configured port (default: 9500)
-3. Check Console for confirmation: `✓ Unity Editor Server started on ws://127.0.0.1:9500`
+1. **Plugin Scripts Path**: Auto-detected from user home folder (`~/.claude/plugins/...`)
+2. If not detected, click "Browse" to select manually
+3. Path should point to: `unity-editor-toolkit/skills/scripts`
 
-### 3. Connect from Claude Code
+### 3. Install CLI (One-time Setup)
+
+1. Click "Install CLI" button
+2. This builds the WebSocket server and TypeScript CLI
+3. Wait for installation to complete (may take 1-2 minutes)
+4. Console shows: "✓ CLI installation completed"
+
+### 4. Server Auto-Start
+
+1. Server starts automatically when Unity Editor opens
+2. **Port**: Auto-assigned from range 9500-9600 (no manual configuration needed)
+3. **Status file**: `{ProjectRoot}/.unity-websocket/server-status.json`
+4. CLI automatically detects the correct port from this file
+
+### 5. Connect from Claude Code
 
 Install Unity Editor Toolkit plugin in Claude Code:
 
-```json
-{
-  "plugins": {
-    "enabled": ["dev-gom-plugins:unity-editor-toolkit"]
-  }
-}
+```bash
+# Add marketplace
+/plugin marketplace add https://github.com/Dev-GOM/claude-code-marketplace.git
+
+# Install plugin
+/plugin install unity-editor-toolkit@dev-gom-plugins
 ```
 
 Use CLI commands:
@@ -211,12 +222,12 @@ Add via NuGet for Unity:
 
 Access server controls via Unity menu:
 
-**Window → Unity Editor Toolkit → Server Control**
+**Tools → Unity Editor Toolkit → Server Window**
 
 Features:
 - Server status monitoring
-- Port configuration
-- Auto-start toggle
+- Plugin scripts path configuration
+- CLI installation and build
 - Quick access to documentation
 
 ## Performance
