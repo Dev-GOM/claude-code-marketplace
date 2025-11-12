@@ -31,7 +31,6 @@ export const UNITY = {
  */
 export const FS = {
   OUTPUT_DIR: '.unity-websocket',
-  CONFIG_FILE: 'unity-websocket-config.json',
   GITIGNORE_CONTENT: '# Unity WebSocket generated files\n*\n',
 } as const;
 

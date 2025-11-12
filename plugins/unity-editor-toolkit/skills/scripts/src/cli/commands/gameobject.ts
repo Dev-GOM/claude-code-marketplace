@@ -26,18 +26,17 @@ export function registerGameObjectCommand(program: Command): void {
     .description('Find GameObject by name or path')
     .argument('<name>', 'GameObject name or path')
     .action(async (name) => {
+      let client = null;
       try {
         const projectRoot = config.getProjectRoot();
-        const projectName = config.getProjectName(projectRoot);
-        const projectConfig = config.getProjectConfig(projectName);
+        const port = program.opts().port || config.getUnityPort(projectRoot);
 
-        if (!projectConfig) {
-          logger.error('Project not registered');
+        if (!port) {
+          logger.error('Unity server not running. Start Unity Editor with WebSocket server enabled.');
           process.exit(1);
         }
 
-        const port = program.opts().port || projectConfig.port;
-        const client = createUnityClient(port);
+        client = createUnityClient(port);
 
         logger.info(`Connecting to Unity Editor...`);
         await client.connect();
@@ -47,8 +46,6 @@ export function registerGameObjectCommand(program: Command): void {
           COMMANDS.GAMEOBJECT_FIND,
           { name }
         );
-
-        client.disconnect();
 
         if (!result) {
           logger.info('GameObject not found');
@@ -65,6 +62,14 @@ export function registerGameObjectCommand(program: Command): void {
       } catch (error) {
         logger.error('Failed to find GameObject', error);
         process.exit(1);
+      } finally {
+        if (client) {
+          try {
+            client.disconnect();
+          } catch (disconnectError) {
+            logger.debug(`Error during disconnect: ${disconnectError instanceof Error ? disconnectError.message : String(disconnectError)}`);
+          }
+        }
       }
     });
 
@@ -75,18 +80,17 @@ export function registerGameObjectCommand(program: Command): void {
     .argument('<name>', 'GameObject name')
     .option('-p, --parent <name>', 'Parent GameObject name or path')
     .action(async (name, options) => {
+      let client = null;
       try {
         const projectRoot = config.getProjectRoot();
-        const projectName = config.getProjectName(projectRoot);
-        const projectConfig = config.getProjectConfig(projectName);
+        const port = program.opts().port || config.getUnityPort(projectRoot);
 
-        if (!projectConfig) {
-          logger.error('Project not registered');
+        if (!port) {
+          logger.error('Unity server not running. Start Unity Editor with WebSocket server enabled.');
           process.exit(1);
         }
 
-        const port = program.opts().port || projectConfig.port;
-        const client = createUnityClient(port);
+        client = createUnityClient(port);
 
         logger.info('Connecting to Unity Editor...');
         await client.connect();
@@ -100,8 +104,6 @@ export function registerGameObjectCommand(program: Command): void {
           }
         );
 
-        client.disconnect();
-
         logger.info('✓ GameObject created:');
         logger.info(`  Name: ${result.name}`);
         logger.info(`  Instance ID: ${result.instanceId}`);
@@ -109,6 +111,14 @@ export function registerGameObjectCommand(program: Command): void {
       } catch (error) {
         logger.error('Failed to create GameObject', error);
         process.exit(1);
+      } finally {
+        if (client) {
+          try {
+            client.disconnect();
+          } catch (disconnectError) {
+            logger.debug(`Error during disconnect: ${disconnectError instanceof Error ? disconnectError.message : String(disconnectError)}`);
+          }
+        }
       }
     });
 
@@ -118,18 +128,17 @@ export function registerGameObjectCommand(program: Command): void {
     .description('Destroy GameObject')
     .argument('<name>', 'GameObject name or path')
     .action(async (name) => {
+      let client = null;
       try {
         const projectRoot = config.getProjectRoot();
-        const projectName = config.getProjectName(projectRoot);
-        const projectConfig = config.getProjectConfig(projectName);
+        const port = program.opts().port || config.getUnityPort(projectRoot);
 
-        if (!projectConfig) {
-          logger.error('Project not registered');
+        if (!port) {
+          logger.error('Unity server not running. Start Unity Editor with WebSocket server enabled.');
           process.exit(1);
         }
 
-        const port = program.opts().port || projectConfig.port;
-        const client = createUnityClient(port);
+        client = createUnityClient(port);
 
         logger.info('Connecting to Unity Editor...');
         await client.connect();
@@ -137,12 +146,18 @@ export function registerGameObjectCommand(program: Command): void {
         logger.info(`Destroying GameObject: ${name}`);
         await client.sendRequest(COMMANDS.GAMEOBJECT_DESTROY, { name });
 
-        client.disconnect();
-
         logger.info('✓ GameObject destroyed');
       } catch (error) {
         logger.error('Failed to destroy GameObject', error);
         process.exit(1);
+      } finally {
+        if (client) {
+          try {
+            client.disconnect();
+          } catch (disconnectError) {
+            logger.debug(`Error during disconnect: ${disconnectError instanceof Error ? disconnectError.message : String(disconnectError)}`);
+          }
+        }
       }
     });
 
@@ -153,18 +168,17 @@ export function registerGameObjectCommand(program: Command): void {
     .argument('<name>', 'GameObject name or path')
     .argument('<active>', 'Active state (true/false)', (value) => value === 'true')
     .action(async (name, active) => {
+      let client = null;
       try {
         const projectRoot = config.getProjectRoot();
-        const projectName = config.getProjectName(projectRoot);
-        const projectConfig = config.getProjectConfig(projectName);
+        const port = program.opts().port || config.getUnityPort(projectRoot);
 
-        if (!projectConfig) {
-          logger.error('Project not registered');
+        if (!port) {
+          logger.error('Unity server not running. Start Unity Editor with WebSocket server enabled.');
           process.exit(1);
         }
 
-        const port = program.opts().port || projectConfig.port;
-        const client = createUnityClient(port);
+        client = createUnityClient(port);
 
         logger.info('Connecting to Unity Editor...');
         await client.connect();
@@ -175,12 +189,18 @@ export function registerGameObjectCommand(program: Command): void {
           active,
         });
 
-        client.disconnect();
-
         logger.info(`✓ GameObject active state set to ${active}`);
       } catch (error) {
         logger.error('Failed to set active state', error);
         process.exit(1);
+      } finally {
+        if (client) {
+          try {
+            client.disconnect();
+          } catch (disconnectError) {
+            logger.debug(`Error during disconnect: ${disconnectError instanceof Error ? disconnectError.message : String(disconnectError)}`);
+          }
+        }
       }
     });
 }

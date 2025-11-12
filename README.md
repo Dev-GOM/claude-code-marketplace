@@ -238,9 +238,9 @@ Control Unity Editor programmatically via WebSocket - Create GameObjects, manage
 <details>
 <summary><strong>📖 Plugin Details</strong> (Click to expand)</summary>
 
-**⚠️ Experimental Plugin** - Real-time Unity Editor control via WebSocket with comprehensive automated testing.
+**⚠️ Experimental Plugin** - Real-time Unity Editor control via WebSocket with comprehensive automated testing and security hardening.
 
-**Quick Info:** WebSocket-based Unity Editor control (port 9300) | GameObject/Transform/Scene/Console management | 66 automated tests with Unity Test Framework | **Status:** 🧪 Experimental (v0.2.1) | **Unity Compatibility:** Unity 2020.3 - Unity 6+ | **Features:** Real-time editor communication, JSON-RPC 2.0 protocol, Thread-safe operations, Test coverage (UnityMainThreadDispatcher, GameObject caching, Vector3 validation, Protocol compliance) | **APIs:** GameObject.Find/Create/Destroy/SetActive, Transform.Get/SetPosition/Rotation/Scale, Scene.GetCurrent/GetAll/Load, Console.GetLogs/Clear, Hierarchy.Get
+**Quick Info:** WebSocket-based Unity Editor control (auto-assigned port 9500-9600) | GameObject/Transform/Scene/Console management | 66 automated tests with Unity Test Framework | **Status:** 🧪 Experimental (v0.4.0) | **Unity Compatibility:** Unity 2020.3 - Unity 6+ | **Setup:** Editor Window-based (`Tools > Unity Editor Toolkit > Server Window`) with auto-start | **Security:** Path traversal protection, enhanced input validation, resource cleanup | **Features:** Real-time editor communication, JSON-RPC 2.0 protocol, Thread-safe operations, Automatic port detection via status file | **APIs:** GameObject.Find/Create/Destroy/SetActive, Transform.Get/SetPosition/Rotation/Scale, Scene.GetCurrent/GetAll/Load, Console.GetLogs/Clear, Hierarchy.Get
 
 **[Read Full Documentation →](plugins/unity-editor-toolkit/README.md)**
 

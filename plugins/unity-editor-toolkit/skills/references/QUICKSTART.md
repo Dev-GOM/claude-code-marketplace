@@ -59,26 +59,29 @@ The package requires websocket-sharp DLL. Find the installation scripts in Packa
 1. Download: https://github.com/sta/websocket-sharp/releases/download/1.0.3-rc11/websocket-sharp.dll
 2. Place in: `Packages/com.devgom.unity-editor-toolkit/ThirdParty/websocket-sharp/websocket-sharp.dll`
 
-### 4. Setup Unity Server
+### 4. Setup WebSocket Server
 
-1. In Unity, create new GameObject:
-   - Right-click in Hierarchy → `Create Empty`
-   - Rename to "UnityEditorServer"
+1. Open Unity Editor Toolkit Server Window:
+   - In Unity menu: `Tools > Unity Editor Toolkit > Server Window`
+   - A new window will appear in the editor
 
-2. Add Server Component:
-   - Select "UnityEditorServer" GameObject
-   - In Inspector: `Add Component`
-   - Search: "Unity Editor Server"
-   - Click to add
+2. Configure Plugin Scripts Path:
+   - **Plugin Scripts Path**: Auto-detected from user home folder (`~/.claude/plugins/...`)
+   - If not detected, click "Browse" to select manually
+   - Path should point to: `unity-editor-toolkit/skills/scripts`
 
-3. Configure Settings:
-   - **Port**: 9500 (default, can change if needed)
-   - **Auto Start**: ✓ Checked
+3. Install CLI (One-time Setup):
+   - Click "Install CLI" button
+   - This builds the WebSocket server and TypeScript CLI
+   - Wait for installation to complete (may take 1-2 minutes)
+   - Console shows: "✓ CLI installation completed"
 
 4. Server Auto-Start:
-   - Server starts automatically in both Edit Mode and Play Mode
-   - Check Console for: `✓ Unity Editor Server started on ws://127.0.0.1:9500`
-   - No need to enter Play Mode
+   - Server starts automatically when Unity Editor opens
+   - **Port**: Auto-assigned from range 9500-9600 (no manual configuration needed)
+   - **Status file**: `{ProjectRoot}/.unity-websocket/server-status.json`
+   - CLI automatically detects the correct port from this file
+   - Check Console for: `✓ Unity Editor Server started on ws://127.0.0.1:XXXX`
 
 ## First Commands
 
@@ -159,10 +162,12 @@ Shows last 10 console log entries.
 - [ ] Claude Code plugin installed and enabled
 - [ ] Unity package imported successfully
 - [ ] websocket-sharp.dll in correct location
-- [ ] UnityEditorServer GameObject created
-- [ ] Server component configured (port 9500, auto-start)
-- [ ] Server started (works in both Edit Mode and Play Mode)
-- [ ] Console shows "✓ Unity Editor Server started"
+- [ ] Unity Editor Toolkit Server Window opened (`Tools > Unity Editor Toolkit > Server Window`)
+- [ ] Plugin scripts path configured correctly
+- [ ] CLI installed successfully (click "Install CLI" button)
+- [ ] Server started automatically (check Console for startup message)
+- [ ] Status file created: `.unity-websocket/server-status.json`
+- [ ] Console shows "✓ Unity Editor Server started on ws://127.0.0.1:XXXX"
 - [ ] `unity-editor status` command works
 - [ ] Can create/find GameObjects
 - [ ] Can modify transforms
@@ -173,18 +178,22 @@ Shows last 10 console log entries.
 ### "Server not found" or "Connection refused"
 
 **Check:**
-1. Unity Editor is open (Edit Mode or Play Mode)
+1. Unity Editor is open
 2. Console shows server started message
-3. Port 9500 is not blocked by firewall
-4. UnityEditorServer component is on a GameObject
+3. Status file exists: `.unity-websocket/server-status.json` in project root
+4. Port range 9500-9600 is not blocked by firewall
+5. Server Window shows "Server Status: Running"
 
 **Fix:**
 ```bash
-# Try different port
-unity-editor --port 9301 status
+# Check Unity project root for status file
+ls -la .unity-websocket/
+
+# Manually specify port if needed
+unity-editor --port 9500 status
 ```
 
-In Unity, change Server component port to 9301.
+In Unity Server Window, check "Server Status" and restart if needed.
 
 ### "Assembly 'websocket-sharp' not found"
 
@@ -266,12 +275,14 @@ unity-editor console stream --filter error
 
 Access server control panel:
 
-`Window → Unity Editor Toolkit → Server Control`
+`Tools → Unity Editor Toolkit → Server Window`
 
 Features:
-- Start/stop server
-- Configure port
-- View connection status
+- Install CLI (one-time setup)
+- Configure plugin scripts path
+- View server status (Running/Stopped)
+- View connection info (port, status file location)
+- Start/stop server manually
 - Access documentation
 
 ## Support

@@ -1,6 +1,24 @@
 # Unity Editor Toolkit
 
+**버전 0.4.0** | 최종 업데이트: 2025-11-12
+
 Claude Code를 위한 완벽한 Unity Editor 제어 및 자동화 툴킷. 25개 카테고리에 걸쳐 500+ Unity Editor 기능을 명령 - GameObjects, 컴포넌트, 씬, Material, 물리, 애니메이션 등을 실시간 WebSocket 자동화로 제어하세요.
+
+## 최근 업데이트 (v0.4.0)
+
+**보안 & 안정성 개선:**
+- 🔒 **Critical**: 경로 탐색(Path Traversal) 취약점 수정
+- ✅ 리소스 정리 개선 (프로세스, WebSocket 연결)
+- ✅ 파일 작업의 원자성 향상
+- ✅ 입력 검증 및 오류 처리 강화
+- ✅ Lock 파일 검증 및 PID 체크 개선
+
+**코드 품질:**
+- 재사용을 위한 명령어 유틸리티 리팩토링
+- Magic numbers를 named constants로 변환
+- 상세한 오류 정보를 포함한 타임아웃 처리 개선
+
+전체 릴리즈 노트는 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
 ## 특징
 
@@ -61,13 +79,22 @@ Claude Code 설정에 마켓플레이스를 추가하세요:
 
 ## 사용법
 
-### Unity 설정 (개발 중)
+### Unity 설정
 
-Unity C# WebSocket 서버 패키지는 현재 개발 중입니다. 출시되면:
+1. **Unity 패키지 설치**:
+   - `skills/assets/unity-package`에서 Package Manager를 통해 Unity 패키지 추가 (Add package from disk)
+   - 또는 프로젝트의 `Packages` 디렉토리에 패키지 폴더를 직접 복사
 
-1. Package Manager를 통해 Unity Editor Toolkit Server 패키지 설치
-2. GameObject에 `UnityEditorServer` 컴포넌트 추가
-3. 서버가 포트 9500(설정 가능)에서 자동으로 시작됩니다
+2. **WebSocket 서버 설정**:
+   - Unity 메뉴에서 창 열기: `Tools > Unity Editor Toolkit > Server Window`
+   - 플러그인 스크립트 경로 설정 (기본값: 사용자 홈 폴더에서 자동 감지)
+   - "Install CLI"를 클릭하여 WebSocket 서버 빌드 (일회성 설정)
+   - Unity Editor가 열릴 때 서버가 자동으로 시작됩니다
+
+3. **서버 상태**:
+   - 포트: 자동 할당 (9500-9600 범위)
+   - Status 파일: `{ProjectRoot}/.unity-websocket/server-status.json`
+   - CLI가 이 파일에서 올바른 포트를 자동으로 감지합니다
 
 ### CLI 명령어
 
@@ -221,10 +248,11 @@ done
 
 ### 구성 요소
 
-- **SessionStart/SessionEnd Hooks**: 자동 프로젝트 초기화 및 정리
-- **WebSocket Client**: TypeScript로 구현된 JSON-RPC 2.0 프로토콜
+- **Unity C# Server**: JSON-RPC 2.0 핸들러 프레임워크를 가진 WebSocket 서버
+- **서버 상태 동기화**: `.unity-websocket/server-status.json`을 통한 자동 포트 검색
+- **WebSocket Client**: 자동 재연결 및 타임아웃 처리가 있는 TypeScript 구현
 - **CLI Framework**: 모듈식 명령어 아키텍처를 가진 Commander.js
-- **Security Layer**: 다층 입력 검증 및 주입 방어
+- **보안 계층**: 다층 입력 검증 및 주입 방어
 
 ### 통신 프로토콜
 
@@ -256,23 +284,25 @@ WebSocket을 통한 JSON-RPC 2.0:
 }
 ```
 
-### 포트 할당
+### 포트 할당 & 검색
 
 - **범위**: 9500-9600 (100개 포트)
 - **충돌 방지**: Browser Pilot(9222-9322) 및 Blender Toolkit(9400-9500) 회피
-- **자동 선택**: 초기화 시 사용 가능한 포트 찾기
+- **자동 검색**: Unity 서버가 포트를 `.unity-websocket/server-status.json`에 기록
+- **CLI 검색**: status 파일에서 포트를 자동으로 읽음 (수동 설정 불필요)
+- **Heartbeat**: 연결 상태 모니터링을 위해 5초마다 서버가 상태를 업데이트
 
 ## 보안
 
 심층 방어 보안 구현:
 
-- **경로 탐색 방어**: `path.resolve()` 검증 및 `..` 감지
+- **경로 탐색 방어**: `..` 감지를 포함한 `path.resolve()` 검증
 - **명령 주입 방어**: npm 실행 정화 및 환경 격리
 - **JSON 주입 방지**: 모든 구조에 대한 런타임 타입 검증
 - **로그 주입 방어**: 메시지 정화로 로그 조작 방지
-- **WebSocket 보안**: Localhost 전용 연결
-- **포트 검증**: 9500-9600 범위 강제
-- **원자적 작업**: 경합 조건 없는 락 획득 (`{ flag: 'wx' }`)
+- **WebSocket 보안**: localhost 전용 연결
+- **포트 검증**: 9500-9600 범위 강제 적용
+- **원자적 작업**: Race condition 없는 Lock 획득 (`{ flag: 'wx' }`)
 - **메모리 안전성**: 적절한 이벤트 리스너 정리
 
 ## 개발
@@ -404,7 +434,7 @@ Apache License 2.0 - 자세한 내용은 [LICENSE](../../LICENSE)를 참조하�
 
 ---
 
-**버전**: 0.3.1
+**버전**: 0.4.0
 **마지막 업데이트**: 2025-11-12
 **제작자**: Dev GOM
 **마켓플레이스**: [dev-gom-plugins](https://github.com/Dev-GOM/claude-code-marketplace)

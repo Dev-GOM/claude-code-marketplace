@@ -24,18 +24,17 @@ export function registerSceneCommand(program: Command): void {
     .command('current')
     .description('Get current active scene')
     .action(async () => {
+      let client = null;
       try {
         const projectRoot = config.getProjectRoot();
-        const projectName = config.getProjectName(projectRoot);
-        const projectConfig = config.getProjectConfig(projectName);
+        const port = program.opts().port || config.getUnityPort(projectRoot);
 
-        if (!projectConfig) {
-          logger.error('Project not registered');
+        if (!port) {
+          logger.error('Unity server not running. Start Unity Editor with WebSocket server enabled.');
           process.exit(1);
         }
 
-        const port = program.opts().port || projectConfig.port;
-        const client = createUnityClient(port);
+        client = createUnityClient(port);
 
         logger.info('Connecting to Unity Editor...');
         await client.connect();
@@ -44,8 +43,6 @@ export function registerSceneCommand(program: Command): void {
         const result = await client.sendRequest<SceneInfo>(
           COMMANDS.SCENE_GET_CURRENT
         );
-
-        client.disconnect();
 
         logger.info('✓ Current Scene:');
         logger.info(`  Name: ${result.name}`);
@@ -57,6 +54,14 @@ export function registerSceneCommand(program: Command): void {
       } catch (error) {
         logger.error('Failed to get current scene', error);
         process.exit(1);
+      } finally {
+        if (client) {
+          try {
+            client.disconnect();
+          } catch (disconnectError) {
+            logger.debug(`Error during disconnect: ${disconnectError instanceof Error ? disconnectError.message : String(disconnectError)}`);
+          }
+        }
       }
     });
 
@@ -65,18 +70,17 @@ export function registerSceneCommand(program: Command): void {
     .command('list')
     .description('List all loaded scenes')
     .action(async () => {
+      let client = null;
       try {
         const projectRoot = config.getProjectRoot();
-        const projectName = config.getProjectName(projectRoot);
-        const projectConfig = config.getProjectConfig(projectName);
+        const port = program.opts().port || config.getUnityPort(projectRoot);
 
-        if (!projectConfig) {
-          logger.error('Project not registered');
+        if (!port) {
+          logger.error('Unity server not running. Start Unity Editor with WebSocket server enabled.');
           process.exit(1);
         }
 
-        const port = program.opts().port || projectConfig.port;
-        const client = createUnityClient(port);
+        client = createUnityClient(port);
 
         logger.info('Connecting to Unity Editor...');
         await client.connect();
@@ -85,8 +89,6 @@ export function registerSceneCommand(program: Command): void {
         const result = await client.sendRequest<SceneInfo[]>(
           COMMANDS.SCENE_GET_ALL
         );
-
-        client.disconnect();
 
         if (!result || result.length === 0) {
           logger.info('No scenes loaded');
@@ -109,6 +111,14 @@ export function registerSceneCommand(program: Command): void {
       } catch (error) {
         logger.error('Failed to list scenes', error);
         process.exit(1);
+      } finally {
+        if (client) {
+          try {
+            client.disconnect();
+          } catch (disconnectError) {
+            logger.debug(`Error during disconnect: ${disconnectError instanceof Error ? disconnectError.message : String(disconnectError)}`);
+          }
+        }
       }
     });
 
@@ -119,18 +129,17 @@ export function registerSceneCommand(program: Command): void {
     .argument('<name>', 'Scene name or path')
     .option('-a, --additive', 'Load scene additively')
     .action(async (name, options) => {
+      let client = null;
       try {
         const projectRoot = config.getProjectRoot();
-        const projectName = config.getProjectName(projectRoot);
-        const projectConfig = config.getProjectConfig(projectName);
+        const port = program.opts().port || config.getUnityPort(projectRoot);
 
-        if (!projectConfig) {
-          logger.error('Project not registered');
+        if (!port) {
+          logger.error('Unity server not running. Start Unity Editor with WebSocket server enabled.');
           process.exit(1);
         }
 
-        const port = program.opts().port || projectConfig.port;
-        const client = createUnityClient(port);
+        client = createUnityClient(port);
 
         logger.info('Connecting to Unity Editor...');
         await client.connect();
@@ -145,12 +154,18 @@ export function registerSceneCommand(program: Command): void {
           UNITY.SCENE_LOAD_TIMEOUT
         );
 
-        client.disconnect();
-
         logger.info('✓ Scene loaded');
       } catch (error) {
         logger.error('Failed to load scene', error);
         process.exit(1);
+      } finally {
+        if (client) {
+          try {
+            client.disconnect();
+          } catch (disconnectError) {
+            logger.debug(`Error during disconnect: ${disconnectError instanceof Error ? disconnectError.message : String(disconnectError)}`);
+          }
+        }
       }
     });
 }

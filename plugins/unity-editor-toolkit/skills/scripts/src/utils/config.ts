@@ -11,159 +11,28 @@ import { FS, ENV } from '@/constants';
 import * as logger from './logger';
 
 /**
- * Project configuration interface
+ * Constants
  */
-export interface ProjectConfig {
-  rootPath: string;
+const HEARTBEAT_STALE_SECONDS = 30;
+
+/**
+ * Server status interface (from .unity-websocket/server-status.json)
+ */
+export interface ServerStatus {
+  version: string;
   port: number;
-  outputDir: string;
-  lastUsed: string;
-  autoCleanup: boolean;
+  isRunning: boolean;
+  pid: number;
+  editorVersion: string;
+  startedAt: string;
+  lastHeartbeat: string;
 }
 
-/**
- * Shared configuration interface
- */
-export interface SharedConfig {
-  projects: Record<string, ProjectConfig>;
-}
+// Legacy shared config interfaces - deprecated, kept for reference only
+// Server now uses .unity-websocket/server-status.json instead
 
-/**
- * Validate ProjectConfig structure (runtime type checking)
- */
-function isValidProjectConfig(obj: any): obj is ProjectConfig {
-  return (
-    typeof obj === 'object' &&
-    obj !== null &&
-    typeof obj.rootPath === 'string' &&
-    typeof obj.port === 'number' &&
-    typeof obj.outputDir === 'string' &&
-    typeof obj.lastUsed === 'string' &&
-    typeof obj.autoCleanup === 'boolean'
-  );
-}
-
-/**
- * Validate SharedConfig structure (runtime type checking)
- */
-function isValidSharedConfig(obj: any): obj is SharedConfig {
-  if (typeof obj !== 'object' || obj === null) {
-    return false;
-  }
-  if (typeof obj.projects !== 'object' || obj.projects === null) {
-    return false;
-  }
-  // Validate each project config
-  for (const [key, value] of Object.entries(obj.projects)) {
-    if (typeof key !== 'string') return false;
-    if (!isValidProjectConfig(value)) return false;
-  }
-  return true;
-}
-
-/**
- * Validate path (prevents path traversal)
- */
-function isValidPath(targetPath: string): boolean {
-  const resolved = path.resolve(path.normalize(targetPath));
-
-  // Check for path traversal patterns
-  if (resolved.includes('..')) {
-    return false;
-  }
-
-  // Ensure absolute path
-  if (!path.isAbsolute(resolved)) {
-    return false;
-  }
-
-  return true;
-}
-
-/**
- * Get shared config file path
- */
-export function getSharedConfigPath(): string {
-  const pluginRoot = process.env[ENV.PLUGIN_ROOT];
-  if (!pluginRoot) {
-    throw new Error(`${ENV.PLUGIN_ROOT} environment variable not set`);
-  }
-
-  return path.join(pluginRoot, 'skills', FS.CONFIG_FILE);
-}
-
-/**
- * Load shared configuration from file
- */
-export function loadSharedConfig(): SharedConfig {
-  const configPath = getSharedConfigPath();
-
-  if (!fs.existsSync(configPath)) {
-    logger.debug('Shared config not found, returning empty config');
-    return { projects: {} };
-  }
-
-  try {
-    const data = fs.readFileSync(configPath, 'utf-8');
-    const parsed = JSON.parse(data);
-
-    // Validate structure (runtime type checking)
-    if (!isValidSharedConfig(parsed)) {
-      logger.error('Invalid config structure, resetting to empty config');
-      return { projects: {} };
-    }
-
-    return parsed;
-  } catch (error) {
-    logger.error('Failed to load shared config', error);
-    return { projects: {} };
-  }
-}
-
-/**
- * Save shared configuration to file
- */
-export function saveSharedConfig(config: SharedConfig): void {
-  const configPath = getSharedConfigPath();
-
-  try {
-    fs.writeFileSync(configPath, JSON.stringify(config, null, 2), 'utf-8');
-    logger.debug('Shared config saved successfully');
-  } catch (error) {
-    logger.error('Failed to save shared config', error);
-    throw error;
-  }
-}
-
-/**
- * Get project configuration by name
- */
-export function getProjectConfig(projectName: string): ProjectConfig | null {
-  const config = loadSharedConfig();
-  return config.projects[projectName] || null;
-}
-
-/**
- * Find project configuration by root path
- */
-export function findProjectByPath(rootPath: string): [string, ProjectConfig] | null {
-  // Validate path (security: prevent path traversal)
-  if (!isValidPath(rootPath)) {
-    throw new Error('Invalid path detected: path traversal attempt');
-  }
-
-  const config = loadSharedConfig();
-  const normalizedPath = path.resolve(path.normalize(rootPath));
-
-  const entry = Object.entries(config.projects).find(
-    ([_, projectConfig]) => {
-      const projectPath = path.resolve(path.normalize(projectConfig.rootPath));
-      return projectPath === normalizedPath;
-    }
-  );
-
-  return entry || null;
-}
+// Legacy shared config functions removed - no longer needed
+// Server status is now managed via .unity-websocket/server-status.json
 
 /**
  * Get project root directory
@@ -200,4 +69,84 @@ export function isUnityProject(projectRoot?: string): boolean {
 export function getOutputDir(projectRoot?: string): string {
   const root = projectRoot || getProjectRoot();
   return path.join(root, FS.OUTPUT_DIR);
+}
+
+/**
+ * Get server status file path
+ */
+export function getServerStatusPath(projectRoot?: string): string {
+  const root = projectRoot || getProjectRoot();
+  return path.join(root, '.unity-websocket', 'server-status.json');
+}
+
+/**
+ * Read server status from .unity-websocket/server-status.json
+ */
+export function readServerStatus(projectRoot?: string): ServerStatus | null {
+  try {
+    const statusPath = getServerStatusPath(projectRoot);
+
+    if (!fs.existsSync(statusPath)) {
+      logger.debug('Server status file not found');
+      return null;
+    }
+
+    const data = fs.readFileSync(statusPath, 'utf-8');
+    const status = JSON.parse(data) as ServerStatus;
+
+    // Validate required fields
+    if (
+      typeof status.port !== 'number' ||
+      typeof status.isRunning !== 'boolean' ||
+      typeof status.lastHeartbeat !== 'string'
+    ) {
+      logger.warn('Invalid server status structure');
+      return null;
+    }
+
+    return status;
+  } catch (error) {
+    logger.debug(`Failed to read server status: ${error instanceof Error ? error.message : String(error)}`);
+    return null;
+  }
+}
+
+/**
+ * Check if server status is stale (heartbeat > configured seconds old)
+ */
+export function isServerStatusStale(status: ServerStatus): boolean {
+  try {
+    if (!status.lastHeartbeat) {
+      return true;
+    }
+
+    const lastBeat = new Date(status.lastHeartbeat);
+    const now = new Date();
+    const secondsSinceLastBeat = (now.getTime() - lastBeat.getTime()) / 1000;
+
+    return secondsSinceLastBeat > HEARTBEAT_STALE_SECONDS;
+  } catch (error) {
+    logger.debug(`Failed to check heartbeat: ${error instanceof Error ? error.message : String(error)}`);
+    return true;
+  }
+}
+
+/**
+ * Get Unity WebSocket server port
+ *
+ * Reads port from server-status.json written by Unity server.
+ * Returns null if server is not running or status is stale.
+ */
+export function getUnityPort(projectRoot?: string): number | null {
+  const root = projectRoot || getProjectRoot();
+
+  // Read from server-status.json (current running server)
+  const status = readServerStatus(root);
+  if (status && status.isRunning && !isServerStatusStale(status)) {
+    logger.debug(`Using port ${status.port} from server status`);
+    return status.port;
+  }
+
+  logger.debug('No active Unity server detected');
+  return null;
 }

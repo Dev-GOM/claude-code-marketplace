@@ -2,7 +2,47 @@
 
 Dev GOM Plugins 마켓플레이스의 모든 주요 변경사항이 이 파일에 문서화됩니다.
 
-> **버전**: 2.19.1 | **최종 업데이트**: 2025-11-12
+> **버전**: 2.21.0 | **최종 업데이트**: 2025-11-12
+
+---
+
+## [2.21.0] - 2025-11-12
+
+### 보안 & 안정성
+- 🔒 **Unity Editor Toolkit v0.4.0**: 주요 보안 및 안정성 개선 (11개 이슈 해결)
+  - **Critical 보안 수정**: 파일 복사 작업에서 경로 탐색(Path Traversal) 취약점 수정
+    - `Path.GetFullPath()`를 사용한 경로 정규화 및 검증 추가
+    - 허용된 플러그인 디렉토리(`~/.claude/plugins`)에 대해 소스 경로 검증
+    - 프로젝트 경계 내에서 대상 경로 검증
+    - 심볼릭 링크 차단 (보안 위험)
+    - 파일명의 null byte 주입 방지
+  - **High 우선순위 수정** (6개 이슈):
+    - 프로세스 리소스 정리: Kill + WaitForExit + Dispose 패턴의 try-finally 추가
+    - 파일 원자성: 크래시 안전 업데이트를 위해 `File.Replace()` 사용
+    - WebSocket 연결 정리: 모든 14개 명령 함수에 finally 블록 추가
+    - Lock PID 검증: 강화된 체크 (유효 범위, 프로세스 존재, Unity Editor 감지, HasExited)
+    - 타임아웃 처리: method, requestId, params, timestamp를 포함한 상세 오류 정보
+    - Heartbeat 오류 처리: 적절한 로깅을 포함한 try-catch 블록
+  - **Medium 우선순위 개선** (4개 이슈):
+    - Magic numbers를 상수로 변경: `ProcessKillWaitTimeoutMs`, `NpmInstallTimeoutSeconds`, `NpmBuildTimeoutSeconds`, `HeartbeatStaleSeconds`
+    - 입력 검증: Method name, timeout, request parameter 검증
+    - 코드 중복 제거: `getUnityPortOrExit()`, `connectToUnity()`, `disconnectUnity()` 함수를 포함한 새로운 `command-helpers.ts`
+    - 코드 품질: console.log를 logger로 교체
+- 🔒 **Blender Toolkit v1.4.4**: 보안 및 의존성 관리 개선 (3개 이슈 해결)
+  - **High 보안 수정**: pip install에서 `--trusted-host` 플래그 제거
+    - SSL/TLS 인증서 검증을 강제하여 MITM 공격 방지
+    - 더 이상 PyPI 보안 체크를 우회하지 않음
+  - **Medium 우선순위 개선**:
+    - 의존성 관리: 하드코딩된 의존성 대신 `requirements.txt` 사용
+    - 코드 단순화: `in` 연산자를 사용하여 `.dist-info` 제외 로직 간소화
+  - **새 기능**:
+    - 버전 인식 의존성 명세: `aiohttp>=3.8,<4.0`
+    - requirements.txt 누락 시 폴백 메커니즘
+
+### 변경됨
+- **Unity Editor Toolkit**: 코드베이스 전반의 오류 메시지 개선
+- **Unity Editor Toolkit**: 리소스 관리 패턴 개선
+- **Blender Toolkit**: 의존성 관리 워크플로우 개선
 
 ---
 
@@ -333,7 +373,7 @@ Dev GOM Plugins 마켓플레이스의 모든 주요 변경사항이 이 파일�
 
 ---
 
-## [2.10.7] - 2025-01-04
+## [2.10.7] - 2025-11-04
 
 ### 추가됨
 - ⚛️ **Browser Pilot v0.3.0**: React/프레임워크 호환성
@@ -1330,7 +1370,7 @@ Claude Dev Helper에서 사운드 알림을 사용하고 있었다면:
 - 📝 **요구사항**: README.md 및 README.ko.md에 Python 3.11+ 요구사항 추가
 - 📚 **명확성**: 명확한 버전 요구사항과 함께 설치 지침 업데이트
 
-### v1.0.0 (2025-01-20)
+### v1.0.0 (2025-10-20)
 - 🎉 최초 릴리스
 - 🔍 범용 프로젝트 타입 감지 (Node.js, Python, Rust, Go, Unity, Unreal 등)
 - 📝 크로스 플랫폼 버전 업데이트 스크립트

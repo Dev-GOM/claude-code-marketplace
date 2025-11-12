@@ -189,7 +189,7 @@ python -X utf8 scripts/changelog_generator.py 1.3.0 v1.2.0
 
 ## Version History
 
-### 1.0.0 - 2025-01-20
+### 1.0.0 - 2025-10-20
 
 Initial release
 

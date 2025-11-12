@@ -58,6 +58,7 @@ function getVersion() {
  */
 function installDependencies(addonRoot) {
   const libsDir = path.join(addonRoot, 'libs');
+  const requirementsPath = path.join(addonRoot, 'requirements.txt');
 
   logger.log('Installing Python dependencies...');
 
@@ -67,12 +68,21 @@ function installDependencies(addonRoot) {
   }
 
   try {
-    // Install aiohttp and its dependencies
-    // Use --trusted-host to bypass SSL certificate issues
-    execSync(`python -m pip install --target "${libsDir}" --trusted-host pypi.org --trusted-host files.pythonhosted.org aiohttp`, {
-      encoding: 'utf-8',
-      stdio: ['pipe', 'pipe', 'pipe']
-    });
+    if (fs.existsSync(requirementsPath)) {
+      // Install from requirements.txt
+      logger.log(`  Using requirements.txt: ${requirementsPath}`);
+      execSync(`python -m pip install --target "${libsDir}" -r "${requirementsPath}"`, {
+        encoding: 'utf-8',
+        stdio: 'inherit' // Show pip output to user
+      });
+    } else {
+      // Fallback to default aiohttp dependency
+      logger.log('  requirements.txt not found. Installing default aiohttp dependency.');
+      execSync(`python -m pip install --target "${libsDir}" aiohttp`, {
+        encoding: 'utf-8',
+        stdio: 'inherit'
+      });
+    }
 
     logger.log('✓ Dependencies installed to libs folder');
     return true;
@@ -107,14 +117,12 @@ for file_path in addon_root.rglob('*'):
 
     # Skip development files and caches
     name = file_path.name
-    rel_parts = file_path.relative_to(addon_root).parts
+    rel_path_str = str(file_path.relative_to(addon_root))
 
-    if (name in {'.pylintrc', 'pyrightconfig.json'} or
+    if (name in {'.pylintrc', 'pyrightconfig.json', 'requirements.txt'} or
             name.endswith('.pyc') or
             '__pycache__' in file_path.parts or
-            name.endswith('.dist-info') or
-            (len(rel_parts) > 1 and rel_parts[0] == 'libs' and
-             any(part.endswith('.dist-info') for part in rel_parts))):
+            '.dist-info' in rel_path_str):
         continue
 
     files_to_add.append(file_path)

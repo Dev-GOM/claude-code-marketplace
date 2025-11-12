@@ -52,23 +52,35 @@ program
     try {
       const projectRoot = config.getProjectRoot();
       const projectName = config.getProjectName(projectRoot);
-      const projectConfig = config.getProjectConfig(projectName);
 
-      if (!projectConfig) {
-        logger.info('❌ Project not registered');
-        logger.info(`   Run this command in a Unity project that has been opened with Claude Code`);
-        process.exit(1);
-      }
+      // Read server status first
+      const serverStatus = config.readServerStatus(projectRoot);
+      const port = config.getUnityPort(projectRoot);
 
       logger.info('✓ Unity WebSocket Status');
       logger.info(`  Project: ${projectName}`);
       logger.info(`  Root: ${projectRoot}`);
-      logger.info(`  Port: ${projectConfig.port}`);
-      logger.info(`  Output: ${projectConfig.outputDir}`);
-      logger.info(`  Last Used: ${projectConfig.lastUsed}`);
+
+      if (serverStatus) {
+        logger.info(`  Port: ${serverStatus.port}`);
+        logger.info(`  Running: ${serverStatus.isRunning ? '✓' : '❌'}`);
+        logger.info(`  Unity Version: ${serverStatus.editorVersion}`);
+        logger.info(`  Last Heartbeat: ${serverStatus.lastHeartbeat}`);
+        logger.info(`  Status: ${config.isServerStatusStale(serverStatus) ? '⚠️ Stale' : '✓ Active'}`);
+      } else {
+        logger.info(`  Port: ${port || 'Unknown'}`);
+        logger.info(`  Status: ❌ No server status file found`);
+      }
+
+      if (!port) {
+        logger.info('');
+        logger.info('❌ Unity server not detected');
+        logger.info('   Make sure Unity Editor is running with WebSocket server enabled');
+        process.exit(1);
+      }
 
       // Try to connect
-      const client = createUnityClient(projectConfig.port);
+      const client = createUnityClient(port);
       try {
         await client.connect();
         logger.info('  Connection: ✓ Connected');

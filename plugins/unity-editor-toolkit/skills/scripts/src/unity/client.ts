@@ -162,15 +162,24 @@ export class UnityWebSocketClient {
    * Send JSON-RPC request to Unity Editor
    */
   async sendRequest<T = unknown>(method: string, params?: unknown, timeout?: number): Promise<T> {
+    // Validate input parameters
+    if (!method || typeof method !== 'string' || method.trim() === '') {
+      throw new UnityRPCError('Method name is required and must be a non-empty string', JSONRPC.INVALID_PARAMS);
+    }
+
+    if (timeout !== undefined && (typeof timeout !== 'number' || timeout <= 0)) {
+      throw new UnityRPCError('Timeout must be a positive number', JSONRPC.INVALID_PARAMS);
+    }
+
     if (!this.isConnected()) {
-      throw new Error('Not connected to Unity Editor');
+      throw new UnityRPCError('Not connected to Unity Editor', JSONRPC.UNITY_NOT_CONNECTED);
     }
 
     const requestId = `req_${++this.requestIdCounter}`;
     const request: JSONRPCRequest = {
       jsonrpc: JSONRPC.VERSION,
       id: requestId,
-      method,
+      method: method.trim(),
       params,
     };
 
@@ -178,7 +187,24 @@ export class UnityWebSocketClient {
       const requestTimeout = timeout || UNITY.COMMAND_TIMEOUT;
       const timer = setTimeout(() => {
         this.pendingRequests.delete(requestId);
-        reject(new Error(`Request timeout after ${requestTimeout}ms (method: ${method})`));
+
+        // Log timeout with detailed information for debugging
+        logger.warn(`Request timeout: ${method} (ID: ${requestId}, timeout: ${requestTimeout}ms)`);
+
+        // Create detailed timeout error
+        const timeoutError = new UnityRPCError(
+          `Request timeout after ${requestTimeout}ms`,
+          JSONRPC.INTERNAL_ERROR,
+          {
+            method,
+            requestId,
+            timeout: requestTimeout,
+            params,
+            timestamp: new Date().toISOString(),
+          }
+        );
+
+        reject(timeoutError);
       }, requestTimeout);
 
       this.pendingRequests.set(requestId, {
@@ -195,7 +221,14 @@ export class UnityWebSocketClient {
         if (error) {
           clearTimeout(timer);
           this.pendingRequests.delete(requestId);
-          reject(new Error(`Failed to send request: ${error.message}`));
+
+          const sendError = new UnityRPCError(
+            `Failed to send request: ${error.message}`,
+            JSONRPC.INTERNAL_ERROR,
+            { method, requestId, originalError: error.message }
+          );
+
+          reject(sendError);
         }
       });
     });

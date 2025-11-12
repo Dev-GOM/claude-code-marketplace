@@ -5,7 +5,7 @@
   },
   "metadata": {
     "description": "Productivity plugins for Claude Code to automate development workflows",
-    "version": "2.20.1",
+    "version": "2.21.0",
     "homepage": "https://github.com/Dev-GOM/claude-code-marketplace"
   },
   "plugins": [
@@ -252,7 +252,7 @@
       "name": "blender-toolkit",
       "source": "./plugins/blender-toolkit",
       "description": "Blender automation toolkit with CLI for geometry, materials, modifiers, collections, animation retargeting, and WebSocket-based real-time control",
-      "version": "1.4.3",
+      "version": "1.4.4",
       "author": {
         "name": "Dev GOM"
       },
@@ -278,7 +278,7 @@
       "name": "unity-editor-toolkit",
       "source": "./plugins/unity-editor-toolkit",
       "description": "🧪 Experimental - Real-time Unity Editor control via WebSocket with 66 automated tests (Unity 2020.3 - Unity 6+)",
-      "version": "0.3.1",
+      "version": "0.4.0",
       "author": {
         "name": "Dev GOM"
       },
@@ -298,5 +298,5 @@
       ]
     }
   ],
-  "version": "2.20.1"
+  "version": "2.21.0"
 }
