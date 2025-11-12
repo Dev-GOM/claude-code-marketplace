@@ -52,38 +52,39 @@ Use Unity Editor Toolkit when you need to:
 
 ### Unity Project Setup
 
-The Unity C# WebSocket server package is under development. Once released:
-
 1. **Install Unity Editor Toolkit Server Package**
    - Via Unity Package Manager (Git URL or local path)
    - Requires Unity 2020.3 or higher
+   - Package location: `skills/assets/unity-package`
 
-2. **Add Server Component**
-   - Add `UnityEditorServer` component to a GameObject in your scene
-   - Server automatically starts on port 9500 (configurable: 9500-9600 range)
-   - WebSocket connection available at `ws://localhost:9500`
+2. **Configure WebSocket Server**
+   - Open Unity menu: `Tools > Unity Editor Toolkit > Server Window`
+   - Plugin scripts path auto-detected from `~/.claude/plugins/...`
+   - Click "Install CLI" to build WebSocket server (one-time setup)
+   - Server starts automatically when Unity Editor opens
 
-3. **Dependencies**
-   - websocket-sharp (automatically installed with package)
+3. **Server Status**
+   - Port: Auto-assigned from range 9500-9600
+   - Status file: `{ProjectRoot}/.unity-websocket/server-status.json`
+   - CLI automatically detects correct port from this file
+
+4. **Dependencies**
+   - websocket-sharp (install via package installation scripts)
    - Newtonsoft.Json (Unity's built-in version)
 
 ### Claude Code Plugin
 
-The Unity Editor Toolkit plugin is automatically initialized via SessionStart hook:
-
-- Project-specific `.unity-editor/` configuration created
-- CLI scripts and wrapper installed
-- WebSocket connection established with Unity Editor
+The Unity Editor Toolkit plugin provides CLI commands for Unity Editor control.
 
 ## Core Workflow
 
-### 1. Initialize Connection
+### 1. Connection
 
-When you start a Claude Code session in a project, the Unity Editor Toolkit automatically:
+Unity Editor Toolkit CLI automatically:
 
-- Creates `.unity-editor/` directory with CLI scripts
-- Detects available port (9500-9600 range)
-- Establishes WebSocket connection if Unity Editor is running
+- Detects Unity project via `.unity-websocket/server-status.json`
+- Reads port information from status file (9500-9600 range)
+- Connects to WebSocket server if Unity Editor is running
 
 ### 2. Execute Commands
 
@@ -206,10 +207,9 @@ done
    - Add delays between commands if creating many GameObjects
    - Consider Unity Editor performance limitations
 
-5. **Security Considerations**
+5. **Connection Management**
    - Unity Editor Toolkit uses localhost-only connections (127.0.0.1)
-   - Port range limited to 9500-9600 to avoid conflicts
-   - Input validation prevents path traversal and injection attacks
+   - Port range limited to 9500-9600 to avoid conflicts with other tools
 
 6. **Error Handling**
    - Commands return JSON-RPC error responses for invalid operations
@@ -242,7 +242,6 @@ Unity C# server package available in `assets/unity-package/` - install via Unity
 ---
 
 **Status**: 🧪 Experimental - Phase 1 (15 commands implemented)
-**Version**: 0.2.1
 **Unity Version Support**: 2020.3 - Unity 6
 **Protocol**: JSON-RPC 2.0 over WebSocket
-**Port Range**: 9500-9600
+**Port Range**: 9500-9600 (auto-assigned)

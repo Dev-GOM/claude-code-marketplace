@@ -544,6 +544,4 @@ Open test-results.xml in any XML viewer or CI tool
 
 ---
 
-**Last Updated**: 2025-11-11
-**Version**: 0.1.0
 **Total Tests**: 66
