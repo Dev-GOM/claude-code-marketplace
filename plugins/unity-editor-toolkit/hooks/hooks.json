@@ -13,7 +13,7 @@
           {
             "type": "command",
             "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/init-config.js",
-            "description": "Registers Unity project and assigns WebSocket port (9300-9400)",
+            "description": "Registers Unity project and assigns WebSocket port (9500-9600)",
             "continueOnError": true,
             "suppressOutput": false
           }

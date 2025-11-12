@@ -9,9 +9,9 @@
  * Unity WebSocket connection settings
  */
 export const UNITY = {
-  // Port range for Unity WebSocket servers (9300-9400)
-  DEFAULT_PORT: 9300,
-  MAX_PORT: 9400,
+  // Port range for Unity WebSocket servers (9500-9600)
+  DEFAULT_PORT: 9500,
+  MAX_PORT: 9600,
   LOCALHOST: '127.0.0.1',
 
   // WebSocket connection timeouts

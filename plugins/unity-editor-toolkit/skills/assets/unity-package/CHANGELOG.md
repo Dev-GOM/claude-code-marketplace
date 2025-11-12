@@ -25,7 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `UnityEditorServer` MonoBehaviour component
 - Editor window for server control (`Window → Unity Editor Toolkit → Server Control`)
 - Automatic console log capture
-- Configurable port (default: 9300)
+- Configurable port (default: 9500)
 - Auto-start option
 
 #### Security
