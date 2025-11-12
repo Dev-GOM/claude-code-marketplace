@@ -37,7 +37,7 @@ namespace UnityEditorToolkit.Editor
         private bool hasNodeJS = false;
         private string pluginScriptsPathOverride = null;
 
-        [MenuItem("Window/Unity Editor Toolkit/Server Control")]
+        [MenuItem("Tools/Unity Editor Toolkit/Server Window")]
         public static void ShowWindow()
         {
             var window = GetWindow<EditorServerWindow>("Editor Server");
