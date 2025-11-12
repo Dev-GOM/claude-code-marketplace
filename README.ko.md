@@ -203,21 +203,6 @@ Claude Code를 위한 Chrome DevTools Protocol (CDP) 기반 브라우저 자동�
 
 ---
 
-### 13. 🎮 [Unity Editor Pilot](plugins/unity-editor-pilot/README.ko.md)
-
-<details>
-<summary><strong>📖 플러그인 상세</strong> (펼치기)</summary>
-
-WebSocket을 통해 Unity Editor를 프로그래밍 방식으로 제어 - GameObject 생성, 씬 관리, Play Mode 제어 및 Claude Code에서 직접 에디터 워크플로우 자동화.
-
-**요약:** WebSocket 기반 Unity Editor 제어 (포트 30090-30099) | GameObject/Scene/PlayMode 관리 | **상태:** 🚧 개발 중 (v0.1.0) | **기능:** 실시간 에디터 통신, 커맨드라인 인터페이스, 크로스 플랫폼 셸 스크립트
-
-**[전체 문서 보기 →](plugins/unity-editor-pilot/README.ko.md)**
-
-</details>
-
----
-
 ### 14. 🎮 [Unity Editor Toolkit](plugins/unity-editor-toolkit/README.md)
 
 <details>
@@ -280,8 +265,6 @@ WebSocket을 통해 Unity Editor를 프로그래밍 방식으로 제어 - GameOb
    ```bash
    /plugin install unity-editor-toolkit@dev-gom-plugins
    ```
-
-   > **참고**: Unity Editor Pilot은 개발 중이며 아직 설치할 수 없습니다.
 
 3. 플러그인을 로드하기 위해 Claude Code 재시작:
    ```bash

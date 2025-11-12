@@ -203,21 +203,6 @@ Chrome DevTools Protocol (CDP) based browser automation, web scraping, and crawl
 
 ---
 
-### 13. 🎮 [Unity Editor Pilot](plugins/unity-editor-pilot/README.md)
-
-<details>
-<summary><strong>📖 Plugin Details</strong> (Click to expand)</summary>
-
-Control Unity Editor programmatically via WebSocket - Create GameObjects, manage scenes, control Play Mode, and automate editor workflows directly from Claude Code.
-
-**Quick Info:** WebSocket-based Unity Editor control (port 30090-30099) | GameObject/Scene/PlayMode management | **Status:** 🚧 Under Development (v0.1.0) | **Features:** Real-time editor communication, Command-line interface, Cross-platform shell scripts
-
-**[Read Full Documentation →](plugins/unity-editor-pilot/README.md)**
-
-</details>
-
----
-
 ### 14. 🎨 [Blender Toolkit](plugins/blender-toolkit/README.md)
 
 <details>
@@ -295,8 +280,6 @@ Control Unity Editor programmatically via WebSocket - Create GameObjects, manage
    ```bash
    /plugin install unity-editor-toolkit@dev-gom-plugins
    ```
-
-   > **Note**: Unity Editor Pilot is under development and not yet available for installation.
 
 3. Restart Claude Code to load the plugins:
    ```bash
