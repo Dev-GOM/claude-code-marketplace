@@ -44,38 +44,22 @@ Claude Code를 위한 완벽한 Unity Editor 제어 및 자동화 툴킷. 25개 
 
 이 플러그인은 [Dev GOM Plugins](https://github.com/Dev-GOM/claude-code-marketplace) 마켓플레이스의 일부입니다.
 
-### 마켓플레이스에서 설치
+### 마켓플레이스에서 설치 (권장)
 
-Claude Code 설정에 마켓플레이스를 추가하세요:
+```bash
+# 마켓플레이스 추가
+/plugin marketplace add https://github.com/Dev-GOM/claude-code-marketplace.git
 
-```json
-{
-  "plugins": {
-    "marketplaces": [
-      {
-        "name": "dev-gom-plugins",
-        "url": "https://github.com/Dev-GOM/claude-code-marketplace"
-      }
-    ]
-  }
-}
+# 플러그인 설치
+/plugin install unity-editor-toolkit@dev-gom-plugins
 ```
 
-그런 다음 플러그인을 활성화하세요:
+### 직접 설치
 
-```json
-{
-  "plugins": {
-    "enabled": ["dev-gom-plugins:unity-editor-toolkit"]
-  }
-}
+```bash
+# 저장소에서 직접 설치
+/plugin add https://github.com/Dev-GOM/claude-code-marketplace/tree/main/plugins/unity-editor-toolkit
 ```
-
-### 수동 설치
-
-1. 이 저장소를 클론합니다
-2. `plugins/unity-editor-toolkit`을 Claude Code 플러그인 디렉토리에 복사합니다
-3. Claude Code를 재시작합니다
 
 ## 사용법
 

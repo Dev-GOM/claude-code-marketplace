@@ -53,17 +53,31 @@ Blender automation toolkit for Claude Code - WebSocket-based real-time Blender c
 
 ## 📦 Installation
 
+### Install Plugin
+
+```bash
+# Add marketplace
+/plugin marketplace add https://github.com/Dev-GOM/claude-code-marketplace.git
+
+# Install plugin
+/plugin install blender-toolkit@dev-gom-plugins
+```
+
+**Or install directly**:
+```bash
+/plugin add https://github.com/Dev-GOM/claude-code-marketplace/tree/main/plugins/blender-toolkit
+```
+
 ### Automatic Setup (Recommended)
 
 Blender Toolkit uses SessionStart hooks to automatically initialize your project:
 
-1. **Install Plugin** via Claude Code marketplace or manually
-2. **Start Session** - Hook will automatically:
+1. **Start Session** - Hook will automatically:
    - Detect installed Blender versions (4.0+)
    - Create project configuration (port 9400-9500)
    - Copy and build local TypeScript scripts
    - Attempt background addon installation
-3. **Check Status** - Review installation logs:
+2. **Check Status** - Review installation logs:
    ```bash
    cat .blender-toolkit/init-log.txt
    ```
