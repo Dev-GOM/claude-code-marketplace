@@ -66,7 +66,7 @@ After adding the DLL, Unity should not show any import errors. Check Console (Ct
 
 1. Create GameObject → Add `UnityEditorServer` component
 2. Enter Play Mode
-3. Console should show: `✓ Unity Editor Server started on ws://127.0.0.1:9300`
+3. Console should show: `✓ Unity Editor Server started on ws://127.0.0.1:9500`
 
 ## Troubleshooting
 
