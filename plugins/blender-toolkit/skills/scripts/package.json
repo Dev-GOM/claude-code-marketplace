@@ -1,6 +1,6 @@
 {
   "name": "blender-toolkit-cli",
-  "version": "1.4.3",
+  "version": "1.4.4",
   "description": "Blender automation CLI with geometry, materials, modifiers, collections, animation retargeting, and WebSocket-based control",
   "main": "dist/index.js",
   "bin": {

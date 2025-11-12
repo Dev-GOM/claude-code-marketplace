@@ -25,7 +25,7 @@ Create this file at project root:
 {
   "version": "1.2.3",
   "buildNumber": 42,
-  "releaseDate": "2025-01-20"
+  "releaseDate": "2025-10-20"
 }
 ```
 

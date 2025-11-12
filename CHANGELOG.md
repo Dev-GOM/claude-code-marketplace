@@ -2,7 +2,47 @@
 
 All notable changes to the Dev GOM Plugins marketplace will be documented in this file.
 
-> **Version**: 2.19.1 | **Last Updated**: 2025-11-12
+> **Version**: 2.21.0 | **Last Updated**: 2025-11-12
+
+---
+
+## [2.21.0] - 2025-11-12
+
+### Security & Stability
+- 🔒 **Unity Editor Toolkit v0.4.0**: Major Security and Stability Improvements (11 Issues Resolved)
+  - **Critical Security Fix**: Path traversal vulnerability in file copy operations
+    - Added path normalization and validation using `Path.GetFullPath()`
+    - Validated source paths against allowed plugin directory (`~/.claude/plugins`)
+    - Validated destination paths within project boundaries
+    - Blocked symbolic links (security risk)
+    - Prevented null byte injection in filenames
+  - **High Priority Fixes** (6 issues):
+    - Process resource cleanup: Added try-finally pattern with Kill + WaitForExit + Dispose
+    - File atomicity: Using `File.Replace()` for crash-safe updates
+    - WebSocket connection cleanup: Finally blocks in all 14 command functions
+    - Lock PID validation: Enhanced checks (valid range, process existence, Unity Editor detection, HasExited)
+    - Timeout handling: Detailed error information with method, requestId, params, timestamp
+    - Heartbeat error handling: Try-catch blocks with proper logging
+  - **Medium Priority Improvements** (4 issues):
+    - Magic numbers to constants: `ProcessKillWaitTimeoutMs`, `NpmInstallTimeoutSeconds`, `NpmBuildTimeoutSeconds`, `HeartbeatStaleSeconds`
+    - Input validation: Method name, timeout, request parameter validation
+    - Code deduplication: New `command-helpers.ts` with `getUnityPortOrExit()`, `connectToUnity()`, `disconnectUnity()`
+    - Code quality: Replaced console.log with logger
+- 🔒 **Blender Toolkit v1.4.4**: Security and Dependency Management Improvements (3 Issues Resolved)
+  - **High Security Fix**: Removed `--trusted-host` flags from pip install
+    - Prevents MITM attacks by enforcing SSL/TLS certificate validation
+    - No longer bypasses PyPI security checks
+  - **Medium Priority Improvements**:
+    - Dependency management: Using `requirements.txt` instead of hardcoded dependencies
+    - Code simplification: Streamlined `.dist-info` exclusion logic using `in` operator
+  - **New Features**:
+    - Version-aware dependency specification: `aiohttp>=3.8,<4.0`
+    - Fallback mechanism when requirements.txt missing
+
+### Changed
+- **Unity Editor Toolkit**: Enhanced error messages throughout codebase
+- **Unity Editor Toolkit**: Improved resource management patterns
+- **Blender Toolkit**: Better dependency management workflow
 
 ---
 
@@ -1330,7 +1370,7 @@ If you were using sound notifications in Claude Dev Helper:
 - 📝 **Requirements**: Added Python 3.11+ requirement to README.md and README.ko.md
 - 📚 **Clarity**: Updated installation instructions with clear version requirements
 
-### v1.0.0 (2025-01-20)
+### v1.0.0 (2025-10-20)
 - 🎉 Initial release
 - 🔍 Universal project type detection (Node.js, Python, Rust, Go, Unity, Unreal, etc.)
 - 📝 Cross-platform version update scripts

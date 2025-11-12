@@ -54,6 +54,8 @@ namespace UnityEditorToolkit.Server
         private Dictionary<string, BaseHandler> handlers;
         private HashSet<string> activeConnections = new HashSet<string>();
         private float serverStartTime = 0f;
+        private float lastHeartbeatTime = 0f;
+        private const float HeartbeatInterval = 5f; // Update heartbeat every 5 seconds
 
         private void Awake()
         {
@@ -88,6 +90,40 @@ namespace UnityEditorToolkit.Server
             ConsoleHandler.StopListening();
         }
 
+        private void Update()
+        {
+            // Periodic heartbeat update
+            if (isRunning && Time.realtimeSinceStartup - lastHeartbeatTime > HeartbeatInterval)
+            {
+                lastHeartbeatTime = Time.realtimeSinceStartup;
+
+                try
+                {
+                    string projectRoot = Path.GetDirectoryName(Application.dataPath);
+                    ServerStatus status = ServerStatus.Load(projectRoot);
+
+                    if (status != null)
+                    {
+                        status.UpdateHeartbeat();
+
+                        bool saved = ServerStatus.Save(status, projectRoot);
+                        if (!saved)
+                        {
+                            Log("Failed to save heartbeat update", LogLevel.Warning);
+                        }
+                    }
+                    else
+                    {
+                        Log("Failed to load server status for heartbeat update", LogLevel.Warning);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Log($"Error updating heartbeat: {e.Message}", LogLevel.Error);
+                }
+            }
+        }
+
         /// <summary>
         /// Start WebSocket server
         /// </summary>
@@ -107,6 +143,13 @@ namespace UnityEditorToolkit.Server
 
                 isRunning = true;
                 serverStartTime = Time.realtimeSinceStartup;
+                lastHeartbeatTime = Time.realtimeSinceStartup;
+
+                // Save server status
+                string projectRoot = Path.GetDirectoryName(Application.dataPath);
+                ServerStatus status = ServerStatus.Create(port);
+                ServerStatus.Save(status, projectRoot);
+
                 Log($"✓ Unity Editor Server started on ws://127.0.0.1:{port}", LogLevel.Info);
             }
             catch (Exception ex)
@@ -128,6 +171,10 @@ namespace UnityEditorToolkit.Server
 
             try
             {
+                // Mark server as stopped
+                string projectRoot = Path.GetDirectoryName(Application.dataPath);
+                ServerStatus.MarkStopped(projectRoot);
+
                 server.Stop();
                 server = null;
                 isRunning = false;

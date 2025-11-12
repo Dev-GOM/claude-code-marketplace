@@ -30,14 +30,32 @@ namespace UnityEditorToolkit.Handlers
         {
             try
             {
-                // Extract method name (remove category prefix)
+                // Validate request
+                if (request == null)
+                {
+                    throw new ArgumentNullException(nameof(request), "Request cannot be null");
+                }
+
+                // Validate method name
                 string fullMethod = request.Method;
+                if (string.IsNullOrWhiteSpace(fullMethod))
+                {
+                    throw new ArgumentException("Method name cannot be null or empty", nameof(request.Method));
+                }
+
+                // Validate method belongs to this handler category
                 if (!fullMethod.StartsWith(Category + "."))
                 {
-                    throw new Exception($"Invalid method for {Category} handler: {fullMethod}");
+                    throw new ArgumentException($"Invalid method for {Category} handler: {fullMethod}");
                 }
 
                 string methodName = fullMethod.Substring(Category.Length + 1);
+
+                // Validate extracted method name
+                if (string.IsNullOrWhiteSpace(methodName))
+                {
+                    throw new ArgumentException($"Method name is empty after removing category prefix: {fullMethod}");
+                }
 
                 // Route to specific handler method
                 return HandleMethod(methodName, request);

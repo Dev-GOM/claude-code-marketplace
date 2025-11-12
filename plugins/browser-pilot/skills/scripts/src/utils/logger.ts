@@ -40,7 +40,7 @@ function getDefaultLogLevel(): LogLevel {
 /**
  * Format timestamp in local time with milliseconds
  * Shared timestamp format for consistency across logger and interaction maps
- * Example: 2025-01-05 13:45:23.123
+ * Example: 2025-11-05 13:45:23.123
  */
 export function getLocalTimestamp(): string {
   const now = new Date();
@@ -138,7 +138,7 @@ class Logger {
 
   /**
    * Format timestamp in local time
-   * Example: 2025-01-05 13:45:23
+   * Example: 2025-11-05 13:45:23
    */
   private getTimestamp(): string {
     return getLocalTimestamp();

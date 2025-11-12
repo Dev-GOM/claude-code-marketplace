@@ -1,12 +1,23 @@
 # Blender Toolkit
 
-> **⚠️ Status**: 🧪 Experimental (v1.4.3)
+> **⚠️ Status**: 🧪 Experimental (v1.4.4)
 >
 > **This plugin is currently in experimental stage. APIs and features may change.**
 
 **Language**: [English](README.md) | [한국어](README.ko.md)
 
 Blender automation toolkit for Claude Code - WebSocket-based real-time Blender control with geometry, materials, modifiers, collections, and Mixamo animation retargeting
+
+## Recent Updates (v1.4.4)
+
+**Security Improvements:**
+- 🔒 Removed `--trusted-host` flags from pip install (prevents MITM attacks)
+- ✅ Enhanced SSL/TLS certificate validation for PyPI
+
+**Dependency Management:**
+- 📦 Using `requirements.txt` for version-controlled dependencies
+- ✅ Fallback mechanism when requirements.txt is missing
+- ✅ Simplified `.dist-info` exclusion logic
 
 ## 🎯 Features
 

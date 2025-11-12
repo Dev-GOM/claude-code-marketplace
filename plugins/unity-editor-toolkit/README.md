@@ -1,6 +1,24 @@
 # Unity Editor Toolkit
 
+**Version 0.4.0** | Last Updated: 2025-11-12
+
 Complete Unity Editor control and automation toolkit for Claude Code. Command 500+ Unity Editor features across 25 categories - GameObjects, components, scenes, materials, physics, animation, and more through real-time WebSocket automation.
+
+## Recent Updates (v0.4.0)
+
+**Security & Stability Improvements:**
+- 🔒 **Critical**: Fixed path traversal vulnerability
+- ✅ Improved resource cleanup (processes, WebSocket connections)
+- ✅ Enhanced file operations with atomic writes
+- ✅ Strengthened input validation and error handling
+- ✅ Better lock file validation and PID checking
+
+**Code Quality:**
+- Refactored command utilities for code reuse
+- Converted magic numbers to named constants
+- Improved timeout handling with detailed errors
+
+See [CHANGELOG.md](./CHANGELOG.md) for full release notes.
 
 ## Features
 
@@ -61,13 +79,22 @@ Then enable the plugin:
 
 ## Usage
 
-### Unity Setup (Coming Soon)
+### Unity Setup
 
-The Unity C# WebSocket server package is under development. Once released:
+1. **Install Unity Package**:
+   - Add Unity package from `skills/assets/unity-package` via Package Manager (Add package from disk)
+   - Or copy the package folder directly into your project's `Packages` directory
 
-1. Install Unity Editor Toolkit Server package via Package Manager
-2. Add `UnityEditorServer` component to a GameObject
-3. Server automatically starts on port 9500 (configurable)
+2. **Setup WebSocket Server**:
+   - Open `Unity Editor Toolkit Server` window from menu: `Tools > Unity Editor Toolkit > Server Window`
+   - Configure plugin scripts path (default: auto-detected from user home folder)
+   - Click "Install CLI" to build the WebSocket server (one-time setup)
+   - Server starts automatically when Unity Editor opens
+
+3. **Server Status**:
+   - Port: Auto-assigned (9500-9600 range)
+   - Status file: `{ProjectRoot}/.unity-websocket/server-status.json`
+   - CLI automatically detects the correct port from this file
 
 ### CLI Commands
 
@@ -221,8 +248,9 @@ done
 
 ### Components
 
-- **SessionStart/SessionEnd Hooks**: Automatic project initialization and cleanup
-- **WebSocket Client**: JSON-RPC 2.0 protocol with TypeScript implementation
+- **Unity C# Server**: WebSocket server with JSON-RPC 2.0 handler framework
+- **Server Status Sync**: Automatic port discovery via `.unity-websocket/server-status.json`
+- **WebSocket Client**: TypeScript implementation with auto-reconnect and timeout handling
 - **CLI Framework**: Commander.js with modular command architecture
 - **Security Layer**: Multi-layer input validation and injection defense
 
@@ -256,11 +284,13 @@ JSON-RPC 2.0 over WebSocket:
 }
 ```
 
-### Port Allocation
+### Port Allocation & Discovery
 
 - **Range**: 9500-9600 (100 ports)
 - **No Conflicts**: Avoids Browser Pilot (9222-9322) and Blender Toolkit (9400-9500)
-- **Auto-selection**: Finds available port on initialization
+- **Auto-detection**: Unity server writes port to `.unity-websocket/server-status.json`
+- **CLI Discovery**: Automatically reads port from status file (no manual configuration)
+- **Heartbeat**: Server updates status every 5 seconds for connection health monitoring
 
 ## Security
 
@@ -283,13 +313,6 @@ Defense-in-depth security implementation:
 unity-editor-toolkit/
 ├── .claude-plugin/
 │   └── plugin.json              # Plugin metadata
-├── hooks/
-│   └── hooks.json               # SessionStart/SessionEnd hooks
-├── scripts/
-│   ├── shared/
-│   │   └── hook-utils.js        # Security utilities
-│   ├── init-config.js           # SessionStart hook
-│   └── cleanup-config.js        # SessionEnd hook
 ├── skills/
 │   ├── SKILL.md                 # Skill documentation
 │   ├── scripts/
@@ -348,13 +371,16 @@ Unity C# server implementation required for end-to-end testing. Unit tests comin
 
 See [COMMANDS.md](./skills/references/COMMANDS.md) for detailed roadmap.
 
-## Coming Soon
+## Status
 
-### Unity C# Server Package
-- [ ] WebSocket server with websocket-sharp
-- [ ] JSON-RPC 2.0 handler framework
-- [ ] Command routing and execution
-- [ ] Unity Package Manager integration
+### Unity C# Server Package ✅
+- [x] WebSocket server with websocket-sharp
+- [x] JSON-RPC 2.0 handler framework
+- [x] Command routing and execution
+- [x] Unity Package Manager integration
+- [x] Server status synchronization (`.unity-websocket/server-status.json`)
+- [x] Automatic port discovery
+- [x] Home folder-based plugin path detection
 
 ### Commands (500+)
 - [x] GameObject & Hierarchy (15 commands)

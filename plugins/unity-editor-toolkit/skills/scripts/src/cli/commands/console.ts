@@ -65,18 +65,17 @@ export function registerConsoleCommand(program: Command): void {
     .option('-e, --errors-only', 'Show only errors and exceptions')
     .option('-w, --warnings', 'Include warnings')
     .action(async (options) => {
+      let client = null;
       try {
         const projectRoot = config.getProjectRoot();
-        const projectName = config.getProjectName(projectRoot);
-        const projectConfig = config.getProjectConfig(projectName);
+        const port = program.opts().port || config.getUnityPort(projectRoot);
 
-        if (!projectConfig) {
-          logger.error('Project not registered');
+        if (!port) {
+          logger.error('Unity server not running. Start Unity Editor with WebSocket server enabled.');
           process.exit(1);
         }
 
-        const port = program.opts().port || projectConfig.port;
-        const client = createUnityClient(port);
+        client = createUnityClient(port);
 
         logger.info('Connecting to Unity Editor...');
         await client.connect();
@@ -90,8 +89,6 @@ export function registerConsoleCommand(program: Command): void {
             includeWarnings: options.warnings || false,
           }
         );
-
-        client.disconnect();
 
         if (!result || result.length === 0) {
           logger.info('No logs found');
@@ -127,6 +124,14 @@ export function registerConsoleCommand(program: Command): void {
       } catch (error) {
         logger.error('Failed to get console logs', error);
         process.exit(1);
+      } finally {
+        if (client) {
+          try {
+            client.disconnect();
+          } catch (disconnectError) {
+            logger.debug(`Error during disconnect: ${disconnectError instanceof Error ? disconnectError.message : String(disconnectError)}`);
+          }
+        }
       }
     });
 
@@ -135,18 +140,17 @@ export function registerConsoleCommand(program: Command): void {
     .command('clear')
     .description('Clear Unity console logs')
     .action(async () => {
+      let client = null;
       try {
         const projectRoot = config.getProjectRoot();
-        const projectName = config.getProjectName(projectRoot);
-        const projectConfig = config.getProjectConfig(projectName);
+        const port = program.opts().port || config.getUnityPort(projectRoot);
 
-        if (!projectConfig) {
-          logger.error('Project not registered');
+        if (!port) {
+          logger.error('Unity server not running. Start Unity Editor with WebSocket server enabled.');
           process.exit(1);
         }
 
-        const port = program.opts().port || projectConfig.port;
-        const client = createUnityClient(port);
+        client = createUnityClient(port);
 
         logger.info('Connecting to Unity Editor...');
         await client.connect();
@@ -154,12 +158,18 @@ export function registerConsoleCommand(program: Command): void {
         logger.info('Clearing console logs...');
         await client.sendRequest(COMMANDS.CONSOLE_CLEAR);
 
-        client.disconnect();
-
         logger.info('✓ Console cleared');
       } catch (error) {
         logger.error('Failed to clear console', error);
         process.exit(1);
+      } finally {
+        if (client) {
+          try {
+            client.disconnect();
+          } catch (disconnectError) {
+            logger.debug(`Error during disconnect: ${disconnectError instanceof Error ? disconnectError.message : String(disconnectError)}`);
+          }
+        }
       }
     });
 }

@@ -22,7 +22,11 @@ namespace UnityEditorToolkit.Editor
 
         // Constants
         private const int LockFileStaleMinutes = 10;
-        private const int MaxParentSearchLevels = 5;
+        private const int ProcessKillWaitTimeoutMs = 5000; // 5 seconds
+        private const int NpmInstallTimeoutSeconds = 30;
+        private const int NpmBuildTimeoutSeconds = 120; // 2 minutes
+        private const int DefaultCommandTimeoutSeconds = 120; // 2 minutes
+        private const string PREF_KEY_PLUGIN_PATH = "UnityEditorToolkit.PluginScriptsPath";
 
         // CLI management
         private string pluginVersion = null;
@@ -31,6 +35,7 @@ namespace UnityEditorToolkit.Editor
         private bool isInstallingCLI = false;
         private string cliInstallLog = "";
         private bool hasNodeJS = false;
+        private string pluginScriptsPathOverride = null;
 
         [MenuItem("Window/Unity Editor Toolkit/Server Control")]
         public static void ShowWindow()
@@ -44,6 +49,7 @@ namespace UnityEditorToolkit.Editor
         {
             FindOrCreateServer();
             hasNodeJS = CheckNodeInstallation();
+            pluginScriptsPathOverride = EditorPrefs.GetString(PREF_KEY_PLUGIN_PATH, "");
             CheckCLIVersion();
         }
 
@@ -275,6 +281,61 @@ namespace UnityEditorToolkit.Editor
                         EditorGUILayout.LabelField("Last Installation Log:", EditorStyles.boldLabel);
                         EditorGUILayout.TextArea(cliInstallLog, GUILayout.Height(100));
                     }
+
+                    // Plugin Scripts Path Configuration
+                    EditorGUILayout.Space(10);
+                    EditorGUILayout.LabelField("Plugin Scripts Path", EditorStyles.boldLabel);
+
+                    string currentPath = string.IsNullOrEmpty(pluginScriptsPathOverride)
+                        ? GetDefaultPluginScriptsPath()
+                        : pluginScriptsPathOverride;
+
+                    EditorGUILayout.BeginHorizontal();
+                    GUI.enabled = false;
+                    EditorGUILayout.TextField(currentPath);
+                    GUI.enabled = true;
+
+                    if (GUILayout.Button("Browse", GUILayout.Width(80)))
+                    {
+                        string selected = EditorUtility.OpenFolderPanel(
+                            "Select Plugin Scripts Folder",
+                            currentPath,
+                            "");
+
+                        if (!string.IsNullOrEmpty(selected))
+                        {
+                            pluginScriptsPathOverride = selected;
+                            EditorPrefs.SetString(PREF_KEY_PLUGIN_PATH, selected);
+                            CheckCLIVersion(); // Recheck with new path
+                            Repaint();
+                        }
+                    }
+
+                    if (GUILayout.Button("Reset", GUILayout.Width(80)))
+                    {
+                        pluginScriptsPathOverride = "";
+                        EditorPrefs.DeleteKey(PREF_KEY_PLUGIN_PATH);
+                        CheckCLIVersion(); // Recheck with default path
+                        Repaint();
+                    }
+                    EditorGUILayout.EndHorizontal();
+
+                    // Path validation
+                    bool pathValid = Directory.Exists(currentPath) &&
+                                     File.Exists(Path.Combine(currentPath, "package.json"));
+
+                    if (pathValid)
+                    {
+                        EditorGUILayout.HelpBox("✓ Valid plugin scripts path", MessageType.Info);
+                    }
+                    else
+                    {
+                        EditorGUILayout.HelpBox(
+                            "❌ Invalid path. CLI installation will fail.\n\n" +
+                            "Default path: " + GetDefaultPluginScriptsPath() + "\n\n" +
+                            "Click 'Browse' to select the correct plugin scripts folder.",
+                            MessageType.Error);
+                    }
                 }
             }
             EditorGUILayout.EndVertical();
@@ -297,7 +358,7 @@ namespace UnityEditorToolkit.Editor
 
                 using (Process process = Process.Start(startInfo))
                 {
-                    process.WaitForExit(5000); // 5 second timeout
+                    process.WaitForExit(ProcessKillWaitTimeoutMs);
                     if (process.ExitCode == 0)
                     {
                         string version = process.StandardOutput.ReadToEnd().Trim();
@@ -352,23 +413,64 @@ namespace UnityEditorToolkit.Editor
                 // 1. Check if process is a running Unity instance
                 if (int.TryParse(lines[0], out int pid))
                 {
+                    // Validate PID is in valid range
+                    if (pid <= 0)
+                    {
+                        UnityEngine.Debug.LogWarning($"Unity Editor Toolkit: Invalid PID in lock file: {pid}");
+                        return true;
+                    }
+
+                    // Check if this is our own lock
+                    int currentPID = System.Diagnostics.Process.GetCurrentProcess().Id;
+                    if (pid == currentPID)
+                    {
+                        return false; // Our own lock, always valid
+                    }
+
                     try
                     {
                         Process process = Process.GetProcessById(pid);
-                        if (process.ProcessName.Contains("Unity"))
+
+                        // Check if process has exited (race condition safety)
+                        if (process.HasExited)
                         {
-                            return false; // Process alive and is Unity, lock is valid
+                            return true; // Process has exited, stale
                         }
-                        return true; // Process exists but is not Unity, lock is stale
+
+                        // More precise Unity process detection
+                        string processName = process.ProcessName.ToLower();
+                        bool isUnityEditor = processName.Contains("unity") && !processName.Contains("unityhub");
+
+                        if (isUnityEditor)
+                        {
+                            return false; // Process alive and is Unity Editor, lock is valid
+                        }
+
+                        UnityEngine.Debug.LogWarning($"Unity Editor Toolkit: Lock held by non-Unity process: {process.ProcessName}");
+                        return true; // Process exists but is not Unity Editor, lock is stale
                     }
                     catch (ArgumentException) { return true; /* Process not found, stale */ }
                     catch (InvalidOperationException) { return true; /* Process has exited, stale */ }
-                    catch (Exception ex) { UnityEngine.Debug.LogWarning($"Error checking process lock, falling back to timestamp: {ex}"); }
+                    catch (Exception ex)
+                    {
+                        UnityEngine.Debug.LogWarning($"Error checking process lock (PID {pid}), falling back to timestamp: {ex.Message}");
+                    }
+                }
+                else
+                {
+                    UnityEngine.Debug.LogWarning("Unity Editor Toolkit: Failed to parse PID from lock file");
                 }
 
                 // 2. Fallback to timestamp written inside the lock file
                 if (DateTime.TryParse(lines[1], out DateTime lockTimestamp))
                 {
+                    // Validate timestamp is not in the future
+                    if (lockTimestamp > DateTime.Now.AddMinutes(1))
+                    {
+                        UnityEngine.Debug.LogWarning($"Unity Editor Toolkit: Lock timestamp is in the future: {lockTimestamp}");
+                        return true;
+                    }
+
                     if ((DateTime.Now - lockTimestamp).TotalMinutes > LockFileStaleMinutes)
                     {
                         return true; // Stale by time
@@ -376,14 +478,16 @@ namespace UnityEditorToolkit.Editor
                 }
                 else
                 {
+                    UnityEngine.Debug.LogWarning("Unity Editor Toolkit: Failed to parse timestamp from lock file");
                     return true; // Unreadable timestamp, assume stale
                 }
 
                 // If process check was inconclusive but timestamp is recent, assume lock is valid to be safe.
                 return false;
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                UnityEngine.Debug.LogWarning($"Unity Editor Toolkit: Error reading lock file: {e.Message}");
                 return true; // Can't read lock, assume stale for recovery
             }
         }
@@ -586,7 +690,7 @@ namespace UnityEditorToolkit.Editor
             }
 
             DateTime startTime = DateTime.Now;
-            int timeoutSeconds = 30;
+            int timeoutSeconds = NpmInstallTimeoutSeconds;
 
             while ((DateTime.Now - startTime).TotalSeconds < timeoutSeconds)
             {
@@ -732,7 +836,7 @@ namespace UnityEditorToolkit.Editor
 
                 // Step 5: npm run build
                 cliInstallLog += "[5/5] Building CLI (npm run build)...\n";
-                string buildOutput = RunCommand("npm", "run build", skillsDir, 120); // 2 minute timeout
+                string buildOutput = RunCommand("npm", "run build", skillsDir, NpmBuildTimeoutSeconds);
                 cliInstallLog += "✓ Build completed\n";
 
                 // Create CLI wrapper
@@ -774,28 +878,42 @@ namespace UnityEditorToolkit.Editor
             }
         }
 
+        private string GetDefaultPluginScriptsPath()
+        {
+            string homeFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            return Path.Combine(homeFolder, ".claude", "plugins", "marketplaces", "dev-gom-plugins",
+                               "plugins", "unity-editor-toolkit", "skills", "scripts");
+        }
+
         private string FindPluginScriptsPath()
         {
-            string packagePath = FindPackageJsonPath();
-            if (string.IsNullOrEmpty(packagePath))
+            // Use custom path if set
+            if (!string.IsNullOrEmpty(pluginScriptsPathOverride))
             {
-                return null;
+                // Security: Validate path to prevent path traversal
+                string normalized = Path.GetFullPath(pluginScriptsPathOverride);
+                string homeFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+                string allowedPath = Path.Combine(homeFolder, ".claude", "plugins");
+
+                if (!normalized.StartsWith(allowedPath, StringComparison.OrdinalIgnoreCase))
+                {
+                    UnityEngine.Debug.LogError($"Plugin path outside allowed directory: {pluginScriptsPathOverride}");
+                    return null;
+                }
+
+                if (Directory.Exists(normalized) &&
+                    File.Exists(Path.Combine(normalized, "package.json")))
+                {
+                    return normalized;
+                }
             }
 
-            string currentDir = Path.GetDirectoryName(packagePath);
-            if (currentDir == null) return null;
-
-            string rootLimit = Path.GetPathRoot(currentDir);
-
-            // Search up to MaxParentSearchLevels levels up from the package.json location
-            for (int i = 0; i < MaxParentSearchLevels && currentDir != null && currentDir != rootLimit; i++)
+            // Use default home folder based path
+            string defaultPath = GetDefaultPluginScriptsPath();
+            if (Directory.Exists(defaultPath) &&
+                File.Exists(Path.Combine(defaultPath, "package.json")))
             {
-                string scriptsPath = Path.Combine(currentDir, "scripts");
-                if (Directory.Exists(scriptsPath) && File.Exists(Path.Combine(scriptsPath, "package.json")))
-                {
-                    return scriptsPath;
-                }
-                currentDir = Path.GetDirectoryName(currentDir);
+                return defaultPath;
             }
 
             return null;
@@ -803,33 +921,78 @@ namespace UnityEditorToolkit.Editor
 
         private void CopyDirectory(string sourceDir, string destDir)
         {
-            Directory.CreateDirectory(destDir);
+            // Security: Validate and normalize paths to prevent path traversal
+            string normalizedSource = Path.GetFullPath(sourceDir);
+            string normalizedDest = Path.GetFullPath(destDir);
 
-            // Copy files
-            foreach (string file in Directory.GetFiles(sourceDir))
+            // Validate source is in allowed plugin directory
+            string homeFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            string allowedPluginPath = Path.Combine(homeFolder, ".claude", "plugins");
+
+            if (!normalizedSource.StartsWith(allowedPluginPath, StringComparison.OrdinalIgnoreCase))
             {
-                string fileName = Path.GetFileName(file);
-                string destFile = Path.Combine(destDir, fileName);
-                File.Copy(file, destFile, true);
+                throw new UnauthorizedAccessException($"Source path outside allowed directory: {sourceDir}");
             }
 
-            // Copy subdirectories
-            foreach (string dir in Directory.GetDirectories(sourceDir))
+            // Validate destination is within project
+            string projectRoot = Path.GetDirectoryName(Application.dataPath);
+            if (!normalizedDest.StartsWith(projectRoot, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new UnauthorizedAccessException($"Destination path outside project: {destDir}");
+            }
+
+            // Check for symbolic links (security risk)
+            DirectoryInfo sourceInfo = new DirectoryInfo(normalizedSource);
+            if ((sourceInfo.Attributes & FileAttributes.ReparsePoint) == FileAttributes.ReparsePoint)
+            {
+                throw new UnauthorizedAccessException("Symbolic links are not allowed");
+            }
+
+            Directory.CreateDirectory(normalizedDest);
+
+            // Copy files with validation
+            foreach (string file in Directory.GetFiles(normalizedSource))
+            {
+                string fileName = Path.GetFileName(file);
+
+                // Validate filename (prevent null byte injection)
+                if (fileName.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0 || fileName.Contains('\0'))
+                {
+                    UnityEngine.Debug.LogWarning($"Skipping invalid file name: {fileName}");
+                    continue;
+                }
+
+                string destFile = Path.Combine(normalizedDest, fileName);
+
+                // Validate final path stays within destination
+                string normalizedDestFile = Path.GetFullPath(destFile);
+                if (!normalizedDestFile.StartsWith(normalizedDest, StringComparison.OrdinalIgnoreCase))
+                {
+                    UnityEngine.Debug.LogWarning($"Skipping file outside destination: {fileName}");
+                    continue;
+                }
+
+                File.Copy(file, normalizedDestFile, true);
+            }
+
+            // Copy subdirectories recursively with validation
+            foreach (string dir in Directory.GetDirectories(normalizedSource))
             {
                 string dirName = Path.GetFileName(dir);
 
-                // Skip node_modules and dist
-                if (dirName == "node_modules" || dirName == "dist")
+                // Skip node_modules, dist, hidden folders, and cache
+                if (dirName == "node_modules" || dirName == "dist" ||
+                    dirName.StartsWith(".") || dirName == "__pycache__")
                 {
                     continue;
                 }
 
-                string destSubDir = Path.Combine(destDir, dirName);
+                string destSubDir = Path.Combine(normalizedDest, dirName);
                 CopyDirectory(dir, destSubDir);
             }
         }
 
-        private string RunCommand(string command, string arguments, string workingDirectory, int timeoutSeconds = 120)
+        private string RunCommand(string command, string arguments, string workingDirectory, int timeoutSeconds = DefaultCommandTimeoutSeconds)
         {
             // Platform-specific command adjustment
             if (Application.platform == RuntimePlatform.WindowsEditor)
@@ -848,20 +1011,35 @@ namespace UnityEditorToolkit.Editor
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 UseShellExecute = false,
-                CreateNoWindow = true
+                CreateNoWindow = true,
+                StandardOutputEncoding = Encoding.UTF8,
+                StandardErrorEncoding = Encoding.UTF8
             };
 
-            using (Process process = Process.Start(startInfo))
+            Process process = null;
+            try
             {
+                process = Process.Start(startInfo);
+                if (process == null)
+                {
+                    throw new Exception($"Failed to start process: {command}");
+                }
+
                 bool exited = process.WaitForExit(timeoutSeconds * 1000);
 
                 if (!exited)
                 {
+                    UnityEngine.Debug.LogWarning($"Process timeout, killing: {command} {arguments}");
+
                     try
                     {
                         process.Kill();
+                        process.WaitForExit(ProcessKillWaitTimeoutMs);
                     }
-                    catch (Exception) { }
+                    catch (Exception killEx)
+                    {
+                        UnityEngine.Debug.LogError($"Failed to kill process: {killEx.Message}");
+                    }
 
                     throw new Exception($"{command} timed out after {timeoutSeconds} seconds. Check network connection or increase timeout.");
                 }
@@ -875,6 +1053,26 @@ namespace UnityEditorToolkit.Editor
                 }
 
                 return output;
+            }
+            finally
+            {
+                // Always cleanup process resources
+                if (process != null)
+                {
+                    try
+                    {
+                        if (!process.HasExited)
+                        {
+                            process.Kill();
+                            process.WaitForExit(ProcessKillWaitTimeoutMs);
+                        }
+                        process.Dispose();
+                    }
+                    catch (Exception ex)
+                    {
+                        UnityEngine.Debug.LogError($"Error disposing process: {ex.Message}");
+                    }
+                }
             }
         }
 

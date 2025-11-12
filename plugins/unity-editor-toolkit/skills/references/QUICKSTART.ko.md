@@ -59,26 +59,29 @@ Claude Code 설정을 열고 다음을 추가하세요:
 1. 다운로드: https://github.com/sta/websocket-sharp/releases/download/1.0.3-rc11/websocket-sharp.dll
 2. 저장 위치: `Packages/com.devgom.unity-editor-toolkit/ThirdParty/websocket-sharp/websocket-sharp.dll`
 
-### 4. Unity 서버 설정
+### 4. WebSocket 서버 설정
 
-1. Unity에서 새 GameObject 생성:
-   - Hierarchy에서 우클릭 → `Create Empty`
-   - 이름을 "UnityEditorServer"로 변경
+1. Unity Editor Toolkit 서버 창 열기:
+   - Unity 메뉴에서: `Tools > Unity Editor Toolkit > Server Window`
+   - 에디터에 새 창이 나타납니다
 
-2. 서버 컴포넌트 추가:
-   - "UnityEditorServer" GameObject 선택
-   - Inspector에서: `Add Component`
-   - 검색: "Unity Editor Server"
-   - 클릭하여 추가
+2. 플러그인 스크립트 경로 설정:
+   - **Plugin Scripts Path**: 사용자 홈 폴더에서 자동 감지 (`~/.claude/plugins/...`)
+   - 자동 감지되지 않으면 "Browse"를 클릭하여 수동 선택
+   - 경로는 다음을 가리켜야 합니다: `unity-editor-toolkit/skills/scripts`
 
-3. 설정 구성:
-   - **Port**: 9500 (기본값, 필요시 변경 가능)
-   - **Auto Start**: ✓ 체크
+3. CLI 설치 (일회성 설정):
+   - "Install CLI" 버튼 클릭
+   - WebSocket 서버와 TypeScript CLI를 빌드합니다
+   - 설치 완료까지 대기 (1-2분 소요 가능)
+   - Console에 표시: "✓ CLI installation completed"
 
 4. 서버 자동 시작:
-   - 서버는 Edit Mode와 Play Mode 모두에서 자동 시작됩니다
-   - Console 확인: `✓ Unity Editor Server started on ws://127.0.0.1:9500`
-   - Play Mode 진입 불필요
+   - Unity Editor가 열릴 때 서버가 자동으로 시작됩니다
+   - **Port**: 9500-9600 범위에서 자동 할당 (수동 설정 불필요)
+   - **Status file**: `{ProjectRoot}/.unity-websocket/server-status.json`
+   - CLI가 이 파일에서 올바른 포트를 자동으로 감지합니다
+   - Console 확인: `✓ Unity Editor Server started on ws://127.0.0.1:XXXX`
 
 ## 첫 명령어
 
@@ -159,10 +162,12 @@ unity-editor console logs --count 10
 - [ ] Claude Code 플러그인 설치 및 활성화
 - [ ] Unity 패키지 성공적으로 임포트됨
 - [ ] websocket-sharp.dll이 올바른 위치에 있음
-- [ ] UnityEditorServer GameObject 생성됨
-- [ ] 서버 컴포넌트 구성됨 (포트 9500, 자동 시작)
-- [ ] 서버 시작됨 (Edit Mode와 Play Mode 모두 작동)
-- [ ] Console에 "✓ Unity Editor Server started" 표시
+- [ ] Unity Editor Toolkit 서버 창 열림 (`Tools > Unity Editor Toolkit > Server Window`)
+- [ ] 플러그인 스크립트 경로가 올바르게 설정됨
+- [ ] CLI가 성공적으로 설치됨 ("Install CLI" 버튼 클릭)
+- [ ] 서버가 자동으로 시작됨 (Console에서 시작 메시지 확인)
+- [ ] Status 파일 생성됨: `.unity-websocket/server-status.json`
+- [ ] Console에 "✓ Unity Editor Server started on ws://127.0.0.1:XXXX" 표시
 - [ ] `unity-editor status` 명령어 작동
 - [ ] GameObject 생성/찾기 가능
 - [ ] Transform 수정 가능
@@ -173,18 +178,22 @@ unity-editor console logs --count 10
 ### "Server not found" 또는 "Connection refused"
 
 **확인사항:**
-1. Unity Editor가 열려 있는지 (Edit Mode 또는 Play Mode)
+1. Unity Editor가 열려 있는지
 2. Console에 서버 시작 메시지가 표시되는지
-3. 포트 9500이 방화벽에 차단되지 않았는지
-4. UnityEditorServer 컴포넌트가 GameObject에 있는지
+3. Status 파일 존재 여부: 프로젝트 루트의 `.unity-websocket/server-status.json`
+4. 포트 범위 9500-9600이 방화벽에 차단되지 않았는지
+5. 서버 창에 "Server Status: Running" 표시되는지
 
 **해결방법:**
 ```bash
-# 다른 포트 시도
-unity-editor --port 9301 status
+# Unity 프로젝트 루트에서 status 파일 확인
+ls -la .unity-websocket/
+
+# 필요시 포트를 수동으로 지정
+unity-editor --port 9500 status
 ```
 
-Unity에서 Server 컴포넌트의 포트를 9301로 변경하세요.
+Unity 서버 창에서 "Server Status"를 확인하고 필요시 재시작하세요.
 
 ### "Assembly 'websocket-sharp' not found"
 
@@ -266,12 +275,14 @@ unity-editor console stream --filter error
 
 서버 제어 패널 접근:
 
-`Window → Unity Editor Toolkit → Server Control`
+`Tools → Unity Editor Toolkit → Server Window`
 
 기능:
-- 서버 시작/중지
-- 포트 구성
-- 연결 상태 보기
+- CLI 설치 (일회성 설정)
+- 플러그인 스크립트 경로 설정
+- 서버 상태 보기 (Running/Stopped)
+- 연결 정보 보기 (포트, status 파일 위치)
+- 수동으로 서버 시작/중지
 - 문서 접근
 
 ## 지원

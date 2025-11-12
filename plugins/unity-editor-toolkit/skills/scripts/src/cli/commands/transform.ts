@@ -44,18 +44,17 @@ export function registerTransformCommand(program: Command): void {
     .description('Get Transform information')
     .argument('<name>', 'GameObject name or path')
     .action(async (name) => {
+      let client = null;
       try {
         const projectRoot = config.getProjectRoot();
-        const projectName = config.getProjectName(projectRoot);
-        const projectConfig = config.getProjectConfig(projectName);
+        const port = program.opts().port || config.getUnityPort(projectRoot);
 
-        if (!projectConfig) {
-          logger.error('Project not registered');
+        if (!port) {
+          logger.error('Unity server not running. Start Unity Editor with WebSocket server enabled.');
           process.exit(1);
         }
 
-        const port = program.opts().port || projectConfig.port;
-        const client = createUnityClient(port);
+        client = createUnityClient(port);
 
         logger.info('Connecting to Unity Editor...');
         await client.connect();
@@ -76,8 +75,6 @@ export function registerTransformCommand(program: Command): void {
           { name }
         );
 
-        client.disconnect();
-
         logger.info('✓ Transform:');
         logger.info(`  Position: ${formatVector3(position)}`);
         logger.info(`  Rotation: ${formatVector3(rotation)}°`);
@@ -85,6 +82,14 @@ export function registerTransformCommand(program: Command): void {
       } catch (error) {
         logger.error('Failed to get Transform', error);
         process.exit(1);
+      } finally {
+        if (client) {
+          try {
+            client.disconnect();
+          } catch (disconnectError) {
+            logger.debug(`Error during disconnect: ${disconnectError instanceof Error ? disconnectError.message : String(disconnectError)}`);
+          }
+        }
       }
     });
 
@@ -95,20 +100,19 @@ export function registerTransformCommand(program: Command): void {
     .argument('<name>', 'GameObject name or path')
     .argument('<position>', 'Position as "x,y,z" (e.g., "1,2,3")')
     .action(async (name, positionStr) => {
+      let client = null;
       try {
         const position = parseVector3(positionStr);
 
         const projectRoot = config.getProjectRoot();
-        const projectName = config.getProjectName(projectRoot);
-        const projectConfig = config.getProjectConfig(projectName);
+        const port = program.opts().port || config.getUnityPort(projectRoot);
 
-        if (!projectConfig) {
-          logger.error('Project not registered');
+        if (!port) {
+          logger.error('Unity server not running. Start Unity Editor with WebSocket server enabled.');
           process.exit(1);
         }
 
-        const port = program.opts().port || projectConfig.port;
-        const client = createUnityClient(port);
+        client = createUnityClient(port);
 
         logger.info('Connecting to Unity Editor...');
         await client.connect();
@@ -119,12 +123,18 @@ export function registerTransformCommand(program: Command): void {
           position,
         });
 
-        client.disconnect();
-
         logger.info('✓ Position set');
       } catch (error) {
         logger.error('Failed to set position', error);
         process.exit(1);
+      } finally {
+        if (client) {
+          try {
+            client.disconnect();
+          } catch (disconnectError) {
+            logger.debug(`Error during disconnect: ${disconnectError instanceof Error ? disconnectError.message : String(disconnectError)}`);
+          }
+        }
       }
     });
 
@@ -135,20 +145,19 @@ export function registerTransformCommand(program: Command): void {
     .argument('<name>', 'GameObject name or path')
     .argument('<rotation>', 'Rotation as "x,y,z" degrees (e.g., "0,90,0")')
     .action(async (name, rotationStr) => {
+      let client = null;
       try {
         const rotation = parseVector3(rotationStr);
 
         const projectRoot = config.getProjectRoot();
-        const projectName = config.getProjectName(projectRoot);
-        const projectConfig = config.getProjectConfig(projectName);
+        const port = program.opts().port || config.getUnityPort(projectRoot);
 
-        if (!projectConfig) {
-          logger.error('Project not registered');
+        if (!port) {
+          logger.error('Unity server not running. Start Unity Editor with WebSocket server enabled.');
           process.exit(1);
         }
 
-        const port = program.opts().port || projectConfig.port;
-        const client = createUnityClient(port);
+        client = createUnityClient(port);
 
         logger.info('Connecting to Unity Editor...');
         await client.connect();
@@ -159,12 +168,18 @@ export function registerTransformCommand(program: Command): void {
           rotation,
         });
 
-        client.disconnect();
-
         logger.info('✓ Rotation set');
       } catch (error) {
         logger.error('Failed to set rotation', error);
         process.exit(1);
+      } finally {
+        if (client) {
+          try {
+            client.disconnect();
+          } catch (disconnectError) {
+            logger.debug(`Error during disconnect: ${disconnectError instanceof Error ? disconnectError.message : String(disconnectError)}`);
+          }
+        }
       }
     });
 
@@ -175,20 +190,19 @@ export function registerTransformCommand(program: Command): void {
     .argument('<name>', 'GameObject name or path')
     .argument('<scale>', 'Scale as "x,y,z" (e.g., "1,1,1")')
     .action(async (name, scaleStr) => {
+      let client = null;
       try {
         const scale = parseVector3(scaleStr);
 
         const projectRoot = config.getProjectRoot();
-        const projectName = config.getProjectName(projectRoot);
-        const projectConfig = config.getProjectConfig(projectName);
+        const port = program.opts().port || config.getUnityPort(projectRoot);
 
-        if (!projectConfig) {
-          logger.error('Project not registered');
+        if (!port) {
+          logger.error('Unity server not running. Start Unity Editor with WebSocket server enabled.');
           process.exit(1);
         }
 
-        const port = program.opts().port || projectConfig.port;
-        const client = createUnityClient(port);
+        client = createUnityClient(port);
 
         logger.info('Connecting to Unity Editor...');
         await client.connect();
@@ -199,12 +213,18 @@ export function registerTransformCommand(program: Command): void {
           scale,
         });
 
-        client.disconnect();
-
         logger.info('✓ Scale set');
       } catch (error) {
         logger.error('Failed to set scale', error);
         process.exit(1);
+      } finally {
+        if (client) {
+          try {
+            client.disconnect();
+          } catch (disconnectError) {
+            logger.debug(`Error during disconnect: ${disconnectError instanceof Error ? disconnectError.message : String(disconnectError)}`);
+          }
+        }
       }
     });
 }
