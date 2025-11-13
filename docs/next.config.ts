@@ -2,6 +2,8 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   output: 'export',
+  basePath: '/claude-code-marketplace',
+  assetPrefix: '/claude-code-marketplace',
   trailingSlash: true,
   images: {
     unoptimized: true, // GitHub Pages는 서버리스 환경
