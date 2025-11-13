@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import type { PluginWithReadme } from '@/lib/types';
 import { categoryEmojis, categoryColors, defaultCategoryColor } from '@/lib/constants/ui';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -117,7 +118,7 @@ export function PluginCard({ plugin, index }: PluginCardProps): React.ReactEleme
 
         {/* Action buttons */}
         <div className="flex gap-2">
-          <a
+          <Link
             href={`/plugins/${plugin.slug}`}
             className="flex-1 px-4 py-2 rounded-lg font-medium transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl text-center"
             style={{
@@ -127,7 +128,7 @@ export function PluginCard({ plugin, index }: PluginCardProps): React.ReactEleme
             aria-label={`View ${name} plugin details`}
           >
             <span aria-hidden="true">View Plugin 🚀</span>
-          </a>
+          </Link>
           <button
             onClick={handleCopyInstall}
             className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg font-medium transition-all duration-300 hover:scale-105"
