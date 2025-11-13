@@ -16,6 +16,8 @@ description: |
 
 Automate Chrome browser using Chrome DevTools Protocol (CDP) with a daemon-based architecture. Maintains persistent browser connection for instant command execution. Features Smart Mode with Interaction Map for reliable element targeting using text-based search instead of brittle selectors.
 
+**Always run scripts with `--help` first** to see usage. DO NOT read the source until you try running the script first and find that a customized solution is abslutely necessary. These scripts can be very large and thus pollute your context window. They exist to be called directly as black-box scripts rather than ingested into your context window.
+
 ## When to Use
 
 Use browser-pilot when tasks involve:

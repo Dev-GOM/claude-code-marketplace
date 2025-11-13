@@ -1,3 +1,7 @@
+**언어**: [English](./QUICKSTART.md) | 한국어
+
+---
+
 # Unity Editor Toolkit - 빠른 시작 가이드
 
 설치부터 첫 명령어 실행까지 완벽한 설정 가이드입니다.
@@ -90,7 +94,7 @@ Claude Code의 터미널을 열고 다음 명령어를 시도해보세요:
 ### 1. 연결 상태 확인
 
 ```bash
-unity-editor status
+cd <unity-project-root> node .unity-websocket/uw status
 ```
 
 예상 출력:
@@ -103,7 +107,7 @@ Status: Running
 ### 2. GameObject 찾기
 
 ```bash
-unity-editor go find "Main Camera"
+cd <unity-project-root> node .unity-websocket/uw go find "Main Camera"
 ```
 
 예상 출력:
@@ -120,7 +124,7 @@ unity-editor go find "Main Camera"
 ### 3. 새 GameObject 생성
 
 ```bash
-unity-editor go create "TestCube"
+cd <unity-project-root> node .unity-websocket/uw go create "TestCube"
 ```
 
 Unity Hierarchy를 확인하세요 - 새로운 "TestCube" GameObject가 보일 것입니다!
@@ -128,7 +132,7 @@ Unity Hierarchy를 확인하세요 - 새로운 "TestCube" GameObject가 보일 �
 ### 4. 위치 설정
 
 ```bash
-unity-editor tf set-position "TestCube" "5,2,3"
+cd <unity-project-root> node .unity-websocket/uw tf set-position "TestCube" "5,2,3"
 ```
 
 Unity Scene View에서 "TestCube"가 위치 (5, 2, 3)으로 이동합니다.
@@ -136,7 +140,7 @@ Unity Scene View에서 "TestCube"가 위치 (5, 2, 3)으로 이동합니다.
 ### 5. 씬 정보 가져오기
 
 ```bash
-unity-editor scene current
+cd <unity-project-root> node .unity-websocket/uw scene current
 ```
 
 현재 활성화된 씬의 정보를 표시합니다.
@@ -144,7 +148,7 @@ unity-editor scene current
 ### 6. 계층 구조 보기
 
 ```bash
-unity-editor hierarchy
+cd <unity-project-root> node .unity-websocket/uw hierarchy
 ```
 
 전체 GameObject 계층 구조를 트리 형태로 표시합니다.
@@ -152,7 +156,7 @@ unity-editor hierarchy
 ### 7. 콘솔 로그 가져오기
 
 ```bash
-unity-editor console logs --count 10
+cd <unity-project-root> node .unity-websocket/uw console logs --count 10
 ```
 
 최근 10개의 콘솔 로그 항목을 표시합니다.
@@ -168,7 +172,7 @@ unity-editor console logs --count 10
 - [ ] 서버가 자동으로 시작됨 (Console에서 시작 메시지 확인)
 - [ ] Status 파일 생성됨: `.unity-websocket/server-status.json`
 - [ ] Console에 "✓ Unity Editor Server started on ws://127.0.0.1:XXXX" 표시
-- [ ] `unity-editor status` 명령어 작동
+- [ ] `cd <unity-project-root> node .unity-websocket/uw status` 명령어 작동
 - [ ] GameObject 생성/찾기 가능
 - [ ] Transform 수정 가능
 - [ ] Unity Console에 오류 없음
@@ -190,7 +194,7 @@ unity-editor console logs --count 10
 ls -la .unity-websocket/
 
 # 필요시 포트를 수동으로 지정
-unity-editor --port 9500 status
+cd <unity-project-root> node .unity-websocket/uw --port 9500 status
 ```
 
 Unity 서버 창에서 "Server Status"를 확인하고 필요시 재시작하세요.
@@ -214,10 +218,10 @@ Unity 서버 창에서 "Server Status"를 확인하고 필요시 재시작하세
 **해결방법:**
 ```bash
 # 먼저 서버 상태 확인
-unity-editor status
+cd <unity-project-root> node .unity-websocket/uw status
 
 # 간단한 명령어 시도
-unity-editor go find "Main Camera"
+cd <unity-project-root> node .unity-websocket/uw go find "Main Camera"
 ```
 
 ### Unity Console에 오류 표시
@@ -242,14 +246,15 @@ unity-editor go find "Main Camera"
 
 ### 더 많은 명령어 배우기
 
-전체 500+ 명령어 레퍼런스는 [COMMANDS.md](./COMMANDS.md) 또는 [COMMANDS.ko.md](./COMMANDS.ko.md)를 참조하세요.
+전체 500+ 명령어 로드맵은 [COMMANDS.md](./skills/references/COMMANDS.md)를 참조하세요.
 
-**현재 사용 가능 (17개 명령어):**
-- GameObject: Find, Create, Destroy, SetActive
-- Transform: Get/Set Position, Rotation, Scale
-- Scene: GetCurrent, GetAll, Load
-- Console: GetLogs, Clear
-- Hierarchy: Get
+**현재 사용 가능 (18개 명령어):**
+- 연결 및 상태: Status (1개 명령어)
+- GameObject 및 계층 구조: Find, Create, Destroy, SetActive, Hierarchy (5개 명령어)
+- Transform: Get, SetPosition, SetRotation, SetScale (4개 명령어)
+- Scene: Current, List, Load (3개 명령어)
+- Asset Database 및 Editor: Refresh, Recompile, Reimport (3개 명령어)
+- Console: Logs, Clear (2개 명령어)
 
 ### 고급 사용법
 
@@ -257,18 +262,18 @@ unity-editor go find "Main Camera"
 ```bash
 # 여러 큐브 생성
 for i in {1..5}; do
-  unity-editor go create "Cube_$i"
-  unity-editor tf set-position "Cube_$i" "$i,0,0"
+  cd <unity-project-root> node .unity-websocket/uw go create "Cube_$i"
+  cd <unity-project-root> node .unity-websocket/uw tf set-position "Cube_$i" "$i,0,0"
 done
 ```
 
 **스크립트 통합:**
 ```bash
 # 계층 구조를 파일로 저장
-unity-editor hierarchy > hierarchy.json
+cd <unity-project-root> node .unity-websocket/uw hierarchy > hierarchy.json
 
 # 콘솔을 실시간으로 모니터링
-unity-editor console stream --filter error
+cd <unity-project-root> node .unity-websocket/uw console stream --filter error
 ```
 
 ### Editor Window
@@ -292,8 +297,15 @@ https://github.com/Dev-GOM/claude-code-marketplace/issues
 
 **문서:**
 - [전체 README](./README.ko.md)
-- [명령어 레퍼런스](./COMMANDS.ko.md)
-- [Unity 패키지 문서](../assets/unity-package/README.md)
+- [명령어 로드맵](./skills/references/COMMANDS.md) - 500+ 명령어 로드맵
+- **구현된 명령어 카테고리:**
+  - [연결 및 상태](./skills/references/COMMANDS_CONNECTION_STATUS.md)
+  - [GameObject 및 계층 구조](./skills/references/COMMANDS_GAMEOBJECT_HIERARCHY.md)
+  - [Transform](./skills/references/COMMANDS_TRANSFORM.md)
+  - [Scene 관리](./skills/references/COMMANDS_SCENE.md)
+  - [Asset Database 및 Editor](./skills/references/COMMANDS_EDITOR.md)
+  - [Console 및 로깅](./skills/references/COMMANDS_CONSOLE.md)
+- [Unity 패키지 문서](./skills/assets/unity-package/README.md)
 
 ---
 
@@ -314,7 +326,7 @@ https://github.com/Dev-GOM/claude-code-marketplace/issues
 
 여러 Unity 프로젝트를 동시에 실행하는 경우:
 - 각 프로젝트에서 다른 포트 사용 (9500, 9501, 9502...)
-- `unity-editor --port <번호>` 명령어로 특정 포트 지정
+- `cd <unity-project-root> node .unity-websocket/uw --port <번호>` 명령어로 특정 포트 지정
 
 ### 성능 최적화
 

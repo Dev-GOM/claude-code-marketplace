@@ -5,7 +5,7 @@
   },
   "metadata": {
     "description": "Productivity plugins for Claude Code to automate development workflows",
-    "version": "2.21.0",
+    "version": "2.22.0",
     "homepage": "https://github.com/Dev-GOM/claude-code-marketplace"
   },
   "plugins": [
@@ -202,7 +202,8 @@
         "nodejs",
         "python",
         "rust",
-        "cross-platform"
+        "cross-platform",
+        "skills"
       ]
     },
     {
@@ -245,7 +246,8 @@
         "chrome",
         "devtools",
         "screenshot",
-        "pdf"
+        "pdf",
+        "skills"
       ]
     },
     {
@@ -271,14 +273,15 @@
         "materials",
         "modifiers",
         "collections",
-        "cli"
+        "cli",
+        "skills"
       ]
     },
     {
       "name": "unity-editor-toolkit",
       "source": "./plugins/unity-editor-toolkit",
       "description": "🧪 Experimental - Real-time Unity Editor control via WebSocket with 66 automated tests (Unity 2020.3 - Unity 6+)",
-      "version": "0.4.0",
+      "version": "0.5.0",
       "author": {
         "name": "Dev GOM"
       },
@@ -294,9 +297,10 @@
         "transform",
         "scene",
         "console",
-        "experimental"
+        "experimental",
+        "skills"
       ]
     }
   ],
-  "version": "2.21.0"
+  "version": "2.22.0"
 }

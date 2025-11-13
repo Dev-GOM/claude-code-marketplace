@@ -1,13 +1,13 @@
 {
   "name": "unity-editor-toolkit-cli",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Unity Editor control toolkit CLI with comprehensive editor automation",
   "main": "dist/cli/cli.js",
   "bin": {
     "unity-editor": "./dist/cli/cli.js"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && tsc-alias",
     "dev": "tsc --watch",
     "clean": "rm -rf dist",
     "lint": "eslint src/**/*.ts",
@@ -29,6 +29,7 @@
     "@typescript-eslint/eslint-plugin": "^8.46.3",
     "@typescript-eslint/parser": "^8.46.3",
     "eslint": "^9.39.1",
+    "tsc-alias": "^1.8.16",
     "typescript": "^5.9.3"
   },
   "dependencies": {

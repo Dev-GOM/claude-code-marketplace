@@ -1,6 +1,6 @@
 # Claude Code 플러그인
 
-> **버전**: 2.20.1 | **최종 업데이트**: 2025-11-12
+> **버전**: 2.22.0 | **최종 업데이트**: 2025-11-13
 >
 > **언어**: [English](README.md) | [한국어](README.ko.md)
 >
@@ -210,7 +210,7 @@ Claude Code를 위한 Chrome DevTools Protocol (CDP) 기반 브라우저 자동�
 
 **⚠️ 실험 단계 플러그인** - WebSocket을 통한 실시간 Unity Editor 제어 및 포괄적인 자동화 테스트, 보안 강화 제공.
 
-**요약:** WebSocket 기반 Unity Editor 제어 (자동 할당 포트 9500-9600) | GameObject/Transform/Scene/Console 관리 | Unity Test Framework로 66개 자동화 테스트 | **상태:** 🧪 실험 단계 (v0.4.0) | **Unity 호환성:** Unity 2020.3 - Unity 6+ | **설정:** Editor Window 기반 (`Tools > Unity Editor Toolkit > Server Window`)에서 자동 시작 | **보안:** Path traversal 방어, 강화된 입력 검증, 리소스 정리 | **기능:** 실시간 에디터 통신, JSON-RPC 2.0 프로토콜, 스레드 안전 작업, Status 파일 통한 자동 포트 감지 | **API:** GameObject.Find/Create/Destroy/SetActive, Transform.Get/SetPosition/Rotation/Scale, Scene.GetCurrent/GetAll/Load, Console.GetLogs/Clear, Hierarchy.Get
+**요약:** WebSocket 기반 Unity Editor 제어 (자동 할당 포트 9500-9600) | GameObject/Transform/Scene/Console 관리 | Unity Test Framework로 66개 자동화 테스트 | **상태:** 🧪 실험 단계 (v0.5.0) | **Unity 호환성:** Unity 2020.3 - Unity 6+ | **설정:** Editor Window 기반 (`Tools > Unity Editor Toolkit > Server Window`)에서 자동 시작 | **보안:** Path traversal 방어, 강화된 입력 검증, 리소스 정리 | **기능:** 실시간 에디터 통신, JSON-RPC 2.0 프로토콜, 스레드 안전 작업, Status 파일 통한 자동 포트 감지 | **API:** GameObject.Find/Create/Destroy/SetActive, Transform.Get/SetPosition/Rotation/Scale, Scene.GetCurrent/GetAll/Load, Console.GetLogs/Clear, Hierarchy.Get
 
 **[전체 문서 보기 →](plugins/unity-editor-toolkit/README.md)**
 

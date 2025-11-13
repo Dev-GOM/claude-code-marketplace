@@ -11,6 +11,7 @@ import { createUnityClient } from '@/unity/client';
 import { COMMANDS } from '@/constants';
 import { UnityLogType } from '@/constants';
 import type { ConsoleLogEntry } from '@/unity/protocol';
+import { output, outputJson } from '@/utils/output-formatter';
 
 /**
  * Get log type icon
@@ -64,6 +65,11 @@ export function registerConsoleCommand(program: Command): void {
     .option('-n, --count <number>', 'Number of recent logs to fetch', '50')
     .option('-e, --errors-only', 'Show only errors and exceptions')
     .option('-w, --warnings', 'Include warnings')
+    .option('-t, --type <type>', 'Filter by log type: error, warning, log, exception, assert')
+    .option('-f, --filter <text>', 'Filter logs by text (case-insensitive)')
+    .option('-v, --verbose', 'Show full stack traces (default: first 5 lines only)')
+    .option('--json', 'Output in JSON format')
+    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '30000')
     .action(async (options) => {
       let client = null;
       try {
@@ -81,7 +87,7 @@ export function registerConsoleCommand(program: Command): void {
         await client.connect();
 
         logger.info('Fetching console logs...');
-        const result = await client.sendRequest<ConsoleLogEntry[]>(
+        let result = await client.sendRequest<ConsoleLogEntry[]>(
           COMMANDS.CONSOLE_GET_LOGS,
           {
             count: parseInt(options.count, 10),
@@ -90,11 +96,60 @@ export function registerConsoleCommand(program: Command): void {
           }
         );
 
+        // Apply type filter if provided (overrides --errors-only and --warnings)
+        if (options.type) {
+          const typeFilter = options.type.toLowerCase();
+          const typeMap: { [key: string]: number } = {
+            'error': UnityLogType.ERROR,
+            'warning': UnityLogType.WARNING,
+            'log': UnityLogType.LOG,
+            'exception': UnityLogType.EXCEPTION,
+            'assert': UnityLogType.ASSERT,
+          };
+
+          const targetType = typeMap[typeFilter];
+          if (targetType === undefined) {
+            logger.error(`Invalid log type: ${options.type}. Valid types: error, warning, log, exception, assert`);
+            process.exit(1);
+          }
+
+          result = result.filter(log => log.type === targetType);
+        }
+
+        // Apply text filter if provided
+        if (options.filter) {
+          const filterText = options.filter.toLowerCase();
+          result = result.filter(log =>
+            log.message.toLowerCase().includes(filterText) ||
+            (log.stackTrace && log.stackTrace.toLowerCase().includes(filterText))
+          );
+        }
+
         if (!result || result.length === 0) {
-          logger.info('No logs found');
+          if (options.json) {
+            outputJson({ logs: [], total: 0, filter: options.filter || null });
+          } else {
+            logger.info(options.filter ? `No logs found matching filter: "${options.filter}"` : 'No logs found');
+          }
           return;
         }
 
+        // JSON output
+        if (options.json) {
+          outputJson({
+            logs: result.map(log => ({
+              type: getLogTypeName(log.type),
+              timestamp: log.timestamp,
+              message: log.message,
+              stackTrace: log.stackTrace || null,
+            })),
+            total: result.length,
+            filter: options.filter || null,
+          });
+          return;
+        }
+
+        // Text output
         logger.info('✓ Unity Console Logs:');
         logger.info('━'.repeat(80));
 
@@ -107,12 +162,15 @@ export function registerConsoleCommand(program: Command): void {
           if (log.stackTrace && log.stackTrace.trim()) {
             logger.info('   Stack Trace:');
             const stackLines = log.stackTrace.split('\n');
-            for (const line of stackLines.slice(0, 5)) {
-              // Show first 5 lines
+
+            // Show all lines if --verbose, otherwise first 5 lines
+            const linesToShow = options.verbose ? stackLines : stackLines.slice(0, 5);
+            for (const line of linesToShow) {
               logger.info(`     ${line}`);
             }
-            if (stackLines.length > 5) {
-              logger.info(`     ... (${stackLines.length - 5} more lines)`);
+
+            if (!options.verbose && stackLines.length > 5) {
+              logger.info(`     ... (${stackLines.length - 5} more lines, use --verbose to see all)`);
             }
           }
 
@@ -139,7 +197,9 @@ export function registerConsoleCommand(program: Command): void {
   consoleCmd
     .command('clear')
     .description('Clear Unity console logs')
-    .action(async () => {
+    .option('--json', 'Output in JSON format')
+    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '30000')
+    .action(async (options) => {
       let client = null;
       try {
         const projectRoot = config.getProjectRoot();
@@ -158,7 +218,11 @@ export function registerConsoleCommand(program: Command): void {
         logger.info('Clearing console logs...');
         await client.sendRequest(COMMANDS.CONSOLE_CLEAR);
 
-        logger.info('✓ Console cleared');
+        if (options.json) {
+          outputJson({ success: true, message: 'Console cleared' });
+        } else {
+          logger.info('✓ Console cleared');
+        }
       } catch (error) {
         logger.error('Failed to clear console', error);
         process.exit(1);

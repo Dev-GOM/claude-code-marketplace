@@ -72,6 +72,7 @@ export interface GameObjectInfo {
   active: boolean;
   tag: string;
   layer: number;
+  components?: string[];  // Component type names
   children?: GameObjectInfo[];
 }
 

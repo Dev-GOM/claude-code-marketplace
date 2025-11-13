@@ -1,0 +1,169 @@
+@import 'tailwindcss';
+@config '../../tailwind.config.ts';
+
+:root {
+  /* Theme colors - will be overridden by ThemeContext */
+  --color-bgPrimary: #0a0a0a;
+  --color-bgSecondary: #1a0033;
+  --color-cardBg: rgba(255, 0, 255, 0.1);
+  --color-cardBorder: #ff00ff;
+  --color-textPrimary: #ffffff;
+  --color-textSecondary: rgba(255, 255, 255, 0.7);
+  --color-accent1: #ff00ff;
+  --color-accent2: #00ffff;
+  --color-accent3: #00ff00;
+  --color-buttonBg: linear-gradient(135deg, #ff00ff, #00ffff);
+  --color-buttonText: #000000;
+  --color-glow: rgba(255, 0, 255, 0.3);
+
+  /* Gradients */
+  --gradient-playful: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+}
+
+body {
+  font-family: var(--font-dm-sans), -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: linear-gradient(135deg, var(--color-bgPrimary) 0%, var(--color-bgSecondary) 100%);
+  background-attachment: fixed;
+  min-height: 100vh;
+  color: var(--color-textPrimary);
+}
+
+/* Animated background with theme colors */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background:
+    radial-gradient(circle at 20% 80%, var(--color-glow) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, var(--color-glow) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, var(--color-glow) 0%, transparent 50%);
+  animation: backgroundFloat 20s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.3;
+}
+
+@keyframes backgroundFloat {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.5; }
+}
+
+/* Headings with Fredoka */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-fredoka), var(--font-dm-sans), sans-serif;
+  font-weight: 600;
+}
+
+/* Code elements with Fira Code */
+code, pre {
+  font-family: var(--font-fira-code), monospace;
+}
+
+/* Playful animations */
+@keyframes bounce-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.3) translateY(50px);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes wiggle {
+  0%, 100% { transform: rotate(-3deg); }
+  50% { transform: rotate(3deg); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes gradient-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes sparkle {
+  0%, 100% { opacity: 0; transform: scale(0); }
+  50% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(226, 52, 255, 0.4); }
+  50% { box-shadow: 0 0 40px rgba(226, 52, 255, 0.8); }
+}
+
+/* Utility classes */
+.animate-bounce-in {
+  animation: bounce-in 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.animate-wiggle {
+  animation: wiggle 1s ease-in-out infinite;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  background-size: 200% 200%;
+  animation: gradient-shift 3s ease infinite;
+  display: inline-block;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 10px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+}
+
+/* Selection color */
+::selection {
+  background: var(--accent-pink);
+  color: white;
+}
+
+::-moz-selection {
+  background: var(--accent-pink);
+  color: white;
+}

@@ -1,3 +1,7 @@
+**Language**: English | [한국어](./TEST_GUIDE.ko.md)
+
+---
+
 # Unity Editor Toolkit - Test Guide
 
 Complete guide for running Unity Test Framework tests.
@@ -441,7 +445,7 @@ pipeline {
         stage('Test') {
             steps {
                 sh '''
-                    unity-editor \
+                    /Applications/Unity/Hub/Editor/2022.3.0f1/Unity.app/Contents/MacOS/Unity \
                       -runTests \
                       -batchmode \
                       -projectPath $WORKSPACE \
@@ -520,8 +524,15 @@ Examples:
 ### Unity Editor Toolkit
 
 - [Main README](../README.md)
-- [Quick Start Guide](../QUICKSTART.md)
-- [Code Review Report](../REVIEW_REPORT.md)
+- [Quick Start Guide](./QUICKSTART.md)
+- [Command Roadmap](./COMMANDS.md)
+- **Implemented Command Categories:**
+  - [Connection & Status](./COMMANDS_CONNECTION_STATUS.md)
+  - [GameObject & Hierarchy](./COMMANDS_GAMEOBJECT_HIERARCHY.md)
+  - [Transform](./COMMANDS_TRANSFORM.md)
+  - [Scene Management](./COMMANDS_SCENE.md)
+  - [Asset Database & Editor](./COMMANDS_EDITOR.md)
+  - [Console & Logging](./COMMANDS_CONSOLE.md)
 
 ---
 

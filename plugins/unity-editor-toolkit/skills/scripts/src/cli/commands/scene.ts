@@ -10,6 +10,7 @@ import * as config from '@/utils/config';
 import { createUnityClient } from '@/unity/client';
 import { COMMANDS, UNITY } from '@/constants';
 import type { SceneInfo } from '@/unity/protocol';
+import { output, outputJson } from '@/utils/output-formatter';
 
 /**
  * Register Scene command
@@ -23,7 +24,9 @@ export function registerSceneCommand(program: Command): void {
   sceneCmd
     .command('current')
     .description('Get current active scene')
-    .action(async () => {
+    .option('--json', 'Output in JSON format')
+    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '30000')
+    .action(async (options) => {
       let client = null;
       try {
         const projectRoot = config.getProjectRoot();
@@ -44,6 +47,13 @@ export function registerSceneCommand(program: Command): void {
           COMMANDS.SCENE_GET_CURRENT
         );
 
+        // JSON output
+        if (options.json) {
+          outputJson({ scene: result });
+          return;
+        }
+
+        // Text output
         logger.info('✓ Current Scene:');
         logger.info(`  Name: ${result.name}`);
         logger.info(`  Path: ${result.path}`);
@@ -69,7 +79,9 @@ export function registerSceneCommand(program: Command): void {
   sceneCmd
     .command('list')
     .description('List all loaded scenes')
-    .action(async () => {
+    .option('--json', 'Output in JSON format')
+    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '30000')
+    .action(async (options) => {
       let client = null;
       try {
         const projectRoot = config.getProjectRoot();
@@ -91,10 +103,24 @@ export function registerSceneCommand(program: Command): void {
         );
 
         if (!result || result.length === 0) {
-          logger.info('No scenes loaded');
+          if (options.json) {
+            outputJson({ scenes: [], total: 0 });
+          } else {
+            logger.info('No scenes loaded');
+          }
           return;
         }
 
+        // JSON output
+        if (options.json) {
+          outputJson({
+            scenes: result,
+            total: result.length,
+          });
+          return;
+        }
+
+        // Text output
         logger.info('✓ Loaded Scenes:');
         logger.info('━'.repeat(60));
         for (const scene of result) {
@@ -128,6 +154,8 @@ export function registerSceneCommand(program: Command): void {
     .description('Load scene by name or path')
     .argument('<name>', 'Scene name or path')
     .option('-a, --additive', 'Load scene additively')
+    .option('--json', 'Output in JSON format')
+    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds')
     .action(async (name, options) => {
       let client = null;
       try {
@@ -145,16 +173,26 @@ export function registerSceneCommand(program: Command): void {
         await client.connect();
 
         logger.info(`Loading scene: ${name}${options.additive ? ' (additive)' : ''}`);
+        const timeout = options.timeout ? parseInt(options.timeout, 10) : UNITY.SCENE_LOAD_TIMEOUT;
         await client.sendRequest(
           COMMANDS.SCENE_LOAD,
           {
             name,
             additive: options.additive || false,
           },
-          UNITY.SCENE_LOAD_TIMEOUT
+          timeout
         );
 
-        logger.info('✓ Scene loaded');
+        // JSON output
+        if (options.json) {
+          outputJson({
+            success: true,
+            scene: name,
+            additive: options.additive || false,
+          });
+        } else {
+          logger.info('✓ Scene loaded');
+        }
       } catch (error) {
         logger.error('Failed to load scene', error);
         process.exit(1);

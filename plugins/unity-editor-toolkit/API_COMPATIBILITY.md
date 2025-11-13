@@ -1,3 +1,7 @@
+**Language**: English only (한글 버전 없음)
+
+---
+
 # Unity Editor Toolkit - API Compatibility Report
 
 ## Test Code Compatibility Analysis

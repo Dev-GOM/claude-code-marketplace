@@ -1,41 +1,59 @@
 using UnityEngine;
 using UnityEditor;
-using UnityEditorToolkit.Server;
+using UnityEngine.UIElements;
+using UnityEditorToolkit.Editor.Server;
 using System.IO;
-using System.Diagnostics;
-using System.Text.RegularExpressions;
-using System;
-using System.Text;
-using System.Linq;
 
 namespace UnityEditorToolkit.Editor
 {
     /// <summary>
-    /// Editor window for Unity Editor Toolkit Server
+    /// Editor window for Unity Editor Toolkit Server (UI Toolkit version)
     /// </summary>
     public class EditorServerWindow : EditorWindow
     {
-        private UnityEditorServer server;
-        private Vector2 scrollPosition;
+        private EditorWebSocketServer server => EditorWebSocketServer.Instance;
+        private EditorServerCLIInstaller cliInstaller;
+
         private bool wasPlaying = false;
         private float lastUpdateTime = 0f;
-
-        // Constants
-        private const int LockFileStaleMinutes = 10;
-        private const int ProcessKillWaitTimeoutMs = 5000; // 5 seconds
-        private const int NpmInstallTimeoutSeconds = 30;
-        private const int NpmBuildTimeoutSeconds = 120; // 2 minutes
-        private const int DefaultCommandTimeoutSeconds = 120; // 2 minutes
-        private const string PREF_KEY_PLUGIN_PATH = "UnityEditorToolkit.PluginScriptsPath";
-
-        // CLI management
-        private string pluginVersion = null;
-        private string localCLIVersion = null;
-        private bool cliUpdateAvailable = false;
-        private bool isInstallingCLI = false;
-        private string cliInstallLog = "";
         private bool hasNodeJS = false;
-        private string pluginScriptsPathOverride = null;
+
+        private const string PREF_KEY_PLUGIN_PATH = "UnityEditorToolkit.PluginScriptsPath";
+        private const float UI_UPDATE_INTERVAL_SECONDS = 0.5f;
+
+        // UI Elements
+        private VisualElement statusIndicator;
+        private Label serverStatusLabel;
+        private Label serverPortLabel;
+        private Label connectedClientsLabel;
+        private Toggle autostartToggle;
+        private EnumField logLevelDropdown;
+        private Button startButton;
+        private Button stopButton;
+
+        private VisualElement nodejsMissingSection;
+        private VisualElement cliStatusSection;
+        private Label packageVersionLabel;
+        private Label cliVersionLabel;
+
+        // Status messages
+        private HelpBox installProgressHelp;
+        private HelpBox notInstalledHelp;
+        private HelpBox updateMinorHelp;
+        private HelpBox updateMajorHelp;
+        private HelpBox upToDateHelp;
+
+        // Buttons
+        private Button installButton;
+        private Button updateButton;
+        private Button reinstallButton;
+        private Button clearLockButton;
+
+        // Installation
+        private HelpBox installingMessage;
+        private VisualElement installLogContainer;
+        private TextField installLogField;
+        private TextField pluginPathField;
 
         [MenuItem("Tools/Unity Editor Toolkit/Server Window")]
         public static void ShowWindow()
@@ -47,1109 +65,447 @@ namespace UnityEditorToolkit.Editor
 
         private void OnEnable()
         {
-            FindOrCreateServer();
-            hasNodeJS = CheckNodeInstallation();
-            pluginScriptsPathOverride = EditorPrefs.GetString(PREF_KEY_PLUGIN_PATH, "");
-            CheckCLIVersion();
+            // Initialize CLI installer
+            string pathOverride = EditorPrefs.GetString(PREF_KEY_PLUGIN_PATH, null);
+            cliInstaller = new EditorServerCLIInstaller(pathOverride);
+
+            // Check Node.js installation
+            hasNodeJS = EditorServerCommandRunner.CheckNodeInstallation();
+
+            // Check CLI version
+            if (hasNodeJS)
+            {
+                cliInstaller.CheckVersion();
+            }
         }
 
-        private void OnGUI()
+        public void CreateGUI()
         {
-            EditorGUILayout.Space(10);
+            // Load UXML
+            var visualTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(
+                "Packages/com.devgom.unity-editor-toolkit/Editor/EditorServerWindow.uxml");
 
-            // Header
-            GUILayout.Label("Unity Editor Toolkit Server", EditorStyles.boldLabel);
-            EditorGUILayout.Space(5);
-
-            // CLI Status Section
-            DrawCLIStatusSection();
-
-            EditorGUILayout.Space(10);
-
-            // Server status
-            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+            if (visualTree == null)
             {
-                if (server == null)
-                {
-                    EditorGUILayout.LabelField("Status:", "Not Found");
-                    EditorGUILayout.HelpBox("Server component not found in scene. Click 'Create Server' to add one.", MessageType.Warning);
-
-                    if (GUILayout.Button("Create Server GameObject", GUILayout.Height(30)))
-                    {
-                        CreateServer();
-                    }
-                }
-                else
-                {
-                    // Server can run in both Edit Mode and Play Mode
-                    var isRunning = server != null;
-                    EditorGUILayout.LabelField("Status:", isRunning ? "Running ✓" : "Stopped");
-                    EditorGUILayout.LabelField("Port:", server.port.ToString());
-                    EditorGUILayout.LabelField("WebSocket URL:", $"ws://127.0.0.1:{server.port}");
-                    EditorGUILayout.LabelField("Mode:", Application.isPlaying ? "Play Mode" : "Edit Mode");
-                }
+                var label = new Label("Error: Could not load EditorServerWindow.uxml");
+                label.style.color = Color.red;
+                rootVisualElement.Add(label);
+                return;
             }
-            EditorGUILayout.EndVertical();
 
-            EditorGUILayout.Space(10);
+            visualTree.CloneTree(rootVisualElement);
 
+            // Load USS
+            var styleSheet = AssetDatabase.LoadAssetAtPath<StyleSheet>(
+                "Packages/com.devgom.unity-editor-toolkit/Editor/EditorServerWindow.uss");
+
+            if (styleSheet != null)
+            {
+                rootVisualElement.styleSheets.Add(styleSheet);
+            }
+
+            // Query all UI elements
+            QueryUIElements();
+
+            // Bind events
+            BindEvents();
+
+            // Initial UI update
+            UpdateUI();
+        }
+
+        private void QueryUIElements()
+        {
+            // Server section
+            statusIndicator = rootVisualElement.Q<VisualElement>("status-indicator");
+            serverStatusLabel = rootVisualElement.Q<Label>("server-status");
+            serverPortLabel = rootVisualElement.Q<Label>("server-port");
+            connectedClientsLabel = rootVisualElement.Q<Label>("connected-clients");
+            autostartToggle = rootVisualElement.Q<Toggle>("autostart-toggle");
+            logLevelDropdown = rootVisualElement.Q<EnumField>("log-level-dropdown");
+            startButton = rootVisualElement.Q<Button>("start-button");
+            stopButton = rootVisualElement.Q<Button>("stop-button");
+
+            // CLI section
+            nodejsMissingSection = rootVisualElement.Q<VisualElement>("nodejs-missing");
+            cliStatusSection = rootVisualElement.Q<VisualElement>("cli-status");
+            packageVersionLabel = rootVisualElement.Q<Label>("package-version");
+            cliVersionLabel = rootVisualElement.Q<Label>("cli-version");
+
+            // Status messages
+            installProgressHelp = rootVisualElement.Q<HelpBox>("install-progress");
+            notInstalledHelp = rootVisualElement.Q<HelpBox>("not-installed");
+            updateMinorHelp = rootVisualElement.Q<HelpBox>("update-minor");
+            updateMajorHelp = rootVisualElement.Q<HelpBox>("update-major");
+            upToDateHelp = rootVisualElement.Q<HelpBox>("up-to-date");
+
+            // Buttons
+            installButton = rootVisualElement.Q<Button>("install-button");
+            updateButton = rootVisualElement.Q<Button>("update-button");
+            reinstallButton = rootVisualElement.Q<Button>("reinstall-button");
+            clearLockButton = rootVisualElement.Q<Button>("clear-lock-button");
+
+            // Installation
+            installingMessage = rootVisualElement.Q<HelpBox>("installing-message");
+            installLogContainer = rootVisualElement.Q<VisualElement>("install-log-container");
+            installLogField = rootVisualElement.Q<TextField>("install-log");
+            pluginPathField = rootVisualElement.Q<TextField>("plugin-path");
+        }
+
+        private void BindEvents()
+        {
             // Server controls
-            if (server != null)
+            autostartToggle?.RegisterValueChangedCallback(evt => {
+                server.AutoStart = evt.newValue;
+            });
+
+            // Initialize and bind log level dropdown
+            if (logLevelDropdown != null)
             {
-                EditorGUILayout.BeginVertical(EditorStyles.helpBox);
-                {
-                    GUILayout.Label("Controls", EditorStyles.boldLabel);
-
-                    // Port settings (only editable when server is stopped)
-                    EditorGUI.BeginDisabledGroup(server != null);
-                    server.port = EditorGUILayout.IntField("Port:", server.port);
-                    server.autoStart = EditorGUILayout.Toggle("Auto-Start:", server.autoStart);
-                    EditorGUI.EndDisabledGroup();
-
-                    EditorGUILayout.Space(5);
-
-                    // Server works in both Edit Mode and Play Mode
-                    EditorGUILayout.HelpBox(
-                        "Server works in both Edit Mode and Play Mode.\n" +
-                        "Auto-Start is enabled when this GameObject is loaded.",
-                        MessageType.Info
-                    );
-                }
-                EditorGUILayout.EndVertical();
+                logLevelDropdown.Init(server.CurrentLogLevel);
+                logLevelDropdown.RegisterValueChangedCallback(evt => {
+                    server.CurrentLogLevel = (EditorWebSocketServer.LogLevel)evt.newValue;
+                });
             }
 
-            EditorGUILayout.Space(10);
+            startButton?.RegisterCallback<ClickEvent>(evt => server.StartServer());
+            stopButton?.RegisterCallback<ClickEvent>(evt => server.StopServer());
 
-            // Information section
-            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
-            {
-                GUILayout.Label("Information", EditorStyles.boldLabel);
-                EditorGUILayout.Space(5);
+            // Node.js section
+            var nodejsDownloadBtn = rootVisualElement.Q<Button>("nodejs-download-button");
+            nodejsDownloadBtn?.RegisterCallback<ClickEvent>(evt =>
+                Application.OpenURL("https://nodejs.org/"));
 
-                scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
+            var recheckNodejsBtn = rootVisualElement.Q<Button>("recheck-nodejs-button");
+            recheckNodejsBtn?.RegisterCallback<ClickEvent>(evt => {
+                hasNodeJS = EditorServerCommandRunner.CheckNodeInstallation();
+                if (hasNodeJS) cliInstaller.CheckVersion();
+                UpdateUI();
+            });
+
+            // CLI buttons
+            installButton?.RegisterCallback<ClickEvent>(evt => InstallCLI());
+            updateButton?.RegisterCallback<ClickEvent>(evt => InstallCLI());
+            reinstallButton?.RegisterCallback<ClickEvent>(evt => InstallCLI());
+            clearLockButton?.RegisterCallback<ClickEvent>(evt => {
+                cliInstaller.ClearInstallationLock();
+                UpdateUI();
+            });
+
+            // Path management
+            var openPathBtn = rootVisualElement.Q<Button>("open-path-button");
+            openPathBtn?.RegisterCallback<ClickEvent>(evt => {
+                string path = EditorServerPathManager.FindPluginScriptsPath(
+                    EditorPrefs.GetString(PREF_KEY_PLUGIN_PATH, null));
+                if (!string.IsNullOrEmpty(path) && System.IO.Directory.Exists(path))
                 {
-                    EditorGUILayout.HelpBox(
-                        "Unity Editor Toolkit provides a WebSocket server that allows external tools (like Claude Code) to control Unity Editor in real-time.\n\n" +
-                        "Features:\n" +
-                        "• GameObject manipulation (create, destroy, find)\n" +
-                        "• Transform control (position, rotation, scale)\n" +
-                        "• Scene management (load, save, query)\n" +
-                        "• Console log access\n" +
-                        "• Hierarchy inspection\n\n" +
-                        "Connection:\n" +
-                        "• Protocol: JSON-RPC 2.0 over WebSocket\n" +
-                        "• Default Port: 9500\n" +
-                        "• Localhost only (secure)",
-                        MessageType.None
-                    );
-
-                    if (GUILayout.Button("Open Documentation", GUILayout.Height(25)))
-                    {
-                        Application.OpenURL("https://github.com/Dev-GOM/claude-code-marketplace/tree/main/plugins/unity-editor-toolkit");
-                    }
-                }
-                EditorGUILayout.EndScrollView();
-            }
-            EditorGUILayout.EndVertical();
-        }
-
-        private void DrawCLIStatusSection()
-        {
-            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
-            {
-                GUILayout.Label("CLI Scripts", EditorStyles.boldLabel);
-                EditorGUILayout.Space(5);
-
-                // Node.js check first
-                if (!hasNodeJS)
-                {
-                    EditorGUILayout.HelpBox(
-                        "Node.js is not installed or not in PATH.\n\n" +
-                        "Please install Node.js from https://nodejs.org/\n" +
-                        "Recommended version: 18.x or higher\n\n" +
-                        "After installation, restart Unity Editor.",
-                        MessageType.Error
-                    );
-
-                    if (GUILayout.Button("Open Node.js Download Page", GUILayout.Height(30)))
-                    {
-                        Application.OpenURL("https://nodejs.org/");
-                    }
-
-                    if (GUILayout.Button("Recheck Node.js Installation", GUILayout.Height(25)))
-                    {
-                        hasNodeJS = CheckNodeInstallation();
-                        if (hasNodeJS)
-                        {
-                            CheckCLIVersion();
-                        }
-                        Repaint();
-                    }
+                    EditorUtility.RevealInFinder(path);
                 }
                 else
                 {
-                    // Version info
-                    EditorGUILayout.LabelField("Package Version:", pluginVersion ?? "Unknown");
-                    EditorGUILayout.LabelField("Local CLI Version:", localCLIVersion ?? "Not Installed");
+                    EditorUtility.DisplayDialog("Error", "Plugin scripts path not found.", "OK");
+                }
+            });
 
-                    EditorGUILayout.Space(5);
+            var browsePathBtn = rootVisualElement.Q<Button>("browse-path-button");
+            browsePathBtn?.RegisterCallback<ClickEvent>(evt => {
+                string currentPath = EditorServerPathManager.FindPluginScriptsPath(
+                    EditorPrefs.GetString(PREF_KEY_PLUGIN_PATH, null))
+                    ?? EditorServerPathManager.GetDefaultPluginScriptsPath();
 
-                    // Check for installation in progress (file-based lock)
-                    bool installInProgress = IsInstallationInProgress();
+                string selectedPath = EditorUtility.OpenFolderPanel(
+                    "Select Plugin Scripts Path",
+                    System.IO.Path.GetDirectoryName(currentPath),
+                    "");
 
-                    // Status message
-                    if (installInProgress)
+                if (!string.IsNullOrEmpty(selectedPath))
+                {
+                    // Validate the path has package.json
+                    if (System.IO.File.Exists(System.IO.Path.Combine(selectedPath, "package.json")))
                     {
-                        EditorGUILayout.HelpBox(
-                            "CLI installation is in progress...\n" +
-                            "If this persists for more than 10 minutes, click 'Clear Lock' below.",
-                            MessageType.Info
-                        );
-                    }
-                    else if (localCLIVersion == null)
-                    {
-                        EditorGUILayout.HelpBox("CLI scripts not installed. Click 'Install CLI Scripts' to set up.", MessageType.Warning);
-                    }
-                    else if (cliUpdateAvailable)
-                    {
-                        bool isMinorUpdate = IsMinorVersionDifference(localCLIVersion, pluginVersion);
-                        if (isMinorUpdate)
-                        {
-                            EditorGUILayout.HelpBox($"CLI update available: {localCLIVersion} → {pluginVersion}\n(Minor update, current version still works)", MessageType.Info);
-                        }
-                        else
-                        {
-                            EditorGUILayout.HelpBox($"CLI update available: {localCLIVersion} → {pluginVersion}\n(Recommended to update)", MessageType.Warning);
-                        }
+                        EditorPrefs.SetString(PREF_KEY_PLUGIN_PATH, selectedPath);
+                        cliInstaller = new EditorServerCLIInstaller(selectedPath);
+                        cliInstaller.CheckVersion();
+                        UpdateUI();
                     }
                     else
                     {
-                        EditorGUILayout.HelpBox("CLI scripts up-to-date ✓", MessageType.Info);
-                    }
-
-                    EditorGUILayout.Space(5);
-
-                    // Action buttons
-                    EditorGUI.BeginDisabledGroup(isInstallingCLI || installInProgress);
-                    {
-                        if (localCLIVersion == null)
-                        {
-                            if (GUILayout.Button("Install CLI Scripts", GUILayout.Height(30)))
-                            {
-                                InstallOrUpdateCLI();
-                            }
-                        }
-                        else if (cliUpdateAvailable)
-                        {
-                            if (GUILayout.Button("⚠️ Update CLI Scripts", GUILayout.Height(30)))
-                            {
-                                InstallOrUpdateCLI();
-                            }
-                        }
-                        else
-                        {
-                            if (GUILayout.Button("Reinstall CLI Scripts", GUILayout.Height(25)))
-                            {
-                                InstallOrUpdateCLI();
-                            }
-                        }
-                    }
-                    EditorGUI.EndDisabledGroup();
-
-                    // Clear stale lock button
-                    if (installInProgress)
-                    {
-                        EditorGUILayout.Space(5);
-                        if (GUILayout.Button("Clear Lock (if installation stuck)", GUILayout.Height(25)))
-                        {
-                            ClearInstallationLock();
-                            Repaint();
-                        }
-                    }
-
-                    // Installation progress
-                    if (isInstallingCLI)
-                    {
-                        EditorGUILayout.Space(5);
-                        EditorGUILayout.HelpBox("Installing CLI scripts...\nPlease wait, this may take a few minutes.", MessageType.Info);
-                    }
-
-                    // Show install log if available
-                    if (!string.IsNullOrEmpty(cliInstallLog))
-                    {
-                        EditorGUILayout.Space(5);
-                        EditorGUILayout.LabelField("Last Installation Log:", EditorStyles.boldLabel);
-                        EditorGUILayout.TextArea(cliInstallLog, GUILayout.Height(100));
-                    }
-
-                    // Plugin Scripts Path Configuration
-                    EditorGUILayout.Space(10);
-                    EditorGUILayout.LabelField("Plugin Scripts Path", EditorStyles.boldLabel);
-
-                    string currentPath = string.IsNullOrEmpty(pluginScriptsPathOverride)
-                        ? GetDefaultPluginScriptsPath()
-                        : pluginScriptsPathOverride;
-
-                    EditorGUILayout.BeginHorizontal();
-                    GUI.enabled = false;
-                    EditorGUILayout.TextField(currentPath);
-                    GUI.enabled = true;
-
-                    if (GUILayout.Button("Browse", GUILayout.Width(80)))
-                    {
-                        string selected = EditorUtility.OpenFolderPanel(
-                            "Select Plugin Scripts Folder",
-                            currentPath,
-                            "");
-
-                        if (!string.IsNullOrEmpty(selected))
-                        {
-                            pluginScriptsPathOverride = selected;
-                            EditorPrefs.SetString(PREF_KEY_PLUGIN_PATH, selected);
-                            CheckCLIVersion(); // Recheck with new path
-                            Repaint();
-                        }
-                    }
-
-                    if (GUILayout.Button("Reset", GUILayout.Width(80)))
-                    {
-                        pluginScriptsPathOverride = "";
-                        EditorPrefs.DeleteKey(PREF_KEY_PLUGIN_PATH);
-                        CheckCLIVersion(); // Recheck with default path
-                        Repaint();
-                    }
-                    EditorGUILayout.EndHorizontal();
-
-                    // Path validation
-                    bool pathValid = Directory.Exists(currentPath) &&
-                                     File.Exists(Path.Combine(currentPath, "package.json"));
-
-                    if (pathValid)
-                    {
-                        EditorGUILayout.HelpBox("✓ Valid plugin scripts path", MessageType.Info);
-                    }
-                    else
-                    {
-                        EditorGUILayout.HelpBox(
-                            "❌ Invalid path. CLI installation will fail.\n\n" +
-                            "Default path: " + GetDefaultPluginScriptsPath() + "\n\n" +
-                            "Click 'Browse' to select the correct plugin scripts folder.",
-                            MessageType.Error);
+                        EditorUtility.DisplayDialog("Invalid Path",
+                            "Selected folder does not contain package.json.\nPlease select the 'scripts' folder containing CLI scripts.",
+                            "OK");
                     }
                 }
-            }
-            EditorGUILayout.EndVertical();
+            });
+
+            var resetPathBtn = rootVisualElement.Q<Button>("reset-path-button");
+            resetPathBtn?.RegisterCallback<ClickEvent>(evt => {
+                EditorPrefs.DeleteKey(PREF_KEY_PLUGIN_PATH);
+                cliInstaller = new EditorServerCLIInstaller(null);
+                cliInstaller.CheckVersion();
+                UpdateUI();
+            });
+
+            // Documentation
+            var openDocsBtn = rootVisualElement.Q<Button>("open-docs-button");
+            openDocsBtn?.RegisterCallback<ClickEvent>(evt => {
+                Application.OpenURL("https://github.com/Dev-GOM/claude-code-marketplace/tree/main/plugins/unity-editor-toolkit");
+            });
         }
 
-        private bool CheckNodeInstallation()
+        private void InstallCLI()
         {
-            try
-            {
-                string nodeCommand = Application.platform == RuntimePlatform.WindowsEditor ? "node.exe" : "node";
-                ProcessStartInfo startInfo = new ProcessStartInfo
-                {
-                    FileName = nodeCommand,
-                    Arguments = "--version",
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true
-                };
-
-                using (Process process = Process.Start(startInfo))
-                {
-                    process.WaitForExit(ProcessKillWaitTimeoutMs);
-                    if (process.ExitCode == 0)
-                    {
-                        string version = process.StandardOutput.ReadToEnd().Trim();
-                        UnityEngine.Debug.Log($"Unity Editor Toolkit: Node.js detected: {version}");
-                        return true;
-                    }
-                }
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-
-            return false;
+            cliInstaller.InstallOrUpdate();
+            UpdateUI();
         }
 
-        private bool IsInstallationInProgress()
+        private void UpdateUI()
         {
-            string projectRoot = Path.GetDirectoryName(Application.dataPath);
-            string lockFile = Path.Combine(projectRoot, ".unity-websocket", ".install.lock");
+            if (rootVisualElement == null || serverStatusLabel == null) return;
 
-            if (!File.Exists(lockFile))
-            {
-                return false;
-            }
+            // Update server status
+            UpdateServerStatus();
 
-            // Check if lock is stale
-            if (IsLockStale(lockFile))
-            {
-                UnityEngine.Debug.LogWarning("Unity Editor Toolkit: Removing stale installation lock");
-                try
-                {
-                    File.Delete(lockFile);
-                }
-                catch (Exception e)
-                {
-                    UnityEngine.Debug.LogError($"Unity Editor Toolkit: Failed to delete stale lock: {e.Message}");
-                }
-                return false;
-            }
-
-            return true;
+            // Update CLI status
+            UpdateCLIStatus();
         }
 
-        private bool IsLockStale(string lockPath)
+        private void UpdateServerStatus()
         {
-            try
+            // Update status indicator
+            if (statusIndicator != null)
             {
-                string[] lines = File.ReadAllLines(lockPath);
-                if (lines.Length < 2) return true; // Invalid format, assume stale
+                statusIndicator.RemoveFromClassList("status-stopped");
+                statusIndicator.RemoveFromClassList("status-running");
+                statusIndicator.RemoveFromClassList("status-error");
 
-                // 1. Check if process is a running Unity instance
-                if (int.TryParse(lines[0], out int pid))
+                if (server.IsRunning)
                 {
-                    // Validate PID is in valid range
-                    if (pid <= 0)
+                    statusIndicator.AddToClassList("status-running");
+                }
+                else
+                {
+                    statusIndicator.AddToClassList("status-stopped");
+                }
+            }
+
+            serverStatusLabel.text = server.IsRunning ? "Running ✓" : "Stopped";
+            serverPortLabel.text = server.Port.ToString();
+            connectedClientsLabel.text = server.ConnectedClients.ToString();
+            autostartToggle.value = server.AutoStart;
+            autostartToggle.SetEnabled(!server.IsRunning);
+            startButton.SetEnabled(!server.IsRunning);
+            stopButton.SetEnabled(server.IsRunning);
+        }
+
+        private void UpdateCLIStatus()
+        {
+            bool installInProgress = cliInstaller.IsInstallationInProgress();
+
+            // Show/hide Node.js sections
+            if (!hasNodeJS)
+            {
+                nodejsMissingSection?.RemoveFromClassList("hidden");
+                cliStatusSection?.AddToClassList("hidden");
+                return;
+            }
+
+            nodejsMissingSection?.AddToClassList("hidden");
+            cliStatusSection?.RemoveFromClassList("hidden");
+
+            // Version labels
+            if (packageVersionLabel != null)
+                packageVersionLabel.text = cliInstaller.PluginVersion ?? "Unknown";
+            if (cliVersionLabel != null)
+                cliVersionLabel.text = cliInstaller.LocalCLIVersion ?? "Not Installed";
+
+            // Hide all status messages first
+            installProgressHelp?.AddToClassList("hidden");
+            notInstalledHelp?.AddToClassList("hidden");
+            updateMinorHelp?.AddToClassList("hidden");
+            updateMajorHelp?.AddToClassList("hidden");
+            upToDateHelp?.AddToClassList("hidden");
+
+            // Show appropriate status message
+            if (installInProgress)
+            {
+                installProgressHelp?.RemoveFromClassList("hidden");
+            }
+            else if (cliInstaller.LocalCLIVersion == null)
+            {
+                notInstalledHelp?.RemoveFromClassList("hidden");
+            }
+            else if (cliInstaller.UpdateAvailable)
+            {
+                bool isMinorUpdate = EditorServerCLIInstaller.IsMinorVersionDifference(
+                    cliInstaller.LocalCLIVersion, cliInstaller.PluginVersion);
+
+                if (isMinorUpdate)
+                {
+                    if (updateMinorHelp != null)
                     {
-                        UnityEngine.Debug.LogWarning($"Unity Editor Toolkit: Invalid PID in lock file: {pid}");
-                        return true;
-                    }
-
-                    // Check if this is our own lock
-                    int currentPID = System.Diagnostics.Process.GetCurrentProcess().Id;
-                    if (pid == currentPID)
-                    {
-                        return false; // Our own lock, always valid
-                    }
-
-                    try
-                    {
-                        Process process = Process.GetProcessById(pid);
-
-                        // Check if process has exited (race condition safety)
-                        if (process.HasExited)
-                        {
-                            return true; // Process has exited, stale
-                        }
-
-                        // More precise Unity process detection
-                        string processName = process.ProcessName.ToLower();
-                        bool isUnityEditor = processName.Contains("unity") && !processName.Contains("unityhub");
-
-                        if (isUnityEditor)
-                        {
-                            return false; // Process alive and is Unity Editor, lock is valid
-                        }
-
-                        UnityEngine.Debug.LogWarning($"Unity Editor Toolkit: Lock held by non-Unity process: {process.ProcessName}");
-                        return true; // Process exists but is not Unity Editor, lock is stale
-                    }
-                    catch (ArgumentException) { return true; /* Process not found, stale */ }
-                    catch (InvalidOperationException) { return true; /* Process has exited, stale */ }
-                    catch (Exception ex)
-                    {
-                        UnityEngine.Debug.LogWarning($"Error checking process lock (PID {pid}), falling back to timestamp: {ex.Message}");
+                        updateMinorHelp.text = $"CLI update available: {cliInstaller.LocalCLIVersion} → {cliInstaller.PluginVersion}\n(Minor update, current version still works)";
+                        updateMinorHelp.RemoveFromClassList("hidden");
                     }
                 }
                 else
                 {
-                    UnityEngine.Debug.LogWarning("Unity Editor Toolkit: Failed to parse PID from lock file");
-                }
-
-                // 2. Fallback to timestamp written inside the lock file
-                if (DateTime.TryParse(lines[1], out DateTime lockTimestamp))
-                {
-                    // Validate timestamp is not in the future
-                    if (lockTimestamp > DateTime.Now.AddMinutes(1))
+                    if (updateMajorHelp != null)
                     {
-                        UnityEngine.Debug.LogWarning($"Unity Editor Toolkit: Lock timestamp is in the future: {lockTimestamp}");
-                        return true;
-                    }
-
-                    if ((DateTime.Now - lockTimestamp).TotalMinutes > LockFileStaleMinutes)
-                    {
-                        return true; // Stale by time
-                    }
-                }
-                else
-                {
-                    UnityEngine.Debug.LogWarning("Unity Editor Toolkit: Failed to parse timestamp from lock file");
-                    return true; // Unreadable timestamp, assume stale
-                }
-
-                // If process check was inconclusive but timestamp is recent, assume lock is valid to be safe.
-                return false;
-            }
-            catch (Exception e)
-            {
-                UnityEngine.Debug.LogWarning($"Unity Editor Toolkit: Error reading lock file: {e.Message}");
-                return true; // Can't read lock, assume stale for recovery
-            }
-        }
-
-        private void ClearInstallationLock()
-        {
-            string projectRoot = Path.GetDirectoryName(Application.dataPath);
-            string lockFile = Path.Combine(projectRoot, ".unity-websocket", ".install.lock");
-
-            if (File.Exists(lockFile))
-            {
-                try
-                {
-                    File.Delete(lockFile);
-                    UnityEngine.Debug.Log("Unity Editor Toolkit: Installation lock cleared");
-                    EditorUtility.DisplayDialog("Lock Cleared", "Installation lock has been cleared.\nYou can now retry installation.", "OK");
-                }
-                catch (Exception e)
-                {
-                    UnityEngine.Debug.LogError($"Unity Editor Toolkit: Failed to clear lock: {e.Message}");
-                    EditorUtility.DisplayDialog("Error", $"Failed to clear lock:\n{e.Message}", "OK");
-                }
-            }
-        }
-
-        private void CheckCLIVersion()
-        {
-            // Get plugin version from package.json
-            pluginVersion = GetPluginVersion();
-
-            // Get local CLI version
-            localCLIVersion = GetLocalCLIVersion();
-
-            // Check if update is available
-            cliUpdateAvailable = (pluginVersion != null && localCLIVersion != null && pluginVersion != localCLIVersion);
-        }
-
-        private bool IsMinorVersionDifference(string v1, string v2)
-        {
-            try
-            {
-                var parts1 = v1.Split('.');
-                var parts2 = v2.Split('.');
-
-                if (parts1.Length >= 2 && parts2.Length >= 2)
-                {
-                    // Same major and minor version? (only patch different)
-                    return parts1[0] == parts2[0] && parts1[1] == parts2[1];
-                }
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-
-            return false;
-        }
-
-        private string GetPluginVersion()
-        {
-            try
-            {
-                // Find package.json in the Unity Package
-                string packagePath = FindPackageJsonPath();
-                if (string.IsNullOrEmpty(packagePath) || !File.Exists(packagePath))
-                {
-                    UnityEngine.Debug.LogWarning("Unity Editor Toolkit: package.json not found");
-                    return null;
-                }
-
-                string json = File.ReadAllText(packagePath);
-                return ExtractVersionFromJson(json);
-            }
-            catch (Exception e)
-            {
-                UnityEngine.Debug.LogError($"Unity Editor Toolkit: Failed to read plugin version: {e.Message}");
-                return null;
-            }
-        }
-
-        private string GetLocalCLIVersion()
-        {
-            try
-            {
-                string projectRoot = Path.GetDirectoryName(Application.dataPath);
-                string localPackageJson = Path.Combine(projectRoot, ".unity-websocket", "skills", "scripts", "package.json");
-
-                if (!File.Exists(localPackageJson))
-                {
-                    return null;
-                }
-
-                string json = File.ReadAllText(localPackageJson);
-                return ExtractVersionFromJson(json);
-            }
-            catch (Exception)
-            {
-                return null;
-            }
-        }
-
-        private string ExtractVersionFromJson(string json)
-        {
-            // Simple regex to extract version (avoiding full JSON parser)
-            Match match = Regex.Match(json, @"""version""\s*:\s*""([^""]+)""");
-            return match.Success ? match.Groups[1].Value : null;
-        }
-
-        private string FindPackageJsonPath()
-        {
-            // Try to find the package.json in various locations
-            string[] searchPaths = new string[]
-            {
-                // Installed via Package Manager
-                "Packages/com.devgom.unity-editor-toolkit/package.json",
-                // Installed in Assets
-                "Assets/UnityEditorToolkit/package.json",
-                "Assets/Packages/UnityEditorToolkit/package.json"
-            };
-
-            string projectRoot = Path.GetDirectoryName(Application.dataPath);
-
-            foreach (string relativePath in searchPaths)
-            {
-                string fullPath = Path.Combine(projectRoot, relativePath);
-                if (File.Exists(fullPath))
-                {
-                    return fullPath;
-                }
-            }
-
-            return null;
-        }
-
-        private bool CheckDiskSpace(string path, long requiredMB = 500)
-        {
-            try
-            {
-                DriveInfo drive = new DriveInfo(Path.GetPathRoot(path));
-                long availableMB = drive.AvailableFreeSpace / (1024 * 1024);
-
-                if (availableMB < requiredMB)
-                {
-                    cliInstallLog += $"⚠️  Low disk space: {availableMB}MB available, {requiredMB}MB recommended\n";
-                    return false;
-                }
-
-                return true;
-            }
-            catch (Exception e)
-            {
-                UnityEngine.Debug.LogWarning($"Unity Editor Toolkit: Could not check disk space: {e.Message}");
-                return true; // Proceed anyway
-            }
-        }
-
-        private bool CheckWritePermission(string directory)
-        {
-            try
-            {
-                if (!Directory.Exists(directory))
-                {
-                    Directory.CreateDirectory(directory);
-                }
-
-                // Test write permission
-                string testFile = Path.Combine(directory, ".writetest");
-                File.WriteAllText(testFile, "test");
-                File.Delete(testFile);
-                return true;
-            }
-            catch (UnauthorizedAccessException)
-            {
-                return false;
-            }
-            catch (Exception e)
-            {
-                UnityEngine.Debug.LogWarning($"Unity Editor Toolkit: Write permission check failed: {e.Message}");
-                return true; // Proceed and let it fail later with more context
-            }
-        }
-
-        private bool AcquireLock(string lockPath, out string errorMessage)
-        {
-            errorMessage = null;
-
-            // Check for stale lock first
-            if (File.Exists(lockPath) && IsLockStale(lockPath))
-            {
-                UnityEngine.Debug.LogWarning("Unity Editor Toolkit: Removing stale installation lock before acquire");
-                try
-                {
-                    File.Delete(lockPath);
-                }
-                catch (Exception e)
-                {
-                    errorMessage = $"Failed to remove stale lock: {e.Message}";
-                    return false;
-                }
-            }
-
-            DateTime startTime = DateTime.Now;
-            int timeoutSeconds = NpmInstallTimeoutSeconds;
-
-            while ((DateTime.Now - startTime).TotalSeconds < timeoutSeconds)
-            {
-                try
-                {
-                    // Try to create lock file exclusively
-                    using (FileStream fs = File.Open(lockPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
-                    {
-                        int currentPID = Process.GetCurrentProcess().Id;
-                        string lockContent = $"{currentPID}\n{DateTime.Now:yyyy-MM-dd HH:mm:ss}";
-                        byte[] info = Encoding.UTF8.GetBytes(lockContent);
-                        fs.Write(info, 0, info.Length);
-                    }
-                    return true;
-                }
-                catch (IOException)
-                {
-                    // Lock file exists, wait and retry
-                    System.Threading.Thread.Sleep(500);
-                }
-                catch (Exception e)
-                {
-                    errorMessage = $"Lock acquisition failed: {e.Message}";
-                    return false;
-                }
-            }
-
-            errorMessage = "Another Unity instance is installing CLI scripts. Please wait and try again.";
-            return false;
-        }
-
-        private void ReleaseLock(string lockPath)
-        {
-            try
-            {
-                if (File.Exists(lockPath))
-                {
-                    File.Delete(lockPath);
-                }
-            }
-            catch (Exception e)
-            {
-                UnityEngine.Debug.LogWarning($"Unity Editor Toolkit: Failed to release lock: {e.Message}");
-            }
-        }
-
-        private void InstallOrUpdateCLI()
-        {
-            isInstallingCLI = true;
-            cliInstallLog = "";
-            Repaint();
-
-            string projectRoot = Path.GetDirectoryName(Application.dataPath);
-            string outputDir = Path.Combine(projectRoot, ".unity-websocket");
-            string lockFile = Path.Combine(outputDir, ".install.lock");
-
-            try
-            {
-                // Pre-flight checks
-                cliInstallLog += "[Pre-flight] Running system checks...\n";
-
-                // Check disk space
-                if (!CheckDiskSpace(projectRoot, 500))
-                {
-                    bool proceed = EditorUtility.DisplayDialog("Low Disk Space",
-                        "Less than 500MB available. Installation may fail.\n\nProceed anyway?",
-                        "Yes", "No");
-
-                    if (!proceed)
-                    {
-                        cliInstallLog += "❌ Installation cancelled by user (low disk space)\n";
-                        return;
-                    }
-                }
-
-                // Check write permission
-                if (!CheckWritePermission(outputDir))
-                {
-                    EditorUtility.DisplayDialog("Permission Denied",
-                        $"Cannot write to {outputDir}\n\n" +
-                        "If using version control:\n" +
-                        "• Check out the .unity-websocket folder\n" +
-                        "• Or add it to .gitignore/.p4ignore",
-                        "OK");
-                    cliInstallLog += "❌ Write permission denied\n";
-                    return;
-                }
-
-                // Acquire installation lock
-                cliInstallLog += "[Pre-flight] Acquiring installation lock...\n";
-                string lockError;
-                if (!AcquireLock(lockFile, out lockError))
-                {
-                    EditorUtility.DisplayDialog("Installation In Progress", lockError ?? "Cannot acquire lock", "OK");
-                    cliInstallLog += $"❌ {lockError}\n";
-                    return;
-                }
-
-                cliInstallLog += "✓ Pre-flight checks passed\n\n";
-
-                string skillsDir = Path.Combine(outputDir, "skills", "scripts");
-
-                // Step 1: Create output directory
-                cliInstallLog += "[1/5] Creating output directory...\n";
-                if (!Directory.Exists(outputDir))
-                {
-                    Directory.CreateDirectory(outputDir);
-                }
-
-                // Create .gitignore
-                string gitignorePath = Path.Combine(outputDir, ".gitignore");
-                if (!File.Exists(gitignorePath))
-                {
-                    File.WriteAllText(gitignorePath, "# Unity WebSocket generated files\n*\n!.gitignore\n");
-                }
-
-                // Step 2: Remove old CLI scripts
-                cliInstallLog += "[2/5] Removing old CLI scripts...\n";
-                if (Directory.Exists(skillsDir))
-                {
-                    Directory.Delete(skillsDir, true);
-                }
-
-                // Step 3: Copy CLI scripts from plugin
-                cliInstallLog += "[3/5] Copying CLI scripts...\n";
-                string pluginScriptsPath = FindPluginScriptsPath();
-                if (string.IsNullOrEmpty(pluginScriptsPath))
-                {
-                    cliInstallLog += "❌ ERROR: Plugin scripts not found!\n";
-                    UnityEngine.Debug.LogError("Unity Editor Toolkit: Plugin scripts path not found");
-                    return;
-                }
-
-                CopyDirectory(pluginScriptsPath, skillsDir);
-                cliInstallLog += $"✓ Copied from: {pluginScriptsPath}\n";
-
-                // Step 4: npm install
-                cliInstallLog += "[4/5] Installing dependencies (npm install)...\n";
-                cliInstallLog += "This may take a minute...\n";
-
-                string npmOutput = RunCommand("npm", "install", skillsDir, 300); // 5 minute timeout
-                cliInstallLog += "✓ Dependencies installed\n";
-
-                // Step 5: npm run build
-                cliInstallLog += "[5/5] Building CLI (npm run build)...\n";
-                string buildOutput = RunCommand("npm", "run build", skillsDir, NpmBuildTimeoutSeconds);
-                cliInstallLog += "✓ Build completed\n";
-
-                // Create CLI wrapper
-                CreateCLIWrapper(outputDir, skillsDir);
-
-                cliInstallLog += "\n✅ CLI installation completed successfully!\n";
-                UnityEngine.Debug.Log("Unity Editor Toolkit: CLI scripts installed successfully");
-
-                // Refresh version info
-                CheckCLIVersion();
-            }
-            catch (Exception e)
-            {
-                cliInstallLog += $"\n❌ ERROR: {e.Message}\n";
-
-                // Check for common errors and provide hints
-                if (e.Message.Contains("ENOSPC"))
-                {
-                    cliInstallLog += "\n💡 Hint: Disk space full. Free up space and try again.\n";
-                }
-                else if (e.Message.Contains("EACCES") || e.Message.Contains("permission"))
-                {
-                    cliInstallLog += "\n💡 Hint: Permission denied. Check folder permissions or run as administrator.\n";
-                }
-                else if (e.Message.Contains("ETIMEDOUT") || e.Message.Contains("network"))
-                {
-                    cliInstallLog += "\n💡 Hint: Network timeout. Check your internet connection.\n";
-                    cliInstallLog += "   If behind a proxy, configure npm:\n";
-                    cliInstallLog += "   npm config set proxy http://proxy.company.com:8080\n";
-                }
-
-                UnityEngine.Debug.LogError($"Unity Editor Toolkit: CLI installation failed: {e.Message}");
-            }
-            finally
-            {
-                ReleaseLock(lockFile);
-                isInstallingCLI = false;
-                Repaint();
-            }
-        }
-
-        private string GetDefaultPluginScriptsPath()
-        {
-            string homeFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-            return Path.Combine(homeFolder, ".claude", "plugins", "marketplaces", "dev-gom-plugins",
-                               "plugins", "unity-editor-toolkit", "skills", "scripts");
-        }
-
-        private string FindPluginScriptsPath()
-        {
-            // Use custom path if set
-            if (!string.IsNullOrEmpty(pluginScriptsPathOverride))
-            {
-                // Security: Validate path to prevent path traversal
-                string normalized = Path.GetFullPath(pluginScriptsPathOverride);
-                string homeFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-                string allowedPath = Path.Combine(homeFolder, ".claude", "plugins");
-
-                if (!normalized.StartsWith(allowedPath, StringComparison.OrdinalIgnoreCase))
-                {
-                    UnityEngine.Debug.LogError($"Plugin path outside allowed directory: {pluginScriptsPathOverride}");
-                    return null;
-                }
-
-                if (Directory.Exists(normalized) &&
-                    File.Exists(Path.Combine(normalized, "package.json")))
-                {
-                    return normalized;
-                }
-            }
-
-            // Use default home folder based path
-            string defaultPath = GetDefaultPluginScriptsPath();
-            if (Directory.Exists(defaultPath) &&
-                File.Exists(Path.Combine(defaultPath, "package.json")))
-            {
-                return defaultPath;
-            }
-
-            return null;
-        }
-
-        private void CopyDirectory(string sourceDir, string destDir)
-        {
-            // Security: Validate and normalize paths to prevent path traversal
-            string normalizedSource = Path.GetFullPath(sourceDir);
-            string normalizedDest = Path.GetFullPath(destDir);
-
-            // Validate source is in allowed plugin directory
-            string homeFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-            string allowedPluginPath = Path.Combine(homeFolder, ".claude", "plugins");
-
-            if (!normalizedSource.StartsWith(allowedPluginPath, StringComparison.OrdinalIgnoreCase))
-            {
-                throw new UnauthorizedAccessException($"Source path outside allowed directory: {sourceDir}");
-            }
-
-            // Validate destination is within project
-            string projectRoot = Path.GetDirectoryName(Application.dataPath);
-            if (!normalizedDest.StartsWith(projectRoot, StringComparison.OrdinalIgnoreCase))
-            {
-                throw new UnauthorizedAccessException($"Destination path outside project: {destDir}");
-            }
-
-            // Check for symbolic links (security risk)
-            DirectoryInfo sourceInfo = new DirectoryInfo(normalizedSource);
-            if ((sourceInfo.Attributes & FileAttributes.ReparsePoint) == FileAttributes.ReparsePoint)
-            {
-                throw new UnauthorizedAccessException("Symbolic links are not allowed");
-            }
-
-            Directory.CreateDirectory(normalizedDest);
-
-            // Copy files with validation
-            foreach (string file in Directory.GetFiles(normalizedSource))
-            {
-                string fileName = Path.GetFileName(file);
-
-                // Validate filename (prevent null byte injection)
-                if (fileName.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0 || fileName.Contains('\0'))
-                {
-                    UnityEngine.Debug.LogWarning($"Skipping invalid file name: {fileName}");
-                    continue;
-                }
-
-                string destFile = Path.Combine(normalizedDest, fileName);
-
-                // Validate final path stays within destination
-                string normalizedDestFile = Path.GetFullPath(destFile);
-                if (!normalizedDestFile.StartsWith(normalizedDest, StringComparison.OrdinalIgnoreCase))
-                {
-                    UnityEngine.Debug.LogWarning($"Skipping file outside destination: {fileName}");
-                    continue;
-                }
-
-                File.Copy(file, normalizedDestFile, true);
-            }
-
-            // Copy subdirectories recursively with validation
-            foreach (string dir in Directory.GetDirectories(normalizedSource))
-            {
-                string dirName = Path.GetFileName(dir);
-
-                // Skip node_modules, dist, hidden folders, and cache
-                if (dirName == "node_modules" || dirName == "dist" ||
-                    dirName.StartsWith(".") || dirName == "__pycache__")
-                {
-                    continue;
-                }
-
-                string destSubDir = Path.Combine(normalizedDest, dirName);
-                CopyDirectory(dir, destSubDir);
-            }
-        }
-
-        private string RunCommand(string command, string arguments, string workingDirectory, int timeoutSeconds = DefaultCommandTimeoutSeconds)
-        {
-            // Platform-specific command adjustment
-            if (Application.platform == RuntimePlatform.WindowsEditor)
-            {
-                if (command == "npm")
-                {
-                    command = "npm.cmd";
-                }
-            }
-
-            ProcessStartInfo startInfo = new ProcessStartInfo
-            {
-                FileName = command,
-                Arguments = arguments,
-                WorkingDirectory = workingDirectory,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                UseShellExecute = false,
-                CreateNoWindow = true,
-                StandardOutputEncoding = Encoding.UTF8,
-                StandardErrorEncoding = Encoding.UTF8
-            };
-
-            Process process = null;
-            try
-            {
-                process = Process.Start(startInfo);
-                if (process == null)
-                {
-                    throw new Exception($"Failed to start process: {command}");
-                }
-
-                bool exited = process.WaitForExit(timeoutSeconds * 1000);
-
-                if (!exited)
-                {
-                    UnityEngine.Debug.LogWarning($"Process timeout, killing: {command} {arguments}");
-
-                    try
-                    {
-                        process.Kill();
-                        process.WaitForExit(ProcessKillWaitTimeoutMs);
-                    }
-                    catch (Exception killEx)
-                    {
-                        UnityEngine.Debug.LogError($"Failed to kill process: {killEx.Message}");
-                    }
-
-                    throw new Exception($"{command} timed out after {timeoutSeconds} seconds. Check network connection or increase timeout.");
-                }
-
-                string output = process.StandardOutput.ReadToEnd();
-                string error = process.StandardError.ReadToEnd();
-
-                if (process.ExitCode != 0)
-                {
-                    throw new Exception($"{command} {arguments} failed (exit code {process.ExitCode}):\n{error}");
-                }
-
-                return output;
-            }
-            finally
-            {
-                // Always cleanup process resources
-                if (process != null)
-                {
-                    try
-                    {
-                        if (!process.HasExited)
-                        {
-                            process.Kill();
-                            process.WaitForExit(ProcessKillWaitTimeoutMs);
-                        }
-                        process.Dispose();
-                    }
-                    catch (Exception ex)
-                    {
-                        UnityEngine.Debug.LogError($"Error disposing process: {ex.Message}");
+                        updateMajorHelp.text = $"CLI update available: {cliInstaller.LocalCLIVersion} → {cliInstaller.PluginVersion}\n(Recommended to update)";
+                        updateMajorHelp.RemoveFromClassList("hidden");
                     }
                 }
             }
+            else
+            {
+                upToDateHelp?.RemoveFromClassList("hidden");
+            }
+
+            // Button visibility
+            UpdateButtonVisibility(installInProgress);
+
+            // Installation progress
+            if (cliInstaller.IsInstalling)
+            {
+                installingMessage?.RemoveFromClassList("hidden");
+            }
+            else
+            {
+                installingMessage?.AddToClassList("hidden");
+            }
+
+            // Installation log (only on error)
+            UpdateInstallLog();
+
+            // Plugin path
+            UpdatePluginPath();
         }
 
-        private void CreateCLIWrapper(string outputDir, string skillsDir)
+        private void UpdateButtonVisibility(bool installInProgress)
         {
-            string wrapperPath = Path.Combine(outputDir, "uw.js");
-            string wrapperContent = @"#!/usr/bin/env node
+            // Hide all buttons first
+            installButton?.AddToClassList("hidden");
+            updateButton?.AddToClassList("hidden");
+            reinstallButton?.AddToClassList("hidden");
+            clearLockButton?.AddToClassList("hidden");
 
-/**
- * Unity WebSocket CLI Wrapper
- *
- * This wrapper script forwards all arguments to the local CLI installation.
- * Auto-generated by Unity Editor Toolkit.
- *
- * Usage: node .unity-websocket/uw.js <command> [options]
- * Example: node .unity-websocket/uw.js hierarchy
- */
+            bool canInstall = !cliInstaller.IsInstalling && !installInProgress;
 
-const path = require('path');
+            // Show appropriate button
+            if (cliInstaller.LocalCLIVersion == null)
+            {
+                installButton?.RemoveFromClassList("hidden");
+                installButton?.SetEnabled(canInstall);
+            }
+            else if (cliInstaller.UpdateAvailable)
+            {
+                updateButton?.RemoveFromClassList("hidden");
+                updateButton?.SetEnabled(canInstall);
+            }
+            else
+            {
+                reinstallButton?.RemoveFromClassList("hidden");
+                reinstallButton?.SetEnabled(canInstall);
+            }
 
-// Set CLAUDE_PROJECT_DIR to project root (parent of .unity-websocket)
-process.env.CLAUDE_PROJECT_DIR = path.resolve(__dirname, '..');
-
-// Get the actual CLI path
-const cliPath = path.join(__dirname, 'skills', 'scripts', 'dist', 'cli', 'cli.js');
-
-// Forward to the actual CLI
-require(cliPath);
-";
-
-            File.WriteAllText(wrapperPath, wrapperContent);
+            if (installInProgress)
+            {
+                clearLockButton?.RemoveFromClassList("hidden");
+            }
         }
 
-        private void FindOrCreateServer()
+        private void UpdateInstallLog()
         {
-            server = FindObjectOfType<UnityEditorServer>();
+            if (string.IsNullOrEmpty(cliInstaller.InstallLog))
+            {
+                installLogContainer?.AddToClassList("hidden");
+                return;
+            }
+
+            // Check if log contains error
+            string logLower = cliInstaller.InstallLog.ToLower();
+            bool hasError = logLower.Contains("error") ||
+                           logLower.Contains("failed") ||
+                           logLower.Contains("exception") ||
+                           logLower.Contains("cannot find") ||
+                           logLower.Contains("command not found");
+
+            if (hasError)
+            {
+                installLogContainer?.RemoveFromClassList("hidden");
+                if (installLogField != null)
+                    installLogField.value = cliInstaller.InstallLog;
+            }
+            else
+            {
+                installLogContainer?.AddToClassList("hidden");
+            }
         }
 
-        private void CreateServer()
+        private void UpdatePluginPath()
         {
-            var go = new GameObject("UnityEditorServer");
-            server = go.AddComponent<UnityEditorServer>();
-            Selection.activeGameObject = go;
-            EditorGUIUtility.PingObject(go);
+            if (pluginPathField == null) return;
+
+            string pathOverride = EditorPrefs.GetString(PREF_KEY_PLUGIN_PATH, null);
+            string displayPath = EditorServerPathManager.FindPluginScriptsPath(pathOverride)
+                              ?? EditorServerPathManager.GetDefaultPluginScriptsPath();
+            pluginPathField.value = displayPath;
         }
 
         private void Update()
         {
-            bool needsRepaint = false;
+            bool needsUpdate = false;
 
-            // 서버가 없으면 찾기
-            if (server == null)
-            {
-                FindOrCreateServer();
-                needsRepaint = true;
-            }
-
-            // Play Mode 상태 변화 감지
+            // Play Mode state change detection
             if (Application.isPlaying != wasPlaying)
             {
                 wasPlaying = Application.isPlaying;
-                needsRepaint = true;
+                needsUpdate = true;
             }
 
-            // 일정 간격으로만 업데이트 (0.5초마다)
+            // Periodic update
             float currentTime = (float)EditorApplication.timeSinceStartup;
-            if (currentTime - lastUpdateTime > 0.5f)
+            if (currentTime - lastUpdateTime > UI_UPDATE_INTERVAL_SECONDS)
             {
                 lastUpdateTime = currentTime;
-                needsRepaint = true;
+                needsUpdate = true;
             }
 
-            // 필요할 때만 Repaint (✅ 성능 최적화)
-            if (needsRepaint)
+            // Update UI when needed
+            if (needsUpdate)
             {
-                Repaint();
+                UpdateUI();
             }
+        }
+
+        private void OnDisable()
+        {
+            // UI Toolkit automatically cleans up event handlers when the window closes
+            // Clear any references to prevent potential memory leaks
+            statusIndicator = null;
+            serverStatusLabel = null;
+            serverPortLabel = null;
+            connectedClientsLabel = null;
+            autostartToggle = null;
+            startButton = null;
+            stopButton = null;
+            nodejsMissingSection = null;
+            cliStatusSection = null;
+            packageVersionLabel = null;
+            cliVersionLabel = null;
+            installProgressHelp = null;
+            notInstalledHelp = null;
+            updateMinorHelp = null;
+            updateMajorHelp = null;
+            upToDateHelp = null;
+            installButton = null;
+            updateButton = null;
+            reinstallButton = null;
+            clearLockButton = null;
+            installingMessage = null;
+            installLogContainer = null;
+            installLogField = null;
+            pluginPathField = null;
         }
     }
 }
