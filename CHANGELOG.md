@@ -2,7 +2,34 @@
 
 All notable changes to the Dev GOM Plugins marketplace will be documented in this file.
 
-> **Version**: 2.21.0 | **Last Updated**: 2025-11-12
+> **Version**: 2.22.0 | **Last Updated**: 2025-11-13
+
+---
+
+## [2.22.0] - 2025-11-13
+
+### Documentation
+- 📚 **Unity Editor Toolkit v0.5.0**: Documentation Structure Improvements
+  - **Reorganized Documentation**: Separated user documentation from Claude reference documentation
+    - Moved user docs (QUICKSTART, TEST_GUIDE, API_COMPATIBILITY) to plugin root
+    - Kept Claude reference docs (COMMANDS_*.md) in `skills/references/`
+  - **Command Reference Split**: Split monolithic COMMANDS_IMPLEMENTED.md into 6 category-specific files
+    - `COMMANDS_CONNECTION_STATUS.md` - Connection and status commands
+    - `COMMANDS_GAMEOBJECT_HIERARCHY.md` - GameObject manipulation and hierarchy commands
+    - `COMMANDS_TRANSFORM.md` - Transform manipulation commands
+    - `COMMANDS_SCENE.md` - Scene management commands
+    - `COMMANDS_EDITOR.md` - Asset Database and Editor utilities commands
+    - `COMMANDS_CONSOLE.md` - Console and logging commands
+  - **Bilingual Navigation**: Added language switcher links to all documentation
+    - English/Korean navigation at top of each document
+    - Improved documentation accessibility for international users
+  - **Link Updates**: Updated all internal documentation links to reflect new structure
+    - SKILL.md references updated
+    - All command reference "See Also" sections updated
+
+### Changed
+- **Unity Editor Toolkit**: Improved documentation organization and navigation
+- **Unity Editor Toolkit**: Enhanced command reference structure for better maintainability
 
 ---
 

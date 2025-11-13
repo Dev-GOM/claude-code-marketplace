@@ -61,16 +61,16 @@ Use CLI commands:
 
 ```bash
 # Find GameObject
-unity-editor go find "Player"
+cd <unity-project-root> node .unity-websocket/uw go find "Player"
 
 # Set position
-unity-editor tf set-position "Player" "0,5,10"
+cd <unity-project-root> node .unity-websocket/uw tf set-position "Player" "0,5,10"
 
 # Load scene
-unity-editor scene load "GameScene"
+cd <unity-project-root> node .unity-websocket/uw scene load "GameScene"
 
 # Get console logs
-unity-editor console logs
+cd <unity-project-root> node .unity-websocket/uw console logs
 ```
 
 ## Requirements

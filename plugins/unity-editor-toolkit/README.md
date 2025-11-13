@@ -1,22 +1,22 @@
 # Unity Editor Toolkit
 
-**Version 0.4.0** | Last Updated: 2025-11-12
+**Version 0.5.0** | Last Updated: 2025-11-13
 
 Complete Unity Editor control and automation toolkit for Claude Code. Command 500+ Unity Editor features across 25 categories - GameObjects, components, scenes, materials, physics, animation, and more through real-time WebSocket automation.
 
-## Recent Updates (v0.4.0)
+## Recent Updates (v0.5.0)
 
-**Security & Stability Improvements:**
-- 🔒 **Critical**: Fixed path traversal vulnerability
-- ✅ Improved resource cleanup (processes, WebSocket connections)
-- ✅ Enhanced file operations with atomic writes
-- ✅ Strengthened input validation and error handling
-- ✅ Better lock file validation and PID checking
+**Documentation Improvements:**
+- 📚 Reorganized documentation structure (user docs vs Claude reference docs)
+- ✅ Split command reference into 6 category-specific files
+- ✅ Moved user documentation (QUICKSTART, TEST_GUIDE, API_COMPATIBILITY) to plugin root
+- ✅ Added bilingual navigation with language switcher links
+- ✅ Updated all internal documentation links
 
-**Code Quality:**
-- Refactored command utilities for code reuse
-- Converted magic numbers to named constants
-- Improved timeout handling with detailed errors
+**Previous Updates (v0.4.0):**
+- 🔒 Fixed path traversal vulnerability
+- ✅ Improved resource cleanup and atomic file operations
+- ✅ Enhanced input validation and error handling
 
 See [CHANGELOG.md](./CHANGELOG.md) for full release notes.
 
@@ -98,88 +98,88 @@ See [COMMANDS.md](./skills/references/COMMANDS.md) for complete 500+ command ref
 **Hierarchy**
 ```bash
 # View GameObject hierarchy with tree visualization
-unity-editor hierarchy
+cd <unity-project-root> node .unity-websocket/uw hierarchy
 
 # Show only root GameObjects
-unity-editor hierarchy --root-only
+cd <unity-project-root> node .unity-websocket/uw hierarchy --root-only
 
 # Include inactive GameObjects
-unity-editor hierarchy --include-inactive
+cd <unity-project-root> node .unity-websocket/uw hierarchy --include-inactive
 ```
 
 **GameObject**
 ```bash
 # Find GameObject by name or path
-unity-editor go find "Player"
-unity-editor go find "Environment/Terrain"
+cd <unity-project-root> node .unity-websocket/uw go find "Player"
+cd <unity-project-root> node .unity-websocket/uw go find "Environment/Terrain"
 
 # Create new GameObject
-unity-editor go create "NewObject"
-unity-editor go create "Child" --parent "Parent"
+cd <unity-project-root> node .unity-websocket/uw go create "NewObject"
+cd <unity-project-root> node .unity-websocket/uw go create "Child" --parent "Parent"
 
 # Destroy GameObject
-unity-editor go destroy "OldObject"
+cd <unity-project-root> node .unity-websocket/uw go destroy "OldObject"
 
 # Set active state
-unity-editor go set-active "Player" true
-unity-editor go set-active "Enemy" false
+cd <unity-project-root> node .unity-websocket/uw go set-active "Player" true
+cd <unity-project-root> node .unity-websocket/uw go set-active "Enemy" false
 ```
 
 **Transform**
 ```bash
 # Get Transform information
-unity-editor tf get "Player"
+cd <unity-project-root> node .unity-websocket/uw tf get "Player"
 
 # Set position (x,y,z)
-unity-editor tf set-position "Player" "0,5,10"
+cd <unity-project-root> node .unity-websocket/uw tf set-position "Player" "0,5,10"
 
 # Set rotation (Euler angles in degrees)
-unity-editor tf set-rotation "Player" "0,90,0"
+cd <unity-project-root> node .unity-websocket/uw tf set-rotation "Player" "0,90,0"
 
 # Set scale
-unity-editor tf set-scale "Player" "2,2,2"
+cd <unity-project-root> node .unity-websocket/uw tf set-scale "Player" "2,2,2"
 ```
 
 **Scene**
 ```bash
 # Get current scene info
-unity-editor scene current
+cd <unity-project-root> node .unity-websocket/uw scene current
 
 # List all loaded scenes
-unity-editor scene list
+cd <unity-project-root> node .unity-websocket/uw scene list
 
 # Load scene by name
-unity-editor scene load "GameScene"
+cd <unity-project-root> node .unity-websocket/uw scene load "GameScene"
 
 # Load scene additively
-unity-editor scene load "UIScene" --additive
+cd <unity-project-root> node .unity-websocket/uw scene load "UIScene" --additive
 ```
 
 **Console**
 ```bash
 # Get recent console logs (default: 50)
-unity-editor console logs
+cd <unity-project-root> node .unity-websocket/uw console logs
 
 # Get specific number of logs
-unity-editor console logs --count 100
+cd <unity-project-root> node .unity-websocket/uw console logs --count 100
 
 # Show only errors and exceptions
-unity-editor console logs --errors-only
+cd <unity-project-root> node .unity-websocket/uw console logs --errors-only
 
 # Include warnings
-unity-editor console logs --warnings
+cd <unity-project-root> node .unity-websocket/uw console logs --warnings
 
 # Clear console
-unity-editor console clear
+cd <unity-project-root> node .unity-websocket/uw console clear
 ```
 
 **Status**
 ```bash
 # Check connection status
-unity-editor status
+cd <unity-project-root> node .unity-websocket/uw status
 
 # Use custom port
-unity-editor --port 9301 status
+cd <unity-project-root> node .unity-websocket/uw --port 9301 status
 ```
 
 #### Coming Soon (500+ commands)
@@ -207,33 +207,33 @@ See [COMMANDS.md](./skills/references/COMMANDS.md) for full command reference in
 
 **Create and configure GameObject:**
 ```bash
-unity-editor go create "Enemy" && \
-unity-editor tf set-position "Enemy" "10,0,5" && \
-unity-editor tf set-rotation "Enemy" "0,45,0"
+cd <unity-project-root> node .unity-websocket/uw go create "Enemy" && \
+cd <unity-project-root> node .unity-websocket/uw tf set-position "Enemy" "10,0,5" && \
+cd <unity-project-root> node .unity-websocket/uw tf set-rotation "Enemy" "0,45,0"
 ```
 
 **Instantiate Prefab and modify:**
 ```bash
-unity-editor prefab instantiate "Prefabs/Player" --position "0,1,0" && \
-unity-editor material set-color "Player" "_Color" "0,1,0,1"
+cd <unity-project-root> node .unity-websocket/uw prefab instantiate "Prefabs/Player" --position "0,1,0" && \
+cd <unity-project-root> node .unity-websocket/uw material set-color "Player" "_Color" "0,1,0,1"
 ```
 
 **Load scene and activate GameObject:**
 ```bash
-unity-editor scene load "Level1" && \
-unity-editor go set-active "Boss" true
+cd <unity-project-root> node .unity-websocket/uw scene load "Level1" && \
+cd <unity-project-root> node .unity-websocket/uw go set-active "Boss" true
 ```
 
 **Monitor console errors in real-time:**
 ```bash
-unity-editor console stream --filter error
+cd <unity-project-root> node .unity-websocket/uw console stream --filter error
 ```
 
 **Batch GameObject creation:**
 ```bash
 for i in {1..10}; do
-  unity-editor go create "Cube_$i" && \
-  unity-editor tf set-position "Cube_$i" "$i,0,0"
+  cd <unity-project-root> node .unity-websocket/uw go create "Cube_$i" && \
+  cd <unity-project-root> node .unity-websocket/uw tf set-position "Cube_$i" "$i,0,0"
 done
 ```
 
@@ -423,7 +423,7 @@ Contributions welcome! Please read [CONTRIBUTING.md](../../CONTRIBUTING.md) for 
 
 ---
 
-**Version**: 0.3.1
-**Last Updated**: 2025-11-12
+**Version**: 0.5.0
+**Last Updated**: 2025-11-13
 **Author**: Dev GOM
 **Marketplace**: [dev-gom-plugins](https://github.com/Dev-GOM/claude-code-marketplace)

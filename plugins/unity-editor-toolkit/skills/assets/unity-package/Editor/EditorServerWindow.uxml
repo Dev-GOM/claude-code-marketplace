@@ -24,6 +24,11 @@
 
             <ui:Toggle name="autostart-toggle" label="Auto-start server on Unity launch" class="toggle-field" />
 
+            <ui:VisualElement class="status-row">
+                <ui:Label text="Log Level:" class="label-key" />
+                <uie:EnumField name="log-level-dropdown" class="enum-field" />
+            </ui:VisualElement>
+
             <ui:VisualElement class="button-row">
                 <ui:Button name="start-button" text="Start Server" class="action-button" />
                 <ui:Button name="stop-button" text="Stop Server" class="action-button" />

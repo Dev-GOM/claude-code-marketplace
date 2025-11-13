@@ -27,6 +27,7 @@ namespace UnityEditorToolkit.Editor
         private Label serverPortLabel;
         private Label connectedClientsLabel;
         private Toggle autostartToggle;
+        private EnumField logLevelDropdown;
         private Button startButton;
         private Button stopButton;
 
@@ -121,6 +122,7 @@ namespace UnityEditorToolkit.Editor
             serverPortLabel = rootVisualElement.Q<Label>("server-port");
             connectedClientsLabel = rootVisualElement.Q<Label>("connected-clients");
             autostartToggle = rootVisualElement.Q<Toggle>("autostart-toggle");
+            logLevelDropdown = rootVisualElement.Q<EnumField>("log-level-dropdown");
             startButton = rootVisualElement.Q<Button>("start-button");
             stopButton = rootVisualElement.Q<Button>("stop-button");
 
@@ -156,6 +158,15 @@ namespace UnityEditorToolkit.Editor
             autostartToggle?.RegisterValueChangedCallback(evt => {
                 server.AutoStart = evt.newValue;
             });
+
+            // Initialize and bind log level dropdown
+            if (logLevelDropdown != null)
+            {
+                logLevelDropdown.Init(server.CurrentLogLevel);
+                logLevelDropdown.RegisterValueChangedCallback(evt => {
+                    server.CurrentLogLevel = (EditorWebSocketServer.LogLevel)evt.newValue;
+                });
+            }
 
             startButton?.RegisterCallback<ClickEvent>(evt => server.StartServer());
             stopButton?.RegisterCallback<ClickEvent>(evt => server.StopServer());

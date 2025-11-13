@@ -1,6 +1,6 @@
 # Claude Code Plugins
 
-> **Version**: 2.20.1 | **Last Updated**: 2025-11-12
+> **Version**: 2.22.0 | **Last Updated**: 2025-11-13
 >
 > **Language**: [English](README.md) | [한국어](README.ko.md)
 >
@@ -225,7 +225,7 @@ Chrome DevTools Protocol (CDP) based browser automation, web scraping, and crawl
 
 **⚠️ Experimental Plugin** - Real-time Unity Editor control via WebSocket with comprehensive automated testing and security hardening.
 
-**Quick Info:** WebSocket-based Unity Editor control (auto-assigned port 9500-9600) | GameObject/Transform/Scene/Console management | 66 automated tests with Unity Test Framework | **Status:** 🧪 Experimental (v0.4.0) | **Unity Compatibility:** Unity 2020.3 - Unity 6+ | **Setup:** Editor Window-based (`Tools > Unity Editor Toolkit > Server Window`) with auto-start | **Security:** Path traversal protection, enhanced input validation, resource cleanup | **Features:** Real-time editor communication, JSON-RPC 2.0 protocol, Thread-safe operations, Automatic port detection via status file | **APIs:** GameObject.Find/Create/Destroy/SetActive, Transform.Get/SetPosition/Rotation/Scale, Scene.GetCurrent/GetAll/Load, Console.GetLogs/Clear, Hierarchy.Get
+**Quick Info:** WebSocket-based Unity Editor control (auto-assigned port 9500-9600) | GameObject/Transform/Scene/Console management | 66 automated tests with Unity Test Framework | **Status:** 🧪 Experimental (v0.5.0) | **Unity Compatibility:** Unity 2020.3 - Unity 6+ | **Setup:** Editor Window-based (`Tools > Unity Editor Toolkit > Server Window`) with auto-start | **Security:** Path traversal protection, enhanced input validation, resource cleanup | **Features:** Real-time editor communication, JSON-RPC 2.0 protocol, Thread-safe operations, Automatic port detection via status file | **APIs:** GameObject.Find/Create/Destroy/SetActive, Transform.Get/SetPosition/Rotation/Scale, Scene.GetCurrent/GetAll/Load, Console.GetLogs/Clear, Hierarchy.Get
 
 **[Read Full Documentation →](plugins/unity-editor-toolkit/README.md)**
 

@@ -61,6 +61,12 @@ export function error(message: string, err?: Error | unknown): void {
     console.error(formatMessage(LogLevel.ERROR, message));
     if (err instanceof Error) {
       console.error('  Error:', err.message);
+
+      // Show UnityRPCError data if available
+      if ('data' in err && err.data) {
+        console.error('  Details:', err.data);
+      }
+
       if (currentLogLevel >= LogLevel.DEBUG && err.stack) {
         console.error('  Stack:', err.stack);
       }

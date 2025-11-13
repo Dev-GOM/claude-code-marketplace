@@ -292,6 +292,10 @@ namespace UnityEditorToolkit.Editor.Server
                 {
                     Log($"Command timeout: {request.Method} took {elapsed:F2}s", LogLevel.Warning);
                 }
+                else
+                {
+                    Log($"Success: {request.Method} ({elapsed:F3}s)", LogLevel.Info);
+                }
 
                 // Return success response
                 return new JsonRpcResponse(request.Id, result).ToJson();

@@ -81,16 +81,19 @@ namespace UnityEditorToolkit.Handlers
 
             try
             {
-                // Validate path exists
-                string fullPath = $"Assets/{param.path}";
-                if (!System.IO.File.Exists(fullPath) && !System.IO.Directory.Exists(fullPath))
+                // Build Unity virtual path and physical path
+                string assetPath = $"Assets/{param.path}";
+                string physicalPath = System.IO.Path.Combine(Application.dataPath, param.path);
+
+                // Validate path exists using physical path
+                if (!System.IO.File.Exists(physicalPath) && !System.IO.Directory.Exists(physicalPath))
                 {
-                    throw new Exception($"Asset not found: {fullPath}");
+                    throw new Exception($"Asset not found: {assetPath}");
                 }
 
-                // Reimport the asset
-                AssetDatabase.ImportAsset(fullPath, ImportAssetOptions.ForceUpdate);
-                return new { success = true, path = fullPath, message = "Asset reimported" };
+                // Reimport the asset using Unity virtual path
+                AssetDatabase.ImportAsset(assetPath, ImportAssetOptions.ForceUpdate);
+                return new { success = true, path = assetPath, message = "Asset reimported" };
             }
             catch (Exception ex)
             {

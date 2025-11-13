@@ -1,3 +1,7 @@
+**Language**: English | [한국어](./QUICKSTART.ko.md)
+
+---
+
 # Unity Editor Toolkit - Quick Start Guide
 
 Complete setup guide from installation to first command execution.
@@ -90,7 +94,7 @@ Open your terminal in Claude Code and try these commands:
 ### 1. Check Connection Status
 
 ```bash
-unity-editor status
+cd <unity-project-root> node .unity-websocket/uw status
 ```
 
 Expected output:
@@ -103,7 +107,7 @@ Status: Running
 ### 2. Find a GameObject
 
 ```bash
-unity-editor go find "Main Camera"
+cd <unity-project-root> node .unity-websocket/uw go find "Main Camera"
 ```
 
 Expected output:
@@ -120,7 +124,7 @@ Expected output:
 ### 3. Create New GameObject
 
 ```bash
-unity-editor go create "TestCube"
+cd <unity-project-root> node .unity-websocket/uw go create "TestCube"
 ```
 
 Check Unity Hierarchy - you should see a new "TestCube" GameObject!
@@ -128,7 +132,7 @@ Check Unity Hierarchy - you should see a new "TestCube" GameObject!
 ### 4. Set Position
 
 ```bash
-unity-editor tf set-position "TestCube" "5,2,3"
+cd <unity-project-root> node .unity-websocket/uw tf set-position "TestCube" "5,2,3"
 ```
 
 In Unity Scene view, "TestCube" moves to position (5, 2, 3).
@@ -136,7 +140,7 @@ In Unity Scene view, "TestCube" moves to position (5, 2, 3).
 ### 5. Get Scene Info
 
 ```bash
-unity-editor scene current
+cd <unity-project-root> node .unity-websocket/uw scene current
 ```
 
 Shows information about the currently active scene.
@@ -144,7 +148,7 @@ Shows information about the currently active scene.
 ### 6. View Hierarchy
 
 ```bash
-unity-editor hierarchy
+cd <unity-project-root> node .unity-websocket/uw hierarchy
 ```
 
 Displays entire GameObject hierarchy in tree format.
@@ -152,7 +156,7 @@ Displays entire GameObject hierarchy in tree format.
 ### 7. Get Console Logs
 
 ```bash
-unity-editor console logs --count 10
+cd <unity-project-root> node .unity-websocket/uw console logs --count 10
 ```
 
 Shows last 10 console log entries.
@@ -168,7 +172,7 @@ Shows last 10 console log entries.
 - [ ] Server started automatically (check Console for startup message)
 - [ ] Status file created: `.unity-websocket/server-status.json`
 - [ ] Console shows "✓ Unity Editor Server started on ws://127.0.0.1:XXXX"
-- [ ] `unity-editor status` command works
+- [ ] `cd <unity-project-root> node .unity-websocket/uw status` command works
 - [ ] Can create/find GameObjects
 - [ ] Can modify transforms
 - [ ] No errors in Unity Console
@@ -190,7 +194,7 @@ Shows last 10 console log entries.
 ls -la .unity-websocket/
 
 # Manually specify port if needed
-unity-editor --port 9500 status
+cd <unity-project-root> node .unity-websocket/uw --port 9500 status
 ```
 
 In Unity Server Window, check "Server Status" and restart if needed.
@@ -214,10 +218,10 @@ In Unity Server Window, check "Server Status" and restart if needed.
 **Fix:**
 ```bash
 # Check server status first
-unity-editor status
+cd <unity-project-root> node .unity-websocket/uw status
 
 # Try simple command
-unity-editor go find "Main Camera"
+cd <unity-project-root> node .unity-websocket/uw go find "Main Camera"
 ```
 
 ### Unity Console shows errors
@@ -242,14 +246,15 @@ unity-editor go find "Main Camera"
 
 ### Learn More Commands
 
-See [COMMANDS.md](./COMMANDS.md) for complete 500+ command reference.
+See [COMMANDS.md](./skills/references/COMMANDS.md) for complete 500+ command roadmap.
 
-**Currently Available (17 commands):**
-- GameObject: Find, Create, Destroy, SetActive
-- Transform: Get/Set Position, Rotation, Scale
-- Scene: GetCurrent, GetAll, Load
-- Console: GetLogs, Clear
-- Hierarchy: Get
+**Currently Available (18 commands):**
+- Connection & Status: Status (1 command)
+- GameObject & Hierarchy: Find, Create, Destroy, SetActive, Hierarchy (5 commands)
+- Transform: Get, SetPosition, SetRotation, SetScale (4 commands)
+- Scene: Current, List, Load (3 commands)
+- Asset Database & Editor: Refresh, Recompile, Reimport (3 commands)
+- Console: Logs, Clear (2 commands)
 
 ### Advanced Usage
 
@@ -257,18 +262,18 @@ See [COMMANDS.md](./COMMANDS.md) for complete 500+ command reference.
 ```bash
 # Create multiple cubes
 for i in {1..5}; do
-  unity-editor go create "Cube_$i"
-  unity-editor tf set-position "Cube_$i" "$i,0,0"
+  cd <unity-project-root> node .unity-websocket/uw go create "Cube_$i"
+  cd <unity-project-root> node .unity-websocket/uw tf set-position "Cube_$i" "$i,0,0"
 done
 ```
 
 **Script Integration:**
 ```bash
 # Save hierarchy to file
-unity-editor hierarchy > hierarchy.json
+cd <unity-project-root> node .unity-websocket/uw hierarchy > hierarchy.json
 
 # Monitor console in real-time
-unity-editor console stream --filter error
+cd <unity-project-root> node .unity-websocket/uw console stream --filter error
 ```
 
 ### Editor Window
@@ -292,8 +297,15 @@ https://github.com/Dev-GOM/claude-code-marketplace/issues
 
 **Documentation:**
 - [Full README](./README.md)
-- [Command Reference](./COMMANDS.md)
-- [Unity Package Docs](../assets/unity-package/README.md)
+- [Command Roadmap](./skills/references/COMMANDS.md) - 500+ command roadmap
+- **Implemented Command Categories:**
+  - [Connection & Status](./skills/references/COMMANDS_CONNECTION_STATUS.md)
+  - [GameObject & Hierarchy](./skills/references/COMMANDS_GAMEOBJECT_HIERARCHY.md)
+  - [Transform](./skills/references/COMMANDS_TRANSFORM.md)
+  - [Scene Management](./skills/references/COMMANDS_SCENE.md)
+  - [Asset Database & Editor](./skills/references/COMMANDS_EDITOR.md)
+  - [Console & Logging](./skills/references/COMMANDS_CONSOLE.md)
+- [Unity Package Docs](./skills/assets/unity-package/README.md)
 
 ---
 

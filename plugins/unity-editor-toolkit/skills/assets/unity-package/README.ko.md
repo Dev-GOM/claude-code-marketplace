@@ -61,16 +61,16 @@ CLI 명령어 사용:
 
 ```bash
 # GameObject 찾기
-unity-editor go find "Player"
+cd <unity-project-root> node .unity-websocket/uw go find "Player"
 
 # 위치 설정
-unity-editor tf set-position "Player" "0,5,10"
+cd <unity-project-root> node .unity-websocket/uw tf set-position "Player" "0,5,10"
 
 # 씬 로드
-unity-editor scene load "GameScene"
+cd <unity-project-root> node .unity-websocket/uw scene load "GameScene"
 
 # 콘솔 로그 가져오기
-unity-editor console logs
+cd <unity-project-root> node .unity-websocket/uw console logs
 ```
 
 ## 요구사항

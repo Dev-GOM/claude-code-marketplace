@@ -1,22 +1,22 @@
 # Unity Editor Toolkit
 
-**버전 0.4.0** | 최종 업데이트: 2025-11-12
+**버전 0.5.0** | 최종 업데이트: 2025-11-13
 
 Claude Code를 위한 완벽한 Unity Editor 제어 및 자동화 툴킷. 25개 카테고리에 걸쳐 500+ Unity Editor 기능을 명령 - GameObjects, 컴포넌트, 씬, Material, 물리, 애니메이션 등을 실시간 WebSocket 자동화로 제어하세요.
 
-## 최근 업데이트 (v0.4.0)
+## 최근 업데이트 (v0.5.0)
 
-**보안 & 안정성 개선:**
-- 🔒 **Critical**: 경로 탐색(Path Traversal) 취약점 수정
-- ✅ 리소스 정리 개선 (프로세스, WebSocket 연결)
-- ✅ 파일 작업의 원자성 향상
+**문서 개선:**
+- 📚 문서 구조 재구성 (사용자 문서 vs Claude 레퍼런스 문서)
+- ✅ 명령어 레퍼런스를 6개 카테고리별 파일로 분할
+- ✅ 사용자 문서(QUICKSTART, TEST_GUIDE, API_COMPATIBILITY)를 플러그인 루트로 이동
+- ✅ 언어 전환 링크로 이중 언어 네비게이션 추가
+- ✅ 모든 내부 문서 링크 업데이트
+
+**이전 업데이트 (v0.4.0):**
+- 🔒 경로 탐색(Path Traversal) 취약점 수정
+- ✅ 리소스 정리 및 파일 작업의 원자성 향상
 - ✅ 입력 검증 및 오류 처리 강화
-- ✅ Lock 파일 검증 및 PID 체크 개선
-
-**코드 품질:**
-- 재사용을 위한 명령어 유틸리티 리팩토링
-- Magic numbers를 named constants로 변환
-- 상세한 오류 정보를 포함한 타임아웃 처리 개선
 
 전체 릴리즈 노트는 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
@@ -98,88 +98,88 @@ Claude Code를 위한 완벽한 Unity Editor 제어 및 자동화 툴킷. 25개 
 **Hierarchy (계층 구조)**
 ```bash
 # GameObject 계층 구조를 트리 형태로 보기
-unity-editor hierarchy
+cd <unity-project-root> node .unity-websocket/uw hierarchy
 
 # 루트 GameObject만 표시
-unity-editor hierarchy --root-only
+cd <unity-project-root> node .unity-websocket/uw hierarchy --root-only
 
 # 비활성 GameObject 포함
-unity-editor hierarchy --include-inactive
+cd <unity-project-root> node .unity-websocket/uw hierarchy --include-inactive
 ```
 
 **GameObject**
 ```bash
 # 이름 또는 경로로 GameObject 찾기
-unity-editor go find "Player"
-unity-editor go find "Environment/Terrain"
+cd <unity-project-root> node .unity-websocket/uw go find "Player"
+cd <unity-project-root> node .unity-websocket/uw go find "Environment/Terrain"
 
 # 새 GameObject 생성
-unity-editor go create "NewObject"
-unity-editor go create "Child" --parent "Parent"
+cd <unity-project-root> node .unity-websocket/uw go create "NewObject"
+cd <unity-project-root> node .unity-websocket/uw go create "Child" --parent "Parent"
 
 # GameObject 삭제
-unity-editor go destroy "OldObject"
+cd <unity-project-root> node .unity-websocket/uw go destroy "OldObject"
 
 # 활성 상태 설정
-unity-editor go set-active "Player" true
-unity-editor go set-active "Enemy" false
+cd <unity-project-root> node .unity-websocket/uw go set-active "Player" true
+cd <unity-project-root> node .unity-websocket/uw go set-active "Enemy" false
 ```
 
 **Transform**
 ```bash
 # Transform 정보 가져오기
-unity-editor tf get "Player"
+cd <unity-project-root> node .unity-websocket/uw tf get "Player"
 
 # 위치 설정 (x,y,z)
-unity-editor tf set-position "Player" "0,5,10"
+cd <unity-project-root> node .unity-websocket/uw tf set-position "Player" "0,5,10"
 
 # 회전 설정 (오일러 각도, 도 단위)
-unity-editor tf set-rotation "Player" "0,90,0"
+cd <unity-project-root> node .unity-websocket/uw tf set-rotation "Player" "0,90,0"
 
 # 스케일 설정
-unity-editor tf set-scale "Player" "2,2,2"
+cd <unity-project-root> node .unity-websocket/uw tf set-scale "Player" "2,2,2"
 ```
 
 **Scene (씬)**
 ```bash
 # 현재 씬 정보 가져오기
-unity-editor scene current
+cd <unity-project-root> node .unity-websocket/uw scene current
 
 # 로드된 모든 씬 나열
-unity-editor scene list
+cd <unity-project-root> node .unity-websocket/uw scene list
 
 # 이름으로 씬 로드
-unity-editor scene load "GameScene"
+cd <unity-project-root> node .unity-websocket/uw scene load "GameScene"
 
 # 씬을 추가로 로드 (Additive)
-unity-editor scene load "UIScene" --additive
+cd <unity-project-root> node .unity-websocket/uw scene load "UIScene" --additive
 ```
 
 **Console (콘솔)**
 ```bash
 # 최근 콘솔 로그 가져오기 (기본값: 50개)
-unity-editor console logs
+cd <unity-project-root> node .unity-websocket/uw console logs
 
 # 특정 개수의 로그 가져오기
-unity-editor console logs --count 100
+cd <unity-project-root> node .unity-websocket/uw console logs --count 100
 
 # 오류 및 예외만 표시
-unity-editor console logs --errors-only
+cd <unity-project-root> node .unity-websocket/uw console logs --errors-only
 
 # 경고 포함
-unity-editor console logs --warnings
+cd <unity-project-root> node .unity-websocket/uw console logs --warnings
 
 # 콘솔 지우기
-unity-editor console clear
+cd <unity-project-root> node .unity-websocket/uw console clear
 ```
 
 **Status (상태)**
 ```bash
 # 연결 상태 확인
-unity-editor status
+cd <unity-project-root> node .unity-websocket/uw status
 
 # 사용자 지정 포트 사용
-unity-editor --port 9301 status
+cd <unity-project-root> node .unity-websocket/uw --port 9301 status
 ```
 
 #### 개발 예정 (500+ 명령어)
@@ -207,33 +207,33 @@ unity-editor --port 9301 status
 
 **GameObject 생성 및 설정:**
 ```bash
-unity-editor go create "Enemy" && \
-unity-editor tf set-position "Enemy" "10,0,5" && \
-unity-editor tf set-rotation "Enemy" "0,45,0"
+cd <unity-project-root> node .unity-websocket/uw go create "Enemy" && \
+cd <unity-project-root> node .unity-websocket/uw tf set-position "Enemy" "10,0,5" && \
+cd <unity-project-root> node .unity-websocket/uw tf set-rotation "Enemy" "0,45,0"
 ```
 
 **Prefab 인스턴스화 및 수정:**
 ```bash
-unity-editor prefab instantiate "Prefabs/Player" --position "0,1,0" && \
-unity-editor material set-color "Player" "_Color" "0,1,0,1"
+cd <unity-project-root> node .unity-websocket/uw prefab instantiate "Prefabs/Player" --position "0,1,0" && \
+cd <unity-project-root> node .unity-websocket/uw material set-color "Player" "_Color" "0,1,0,1"
 ```
 
 **씬 로드 및 GameObject 활성화:**
 ```bash
-unity-editor scene load "Level1" && \
-unity-editor go set-active "Boss" true
+cd <unity-project-root> node .unity-websocket/uw scene load "Level1" && \
+cd <unity-project-root> node .unity-websocket/uw go set-active "Boss" true
 ```
 
 **콘솔 오류 실시간 모니터링:**
 ```bash
-unity-editor console stream --filter error
+cd <unity-project-root> node .unity-websocket/uw console stream --filter error
 ```
 
 **GameObject 일괄 생성:**
 ```bash
 for i in {1..10}; do
-  unity-editor go create "Cube_$i" && \
-  unity-editor tf set-position "Cube_$i" "$i,0,0"
+  cd <unity-project-root> node .unity-websocket/uw go create "Cube_$i" && \
+  cd <unity-project-root> node .unity-websocket/uw tf set-position "Cube_$i" "$i,0,0"
 done
 ```
 
@@ -427,7 +427,7 @@ Apache License 2.0 - 자세한 내용은 [LICENSE](../../LICENSE)를 참조하�
 
 ---
 
-**버전**: 0.4.0
-**마지막 업데이트**: 2025-11-12
+**버전**: 0.5.0
+**마지막 업데이트**: 2025-11-13
 **제작자**: Dev GOM
 **마켓플레이스**: [dev-gom-plugins](https://github.com/Dev-GOM/claude-code-marketplace)

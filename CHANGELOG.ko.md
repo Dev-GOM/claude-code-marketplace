@@ -2,7 +2,34 @@
 
 Dev GOM Plugins 마켓플레이스의 모든 주요 변경사항이 이 파일에 문서화됩니다.
 
-> **버전**: 2.21.0 | **최종 업데이트**: 2025-11-12
+> **버전**: 2.22.0 | **최종 업데이트**: 2025-11-13
+
+---
+
+## [2.22.0] - 2025-11-13
+
+### 문서
+- 📚 **Unity Editor Toolkit v0.5.0**: 문서 구조 개선
+  - **문서 재구성**: 사용자 문서와 Claude 레퍼런스 문서 분리
+    - 사용자 문서(QUICKSTART, TEST_GUIDE, API_COMPATIBILITY)를 플러그인 루트로 이동
+    - Claude 레퍼런스 문서(COMMANDS_*.md)는 `skills/references/`에 유지
+  - **명령어 레퍼런스 분할**: 통합 COMMANDS_IMPLEMENTED.md를 6개 카테고리별 파일로 분할
+    - `COMMANDS_CONNECTION_STATUS.md` - 연결 및 상태 명령어
+    - `COMMANDS_GAMEOBJECT_HIERARCHY.md` - GameObject 조작 및 계층 구조 명령어
+    - `COMMANDS_TRANSFORM.md` - Transform 조작 명령어
+    - `COMMANDS_SCENE.md` - Scene 관리 명령어
+    - `COMMANDS_EDITOR.md` - Asset Database 및 Editor 유틸리티 명령어
+    - `COMMANDS_CONSOLE.md` - Console 및 로깅 명령어
+  - **이중 언어 네비게이션**: 모든 문서에 언어 전환 링크 추가
+    - 각 문서 상단에 영문/한글 네비게이션
+    - 국제 사용자를 위한 문서 접근성 향상
+  - **링크 업데이트**: 새로운 구조를 반영하여 모든 내부 문서 링크 업데이트
+    - SKILL.md 참조 업데이트
+    - 모든 명령어 레퍼런스 "참고 자료" 섹션 업데이트
+
+### 변경됨
+- **Unity Editor Toolkit**: 문서 구성 및 네비게이션 개선
+- **Unity Editor Toolkit**: 유지보수성 향상을 위한 명령어 레퍼런스 구조 개선
 
 ---
 

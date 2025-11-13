@@ -52,6 +52,8 @@ export function registerEditorCommand(program: Command): void {
           });
         } else {
           logger.info('✓ AssetDatabase refreshed');
+          logger.info('');
+          logger.warn('⚠ Please check Unity Editor for compilation status');
         }
       } catch (error) {
         logger.error('Failed to refresh AssetDatabase', error);
@@ -100,6 +102,8 @@ export function registerEditorCommand(program: Command): void {
           });
         } else {
           logger.info('✓ Script recompilation requested');
+          logger.info('');
+          logger.warn('⚠ Please check Unity Editor for compilation status');
         }
       } catch (error) {
         logger.error('Failed to recompile scripts', error);
@@ -150,6 +154,8 @@ export function registerEditorCommand(program: Command): void {
           });
         } else {
           logger.info('✓ Asset reimported');
+          logger.info('');
+          logger.warn('⚠ Please check Unity Editor for compilation status');
         }
       } catch (error) {
         logger.error('Failed to reimport asset', error);

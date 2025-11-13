@@ -88,111 +88,90 @@ Unity Editor Toolkit CLI automatically:
 
 ### 2. Execute Commands
 
-Use the CLI to interact with Unity Editor:
+Unity Editor Toolkit provides 18 commands across 6 categories. All commands run from the Unity project root:
 
-**Hierarchy Management:**
 ```bash
-# View GameObject hierarchy with tree visualization
-unity-editor hierarchy
-
-# Show only root GameObjects
-unity-editor hierarchy --root-only
+cd <unity-project-root> node .unity-websocket/uw <command> [options]
 ```
 
-**GameObject Operations:**
+**Available Categories** (Phase 1 - Currently Implemented):
+
+1. **Connection & Status** - Check server connection and port status
+2. **GameObject & Hierarchy** - Find, create, destroy, activate GameObjects and query hierarchy
+3. **Transform** - Get/set position, rotation, scale
+4. **Scene Management** - Query current scene, list scenes, load scenes
+5. **Asset Database & Editor** - Refresh AssetDatabase, recompile scripts, reimport assets
+6. **Console & Logging** - Get logs with filtering, clear console
+
+**Quick Examples:**
+
 ```bash
+# Check connection
+cd <unity-project-root> node .unity-websocket/uw status
+
+# View hierarchy
+cd <unity-project-root> node .unity-websocket/uw hierarchy
+
 # Find GameObject
-unity-editor go find "Player"
+cd <unity-project-root> node .unity-websocket/uw go find "Player"
 
-# Create GameObject
-unity-editor go create "Enemy" --parent "Enemies"
-
-# Destroy GameObject
-unity-editor go destroy "OldObject"
-
-# Set active state
-unity-editor go set-active "Player" true
-```
-
-**Transform Control:**
-```bash
-# Get Transform information
-unity-editor tf get "Player"
-
-# Set position (x,y,z)
-unity-editor tf set-position "Player" "0,5,10"
-
-# Set rotation (Euler angles in degrees)
-unity-editor tf set-rotation "Player" "0,90,0"
-
-# Set scale
-unity-editor tf set-scale "Player" "2,2,2"
-```
-
-**Scene Management:**
-```bash
-# Get current scene info
-unity-editor scene current
-
-# List all loaded scenes
-unity-editor scene list
+# Set position
+cd <unity-project-root> node .unity-websocket/uw tf set-position "Player" "0,5,10"
 
 # Load scene
-unity-editor scene load "GameScene"
+cd <unity-project-root> node .unity-websocket/uw scene load "Level1"
 
-# Load scene additively
-unity-editor scene load "UIScene" --additive
+# Get console errors
+cd <unity-project-root> node .unity-websocket/uw console logs --errors-only
 ```
 
-**Console Monitoring:**
-```bash
-# Get recent console logs
-unity-editor console logs
+**Detailed Documentation:**
 
-# Show only errors
-unity-editor console logs --errors-only
-
-# Clear console
-unity-editor console clear
-```
+For complete command reference with all options, see:
+- [Connection & Status Commands](./references/COMMANDS_CONNECTION_STATUS.md)
+- [GameObject & Hierarchy Commands](./references/COMMANDS_GAMEOBJECT_HIERARCHY.md)
+- [Transform Commands](./references/COMMANDS_TRANSFORM.md)
+- [Scene Management Commands](./references/COMMANDS_SCENE.md)
+- [Asset Database & Editor Commands](./references/COMMANDS_EDITOR.md)
+- [Console & Logging Commands](./references/COMMANDS_CONSOLE.md)
 
 ### 3. Check Connection Status
 
 ```bash
 # Verify WebSocket connection
-unity-editor status
+cd <unity-project-root> node .unity-websocket/uw status
 
 # Use custom port
-unity-editor --port 9301 status
+cd <unity-project-root> node .unity-websocket/uw --port 9301 status
 ```
 
 ### 4. Complex Workflows
 
 **Create and configure GameObject:**
 ```bash
-unity-editor go create "Enemy" && \
-unity-editor tf set-position "Enemy" "10,0,5" && \
-unity-editor tf set-rotation "Enemy" "0,45,0"
+cd <unity-project-root> node .unity-websocket/uw go create "Enemy" && \
+cd <unity-project-root> node .unity-websocket/uw tf set-position "Enemy" "10,0,5" && \
+cd <unity-project-root> node .unity-websocket/uw tf set-rotation "Enemy" "0,45,0"
 ```
 
 **Load scene and activate GameObject:**
 ```bash
-unity-editor scene load "Level1" && \
-unity-editor go set-active "Boss" true
+cd <unity-project-root> node .unity-websocket/uw scene load "Level1" && \
+cd <unity-project-root> node .unity-websocket/uw go set-active "Boss" true
 ```
 
 **Batch GameObject creation:**
 ```bash
 for i in {1..10}; do
-  unity-editor go create "Cube_$i" && \
-  unity-editor tf set-position "Cube_$i" "$i,0,0"
+  cd <unity-project-root> node .unity-websocket/uw go create "Cube_$i" && \
+  cd <unity-project-root> node .unity-websocket/uw tf set-position "Cube_$i" "$i,0,0"
 done
 ```
 
 ## Best Practices
 
 1. **Always Verify Connection**
-   - Run `unity-editor status` before executing commands
+   - Run `cd <unity-project-root> node .unity-websocket/uw status` before executing commands
    - Ensure Unity Editor is running and server component is active
 
 2. **Use Hierarchical Paths**
@@ -200,7 +179,7 @@ done
    - Avoids ambiguity when multiple GameObjects share the same name
 
 3. **Monitor Console Logs**
-   - Use `unity-editor console logs --errors-only` to catch errors during automation
+   - Use `cd <unity-project-root> node .unity-websocket/uw console logs --errors-only` to catch errors during automation
    - Clear console before running automation scripts for clean logs
 
 4. **Batch Operations Carefully**
@@ -229,13 +208,19 @@ done
 
 Detailed documentation available in the `references/` folder:
 
-- **[QUICKSTART.md](./references/QUICKSTART.md)** - Quick setup and first commands (English)
-- **[QUICKSTART.ko.md](./references/QUICKSTART.ko.md)** - Quick setup guide (Korean)
-- **[COMMANDS.md](./references/COMMANDS.md)** - Complete 500+ command reference (English)
-- **[COMMANDS.ko.md](./references/COMMANDS.ko.md)** - Complete command reference (Korean)
-- **[API_COMPATIBILITY.md](./references/API_COMPATIBILITY.md)** - Unity version compatibility (2020.3 - Unity 6)
-- **[TEST_GUIDE.md](./references/TEST_GUIDE.md)** - Unity C# server testing guide (English)
-- **[TEST_GUIDE.ko.md](./references/TEST_GUIDE.ko.md)** - Unity C# server testing guide (Korean)
+- **[QUICKSTART.md](../QUICKSTART.md)** - Quick setup and first commands (English)
+- **[QUICKSTART.ko.md](../QUICKSTART.ko.md)** - Quick setup guide (Korean)
+- **[COMMANDS.md](./references/COMMANDS.md)** - Complete 500+ command roadmap (English)
+- **Implemented Command Categories:**
+  - [Connection & Status](./references/COMMANDS_CONNECTION_STATUS.md)
+  - [GameObject & Hierarchy](./references/COMMANDS_GAMEOBJECT_HIERARCHY.md)
+  - [Transform](./references/COMMANDS_TRANSFORM.md)
+  - [Scene Management](./references/COMMANDS_SCENE.md)
+  - [Asset Database & Editor](./references/COMMANDS_EDITOR.md)
+  - [Console & Logging](./references/COMMANDS_CONSOLE.md)
+- **[API_COMPATIBILITY.md](../API_COMPATIBILITY.md)** - Unity version compatibility (2020.3 - Unity 6)
+- **[TEST_GUIDE.md](../TEST_GUIDE.md)** - Unity C# server testing guide (English)
+- **[TEST_GUIDE.ko.md](../TEST_GUIDE.ko.md)** - Unity C# server testing guide (Korean)
 
 Unity C# server package available in `assets/unity-package/` - install via Unity Package Manager once released.
 

@@ -1,3 +1,7 @@
+**언어**: [English](./TEST_GUIDE.md) | 한국어
+
+---
+
 # Unity Editor Toolkit - 테스트 가이드
 
 Unity Test Framework 테스트 실행을 위한 완벽 가이드입니다.
@@ -449,8 +453,15 @@ GameObjectCachingTests 우클릭 → Run
 ### Unity Editor Toolkit
 
 - [메인 README](../README.ko.md)
-- [빠른 시작 가이드](../QUICKSTART.ko.md)
-- [코드 리뷰 리포트](../REVIEW_REPORT.md)
+- [빠른 시작 가이드](./QUICKSTART.ko.md)
+- [명령어 로드맵](./COMMANDS.md)
+- **구현된 명령어 카테고리:**
+  - [연결 및 상태](./COMMANDS_CONNECTION_STATUS.md)
+  - [GameObject 및 계층 구조](./COMMANDS_GAMEOBJECT_HIERARCHY.md)
+  - [Transform](./COMMANDS_TRANSFORM.md)
+  - [Scene 관리](./COMMANDS_SCENE.md)
+  - [Asset Database 및 Editor](./COMMANDS_EDITOR.md)
+  - [Console 및 로깅](./COMMANDS_CONSOLE.md)
 
 ---
 
