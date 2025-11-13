@@ -1,6 +1,8 @@
 # Unity Editor Toolkit
 
-**버전 0.5.0** | 최종 업데이트: 2025-11-13
+> **⚠️ 상태**: 🧪 실험 단계 (v0.5.0)
+>
+> **이 플러그인은 현재 실험 단계입니다. API와 기능이 변경될 수 있습니다.**
 
 Claude Code를 위한 완벽한 Unity Editor 제어 및 자동화 툴킷. 25개 카테고리에 걸쳐 500+ Unity Editor 기능을 명령 - GameObjects, 컴포넌트, 씬, Material, 물리, 애니메이션 등을 실시간 WebSocket 자동화로 제어하세요.
 
