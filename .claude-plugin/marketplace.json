@@ -202,7 +202,8 @@
         "nodejs",
         "python",
         "rust",
-        "cross-platform"
+        "cross-platform",
+        "skills"
       ]
     },
     {
@@ -245,7 +246,8 @@
         "chrome",
         "devtools",
         "screenshot",
-        "pdf"
+        "pdf",
+        "skills"
       ]
     },
     {
@@ -271,7 +273,8 @@
         "materials",
         "modifiers",
         "collections",
-        "cli"
+        "cli",
+        "skills"
       ]
     },
     {
@@ -294,7 +297,8 @@
         "transform",
         "scene",
         "console",
-        "experimental"
+        "experimental",
+        "skills"
       ]
     }
   ],

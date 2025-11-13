@@ -1,6 +1,8 @@
 # Unity Editor Toolkit
 
-**Version 0.5.0** | Last Updated: 2025-11-13
+> **⚠️ Status**: 🧪 Experimental (v0.5.0)
+>
+> **This plugin is currently in experimental stage. APIs and features may change.**
 
 Complete Unity Editor control and automation toolkit for Claude Code. Command 500+ Unity Editor features across 25 categories - GameObjects, components, scenes, materials, physics, animation, and more through real-time WebSocket automation.
 
