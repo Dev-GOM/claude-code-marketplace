@@ -10,6 +10,7 @@ import * as config from '@/utils/config';
 import { createUnityClient } from '@/unity/client';
 import { COMMANDS } from '@/constants';
 import type { TransformInfo, Vector3 } from '@/unity/protocol';
+import { output, outputJson } from '@/utils/output-formatter';
 
 /**
  * Parse Vector3 from string "x,y,z"
@@ -43,7 +44,9 @@ export function registerTransformCommand(program: Command): void {
     .command('get')
     .description('Get Transform information')
     .argument('<name>', 'GameObject name or path')
-    .action(async (name) => {
+    .option('--json', 'Output in JSON format')
+    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '30000')
+    .action(async (name, options) => {
       let client = null;
       try {
         const projectRoot = config.getProjectRoot();
@@ -75,6 +78,20 @@ export function registerTransformCommand(program: Command): void {
           { name }
         );
 
+        // JSON output
+        if (options.json) {
+          outputJson({
+            gameObject: name,
+            transform: {
+              position,
+              rotation,
+              scale,
+            },
+          });
+          return;
+        }
+
+        // Text output
         logger.info('✓ Transform:');
         logger.info(`  Position: ${formatVector3(position)}`);
         logger.info(`  Rotation: ${formatVector3(rotation)}°`);
@@ -99,7 +116,9 @@ export function registerTransformCommand(program: Command): void {
     .description('Set Transform position')
     .argument('<name>', 'GameObject name or path')
     .argument('<position>', 'Position as "x,y,z" (e.g., "1,2,3")')
-    .action(async (name, positionStr) => {
+    .option('--json', 'Output in JSON format')
+    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '30000')
+    .action(async (name, positionStr, options) => {
       let client = null;
       try {
         const position = parseVector3(positionStr);
@@ -123,7 +142,16 @@ export function registerTransformCommand(program: Command): void {
           position,
         });
 
-        logger.info('✓ Position set');
+        // JSON output
+        if (options.json) {
+          outputJson({
+            success: true,
+            gameObject: name,
+            position,
+          });
+        } else {
+          logger.info('✓ Position set');
+        }
       } catch (error) {
         logger.error('Failed to set position', error);
         process.exit(1);
@@ -144,7 +172,9 @@ export function registerTransformCommand(program: Command): void {
     .description('Set Transform rotation (Euler angles)')
     .argument('<name>', 'GameObject name or path')
     .argument('<rotation>', 'Rotation as "x,y,z" degrees (e.g., "0,90,0")')
-    .action(async (name, rotationStr) => {
+    .option('--json', 'Output in JSON format')
+    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '30000')
+    .action(async (name, rotationStr, options) => {
       let client = null;
       try {
         const rotation = parseVector3(rotationStr);
@@ -168,7 +198,16 @@ export function registerTransformCommand(program: Command): void {
           rotation,
         });
 
-        logger.info('✓ Rotation set');
+        // JSON output
+        if (options.json) {
+          outputJson({
+            success: true,
+            gameObject: name,
+            rotation,
+          });
+        } else {
+          logger.info('✓ Rotation set');
+        }
       } catch (error) {
         logger.error('Failed to set rotation', error);
         process.exit(1);
@@ -189,7 +228,9 @@ export function registerTransformCommand(program: Command): void {
     .description('Set Transform scale')
     .argument('<name>', 'GameObject name or path')
     .argument('<scale>', 'Scale as "x,y,z" (e.g., "1,1,1")')
-    .action(async (name, scaleStr) => {
+    .option('--json', 'Output in JSON format')
+    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '30000')
+    .action(async (name, scaleStr, options) => {
       let client = null;
       try {
         const scale = parseVector3(scaleStr);
@@ -213,7 +254,16 @@ export function registerTransformCommand(program: Command): void {
           scale,
         });
 
-        logger.info('✓ Scale set');
+        // JSON output
+        if (options.json) {
+          outputJson({
+            success: true,
+            gameObject: name,
+            scale,
+          });
+        } else {
+          logger.info('✓ Scale set');
+        }
       } catch (error) {
         logger.error('Failed to set scale', error);
         process.exit(1);

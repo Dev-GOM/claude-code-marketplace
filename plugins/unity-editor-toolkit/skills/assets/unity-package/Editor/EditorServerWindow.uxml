@@ -1,0 +1,102 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="True">
+    <ui:VisualElement name="root" class="root-container">
+        <!-- Server Status Section -->
+        <ui:VisualElement name="server-section" class="section">
+            <ui:Label text="Server Status" class="section-title" />
+
+            <ui:VisualElement class="status-row">
+                <ui:Label text="Status:" class="label-key" />
+                <ui:VisualElement class="status-indicator-container">
+                    <ui:VisualElement name="status-indicator" class="status-indicator status-stopped" />
+                    <ui:Label name="server-status" text="Stopped" class="label-value" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+
+            <ui:VisualElement class="status-row">
+                <ui:Label text="Port:" class="label-key" />
+                <ui:Label name="server-port" text="9500" class="label-value" />
+            </ui:VisualElement>
+
+            <ui:VisualElement class="status-row">
+                <ui:Label text="Connected Clients:" class="label-key" />
+                <ui:Label name="connected-clients" text="0" class="label-value" />
+            </ui:VisualElement>
+
+            <ui:Toggle name="autostart-toggle" label="Auto-start server on Unity launch" class="toggle-field" />
+
+            <ui:VisualElement class="button-row">
+                <ui:Button name="start-button" text="Start Server" class="action-button" />
+                <ui:Button name="stop-button" text="Stop Server" class="action-button" />
+            </ui:VisualElement>
+
+            <ui:HelpBox name="server-info" text="Server runs automatically in the background.&#10;Works in both Edit Mode and Play Mode.&#10;No GameObject required!" message-type="Info" />
+        </ui:VisualElement>
+
+        <!-- CLI Status Section -->
+        <ui:VisualElement name="cli-section" class="section">
+            <ui:Label text="CLI Scripts" class="section-title" />
+
+            <!-- Node.js not installed view -->
+            <ui:VisualElement name="nodejs-missing" class="hidden">
+                <ui:HelpBox text="Node.js is not installed or not in PATH.&#10;&#10;Please install Node.js from https://nodejs.org/&#10;Recommended version: 18.x or higher&#10;&#10;After installation, restart Unity Editor." message-type="Error" />
+                <ui:Button name="nodejs-download-button" text="Open Node.js Download Page" class="primary-button" />
+                <ui:Button name="recheck-nodejs-button" text="Recheck Node.js Installation" class="secondary-button" />
+            </ui:VisualElement>
+
+            <!-- Node.js installed view -->
+            <ui:VisualElement name="cli-status" class="hidden">
+                <ui:VisualElement class="status-row">
+                    <ui:Label text="Package Version:" class="label-key" />
+                    <ui:Label name="package-version" text="Unknown" class="label-value" />
+                </ui:VisualElement>
+
+                <ui:VisualElement class="status-row">
+                    <ui:Label text="Local CLI Version:" class="label-key" />
+                    <ui:Label name="cli-version" text="Not Installed" class="label-value" />
+                </ui:VisualElement>
+
+                <!-- Status messages -->
+                <ui:HelpBox name="install-progress" text="CLI installation is in progress...&#10;If this persists for more than 10 minutes, click 'Clear Lock' below." message-type="Info" class="hidden" />
+                <ui:HelpBox name="not-installed" text="CLI scripts not installed. Click 'Install CLI Scripts' to set up." message-type="Warning" class="hidden" />
+                <ui:HelpBox name="update-minor" text="CLI update available" message-type="Info" class="hidden" />
+                <ui:HelpBox name="update-major" text="CLI update available (Recommended to update)" message-type="Warning" class="hidden" />
+                <ui:HelpBox name="up-to-date" text="CLI scripts up-to-date ✓" message-type="Info" class="hidden" />
+
+                <!-- Action buttons -->
+                <ui:Button name="install-button" text="Install CLI Scripts" class="primary-button hidden" />
+                <ui:Button name="update-button" text="⚠️ Update CLI Scripts" class="primary-button hidden" />
+                <ui:Button name="reinstall-button" text="Reinstall CLI Scripts" class="secondary-button hidden" />
+                <ui:Button name="clear-lock-button" text="Clear Lock (if installation stuck)" class="secondary-button hidden" />
+
+                <!-- Installation progress -->
+                <ui:HelpBox name="installing-message" text="Installing CLI scripts...&#10;Please wait, this may take a few minutes." message-type="Info" class="hidden" />
+
+                <!-- Installation error log -->
+                <ui:VisualElement name="install-log-container" class="hidden">
+                    <ui:Label text="Last Installation Log (Error):" class="section-subtitle" />
+                    <ui:TextField name="install-log" multiline="true" readonly="true" class="log-field" />
+                </ui:VisualElement>
+
+                <!-- Plugin Scripts Path Configuration -->
+                <ui:Label text="Plugin Scripts Path" class="section-subtitle" />
+                <ui:TextField name="plugin-path" readonly="true" class="path-field" />
+                <ui:VisualElement class="button-row">
+                    <ui:Button name="open-path-button" text="Open Folder" class="secondary-button" />
+                    <ui:Button name="browse-path-button" text="Browse..." class="secondary-button" />
+                    <ui:Button name="reset-path-button" text="Reset to Default" class="secondary-button" />
+                </ui:VisualElement>
+                <ui:HelpBox text="This is the source path where CLI scripts are loaded from.&#10;Default: Claude plugin folder (~/.claude/plugins/.../unity-editor-toolkit)" message-type="None" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <!-- Information Section -->
+        <ui:VisualElement name="info-section" class="section">
+            <ui:Label text="Information" class="section-title" />
+
+            <ui:ScrollView name="info-scroll" class="info-scroll">
+                <ui:HelpBox text="Unity Editor Toolkit provides a WebSocket server that allows external tools (like Claude Code) to control Unity Editor in real-time.&#10;&#10;Features:&#10;• GameObject manipulation (create, destroy, find)&#10;• Transform control (position, rotation, scale)&#10;• Scene management (load, save, query)&#10;• Console log access&#10;• Hierarchy inspection&#10;&#10;Connection:&#10;• Protocol: JSON-RPC 2.0 over WebSocket&#10;• Default Port: 9500&#10;• Localhost only (secure)" message-type="None" />
+                <ui:Button name="open-docs-button" text="Open Documentation" class="secondary-button" />
+            </ui:ScrollView>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

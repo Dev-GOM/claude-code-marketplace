@@ -1,29 +1,28 @@
 /**
- * Scene command
+ * Editor command
  *
- * Manipulate Unity scenes.
+ * Unity Editor utility commands (refresh, recompile, etc.)
  */
 
 import { Command } from 'commander';
 import * as logger from '@/utils/logger';
 import * as config from '@/utils/config';
 import { createUnityClient } from '@/unity/client';
-import { COMMANDS, UNITY } from '@/constants';
-import type { SceneInfo } from '@/unity/protocol';
-import { output, outputJson } from '@/utils/output-formatter';
+import { COMMANDS } from '@/constants';
+import { outputJson } from '@/utils/output-formatter';
 
 /**
- * Register Scene command
+ * Register Editor command
  */
-export function registerSceneCommand(program: Command): void {
-  const sceneCmd = program
-    .command('scene')
-    .description('Manipulate Unity scenes');
+export function registerEditorCommand(program: Command): void {
+  const editorCmd = program
+    .command('editor')
+    .description('Unity Editor utility commands');
 
-  // Get current scene
-  sceneCmd
-    .command('current')
-    .description('Get current active scene')
+  // Refresh AssetDatabase
+  editorCmd
+    .command('refresh')
+    .description('Refresh Unity AssetDatabase')
     .option('--json', 'Output in JSON format')
     .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '30000')
     .action(async (options) => {
@@ -42,159 +41,118 @@ export function registerSceneCommand(program: Command): void {
         logger.info('Connecting to Unity Editor...');
         await client.connect();
 
-        logger.info('Getting current scene...');
-        const result = await client.sendRequest<SceneInfo>(
-          COMMANDS.SCENE_GET_CURRENT
-        );
-
-        // JSON output
-        if (options.json) {
-          outputJson({ scene: result });
-          return;
-        }
-
-        // Text output
-        logger.info('✓ Current Scene:');
-        logger.info(`  Name: ${result.name}`);
-        logger.info(`  Path: ${result.path}`);
-        logger.info(`  Build Index: ${result.buildIndex}`);
-        logger.info(`  Is Loaded: ${result.isLoaded}`);
-        logger.info(`  Is Dirty: ${result.isDirty}`);
-        logger.info(`  Root GameObjects: ${result.rootCount}`);
-      } catch (error) {
-        logger.error('Failed to get current scene', error);
-        process.exit(1);
-      } finally {
-        if (client) {
-          try {
-            client.disconnect();
-          } catch (disconnectError) {
-            logger.debug(`Error during disconnect: ${disconnectError instanceof Error ? disconnectError.message : String(disconnectError)}`);
-          }
-        }
-      }
-    });
-
-  // List all scenes
-  sceneCmd
-    .command('list')
-    .description('List all loaded scenes')
-    .option('--json', 'Output in JSON format')
-    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '30000')
-    .action(async (options) => {
-      let client = null;
-      try {
-        const projectRoot = config.getProjectRoot();
-        const port = program.opts().port || config.getUnityPort(projectRoot);
-
-        if (!port) {
-          logger.error('Unity server not running. Start Unity Editor with WebSocket server enabled.');
-          process.exit(1);
-        }
-
-        client = createUnityClient(port);
-
-        logger.info('Connecting to Unity Editor...');
-        await client.connect();
-
-        logger.info('Getting all scenes...');
-        const result = await client.sendRequest<SceneInfo[]>(
-          COMMANDS.SCENE_GET_ALL
-        );
-
-        if (!result || result.length === 0) {
-          if (options.json) {
-            outputJson({ scenes: [], total: 0 });
-          } else {
-            logger.info('No scenes loaded');
-          }
-          return;
-        }
-
-        // JSON output
-        if (options.json) {
-          outputJson({
-            scenes: result,
-            total: result.length,
-          });
-          return;
-        }
-
-        // Text output
-        logger.info('✓ Loaded Scenes:');
-        logger.info('━'.repeat(60));
-        for (const scene of result) {
-          const loadedIcon = scene.isLoaded ? '●' : '○';
-          const dirtyIcon = scene.isDirty ? '*' : ' ';
-          logger.info(`${loadedIcon}${dirtyIcon} ${scene.name}`);
-          logger.info(`   Path: ${scene.path}`);
-          logger.info(`   Build Index: ${scene.buildIndex}`);
-          logger.info(`   Root GameObjects: ${scene.rootCount}`);
-          logger.info('');
-        }
-        logger.info('━'.repeat(60));
-        logger.info(`Total: ${result.length} scene(s)`);
-      } catch (error) {
-        logger.error('Failed to list scenes', error);
-        process.exit(1);
-      } finally {
-        if (client) {
-          try {
-            client.disconnect();
-          } catch (disconnectError) {
-            logger.debug(`Error during disconnect: ${disconnectError instanceof Error ? disconnectError.message : String(disconnectError)}`);
-          }
-        }
-      }
-    });
-
-  // Load scene
-  sceneCmd
-    .command('load')
-    .description('Load scene by name or path')
-    .argument('<name>', 'Scene name or path')
-    .option('-a, --additive', 'Load scene additively')
-    .option('--json', 'Output in JSON format')
-    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds')
-    .action(async (name, options) => {
-      let client = null;
-      try {
-        const projectRoot = config.getProjectRoot();
-        const port = program.opts().port || config.getUnityPort(projectRoot);
-
-        if (!port) {
-          logger.error('Unity server not running. Start Unity Editor with WebSocket server enabled.');
-          process.exit(1);
-        }
-
-        client = createUnityClient(port);
-
-        logger.info('Connecting to Unity Editor...');
-        await client.connect();
-
-        logger.info(`Loading scene: ${name}${options.additive ? ' (additive)' : ''}`);
-        const timeout = options.timeout ? parseInt(options.timeout, 10) : UNITY.SCENE_LOAD_TIMEOUT;
-        await client.sendRequest(
-          COMMANDS.SCENE_LOAD,
-          {
-            name,
-            additive: options.additive || false,
-          },
-          timeout
-        );
+        logger.info('Refreshing AssetDatabase...');
+        await client.sendRequest(COMMANDS.EDITOR_REFRESH);
 
         // JSON output
         if (options.json) {
           outputJson({
             success: true,
-            scene: name,
-            additive: options.additive || false,
+            message: 'AssetDatabase refreshed',
           });
         } else {
-          logger.info('✓ Scene loaded');
+          logger.info('✓ AssetDatabase refreshed');
         }
       } catch (error) {
-        logger.error('Failed to load scene', error);
+        logger.error('Failed to refresh AssetDatabase', error);
+        process.exit(1);
+      } finally {
+        if (client) {
+          try {
+            client.disconnect();
+          } catch (disconnectError) {
+            logger.debug(`Error during disconnect: ${disconnectError instanceof Error ? disconnectError.message : String(disconnectError)}`);
+          }
+        }
+      }
+    });
+
+  // Recompile scripts
+  editorCmd
+    .command('recompile')
+    .description('Recompile Unity scripts')
+    .option('--json', 'Output in JSON format')
+    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '30000')
+    .action(async (options) => {
+      let client = null;
+      try {
+        const projectRoot = config.getProjectRoot();
+        const port = program.opts().port || config.getUnityPort(projectRoot);
+
+        if (!port) {
+          logger.error('Unity server not running. Start Unity Editor with WebSocket server enabled.');
+          process.exit(1);
+        }
+
+        client = createUnityClient(port);
+
+        logger.info('Connecting to Unity Editor...');
+        await client.connect();
+
+        logger.info('Requesting script recompilation...');
+        await client.sendRequest(COMMANDS.EDITOR_RECOMPILE);
+
+        // JSON output
+        if (options.json) {
+          outputJson({
+            success: true,
+            message: 'Script recompilation requested',
+          });
+        } else {
+          logger.info('✓ Script recompilation requested');
+        }
+      } catch (error) {
+        logger.error('Failed to recompile scripts', error);
+        process.exit(1);
+      } finally {
+        if (client) {
+          try {
+            client.disconnect();
+          } catch (disconnectError) {
+            logger.debug(`Error during disconnect: ${disconnectError instanceof Error ? disconnectError.message : String(disconnectError)}`);
+          }
+        }
+      }
+    });
+
+  // Reimport asset
+  editorCmd
+    .command('reimport')
+    .description('Reimport asset at path')
+    .argument('<path>', 'Asset path relative to Assets folder')
+    .option('--json', 'Output in JSON format')
+    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '30000')
+    .action(async (path, options) => {
+      let client = null;
+      try {
+        const projectRoot = config.getProjectRoot();
+        const port = program.opts().port || config.getUnityPort(projectRoot);
+
+        if (!port) {
+          logger.error('Unity server not running. Start Unity Editor with WebSocket server enabled.');
+          process.exit(1);
+        }
+
+        client = createUnityClient(port);
+
+        logger.info('Connecting to Unity Editor...');
+        await client.connect();
+
+        logger.info(`Reimporting asset: ${path}`);
+        await client.sendRequest(COMMANDS.EDITOR_REIMPORT, { path });
+
+        // JSON output
+        if (options.json) {
+          outputJson({
+            success: true,
+            path,
+            message: 'Asset reimported',
+          });
+        } else {
+          logger.info('✓ Asset reimported');
+        }
+      } catch (error) {
+        logger.error('Failed to reimport asset', error);
         process.exit(1);
       } finally {
         if (client) {

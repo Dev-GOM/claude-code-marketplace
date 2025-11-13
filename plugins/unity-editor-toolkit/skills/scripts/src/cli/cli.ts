@@ -17,6 +17,7 @@ import { registerGameObjectCommand } from './commands/gameobject';
 import { registerTransformCommand } from './commands/transform';
 import { registerSceneCommand } from './commands/scene';
 import { registerConsoleCommand } from './commands/console';
+import { registerEditorCommand } from './commands/editor';
 
 const program = new Command();
 
@@ -43,6 +44,7 @@ registerGameObjectCommand(program);
 registerTransformCommand(program);
 registerSceneCommand(program);
 registerConsoleCommand(program);
+registerEditorCommand(program);
 
 // Status command (built-in)
 program

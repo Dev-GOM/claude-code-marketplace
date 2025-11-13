@@ -99,6 +99,9 @@ export const COMMANDS = {
   EDITOR_SET_SELECTION: 'Editor.SetSelection',
   EDITOR_FOCUS_GAME_VIEW: 'Editor.FocusGameView',
   EDITOR_FOCUS_SCENE_VIEW: 'Editor.FocusSceneView',
+  EDITOR_REFRESH: 'Editor.Refresh',
+  EDITOR_RECOMPILE: 'Editor.Recompile',
+  EDITOR_REIMPORT: 'Editor.Reimport',
 
   // Animation commands
   ANIMATION_PLAY: 'Animation.Play',

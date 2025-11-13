@@ -1,0 +1,140 @@
+/* Root Container */
+.root-container {
+    padding: 10px;
+    flex-grow: 1;
+}
+
+/* Section Styling */
+.section {
+    background-color: rgba(0, 0, 0, 0.1);
+    border-color: rgba(0, 0, 0, 0.3);
+    border-width: 1px;
+    border-radius: 4px;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.section-title {
+    font-size: 14px;
+    -unity-font-style: bold;
+    margin-bottom: 5px;
+}
+
+.section-subtitle {
+    font-size: 12px;
+    -unity-font-style: bold;
+    margin-top: 10px;
+    margin-bottom: 5px;
+}
+
+/* Status Row */
+.status-row {
+    flex-direction: row;
+    margin-bottom: 3px;
+    align-items: center;
+}
+
+.label-key {
+    min-width: 150px;
+    margin-right: 10px;
+}
+
+.label-value {
+    flex-grow: 1;
+    -unity-font-style: bold;
+}
+
+/* Status Indicator */
+.status-indicator-container {
+    flex-direction: row;
+    align-items: center;
+    flex-grow: 1;
+}
+
+.status-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 6px;
+    margin-right: 8px;
+}
+
+.status-stopped {
+    background-color: rgb(150, 150, 150);
+}
+
+.status-running {
+    background-color: rgb(80, 200, 80);
+}
+
+.status-error {
+    background-color: rgb(220, 80, 80);
+}
+
+/* Toggle Field */
+.toggle-field {
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+/* Button Row */
+.button-row {
+    flex-direction: row;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+.button-row > .secondary-button {
+    flex-grow: 1;
+    flex-shrink: 1;
+    flex-basis: 0;
+}
+
+/* Buttons */
+.action-button {
+    flex-grow: 1;
+    height: 30px;
+    margin-left: 2px;
+    margin-right: 2px;
+}
+
+.primary-button {
+    height: 30px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+.secondary-button {
+    height: 25px;
+    margin-top: 3px;
+    margin-bottom: 3px;
+}
+
+/* Path Field */
+.path-field {
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+/* Log Field */
+.log-field {
+    height: 100px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+/* Info Scroll */
+.info-scroll {
+    max-height: 300px;
+    min-height: 150px;
+}
+
+/* Hidden Class */
+.hidden {
+    display: none;
+}
+
+/* Help Box Spacing */
+.unity-help-box {
+    margin-top: 5px;
+    margin-bottom: 5px;
+}

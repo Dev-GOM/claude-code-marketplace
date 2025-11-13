@@ -7,7 +7,7 @@
     "unity-editor": "./dist/cli/cli.js"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && tsc-alias",
     "dev": "tsc --watch",
     "clean": "rm -rf dist",
     "lint": "eslint src/**/*.ts",
@@ -29,6 +29,7 @@
     "@typescript-eslint/eslint-plugin": "^8.46.3",
     "@typescript-eslint/parser": "^8.46.3",
     "eslint": "^9.39.1",
+    "tsc-alias": "^1.8.16",
     "typescript": "^5.9.3"
   },
   "dependencies": {
