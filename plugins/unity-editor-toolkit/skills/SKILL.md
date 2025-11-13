@@ -20,6 +20,8 @@ Unity Editor Toolkit enables comprehensive Unity Editor automation and control f
 - **Security First**: Multi-layer defense against injection attacks and unauthorized access
 - **Production Ready**: Cross-platform support with robust error handling and logging
 
+**Always run scripts with `--help` first** to see usage. DO NOT read the source until you try running the script first and find that a customized solution is abslutely necessary. These scripts can be very large and thus pollute your context window. They exist to be called directly as black-box scripts rather than ingested into your context window.
+
 ## When to Use
 
 Use Unity Editor Toolkit when you need to:
