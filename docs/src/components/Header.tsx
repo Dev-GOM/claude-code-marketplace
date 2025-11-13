@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
 import { SITE_CONFIG } from '@/lib/constants';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -123,13 +124,13 @@ export function Header(): React.ReactElement {
               </span>
             </button>
 
-            <a
-              href="#plugins"
+            <Link
+              href="/#plugins"
               className="px-5 py-2 bg-white/10 hover:bg-white/20 rounded-full font-medium transition-all duration-300 hover:scale-105 hover:shadow-lg border border-white/20 h-10 flex items-center"
               style={{ color: 'var(--color-textPrimary)' }}
             >
               <span className="text-sm">{t('Plugins', '플러그인')}</span>
-            </a>
+            </Link>
             <a
               href={SITE_CONFIG.GITHUB_URL}
               target="_blank"

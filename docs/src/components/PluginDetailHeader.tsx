@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { CopyInstallButton } from '@/components/CopyInstallButton';
 import { categoryEmojis, categoryColors, defaultCategoryColor } from '@/lib/constants/ui';
@@ -22,13 +23,13 @@ export function PluginDetailHeader({ plugin }: PluginDetailHeaderProps): React.R
   return (
     <div className="mb-12">
       {/* Back button */}
-      <a
+      <Link
         href="/"
         className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-full mb-6 transition-all duration-300 hover:scale-105"
       >
         <span>←</span>
         <span>{t('Back to Plugins', '플러그인 목록으로')}</span>
-      </a>
+      </Link>
 
       {/* Plugin header */}
       <div className="relative">
