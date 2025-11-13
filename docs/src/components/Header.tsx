@@ -41,28 +41,28 @@ export function Header(): React.ReactElement {
 
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 backdrop-blur-md bg-white/5">
-      <div className="container mx-auto px-4 py-6">
-        <div className="flex items-center justify-between">
+      <div className="container mx-auto px-4 py-4 md:py-6">
+        <div className="flex items-center justify-between gap-2">
           {/* Logo */}
-          <div className="flex items-center gap-3 group">
-            <div className="text-3xl animate-float">🎨</div>
+          <div className="flex items-center gap-2 md:gap-3 group flex-shrink-0">
+            <div className="text-2xl md:text-3xl animate-float">🎨</div>
             <div className="flex flex-col justify-center">
-              <h1 className="text-xl font-bold text-white leading-tight mb-0.5">
+              <h1 className="text-base md:text-xl font-bold text-white leading-tight mb-0.5">
                 <span className="gradient-text">{SITE_CONFIG.TITLE}</span>
               </h1>
-              <p className="text-sm text-white/70 leading-tight">
+              <p className="text-xs md:text-sm text-white/70 leading-tight hidden sm:block">
                 {t(SITE_CONFIG.DESCRIPTION, 'Claude Code 플러그인 마켓플레이스')}
               </p>
             </div>
           </div>
 
           {/* Navigation */}
-          <nav className="flex items-center gap-3">
+          <nav className="flex items-center gap-1.5 md:gap-3">
             {/* Theme Selector */}
             <div ref={dropdownRef} className="relative">
               <button
                 onClick={() => setShowThemeMenu(!showThemeMenu)}
-                className="group relative px-4 py-2 bg-white/10 hover:bg-white/20 rounded-full font-medium transition-all duration-300 hover:scale-105 border border-white/20 flex items-center gap-2 h-10"
+                className="group relative px-2 md:px-4 py-2 bg-white/10 hover:bg-white/20 rounded-full font-medium transition-all duration-300 hover:scale-105 border border-white/20 flex items-center gap-1 md:gap-2 h-9 md:h-10"
                 style={{ color: 'var(--color-textPrimary)' }}
                 aria-label={t('Select theme', '테마 선택')}
                 aria-expanded={showThemeMenu}
@@ -72,7 +72,7 @@ export function Header(): React.ReactElement {
                 <span className="text-base" aria-hidden="true">
                   🎨
                 </span>
-                <span className="text-sm font-medium">
+                <span className="text-sm font-medium hidden sm:inline">
                   {t('Theme', '테마')}
                 </span>
               </button>
@@ -111,7 +111,7 @@ export function Header(): React.ReactElement {
             {/* Language Toggle */}
             <button
               onClick={() => setLanguage(language === 'en' ? 'ko' : 'en')}
-              className="group relative px-4 py-2 bg-white/10 hover:bg-white/20 rounded-full font-medium transition-all duration-300 hover:scale-105 border border-white/20 flex items-center gap-2 h-10"
+              className="group relative px-2 md:px-4 py-2 bg-white/10 hover:bg-white/20 rounded-full font-medium transition-all duration-300 hover:scale-105 border border-white/20 flex items-center gap-1 md:gap-2 h-9 md:h-10"
               style={{ color: 'var(--color-textPrimary)' }}
               aria-label={language === 'en' ? 'Switch to Korean' : 'Switch to English'}
               title={t('Switch language', '언어 전환')}
@@ -119,14 +119,14 @@ export function Header(): React.ReactElement {
               <span className="text-base" aria-hidden="true">
                 🌐
               </span>
-              <span className="text-sm font-medium">
+              <span className="text-sm font-medium hidden sm:inline">
                 {language === 'en' ? 'KR' : 'EN'}
               </span>
             </button>
 
             <Link
               href="/#plugins"
-              className="px-5 py-2 bg-white/10 hover:bg-white/20 rounded-full font-medium transition-all duration-300 hover:scale-105 hover:shadow-lg border border-white/20 h-10 flex items-center"
+              className="hidden md:flex px-5 py-2 bg-white/10 hover:bg-white/20 rounded-full font-medium transition-all duration-300 hover:scale-105 hover:shadow-lg border border-white/20 h-10 items-center"
               style={{ color: 'var(--color-textPrimary)' }}
             >
               <span className="text-sm">{t('Plugins', '플러그인')}</span>
@@ -135,13 +135,13 @@ export function Header(): React.ReactElement {
               href={SITE_CONFIG.GITHUB_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="px-5 py-2 rounded-full font-medium transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl h-10 flex items-center gap-1"
+              className="px-2 md:px-5 py-2 rounded-full font-medium transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl h-9 md:h-10 flex items-center gap-1"
               style={{
                 background: 'var(--color-buttonBg)',
                 color: 'var(--color-buttonText)',
               }}
             >
-              <span className="text-sm">{t('View on GitHub', 'GitHub에서 보기')}</span>
+              <span className="text-xs md:text-sm hidden sm:inline">{t('GitHub', 'GitHub')}</span>
               <span>⭐</span>
             </a>
           </nav>

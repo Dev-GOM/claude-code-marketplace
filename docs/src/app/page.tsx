@@ -31,19 +31,19 @@ export default function Home(): React.ReactElement {
   }, [plugins, searchQuery, categoryFilter]);
 
   return (
-    <div className="container mx-auto px-4 py-16">
+    <div className="container mx-auto px-4 py-8 md:py-16">
       {/* Hero Section */}
-      <div className="text-center mb-16 animate-bounce-in">
-        <div className="mb-6 flex justify-center gap-4">
-          <span className="text-6xl animate-float">🚀</span>
-          <span className="text-6xl animate-float" style={{ animationDelay: '0.2s' }}>
+      <div className="text-center mb-12 md:mb-16 animate-bounce-in">
+        <div className="mb-4 md:mb-6 flex justify-center gap-3 md:gap-4">
+          <span className="text-4xl md:text-6xl animate-float">🚀</span>
+          <span className="text-4xl md:text-6xl animate-float" style={{ animationDelay: '0.2s' }}>
             ⚡
           </span>
-          <span className="text-6xl animate-float" style={{ animationDelay: '0.4s' }}>
+          <span className="text-4xl md:text-6xl animate-float" style={{ animationDelay: '0.4s' }}>
             🎨
           </span>
         </div>
-        <h1 className="text-5xl md:text-6xl font-bold mb-6 text-white">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6 text-white px-2">
           {language === 'ko' ? (
             <>
               <span className="gradient-text">당신의 개발 워크플로우를</span>
@@ -58,7 +58,7 @@ export default function Home(): React.ReactElement {
             </>
           )}
         </h1>
-        <p className="text-lg md:text-xl text-white/80 max-w-5xl mx-auto mb-8 leading-relaxed">
+        <p className="text-base md:text-lg lg:text-xl text-white/80 max-w-5xl mx-auto mb-6 md:mb-8 leading-relaxed px-4">
           {t(
             'Discover amazing Claude Code plugins that make development more fun and productive!',
             '개발을 더 재미있고 생산적으로 만드는 놀라운 Claude Code 플러그인을 발견하세요!'
@@ -66,13 +66,13 @@ export default function Home(): React.ReactElement {
         </p>
 
         {/* Stats */}
-        <div className="flex flex-wrap items-center justify-center gap-6 mb-12">
+        <div className="flex flex-wrap items-center justify-center gap-3 md:gap-6 mb-8 md:mb-12 px-2">
           <div className="group">
             <div className="relative">
               <div className="absolute -inset-1 bg-gradient-to-r from-pink-400 to-purple-500 rounded-2xl opacity-75 blur group-hover:opacity-100 transition-opacity" />
-              <div className="relative bg-white/10 backdrop-blur-md px-8 py-4 rounded-2xl border border-white/20">
-                <div className="text-4xl font-bold text-white mb-1">{plugins.length}</div>
-                <div className="text-sm text-white/70">{t('Amazing Plugins', '놀라운 플러그인')}</div>
+              <div className="relative bg-white/10 backdrop-blur-md px-4 md:px-8 py-3 md:py-4 rounded-2xl border border-white/20">
+                <div className="text-2xl md:text-4xl font-bold text-white mb-1">{plugins.length}</div>
+                <div className="text-xs md:text-sm text-white/70">{t('Plugins', '플러그인')}</div>
               </div>
             </div>
           </div>
@@ -80,11 +80,11 @@ export default function Home(): React.ReactElement {
           <div className="group">
             <div className="relative">
               <div className="absolute -inset-1 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-2xl opacity-75 blur group-hover:opacity-100 transition-opacity" />
-              <div className="relative bg-white/10 backdrop-blur-md px-8 py-4 rounded-2xl border border-white/20">
-                <div className="text-4xl font-bold text-white mb-1">
+              <div className="relative bg-white/10 backdrop-blur-md px-4 md:px-8 py-3 md:py-4 rounded-2xl border border-white/20">
+                <div className="text-2xl md:text-4xl font-bold text-white mb-1">
                   v{SITE_CONFIG.VERSION}
                 </div>
-                <div className="text-sm text-white/70">{t('Latest Version', '최신 버전')}</div>
+                <div className="text-xs md:text-sm text-white/70">{t('Latest', '최신 버전')}</div>
               </div>
             </div>
           </div>
@@ -92,19 +92,19 @@ export default function Home(): React.ReactElement {
           <div className="group">
             <div className="relative">
               <div className="absolute -inset-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-2xl opacity-75 blur group-hover:opacity-100 transition-opacity" />
-              <div className="relative bg-white/10 backdrop-blur-md px-8 py-4 rounded-2xl border border-white/20">
-                <div className="text-4xl font-bold text-white mb-1">{t('Free', '무료')}</div>
-                <div className="text-sm text-white/70">{t('Open Source', '오픈 소스')}</div>
+              <div className="relative bg-white/10 backdrop-blur-md px-4 md:px-8 py-3 md:py-4 rounded-2xl border border-white/20">
+                <div className="text-2xl md:text-4xl font-bold text-white mb-1">{t('Free', '무료')}</div>
+                <div className="text-xs md:text-sm text-white/70">{t('Open Source', '오픈 소스')}</div>
               </div>
             </div>
           </div>
         </div>
 
         {/* CTA Buttons */}
-        <div className="flex flex-wrap items-center justify-center gap-4">
+        <div className="flex flex-wrap items-center justify-center gap-3 md:gap-4 px-4">
           <a
             href="#plugins"
-            className="group relative px-8 py-4 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-full font-bold text-lg transition-all duration-300 hover:scale-110 shadow-2xl hover:shadow-pink-500/50"
+            className="group relative px-5 md:px-8 py-3 md:py-4 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-full font-bold text-sm md:text-lg transition-all duration-300 hover:scale-110 shadow-2xl hover:shadow-pink-500/50"
           >
             <span className="relative z-10">{t('Browse Plugins', '플러그인 둘러보기')} 🎉</span>
             <div className="absolute -inset-1 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full opacity-50 blur group-hover:opacity-75 transition-opacity" />
@@ -113,9 +113,9 @@ export default function Home(): React.ReactElement {
             href={SITE_CONFIG.GITHUB_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="px-8 py-4 bg-white/10 backdrop-blur-md hover:bg-white/20 text-white rounded-full font-bold text-lg border border-white/20 transition-all duration-300 hover:scale-110 hover:border-white/40"
+            className="px-5 md:px-8 py-3 md:py-4 bg-white/10 backdrop-blur-md hover:bg-white/20 text-white rounded-full font-bold text-sm md:text-lg border border-white/20 transition-all duration-300 hover:scale-110 hover:border-white/40"
           >
-            {t('View on GitHub', 'GitHub에서 보기')} ⭐
+            {t('GitHub', 'GitHub에서 보기')} ⭐
           </a>
         </div>
       </div>
