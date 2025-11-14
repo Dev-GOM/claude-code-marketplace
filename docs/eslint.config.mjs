@@ -1,4 +1,3 @@
-import { fixupConfigRules } from "@eslint/compat";
 import pluginJs from "@eslint/js";
 import pluginReactHooks from "eslint-plugin-react-hooks";
 import tseslint from "typescript-eslint";
