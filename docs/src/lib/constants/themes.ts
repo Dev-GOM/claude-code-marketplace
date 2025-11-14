@@ -141,4 +141,4 @@ export const THEMES: Record<ThemeId, Theme> = {
   },
 } as const;
 
-export const DEFAULT_THEME: ThemeId = 'cyberpunk';
+export const DEFAULT_THEME: ThemeId = 'matrix';

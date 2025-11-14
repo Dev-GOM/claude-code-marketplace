@@ -70,7 +70,7 @@ export function Footer(): React.ReactElement {
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* About */}
-          <div className="md:text-left">
+          <div>
             <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
               <span className="text-2xl">🎨</span>
               {SITE_CONFIG.TITLE}
@@ -81,58 +81,62 @@ export function Footer(): React.ReactElement {
           </div>
 
           {/* Quick Links */}
-          <div className="md:text-center">
-            <h3 className="text-lg font-bold text-white mb-4">{t('Quick Links', '빠른 링크')}</h3>
-            <ul className="space-y-2 md:inline-block md:text-left">
-              <li>
-                <a
-                  href="#plugins"
-                  className="text-white/60 hover:text-white transition-colors duration-300 text-sm"
-                >
-                  {t('Browse Plugins', '플러그인 둘러보기')}
-                </a>
-              </li>
-              <li>
-                <a
-                  href={SITE_CONFIG.GITHUB_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-white/60 hover:text-white transition-colors duration-300 text-sm"
-                >
-                  {t('GitHub Repository', 'GitHub 저장소')}
-                </a>
-              </li>
-              <li>
-                <a
-                  href={`${SITE_CONFIG.GITHUB_URL}/issues`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-white/60 hover:text-white transition-colors duration-300 text-sm"
-                >
-                  {t('Report Issues', '이슈 제보')}
-                </a>
-              </li>
-            </ul>
+          <div className="md:flex md:justify-center">
+            <div>
+              <h3 className="text-lg font-bold text-white mb-4">{t('Quick Links', '빠른 링크')}</h3>
+              <ul className="space-y-2">
+                <li>
+                  <a
+                    href="#plugins"
+                    className="text-white/60 hover:text-white transition-colors duration-300 text-sm"
+                  >
+                    {t('Browse Plugins', '플러그인 둘러보기')}
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href={SITE_CONFIG.GITHUB_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-white/60 hover:text-white transition-colors duration-300 text-sm"
+                  >
+                    {t('GitHub Repository', 'GitHub 저장소')}
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href={`${SITE_CONFIG.GITHUB_URL}/issues`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-white/60 hover:text-white transition-colors duration-300 text-sm"
+                  >
+                    {t('Report Issues', '이슈 제보')}
+                  </a>
+                </li>
+              </ul>
+            </div>
           </div>
 
           {/* Stats */}
-          <div className="md:text-right">
-            <h3 className="text-lg font-bold text-white mb-4">{t('Stats', '통계')}</h3>
-            <div className="space-y-3 md:inline-block md:text-left">
-              <div className="flex items-center gap-3">
-                <span className="text-2xl">📦</span>
-                <div>
-                  <div className="text-white font-bold">
-                    {pluginCount} {t(pluginCount === 1 ? 'Plugin' : 'Plugins', '플러그인')}
+          <div className="md:flex md:justify-end">
+            <div>
+              <h3 className="text-lg font-bold text-white mb-4">{t('Stats', '통계')}</h3>
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">📦</span>
+                  <div>
+                    <div className="text-white font-bold">
+                      {pluginCount} {t(pluginCount === 1 ? 'Plugin' : 'Plugins', '플러그인')}
+                    </div>
+                    <div className="text-white/60 text-sm">{t('Ready to use', '사용 가능')}</div>
                   </div>
-                  <div className="text-white/60 text-sm">{t('Ready to use', '사용 가능')}</div>
                 </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="text-2xl">⭐</span>
-                <div>
-                  <div className="text-white font-bold">v{SITE_CONFIG.VERSION}</div>
-                  <div className="text-white/60 text-sm">{t('Latest version', '최신 버전')}</div>
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">⭐</span>
+                  <div>
+                    <div className="text-white font-bold">v{SITE_CONFIG.VERSION}</div>
+                    <div className="text-white/60 text-sm">{t('Latest version', '최신 버전')}</div>
+                  </div>
                 </div>
               </div>
             </div>
