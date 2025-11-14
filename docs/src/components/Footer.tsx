@@ -8,6 +8,9 @@ import { useLanguage } from '@/contexts/LanguageContext';
 export function Footer(): React.ReactElement {
   const pluginCount = useMemo(() => getAllPlugins().length, []);
   const { t } = useLanguage();
+  const [dailyVisitors, setDailyVisitors] = useState<number>(0);
+  const [weeklyVisitors, setWeeklyVisitors] = useState<number>(0);
+  const [monthlyVisitors, setMonthlyVisitors] = useState<number>(0);
   const [totalVisitors, setTotalVisitors] = useState<number>(0);
 
   useEffect(() => {
@@ -40,16 +43,34 @@ export function Footer(): React.ReactElement {
       localStorage.setItem(STORAGE_KEYS.LAST_VISIT, now.toString());
     }
 
+    // Get all visitor counts
+    const daily = parseInt(localStorage.getItem(STORAGE_KEYS.DAILY) || '0');
+    const monthly = parseInt(localStorage.getItem(STORAGE_KEYS.MONTHLY) || '0');
     const total = parseInt(localStorage.getItem(STORAGE_KEYS.TOTAL) || '0');
+
+    // Calculate weekly visitors (last 7 days)
+    let weekly = 0;
+    const todayDate = new Date();
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(todayDate);
+      date.setDate(date.getDate() - i);
+      const dateStr = date.toISOString().split('T')[0] || '';
+      const count = parseInt(localStorage.getItem(`visitor_daily_${dateStr}`) || '0');
+      weekly += count;
+    }
+
+    setDailyVisitors(daily);
+    setWeeklyVisitors(weekly);
+    setMonthlyVisitors(monthly);
     setTotalVisitors(total);
   }, []);
 
   return (
     <footer className="relative z-10 border-t border-white/10 backdrop-blur-md bg-white/5 mt-20">
       <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* About */}
-          <div>
+          <div className="md:text-left">
             <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
               <span className="text-2xl">🎨</span>
               {SITE_CONFIG.TITLE}
@@ -60,9 +81,9 @@ export function Footer(): React.ReactElement {
           </div>
 
           {/* Quick Links */}
-          <div>
+          <div className="md:text-center">
             <h3 className="text-lg font-bold text-white mb-4">{t('Quick Links', '빠른 링크')}</h3>
-            <ul className="space-y-2">
+            <ul className="space-y-2 md:inline-block md:text-left">
               <li>
                 <a
                   href="#plugins"
@@ -95,9 +116,9 @@ export function Footer(): React.ReactElement {
           </div>
 
           {/* Stats */}
-          <div>
+          <div className="md:text-right">
             <h3 className="text-lg font-bold text-white mb-4">{t('Stats', '통계')}</h3>
-            <div className="space-y-3">
+            <div className="space-y-3 md:inline-block md:text-left">
               <div className="flex items-center gap-3">
                 <span className="text-2xl">📦</span>
                 <div>
@@ -124,12 +145,29 @@ export function Footer(): React.ReactElement {
             <p className="text-white/60 text-sm">
               © {new Date().getFullYear()} {SITE_CONFIG.AUTHOR}. Built with 💜 for developers.
             </p>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-col sm:flex-row items-center gap-3">
               {totalVisitors > 0 && (
-                <div className="flex items-center gap-1.5 text-white/60 text-xs">
-                  <span>👥</span>
-                  <span>{totalVisitors.toLocaleString()}</span>
-                  <span>{t('visits', '방문')}</span>
+                <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-white/60 text-xs">
+                  <div className="flex items-center gap-1.5">
+                    <span>📅</span>
+                    <span>{t('Today', '오늘')}</span>
+                    <span className="font-semibold text-white">{dailyVisitors.toLocaleString()}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span>📊</span>
+                    <span>{t('Week', '주간')}</span>
+                    <span className="font-semibold text-white">{weeklyVisitors.toLocaleString()}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span>📈</span>
+                    <span>{t('Month', '월간')}</span>
+                    <span className="font-semibold text-white">{monthlyVisitors.toLocaleString()}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span>👥</span>
+                    <span>{t('Total', '총')}</span>
+                    <span className="font-semibold text-white">{totalVisitors.toLocaleString()}</span>
+                  </div>
                 </div>
               )}
               <a
