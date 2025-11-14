@@ -1,19 +1,53 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { SITE_CONFIG } from '@/lib/constants';
 import { getAllPlugins } from '@/lib/data/plugins';
-import { VisitorCounter } from '@/components/VisitorCounter';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 export function Footer(): React.ReactElement {
   const pluginCount = useMemo(() => getAllPlugins().length, []);
   const { t } = useLanguage();
+  const [totalVisitors, setTotalVisitors] = useState<number>(0);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const today = new Date().toISOString().split('T')[0] || '';
+    const thisMonth = today.substring(0, 7) || '';
+
+    const STORAGE_KEYS = {
+      DAILY: `visitor_daily_${today}`,
+      MONTHLY: `visitor_monthly_${thisMonth}`,
+      TOTAL: 'visitor_total',
+      LAST_VISIT: 'visitor_last_visit',
+    };
+
+    const lastVisit = localStorage.getItem(STORAGE_KEYS.LAST_VISIT);
+    const now = Date.now();
+    const isNewVisit = !lastVisit || now - parseInt(lastVisit) > 30 * 60 * 1000;
+
+    if (isNewVisit) {
+      const dailyCount = parseInt(localStorage.getItem(STORAGE_KEYS.DAILY) || '0');
+      localStorage.setItem(STORAGE_KEYS.DAILY, (dailyCount + 1).toString());
+
+      const monthlyCount = parseInt(localStorage.getItem(STORAGE_KEYS.MONTHLY) || '0');
+      localStorage.setItem(STORAGE_KEYS.MONTHLY, (monthlyCount + 1).toString());
+
+      const totalCount = parseInt(localStorage.getItem(STORAGE_KEYS.TOTAL) || '0');
+      localStorage.setItem(STORAGE_KEYS.TOTAL, (totalCount + 1).toString());
+
+      localStorage.setItem(STORAGE_KEYS.LAST_VISIT, now.toString());
+    }
+
+    const total = parseInt(localStorage.getItem(STORAGE_KEYS.TOTAL) || '0');
+    setTotalVisitors(total);
+  }, []);
 
   return (
     <footer className="relative z-10 border-t border-white/10 backdrop-blur-md bg-white/5 mt-20">
       <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {/* About */}
           <div>
             <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
@@ -82,9 +116,6 @@ export function Footer(): React.ReactElement {
               </div>
             </div>
           </div>
-
-          {/* Visitor Counter */}
-          <VisitorCounter />
         </div>
 
         {/* Copyright */}
@@ -93,7 +124,14 @@ export function Footer(): React.ReactElement {
             <p className="text-white/60 text-sm">
               © {new Date().getFullYear()} {SITE_CONFIG.AUTHOR}. Built with 💜 for developers.
             </p>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
+              {totalVisitors > 0 && (
+                <div className="flex items-center gap-1.5 text-white/60 text-xs">
+                  <span>👥</span>
+                  <span>{totalVisitors.toLocaleString()}</span>
+                  <span>{t('visits', '방문')}</span>
+                </div>
+              )}
               <a
                 href={SITE_CONFIG.GITHUB_URL}
                 target="_blank"

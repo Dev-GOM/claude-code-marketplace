@@ -62,7 +62,7 @@ export function Header(): React.ReactElement {
             <div ref={dropdownRef} className="relative">
               <button
                 onClick={() => setShowThemeMenu(!showThemeMenu)}
-                className="group relative px-2 md:px-4 py-2 bg-white/10 hover:bg-white/20 rounded-full font-medium transition-all duration-300 hover:scale-105 border border-white/20 flex items-center gap-1 md:gap-2 h-9 md:h-10"
+                className="group relative px-2 md:px-4 py-2 bg-white/10 hover:bg-white/20 rounded-full font-medium transition-all duration-300 hover:scale-105 border border-white/20 flex items-center justify-center gap-1 md:gap-2 h-9 md:h-10 w-9 sm:w-auto"
                 style={{ color: 'var(--color-textPrimary)' }}
                 aria-label={t('Select theme', '테마 선택')}
                 aria-expanded={showThemeMenu}
@@ -111,7 +111,7 @@ export function Header(): React.ReactElement {
             {/* Language Toggle */}
             <button
               onClick={() => setLanguage(language === 'en' ? 'ko' : 'en')}
-              className="group relative px-2 md:px-4 py-2 bg-white/10 hover:bg-white/20 rounded-full font-medium transition-all duration-300 hover:scale-105 border border-white/20 flex items-center gap-1 md:gap-2 h-9 md:h-10"
+              className="group relative px-2 md:px-4 py-2 bg-white/10 hover:bg-white/20 rounded-full font-medium transition-all duration-300 hover:scale-105 border border-white/20 flex items-center justify-center gap-1 md:gap-2 h-9 md:h-10 w-9 sm:w-auto"
               style={{ color: 'var(--color-textPrimary)' }}
               aria-label={language === 'en' ? 'Switch to Korean' : 'Switch to English'}
               title={t('Switch language', '언어 전환')}
@@ -135,7 +135,7 @@ export function Header(): React.ReactElement {
               href={SITE_CONFIG.GITHUB_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="px-2 md:px-5 py-2 rounded-full font-medium transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl h-9 md:h-10 flex items-center gap-1"
+              className="px-2 md:px-5 py-2 rounded-full font-medium transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl h-9 md:h-10 flex items-center justify-center gap-1 w-9 sm:w-auto"
               style={{
                 background: 'var(--color-buttonBg)',
                 color: 'var(--color-buttonText)',

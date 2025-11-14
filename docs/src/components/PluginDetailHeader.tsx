@@ -20,6 +20,10 @@ export function PluginDetailHeader({ plugin }: PluginDetailHeaderProps): React.R
   const name = language === 'ko' && plugin.nameKo ? plugin.nameKo : plugin.name;
   const description = language === 'ko' && plugin.descriptionKo ? plugin.descriptionKo : plugin.description;
 
+  // 언어별 GitHub README URL 생성
+  const readmeFileName = language === 'ko' ? 'README.ko.md' : 'README.md';
+  const githubReadmeUrl = `${plugin.homepage}/blob/main/plugins/${plugin.slug}/${readmeFileName}`;
+
   return (
     <div className="mb-8 md:mb-12">
       {/* Back button */}
@@ -83,7 +87,7 @@ export function PluginDetailHeader({ plugin }: PluginDetailHeaderProps): React.R
           <div className="flex flex-col sm:flex-row flex-wrap gap-2 md:gap-3">
             <CopyInstallButton pluginName={plugin.name} categoryBg={categoryColor.bg} />
             <a
-              href={plugin.homepage}
+              href={githubReadmeUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="px-4 md:px-6 py-2.5 md:py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl font-bold transition-all duration-300 hover:scale-105 border border-white/20 text-sm md:text-base text-center"
