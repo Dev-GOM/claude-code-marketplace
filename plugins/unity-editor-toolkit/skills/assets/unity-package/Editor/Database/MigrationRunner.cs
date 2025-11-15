@@ -173,8 +173,8 @@ namespace UnityEditorToolkit.Editor.Database
 
                     try
                     {
-                        // SQL을 세미콜론으로 분리하여 개별 실행
-                        var sqlStatements = sql.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+                        // SQL을 완전한 문장 단위로 분리 (BEGIN...END 블록 고려)
+                        var sqlStatements = SplitSqlStatements(sql);
                         int executedCount = 0;
 
                         foreach (var statement in sqlStatements)
@@ -302,6 +302,135 @@ namespace UnityEditorToolkit.Editor.Database
                 .ToList();
 
             return files;
+        }
+
+        /// <summary>
+        /// SQL 문장을 BEGIN...END 블록을 고려하여 분리
+        /// </summary>
+        private List<string> SplitSqlStatements(string sql)
+        {
+            var statements = new List<string>();
+            var currentStatement = new System.Text.StringBuilder();
+            int beginEndDepth = 0;
+            bool inSingleLineComment = false;
+            bool inMultiLineComment = false;
+            bool inString = false;
+
+            for (int i = 0; i < sql.Length; i++)
+            {
+                char c = sql[i];
+                char nextChar = i + 1 < sql.Length ? sql[i + 1] : '\0';
+
+                // 줄바꿈 처리 (단일 줄 주석 종료)
+                if (c == '\n')
+                {
+                    inSingleLineComment = false;
+                    currentStatement.Append(c);
+                    continue;
+                }
+
+                // 단일 줄 주석 시작 (문자열 내부가 아닐 때)
+                if (!inString && !inMultiLineComment && c == '-' && nextChar == '-')
+                {
+                    inSingleLineComment = true;
+                    currentStatement.Append(c);
+                    continue;
+                }
+
+                // 다중 줄 주석 시작
+                if (!inString && !inSingleLineComment && c == '/' && nextChar == '*')
+                {
+                    inMultiLineComment = true;
+                    currentStatement.Append(c);
+                    continue;
+                }
+
+                // 다중 줄 주석 종료
+                if (inMultiLineComment && c == '*' && nextChar == '/')
+                {
+                    inMultiLineComment = false;
+                    currentStatement.Append(c);
+                    i++; // '/' 스킵
+                    currentStatement.Append('/');
+                    continue;
+                }
+
+                // 주석 내부면 그대로 추가
+                if (inSingleLineComment || inMultiLineComment)
+                {
+                    currentStatement.Append(c);
+                    continue;
+                }
+
+                // 문자열 시작/종료 (작은따옴표)
+                if (c == '\'')
+                {
+                    // 이스케이프된 따옴표 확인 ('')
+                    if (inString && nextChar == '\'')
+                    {
+                        currentStatement.Append(c);
+                        i++; // 다음 따옴표도 추가
+                        currentStatement.Append('\'');
+                        continue;
+                    }
+                    inString = !inString;
+                    currentStatement.Append(c);
+                    continue;
+                }
+
+                // 문자열 내부면 그대로 추가
+                if (inString)
+                {
+                    currentStatement.Append(c);
+                    continue;
+                }
+
+                // BEGIN 키워드 감지 (대소문자 무시)
+                if (i + 5 <= sql.Length)
+                {
+                    string word = sql.Substring(i, 5).ToUpper();
+                    if (word == "BEGIN" && (i == 0 || !char.IsLetterOrDigit(sql[i - 1])) &&
+                        (i + 5 >= sql.Length || !char.IsLetterOrDigit(sql[i + 5])))
+                    {
+                        beginEndDepth++;
+                    }
+                }
+
+                // END 키워드 감지
+                if (i + 3 <= sql.Length)
+                {
+                    string word = sql.Substring(i, 3).ToUpper();
+                    if (word == "END" && (i == 0 || !char.IsLetterOrDigit(sql[i - 1])) &&
+                        (i + 3 >= sql.Length || !char.IsLetterOrDigit(sql[i + 3])))
+                    {
+                        beginEndDepth--;
+                    }
+                }
+
+                // 세미콜론으로 문장 분리 (BEGIN...END 블록 외부에서만)
+                if (c == ';' && beginEndDepth == 0)
+                {
+                    currentStatement.Append(c);
+                    string statement = currentStatement.ToString().Trim();
+                    if (!string.IsNullOrWhiteSpace(statement))
+                    {
+                        statements.Add(statement);
+                    }
+                    currentStatement.Clear();
+                    continue;
+                }
+
+                currentStatement.Append(c);
+            }
+
+            // 마지막 문장 추가 (세미콜론 없이 끝나는 경우)
+            string lastStatement = currentStatement.ToString().Trim();
+            if (!string.IsNullOrWhiteSpace(lastStatement))
+            {
+                statements.Add(lastStatement);
+            }
+
+            return statements;
         }
         #endregion
     }
