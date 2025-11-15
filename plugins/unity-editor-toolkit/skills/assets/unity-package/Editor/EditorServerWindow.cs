@@ -4,6 +4,7 @@ using UnityEngine.UIElements;
 using UnityEditorToolkit.Editor.Server;
 using UnityEditorToolkit.Editor.Attributes;
 using System.IO;
+using UnityEditor.Callbacks;
 
 namespace UnityEditorToolkit.Editor
 {

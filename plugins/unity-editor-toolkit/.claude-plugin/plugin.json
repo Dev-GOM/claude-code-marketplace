@@ -1,6 +1,6 @@
 {
   "name": "unity-editor-toolkit",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Complete Unity Editor control toolkit with real-time WebSocket communication for GameObjects, hierarchy, scenes, console, and more",
   "author": {
     "name": "Dev GOM",

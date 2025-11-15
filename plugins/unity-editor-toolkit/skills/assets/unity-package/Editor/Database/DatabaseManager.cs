@@ -2,6 +2,8 @@ using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
+using UnityEditor;
+using UnityEditor.Compilation;
 using UnityEditorToolkit.Editor.Database.Commands;
 
 namespace UnityEditorToolkit.Editor.Database
@@ -9,9 +11,83 @@ namespace UnityEditorToolkit.Editor.Database
     /// <summary>
     /// SQLite 데이터베이스 관리 싱글톤
     /// 임베디드 SQLite - 설치 불필요, 단일 파일 DB
+    /// Domain Reload 시 자동으로 연결 정리 및 재연결
     /// </summary>
+    [InitializeOnLoad]
     public class DatabaseManager
     {
+        #region Domain Reload Handling
+        private const string PREF_KEY_DB_WAS_CONNECTED = "UnityEditorToolkit.Database.WasConnected";
+        private const string PREF_KEY_DB_PATH = "UnityEditorToolkit.Database.Path";
+        private const string PREF_KEY_DB_ENABLE_WAL = "UnityEditorToolkit.Database.EnableWAL";
+
+        static DatabaseManager()
+        {
+            // Domain Reload 전: 연결 정리
+            AssemblyReloadEvents.beforeAssemblyReload += OnBeforeAssemblyReload;
+
+            // Domain Reload 후: 자동 재연결
+            EditorApplication.delayCall += OnAfterAssemblyReload;
+        }
+
+        private static void OnBeforeAssemblyReload()
+        {
+            if (instance != null && instance.IsConnected)
+            {
+                Debug.Log("[DatabaseManager] Domain Reload 감지 - 연결 상태 저장 및 정리 중...");
+
+                // 연결 상태 저장
+                EditorPrefs.SetBool(PREF_KEY_DB_WAS_CONNECTED, true);
+                if (instance.config != null)
+                {
+                    EditorPrefs.SetString(PREF_KEY_DB_PATH, instance.config.DatabasePath);
+                    EditorPrefs.SetBool(PREF_KEY_DB_ENABLE_WAL, instance.config.EnableWAL);
+                }
+
+                // 연결 정리 (동기 방식)
+                try
+                {
+                    instance.connector?.DisconnectAsync().Forget();
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogError($"[DatabaseManager] Shutdown 중 예외: {ex.Message}");
+                }
+            }
+        }
+
+        private static void OnAfterAssemblyReload()
+        {
+            // 이전에 연결되어 있었는지 확인
+            bool wasConnected = EditorPrefs.GetBool(PREF_KEY_DB_WAS_CONNECTED, false);
+
+            if (wasConnected)
+            {
+                Debug.Log("[DatabaseManager] Domain Reload 완료 - 자동 재연결 시도...");
+
+                // 연결 상태 플래그 클리어
+                EditorPrefs.DeleteKey(PREF_KEY_DB_WAS_CONNECTED);
+
+                // 설정 복원 및 재연결
+                string dbPath = EditorPrefs.GetString(PREF_KEY_DB_PATH, "");
+                bool enableWAL = EditorPrefs.GetBool(PREF_KEY_DB_ENABLE_WAL, true);
+
+                if (!string.IsNullOrEmpty(dbPath))
+                {
+                    var config = new DatabaseConfig
+                    {
+                        DatabasePath = dbPath,
+                        EnableWAL = enableWAL
+                    };
+
+                    // 비동기 재연결
+                    Instance.InitializeAsync(config).Forget();
+                    Debug.Log("[DatabaseManager] 자동 재연결 완료.");
+                }
+            }
+        }
+        #endregion
+
         #region Singleton
         private static DatabaseManager instance;
         private static readonly object @lock = new object();
