@@ -3,18 +3,21 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEditorToolkit.Editor.Server;
+using UnityEditorToolkit.Editor.Database;
 
 namespace UnityEditorToolkit.Editor
 {
     /// <summary>
-    /// Unity Editor Toolbar에 서버 연결 상태를 표시 (Reflection 기반)
+    /// Unity Editor Toolbar에 서버 및 DB 연결 상태를 표시 (Reflection 기반)
     /// </summary>
     [InitializeOnLoad]
     public static class EditorToolbarExtension
     {
         private static VisualElement toolbarRoot;
         private static VisualElement customToolbarLeft;
-        private static Label statusLabel;
+        private static Label serverStatusLabel;
+        private static Label dbStatusLabel;
+        private static VisualElement statusContainer;
 
         static EditorToolbarExtension()
         {
@@ -88,7 +91,7 @@ namespace UnityEditorToolkit.Editor
         private static void InitializeServerStatus()
         {
             // 클릭 가능한 컨테이너 (전체가 버튼처럼 동작)
-            var statusContainer = new VisualElement
+            statusContainer = new VisualElement
             {
                 name = "unity-editor-toolkit-status",
                 style =
@@ -127,11 +130,22 @@ namespace UnityEditorToolkit.Editor
                 statusContainer.style.backgroundColor = new Color(0.2f, 0.2f, 0.2f, 0.3f);
             });
 
-            // 상태 라벨
-            statusLabel = new Label("● 9500")
+            // 서버 상태 라벨
+            serverStatusLabel = new Label("●")
             {
-                name = "status-label",
-                tooltip = "Unity Editor Toolkit - Click to open menu",
+                name = "server-status-label",
+                style =
+                {
+                    fontSize = 11,
+                    unityFontStyleAndWeight = FontStyle.Bold,
+                    marginRight = 5,
+                },
+            };
+
+            // DB 상태 라벨
+            dbStatusLabel = new Label("●")
+            {
+                name = "db-status-label",
                 style =
                 {
                     fontSize = 11,
@@ -150,7 +164,8 @@ namespace UnityEditorToolkit.Editor
                 },
             };
 
-            statusContainer.Add(statusLabel);
+            statusContainer.Add(serverStatusLabel);
+            statusContainer.Add(dbStatusLabel);
             statusContainer.Add(dropdownArrow);
             customToolbarLeft.Add(statusContainer);
         }
@@ -163,26 +178,48 @@ namespace UnityEditorToolkit.Editor
 
         private static void UpdateServerStatus()
         {
-            if (statusLabel == null)
+            if (serverStatusLabel == null || dbStatusLabel == null || statusContainer == null)
             {
                 return;
             }
 
+            // 서버 상태 업데이트
             var server = EditorWebSocketServer.Instance;
-            bool isRunning = server != null && server.IsRunning;
+            bool serverIsRunning = server != null && server.IsRunning;
 
-            if (isRunning)
+            if (serverIsRunning)
             {
-                statusLabel.text = $"● {server.Port}";
-                statusLabel.tooltip = $"WebSocket Server Running\nPort: {server.Port}\nClients: {server.ConnectedClients}";
-                statusLabel.style.color = new Color(0.3f, 1f, 0.3f);
+                serverStatusLabel.text = $"● {server.Port}";
+                serverStatusLabel.tooltip = $"WebSocket Server: Running\nPort: {server.Port}\nClients: {server.ConnectedClients}";
+                serverStatusLabel.style.color = new Color(0.3f, 1f, 0.3f);
             }
             else
             {
-                statusLabel.text = "●";
-                statusLabel.tooltip = "WebSocket Server Stopped";
-                statusLabel.style.color = new Color(1f, 0.3f, 0.3f);
+                serverStatusLabel.text = "●";
+                serverStatusLabel.tooltip = "WebSocket Server: Stopped";
+                serverStatusLabel.style.color = new Color(1f, 0.3f, 0.3f);
             }
+
+            // DB 상태 업데이트
+            bool dbIsConnected = DatabaseManager.Instance != null && DatabaseManager.Instance.IsConnected;
+
+            if (dbIsConnected)
+            {
+                dbStatusLabel.text = "● DB";
+                dbStatusLabel.tooltip = "Database: Connected";
+                dbStatusLabel.style.color = new Color(0.3f, 1f, 0.3f);
+            }
+            else
+            {
+                dbStatusLabel.text = "● DB";
+                dbStatusLabel.tooltip = "Database: Disconnected";
+                dbStatusLabel.style.color = new Color(1f, 0.3f, 0.3f);
+            }
+
+            // 전체 컨테이너 tooltip (종합 정보)
+            string serverStatus = serverIsRunning ? $"Running (:{server.Port})" : "Stopped";
+            string dbStatus = dbIsConnected ? "Connected" : "Disconnected";
+            statusContainer.tooltip = $"Unity Editor Toolkit\n\nServer: {serverStatus}\nDatabase: {dbStatus}\n\nClick to open menu";
         }
 
         private static void ShowWindowMenu()
