@@ -149,7 +149,7 @@ namespace UnityEditorToolkit.Editor
 
             // Buttons
             dbTestButton?.RegisterCallback<ClickEvent>(evt => TestDatabaseConnectionAsync().Forget());
-            dbConnectButton?.RegisterCallback<ClickEvent>(evt => ConnectDatabaseAsync().Forget());
+            dbConnectButton?.RegisterCallback<ClickEvent>(evt => ConnectDatabaseAsync(autoConnect: false).Forget());
             dbDisconnectButton?.RegisterCallback<ClickEvent>(evt => DisconnectDatabaseAsync().Forget());
             dbMigrateButton?.RegisterCallback<ClickEvent>(evt => RunDatabaseMigrationsAsync().Forget());
             dbSyncToggleButton?.RegisterCallback<ClickEvent>(evt => ToggleDatabaseSyncAsync().Forget());
@@ -191,7 +191,7 @@ namespace UnityEditorToolkit.Editor
             if (currentDbConfig?.EnableDatabase == true)
             {
                 EditorApplication.delayCall += () => {
-                    ConnectDatabaseAsync().Forget();
+                    ConnectDatabaseAsync(autoConnect: true).Forget();
                 };
             }
         }
@@ -395,30 +395,39 @@ namespace UnityEditorToolkit.Editor
             }
         }
 
-        private async UniTaskVoid ConnectDatabaseAsync()
+        private async UniTaskVoid ConnectDatabaseAsync(bool autoConnect = false)
         {
             SaveDatabaseConfig();
-            HideDatabaseMessages();
+            if (!autoConnect)
+            {
+                HideDatabaseMessages();
+            }
 
             try
             {
                 // 이미 연결되어 있는지 확인
                 if (DatabaseManager.Instance.IsConnected)
                 {
-                    ShowDatabaseSuccess("✅ 이미 연결되어 있습니다!\n\nCommand History 활성화됨");
+                    if (!autoConnect)
+                    {
+                        ShowDatabaseSuccess("✅ 이미 연결되어 있습니다!\n\nCommand History 활성화됨");
+                    }
                     Debug.Log("[EditorServerWindow] 이미 데이터베이스에 연결되어 있습니다.");
                     UpdateDatabaseUI();
                     return;
                 }
 
-                Debug.Log("[EditorServerWindow] 데이터베이스 연결 중...");
+                Debug.Log($"[EditorServerWindow] 데이터베이스 연결 중... (자동연결: {autoConnect})");
 
                 // Step 1: 데이터베이스 연결
                 var result = await DatabaseManager.Instance.InitializeAsync(currentDbConfig);
 
                 if (!result.Success)
                 {
-                    ShowDatabaseError($"❌ 연결 실패:\n{result.ErrorMessage}");
+                    if (!autoConnect)
+                    {
+                        ShowDatabaseError($"❌ 연결 실패:\n{result.ErrorMessage}");
+                    }
                     Debug.LogError($"[EditorServerWindow] 연결 실패: {result.ErrorMessage}");
                     UpdateDatabaseUI();
                     return;
@@ -433,26 +442,34 @@ namespace UnityEditorToolkit.Editor
 
                 if (migrationResult.Success)
                 {
-                    if (migrationResult.MigrationsApplied > 0)
+                    if (!autoConnect)
                     {
-                        ShowDatabaseSuccess($"✅ 데이터베이스 연결 완료!\n\n마이그레이션: {migrationResult.MigrationsApplied}개 적용됨\nCommand History 활성화됨");
-                        Debug.Log($"[EditorServerWindow] 마이그레이션 성공: {migrationResult.MigrationsApplied}개");
+                        if (migrationResult.MigrationsApplied > 0)
+                        {
+                            ShowDatabaseSuccess($"✅ 데이터베이스 연결 완료!\n\n마이그레이션: {migrationResult.MigrationsApplied}개 적용됨\nCommand History 활성화됨");
+                        }
+                        else
+                        {
+                            ShowDatabaseSuccess("✅ 데이터베이스 연결 완료!\n\nCommand History 활성화됨");
+                        }
                     }
-                    else
-                    {
-                        ShowDatabaseSuccess("✅ 데이터베이스 연결 완료!\n\nCommand History 활성화됨");
-                        Debug.Log("[EditorServerWindow] 스키마가 이미 최신 상태입니다.");
-                    }
+                    Debug.Log($"[EditorServerWindow] 마이그레이션 성공: {migrationResult.MigrationsApplied}개");
                 }
                 else
                 {
-                    ShowDatabaseError($"⚠️ 연결은 성공했지만 마이그레이션 실패:\n{migrationResult.ErrorMessage}\n\n'Run Migrations' 버튼을 수동으로 눌러주세요.");
+                    if (!autoConnect)
+                    {
+                        ShowDatabaseError($"⚠️ 연결은 성공했지만 마이그레이션 실패:\n{migrationResult.ErrorMessage}\n\n'Run Migrations' 버튼을 수동으로 눌러주세요.");
+                    }
                     Debug.LogWarning($"[EditorServerWindow] 마이그레이션 실패: {migrationResult.ErrorMessage}");
                 }
             }
             catch (System.Exception ex)
             {
-                ShowDatabaseError($"❌ 연결 중 오류:\n{ex.Message}");
+                if (!autoConnect)
+                {
+                    ShowDatabaseError($"❌ 연결 중 오류:\n{ex.Message}");
+                }
                 Debug.LogError($"[EditorServerWindow] 연결 예외: {ex.Message}");
             }
 
