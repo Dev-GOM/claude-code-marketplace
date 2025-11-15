@@ -138,3 +138,30 @@
     margin-top: 5px;
     margin-bottom: 5px;
 }
+
+/* Toolbar Extension Styles */
+.unity-toolbar-element {
+    flex-direction: row;
+    align-items: center;
+    padding-left: 8px;
+    padding-right: 8px;
+}
+
+.unity-toolbar-label {
+    font-size: 11px;
+    -unity-font-style: bold;
+    margin-right: 5px;
+}
+
+.unity-toolbar-button {
+    font-size: 11px;
+    padding: 2px 5px;
+}
+
+.server-running {
+    color: rgb(76, 255, 76);
+}
+
+.server-stopped {
+    color: rgb(255, 76, 76);
+}
