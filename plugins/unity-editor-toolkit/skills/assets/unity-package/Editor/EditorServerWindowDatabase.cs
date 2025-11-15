@@ -394,6 +394,15 @@ namespace UnityEditorToolkit.Editor
 
             try
             {
+                // 이미 연결되어 있는지 확인
+                if (DatabaseManager.Instance.IsConnected)
+                {
+                    ShowDatabaseSuccess("✅ 이미 연결되어 있습니다!\n\nCommand History 활성화됨");
+                    Debug.Log("[EditorServerWindow] 이미 데이터베이스에 연결되어 있습니다.");
+                    UpdateDatabaseUI();
+                    return;
+                }
+
                 Debug.Log("[EditorServerWindow] 데이터베이스 연결 중...");
 
                 // Step 1: 데이터베이스 연결

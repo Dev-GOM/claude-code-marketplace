@@ -173,8 +173,29 @@ namespace UnityEditorToolkit.Editor.Database
 
                     try
                     {
-                        // SQL 실행 (여러 문장 포함 가능)
-                        connection.Execute(sql);
+                        // SQL을 세미콜론으로 분리하여 개별 실행
+                        var sqlStatements = sql.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+                        int executedCount = 0;
+
+                        foreach (var statement in sqlStatements)
+                        {
+                            var trimmedStatement = statement.Trim();
+                            if (string.IsNullOrWhiteSpace(trimmedStatement))
+                                continue;
+
+                            // SELECT 문 (결과 메시지용)은 스킵
+                            if (trimmedStatement.StartsWith("SELECT ", StringComparison.OrdinalIgnoreCase) &&
+                                trimmedStatement.Contains(" AS message", StringComparison.OrdinalIgnoreCase))
+                            {
+                                continue;
+                            }
+
+                            // SQL 실행
+                            connection.Execute(trimmedStatement);
+                            executedCount++;
+                        }
+
+                        Debug.Log($"[MigrationRunner] SQL 문장 실행 완료: {executedCount}개");
 
                         // migrations 테이블에 기록
                         string insertSql = @"
