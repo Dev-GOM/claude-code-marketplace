@@ -40,7 +40,7 @@ namespace UnityEditorToolkit.Editor.Database
                 EditorPrefs.SetBool(PREF_KEY_DB_WAS_CONNECTED, true);
                 if (instance.config != null)
                 {
-                    EditorPrefs.SetString(PREF_KEY_DB_PATH, instance.config.DatabasePath);
+                    EditorPrefs.SetString(PREF_KEY_DB_PATH, instance.config.DatabaseFilePath);
                     EditorPrefs.SetBool(PREF_KEY_DB_ENABLE_WAL, instance.config.EnableWAL);
                 }
 
@@ -76,7 +76,7 @@ namespace UnityEditorToolkit.Editor.Database
                 {
                     var config = new DatabaseConfig
                     {
-                        DatabasePath = dbPath,
+                        DatabaseFilePath = dbPath,
                         EnableWAL = enableWAL
                     };
 
