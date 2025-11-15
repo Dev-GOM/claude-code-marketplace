@@ -649,19 +649,22 @@ namespace UnityEditorToolkit.Editor
             var history = DatabaseManager.Instance.CommandHistory;
             if (history == null)
             {
-                dbUndoCount.text = "0";
-                dbRedoCount.text = "0";
+                // Update data (UI auto-updates via data binding)
+                windowData.DbUndoCount = 0;
+                windowData.DbRedoCount = 0;
+
+                // Update button states
                 dbUndoButton?.SetEnabled(false);
                 dbRedoButton?.SetEnabled(false);
                 dbClearHistoryButton?.SetEnabled(false);
                 return;
             }
 
-            // 카운트 업데이트
-            dbUndoCount.text = history.UndoCount.ToString();
-            dbRedoCount.text = history.RedoCount.ToString();
+            // Update data (UI auto-updates via data binding)
+            windowData.DbUndoCount = history.UndoCount;
+            windowData.DbRedoCount = history.RedoCount;
 
-            // 버튼 활성화 상태
+            // Update button states (not bound to data)
             dbUndoButton?.SetEnabled(history.CanUndo && DatabaseManager.Instance.IsConnected);
             dbRedoButton?.SetEnabled(history.CanRedo && DatabaseManager.Instance.IsConnected);
             dbClearHistoryButton?.SetEnabled((history.UndoCount > 0 || history.RedoCount > 0) && DatabaseManager.Instance.IsConnected);
@@ -676,37 +679,24 @@ namespace UnityEditorToolkit.Editor
 
             bool isConnected = DatabaseManager.Instance.IsConnected;
 
-            // Update status indicator
-            dbStatusIndicator.RemoveFromClassList("status-stopped");
-            dbStatusIndicator.RemoveFromClassList("status-running");
-            dbStatusIndicator.RemoveFromClassList("status-error");
-
-            if (isConnected)
-            {
-                dbStatusIndicator.AddToClassList("status-running");
-                dbStatusLabel.text = "Connected ✓";
-            }
-            else
-            {
-                dbStatusIndicator.AddToClassList("status-stopped");
-                dbStatusLabel.text = "Not Connected";
-            }
+            // Update data (UI auto-updates via data binding)
+            windowData.DbIsConnected = isConnected;
 
             // Update database file status
             if (DatabaseManager.Instance.IsInitialized && DatabaseManager.Instance.Connector != null)
             {
                 bool fileExists = DatabaseManager.Instance.Connector.DatabaseFileExists();
-                dbFileExistsLabel.text = fileExists ? "✓ Exists" : "Not Created";
+                windowData.DbFileExists = fileExists;
             }
             else
             {
-                dbFileExistsLabel.text = "Not Created";
+                windowData.DbFileExists = false;
             }
 
             // Update sync status
-            dbSyncStatusLabel.text = "Not Running";  // TODO Phase 2: SyncManager 통합
+            windowData.DbIsSyncing = false;  // TODO Phase 2: SyncManager 통합
 
-            // Button visibility
+            // Update button visibility and states (not bound to data)
             dbConnectButton?.SetEnabled(!isConnected && (dbEnableToggle?.value ?? false));
             dbDisconnectButton?.SetEnabled(isConnected);
 

@@ -7,19 +7,35 @@
             <ui:VisualElement class="status-row">
                 <ui:Label text="🔌 Connection:" class="label-key" tooltip="SQLite 데이터베이스 연결 상태&#10;Connect 버튼으로 연결" />
                 <ui:VisualElement class="status-indicator-container">
-                    <ui:VisualElement name="db-status-indicator" class="status-indicator status-stopped" />
-                    <ui:Label name="db-status-label" text="❌ Not Connected" class="label-value" />
+                    <ui:VisualElement name="db-status-indicator">
+                        <Bindings>
+                            <ui:DataBinding property="class" data-source-path="DbStatusIndicatorClass" binding-mode="ToTarget" />
+                        </Bindings>
+                    </ui:VisualElement>
+                    <ui:Label name="db-status-label" class="label-value">
+                        <Bindings>
+                            <ui:DataBinding property="text" data-source-path="DbStatusText" binding-mode="ToTarget" />
+                        </Bindings>
+                    </ui:Label>
                 </ui:VisualElement>
             </ui:VisualElement>
 
             <ui:VisualElement class="status-row">
                 <ui:Label text="💾 Database File:" class="label-key" tooltip="데이터베이스 파일 생성 여부&#10;Reinstall Database 버튼으로 생성" />
-                <ui:Label name="db-file-exists-label" text="❌ Not Created" class="label-value" />
+                <ui:Label name="db-file-exists-label" class="label-value">
+                    <Bindings>
+                        <ui:DataBinding property="text" data-source-path="DbFileExistsText" binding-mode="ToTarget" />
+                    </Bindings>
+                </ui:Label>
             </ui:VisualElement>
 
             <ui:VisualElement class="status-row">
                 <ui:Label text="🔄 Sync Status:" class="label-key" tooltip="실시간 GameObject/Component 동기화 상태&#10;(Phase 2에서 구현 예정)" />
-                <ui:Label name="db-sync-status-label" text="⏹️ Not Running" class="label-value" />
+                <ui:Label name="db-sync-status-label" class="label-value">
+                    <Bindings>
+                        <ui:DataBinding property="text" data-source-path="DbSyncStatusText" binding-mode="ToTarget" />
+                    </Bindings>
+                </ui:Label>
             </ui:VisualElement>
 
             <!-- Action Buttons -->
@@ -39,12 +55,20 @@
             <ui:Label text="📜 Command History" class="section-title" style="margin-top: 15px;" />
             <ui:VisualElement class="status-row">
                 <ui:Label text="⟲ Undo Stack:" class="label-key" tooltip="실행 취소 가능한 명령 수&#10;데이터베이스에 영구 저장" />
-                <ui:Label name="db-undo-count" text="🔢 0" class="label-value" />
+                <ui:Label name="db-undo-count" class="label-value">
+                    <Bindings>
+                        <ui:DataBinding property="text" data-source-path="DbUndoCountText" binding-mode="ToTarget" />
+                    </Bindings>
+                </ui:Label>
             </ui:VisualElement>
 
             <ui:VisualElement class="status-row">
                 <ui:Label text="⟳ Redo Stack:" class="label-key" tooltip="다시 실행 가능한 명령 수&#10;Undo 후 사용 가능" />
-                <ui:Label name="db-redo-count" text="🔢 0" class="label-value" />
+                <ui:Label name="db-redo-count" class="label-value">
+                    <Bindings>
+                        <ui:DataBinding property="text" data-source-path="DbRedoCountText" binding-mode="ToTarget" />
+                    </Bindings>
+                </ui:Label>
             </ui:VisualElement>
 
             <ui:VisualElement class="button-row">

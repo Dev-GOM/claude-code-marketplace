@@ -16,6 +16,9 @@ namespace UnityEditorToolkit.Editor
         private EditorWebSocketServer server => EditorWebSocketServer.Instance;
         private EditorServerCLIInstaller cliInstaller;
 
+        // Data binding source
+        private EditorServerWindowData windowData = new EditorServerWindowData();
+
         private bool wasPlaying = false;
         private float lastUpdateTime = 0f;
         private bool hasNodeJS = false;
@@ -96,6 +99,9 @@ namespace UnityEditorToolkit.Editor
             }
 
             visualTree.CloneTree(rootVisualElement);
+
+            // Set data binding source
+            rootVisualElement.dataSource = windowData;
 
             // Load USS
             var styleSheet = AssetDatabase.LoadAssetAtPath<StyleSheet>(
@@ -288,27 +294,13 @@ namespace UnityEditorToolkit.Editor
 
         private void UpdateServerStatus()
         {
-            // Update status indicator
-            if (statusIndicator != null)
-            {
-                statusIndicator.RemoveFromClassList("status-stopped");
-                statusIndicator.RemoveFromClassList("status-running");
-                statusIndicator.RemoveFromClassList("status-error");
+            // Update data properties (UI auto-updates via data binding)
+            windowData.ServerIsRunning = server.IsRunning;
+            windowData.ServerPort = server.Port;
+            windowData.ConnectedClients = server.ConnectedClients;
+            windowData.AutoStart = server.AutoStart;
 
-                if (server.IsRunning)
-                {
-                    statusIndicator.AddToClassList("status-running");
-                }
-                else
-                {
-                    statusIndicator.AddToClassList("status-stopped");
-                }
-            }
-
-            serverStatusLabel.text = server.IsRunning ? "▶️ Running ✓" : "⏹️ Stopped";
-            serverPortLabel.text = server.Port.ToString();
-            connectedClientsLabel.text = server.ConnectedClients.ToString();
-            autostartToggle.value = server.AutoStart;
+            // Update button states (not bound to data)
             autostartToggle.SetEnabled(!server.IsRunning);
             startButton.SetEnabled(!server.IsRunning);
             stopButton.SetEnabled(server.IsRunning);
@@ -329,11 +321,11 @@ namespace UnityEditorToolkit.Editor
             nodejsMissingSection?.AddToClassList("hidden");
             cliStatusSection?.RemoveFromClassList("hidden");
 
-            // Version labels
-            if (packageVersionLabel != null)
-                packageVersionLabel.text = cliInstaller.PluginVersion ?? "❓ Unknown";
-            if (cliVersionLabel != null)
-                cliVersionLabel.text = cliInstaller.LocalCLIVersion != null ? $"✅ {cliInstaller.LocalCLIVersion}" : "❌ Not Installed";
+            // Update version data (UI auto-updates via data binding)
+            windowData.PackageVersion = cliInstaller.PluginVersion ?? "Unknown";
+            windowData.CLIVersion = cliInstaller.LocalCLIVersion != null
+                ? $"✅ {cliInstaller.LocalCLIVersion}"
+                : "❌ Not Installed";
 
             // Hide all status messages first
             installProgressHelp?.AddToClassList("hidden");

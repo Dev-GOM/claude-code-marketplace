@@ -12,6 +12,9 @@ namespace UnityEditorToolkit.Editor
         #region Fields
         private EditorServerWindow _parentWindow;
 
+        // Data binding source
+        private EditorServerWindowData windowData = new EditorServerWindowData();
+
         // UI Elements - Status
         private VisualElement dbStatusIndicator;
         private Label dbStatusLabel;
@@ -65,6 +68,9 @@ namespace UnityEditorToolkit.Editor
             }
 
             visualTree.CloneTree(rootVisualElement);
+
+            // Set data binding source
+            rootVisualElement.dataSource = windowData;
 
             // Load USS (EditorServerWindow.uss 재사용)
             var styleSheet = AssetDatabase.LoadAssetAtPath<StyleSheet>(
@@ -248,27 +254,15 @@ namespace UnityEditorToolkit.Editor
         {
             bool isConnected = _parentWindow.IsConnected;
 
-            if (dbStatusIndicator != null)
-            {
-                dbStatusIndicator.RemoveFromClassList("status-stopped");
-                dbStatusIndicator.RemoveFromClassList("status-running");
-                dbStatusIndicator.AddToClassList(isConnected ? "status-running" : "status-stopped");
-            }
+            // Update data (UI auto-updates via data binding)
+            windowData.DbIsConnected = isConnected;
 
-            if (dbStatusLabel != null)
-            {
-                dbStatusLabel.text = isConnected ? "✅ Connected" : "❌ Not Connected";
-            }
-
-            // 버튼 상태
-            if (dbConnectButton != null)
-            {
-                dbConnectButton.SetEnabled(!isConnected);
-            }
+            // Update button states (not bound to data)
+            dbConnectButton?.SetEnabled(!isConnected);
+            dbDisconnectButton?.SetEnabled(isConnected);
 
             if (dbDisconnectButton != null)
             {
-                dbDisconnectButton.SetEnabled(isConnected);
                 dbDisconnectButton.style.display = isConnected ? DisplayStyle.Flex : DisplayStyle.None;
             }
         }
@@ -277,21 +271,18 @@ namespace UnityEditorToolkit.Editor
         {
             bool fileExists = _parentWindow.DatabaseFileExists();
 
-            if (dbFileExistsLabel != null)
-            {
-                dbFileExistsLabel.text = fileExists ? "✅ Created" : "❌ Not Created";
-            }
+            // Update data (UI auto-updates via data binding)
+            windowData.DbFileExists = fileExists;
         }
 
         private void UpdateSyncStatus()
         {
             bool isSyncing = _parentWindow.IsSyncing;
 
-            if (dbSyncStatusLabel != null)
-            {
-                dbSyncStatusLabel.text = isSyncing ? "✅ Running" : "⏹️ Not Running";
-            }
+            // Update data (UI auto-updates via data binding)
+            windowData.DbIsSyncing = isSyncing;
 
+            // Update button text (not bound to data)
             if (dbSyncToggleButton != null)
             {
                 dbSyncToggleButton.text = isSyncing ? "⏹️ Stop Sync" : "🔄 Start Sync";
@@ -303,17 +294,13 @@ namespace UnityEditorToolkit.Editor
             int undoCount = _parentWindow.UndoCount;
             int redoCount = _parentWindow.RedoCount;
 
-            if (dbUndoCount != null)
-                dbUndoCount.text = $"🔢 {undoCount}";
+            // Update data (UI auto-updates via data binding)
+            windowData.DbUndoCount = undoCount;
+            windowData.DbRedoCount = redoCount;
 
-            if (dbRedoCount != null)
-                dbRedoCount.text = $"🔢 {redoCount}";
-
-            if (dbUndoButton != null)
-                dbUndoButton.SetEnabled(undoCount > 0);
-
-            if (dbRedoButton != null)
-                dbRedoButton.SetEnabled(redoCount > 0);
+            // Update button states (not bound to data)
+            dbUndoButton?.SetEnabled(undoCount > 0);
+            dbRedoButton?.SetEnabled(redoCount > 0);
         }
 
         private void UpdateMessages()

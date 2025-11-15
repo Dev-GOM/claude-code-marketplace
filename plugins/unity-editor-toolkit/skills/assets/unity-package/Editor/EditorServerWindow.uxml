@@ -8,22 +8,42 @@
             <ui:VisualElement class="status-row">
                 <ui:Label text="📡 Status:" class="label-key" />
                 <ui:VisualElement class="status-indicator-container">
-                    <ui:VisualElement name="status-indicator" class="status-indicator status-stopped" />
-                    <ui:Label name="server-status" text="⏹️ Stopped" class="label-value" />
+                    <ui:VisualElement name="status-indicator">
+                        <Bindings>
+                            <ui:DataBinding property="class" data-source-path="ServerStatusIndicatorClass" binding-mode="ToTarget" />
+                        </Bindings>
+                    </ui:VisualElement>
+                    <ui:Label name="server-status" class="label-value">
+                        <Bindings>
+                            <ui:DataBinding property="text" data-source-path="ServerStatusText" binding-mode="ToTarget" />
+                        </Bindings>
+                    </ui:Label>
                 </ui:VisualElement>
             </ui:VisualElement>
 
             <ui:VisualElement class="status-row">
                 <ui:Label text="🔌 Port:" class="label-key" />
-                <ui:Label name="server-port" text="9500" class="label-value" />
+                <ui:Label name="server-port" class="label-value">
+                    <Bindings>
+                        <ui:DataBinding property="text" data-source-path="ServerPortText" binding-mode="ToTarget" />
+                    </Bindings>
+                </ui:Label>
             </ui:VisualElement>
 
             <ui:VisualElement class="status-row">
                 <ui:Label text="👥 Connected Clients:" class="label-key" />
-                <ui:Label name="connected-clients" text="0" class="label-value" />
+                <ui:Label name="connected-clients" class="label-value">
+                    <Bindings>
+                        <ui:DataBinding property="text" data-source-path="ConnectedClientsText" binding-mode="ToTarget" />
+                    </Bindings>
+                </ui:Label>
             </ui:VisualElement>
 
-            <ui:Toggle name="autostart-toggle" label="🚀 Auto-start server on Unity launch" class="toggle-field" />
+            <ui:Toggle name="autostart-toggle" label="🚀 Auto-start server on Unity launch" class="toggle-field">
+                <Bindings>
+                    <ui:DataBinding property="value" data-source-path="AutoStart" binding-mode="TwoWay" />
+                </Bindings>
+            </ui:Toggle>
 
             <ui:VisualElement class="status-row">
                 <ui:Label text="📝 Log Level:" class="label-key" />
@@ -53,12 +73,20 @@
             <ui:VisualElement name="cli-status" class="hidden">
                 <ui:VisualElement class="status-row">
                     <ui:Label text="📦 Package Version:" class="label-key" />
-                    <ui:Label name="package-version" text="Unknown" class="label-value" />
+                    <ui:Label name="package-version" class="label-value">
+                        <Bindings>
+                            <ui:DataBinding property="text" data-source-path="PackageVersion" binding-mode="ToTarget" />
+                        </Bindings>
+                    </ui:Label>
                 </ui:VisualElement>
 
                 <ui:VisualElement class="status-row">
                     <ui:Label text="💿 Local CLI Version:" class="label-key" />
-                    <ui:Label name="cli-version" text="❌ Not Installed" class="label-value" />
+                    <ui:Label name="cli-version" class="label-value">
+                        <Bindings>
+                            <ui:DataBinding property="text" data-source-path="CLIVersion" binding-mode="ToTarget" />
+                        </Bindings>
+                    </ui:Label>
                 </ui:VisualElement>
 
                 <!-- Status messages -->
