@@ -93,98 +93,22 @@ This plugin is part of the [Dev GOM Plugins](https://github.com/Dev-GOM/claude-c
 
 ### CLI Commands
 
-See [COMMANDS.md](./skills/references/COMMANDS.md) for complete 500+ command reference.
-
-#### Currently Implemented (15 commands)
-
-**Hierarchy**
 ```bash
-# View GameObject hierarchy with tree visualization
-cd <unity-project-root> node .unity-websocket/uw hierarchy
+# Basic usage
+cd <unity-project-root> && node .unity-websocket/uw <command> [options]
 
-# Show only root GameObjects
-cd <unity-project-root> node .unity-websocket/uw hierarchy --root-only
+# Show all available commands
+cd <unity-project-root> && node .unity-websocket/uw --help
 
-# Include inactive GameObjects
-cd <unity-project-root> node .unity-websocket/uw hierarchy --include-inactive
+# Show help for specific command
+cd <unity-project-root> && node .unity-websocket/uw <command> --help
 ```
 
-**GameObject**
-```bash
-# Find GameObject by name or path
-cd <unity-project-root> node .unity-websocket/uw go find "Player"
-cd <unity-project-root> node .unity-websocket/uw go find "Environment/Terrain"
+**Currently Implemented**: 26 commands across 8 categories
 
-# Create new GameObject
-cd <unity-project-root> node .unity-websocket/uw go create "NewObject"
-cd <unity-project-root> node .unity-websocket/uw go create "Child" --parent "Parent"
+See [COMMANDS.md](./skills/references/COMMANDS.md) for complete command reference.
 
-# Destroy GameObject
-cd <unity-project-root> node .unity-websocket/uw go destroy "OldObject"
-
-# Set active state
-cd <unity-project-root> node .unity-websocket/uw go set-active "Player" true
-cd <unity-project-root> node .unity-websocket/uw go set-active "Enemy" false
-```
-
-**Transform**
-```bash
-# Get Transform information
-cd <unity-project-root> node .unity-websocket/uw tf get "Player"
-
-# Set position (x,y,z)
-cd <unity-project-root> node .unity-websocket/uw tf set-position "Player" "0,5,10"
-
-# Set rotation (Euler angles in degrees)
-cd <unity-project-root> node .unity-websocket/uw tf set-rotation "Player" "0,90,0"
-
-# Set scale
-cd <unity-project-root> node .unity-websocket/uw tf set-scale "Player" "2,2,2"
-```
-
-**Scene**
-```bash
-# Get current scene info
-cd <unity-project-root> node .unity-websocket/uw scene current
-
-# List all loaded scenes
-cd <unity-project-root> node .unity-websocket/uw scene list
-
-# Load scene by name
-cd <unity-project-root> node .unity-websocket/uw scene load "GameScene"
-
-# Load scene additively
-cd <unity-project-root> node .unity-websocket/uw scene load "UIScene" --additive
-```
-
-**Console**
-```bash
-# Get recent console logs (default: 50)
-cd <unity-project-root> node .unity-websocket/uw console logs
-
-# Get specific number of logs
-cd <unity-project-root> node .unity-websocket/uw console logs --count 100
-
-# Show only errors and exceptions
-cd <unity-project-root> node .unity-websocket/uw console logs --errors-only
-
-# Include warnings
-cd <unity-project-root> node .unity-websocket/uw console logs --warnings
-
-# Clear console
-cd <unity-project-root> node .unity-websocket/uw console clear
-```
-
-**Status**
-```bash
-# Check connection status
-cd <unity-project-root> node .unity-websocket/uw status
-
-# Use custom port
-cd <unity-project-root> node .unity-websocket/uw --port 9301 status
-```
-
-#### Coming Soon (500+ commands)
+#### Command Categories
 
 See [COMMANDS.md](./skills/references/COMMANDS.md) for full command reference including:
 
@@ -209,33 +133,33 @@ See [COMMANDS.md](./skills/references/COMMANDS.md) for full command reference in
 
 **Create and configure GameObject:**
 ```bash
-cd <unity-project-root> node .unity-websocket/uw go create "Enemy" && \
-cd <unity-project-root> node .unity-websocket/uw tf set-position "Enemy" "10,0,5" && \
-cd <unity-project-root> node .unity-websocket/uw tf set-rotation "Enemy" "0,45,0"
+cd <unity-project-root> && node .unity-websocket/uw go create "Enemy" && \
+cd <unity-project-root> && node .unity-websocket/uw tf set-position "Enemy" "10,0,5" && \
+cd <unity-project-root> && node .unity-websocket/uw tf set-rotation "Enemy" "0,45,0"
 ```
 
 **Instantiate Prefab and modify:**
 ```bash
-cd <unity-project-root> node .unity-websocket/uw prefab instantiate "Prefabs/Player" --position "0,1,0" && \
-cd <unity-project-root> node .unity-websocket/uw material set-color "Player" "_Color" "0,1,0,1"
+cd <unity-project-root> && node .unity-websocket/uw prefab instantiate "Prefabs/Player" --position "0,1,0" && \
+cd <unity-project-root> && node .unity-websocket/uw material set-color "Player" "_Color" "0,1,0,1"
 ```
 
 **Load scene and activate GameObject:**
 ```bash
-cd <unity-project-root> node .unity-websocket/uw scene load "Level1" && \
-cd <unity-project-root> node .unity-websocket/uw go set-active "Boss" true
+cd <unity-project-root> && node .unity-websocket/uw scene load "Level1" && \
+cd <unity-project-root> && node .unity-websocket/uw go set-active "Boss" true
 ```
 
 **Monitor console errors in real-time:**
 ```bash
-cd <unity-project-root> node .unity-websocket/uw console stream --filter error
+cd <unity-project-root> && node .unity-websocket/uw console stream --filter error
 ```
 
 **Batch GameObject creation:**
 ```bash
 for i in {1..10}; do
-  cd <unity-project-root> node .unity-websocket/uw go create "Cube_$i" && \
-  cd <unity-project-root> node .unity-websocket/uw tf set-position "Cube_$i" "$i,0,0"
+  cd <unity-project-root> && node .unity-websocket/uw go create "Cube_$i" && \
+  cd <unity-project-root> && node .unity-websocket/uw tf set-position "Cube_$i" "$i,0,0"
 done
 ```
 
@@ -358,7 +282,7 @@ Unity C# server implementation required for end-to-end testing. Unit tests comin
 
 ## Development Roadmap
 
-**Phase 1 (Current)**: GameObject, Transform, Scene, Console - 15 commands
+**Phase 1 (Current)**: GameObject, Transform, Scene, Console, Wait, Chain - 26 commands
 **Phase 2**: Component, Material, Prefab - 100+ commands
 **Phase 3**: Animation, Physics, Lighting - 150+ commands
 **Phase 4**: Build, Profiler, Test Runner - 100+ commands
@@ -382,6 +306,9 @@ See [COMMANDS.md](./skills/references/COMMANDS.md) for detailed roadmap.
 - [x] Transform (8 commands)
 - [x] Scene Management (3 commands)
 - [x] Console & Logging (2 commands)
+- [x] EditorPrefs Management (6 commands)
+- [x] Wait Commands (4 commands)
+- [x] Chain Commands (2 commands)
 - [ ] Component (20+ commands)
 - [ ] Material & Rendering (25+ commands)
 - [ ] Prefab (15+ commands)

@@ -45,7 +45,7 @@ export function registerTransformCommand(program: Command): void {
     .description('Get Transform information')
     .argument('<name>', 'GameObject name or path')
     .option('--json', 'Output in JSON format')
-    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '30000')
+    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '300000')
     .action(async (name, options) => {
       let client = null;
       try {
@@ -117,7 +117,7 @@ export function registerTransformCommand(program: Command): void {
     .argument('<name>', 'GameObject name or path')
     .argument('<position>', 'Position as "x,y,z" (e.g., "1,2,3")')
     .option('--json', 'Output in JSON format')
-    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '30000')
+    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '300000')
     .action(async (name, positionStr, options) => {
       let client = null;
       try {
@@ -173,7 +173,7 @@ export function registerTransformCommand(program: Command): void {
     .argument('<name>', 'GameObject name or path')
     .argument('<rotation>', 'Rotation as "x,y,z" degrees (e.g., "0,90,0")')
     .option('--json', 'Output in JSON format')
-    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '30000')
+    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '300000')
     .action(async (name, rotationStr, options) => {
       let client = null;
       try {
@@ -229,7 +229,7 @@ export function registerTransformCommand(program: Command): void {
     .argument('<name>', 'GameObject name or path')
     .argument('<scale>', 'Scale as "x,y,z" (e.g., "1,1,1")')
     .option('--json', 'Output in JSON format')
-    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '30000')
+    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '300000')
     .action(async (name, scaleStr, options) => {
       let client = null;
       try {

@@ -25,7 +25,7 @@ export function registerSceneCommand(program: Command): void {
     .command('current')
     .description('Get current active scene')
     .option('--json', 'Output in JSON format')
-    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '30000')
+    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '300000')
     .action(async (options) => {
       let client = null;
       try {
@@ -80,7 +80,7 @@ export function registerSceneCommand(program: Command): void {
     .command('list')
     .description('List all loaded scenes')
     .option('--json', 'Output in JSON format')
-    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '30000')
+    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '300000')
     .action(async (options) => {
       let client = null;
       try {
@@ -155,7 +155,7 @@ export function registerSceneCommand(program: Command): void {
     .argument('<name>', 'Scene name or path')
     .option('-a, --additive', 'Load scene additively')
     .option('--json', 'Output in JSON format')
-    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds')
+    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '300000')
     .action(async (name, options) => {
       let client = null;
       try {

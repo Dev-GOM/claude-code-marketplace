@@ -102,6 +102,14 @@ export const COMMANDS = {
   EDITOR_REFRESH: 'Editor.Refresh',
   EDITOR_RECOMPILE: 'Editor.Recompile',
   EDITOR_REIMPORT: 'Editor.Reimport',
+  EDITOR_EXECUTE: 'Editor.Execute',
+  EDITOR_LIST_EXECUTABLE: 'Editor.ListExecutable',
+
+  // Wait commands
+  WAIT_WAIT: 'Wait.Wait',
+
+  // Chain commands
+  CHAIN_EXECUTE: 'Chain.Execute',
 
   // Animation commands
   ANIMATION_PLAY: 'Animation.Play',

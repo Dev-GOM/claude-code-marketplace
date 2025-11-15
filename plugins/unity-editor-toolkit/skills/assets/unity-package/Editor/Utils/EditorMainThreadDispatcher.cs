@@ -11,9 +11,9 @@ namespace UnityEditorToolkit.Editor.Utils
     /// </summary>
     public static class EditorMainThreadDispatcher
     {
-        private static readonly Queue<Action> _executionQueue = new Queue<Action>();
-        private static readonly object _lock = new object();
-        private static bool _isInitialized = false;
+        private static readonly Queue<Action> executionQueue = new Queue<Action>();
+        private static readonly object @lock = new object();
+        private static bool isInitialized = false;
 
         /// <summary>
         /// Editor 시작 시 자동 초기화
@@ -21,10 +21,10 @@ namespace UnityEditorToolkit.Editor.Utils
         [InitializeOnLoadMethod]
         private static void Initialize()
         {
-            if (!_isInitialized)
+            if (!isInitialized)
             {
                 EditorApplication.update += ProcessQueue;
-                _isInitialized = true;
+                isInitialized = true;
             }
         }
 
@@ -39,9 +39,9 @@ namespace UnityEditorToolkit.Editor.Utils
                 throw new ArgumentNullException(nameof(action));
             }
 
-            lock (_lock)
+            lock (@lock)
             {
-                _executionQueue.Enqueue(action);
+                executionQueue.Enqueue(action);
             }
         }
 
@@ -57,9 +57,9 @@ namespace UnityEditorToolkit.Editor.Utils
                 throw new ArgumentNullException(nameof(action));
             }
 
-            lock (_lock)
+            lock (@lock)
             {
-                _executionQueue.Enqueue(() =>
+                executionQueue.Enqueue(() =>
                 {
                     try
                     {
@@ -84,11 +84,11 @@ namespace UnityEditorToolkit.Editor.Utils
             const int maxProcessTimeMs = 10;
             var stopwatch = System.Diagnostics.Stopwatch.StartNew();
 
-            lock (_lock)
+            lock (@lock)
             {
-                while (_executionQueue.Count > 0 && stopwatch.ElapsedMilliseconds < maxProcessTimeMs)
+                while (executionQueue.Count > 0 && stopwatch.ElapsedMilliseconds < maxProcessTimeMs)
                 {
-                    var action = _executionQueue.Dequeue();
+                    var action = executionQueue.Dequeue();
                     try
                     {
                         action.Invoke();
@@ -108,9 +108,9 @@ namespace UnityEditorToolkit.Editor.Utils
         {
             get
             {
-                lock (_lock)
+                lock (@lock)
                 {
-                    return _executionQueue.Count;
+                    return executionQueue.Count;
                 }
             }
         }
@@ -120,15 +120,15 @@ namespace UnityEditorToolkit.Editor.Utils
         /// </summary>
         public static void ClearQueue()
         {
-            lock (_lock)
+            lock (@lock)
             {
-                _executionQueue.Clear();
+                executionQueue.Clear();
             }
         }
 
         /// <summary>
         /// 초기화 여부
         /// </summary>
-        public static bool IsInitialized => _isInitialized;
+        public static bool IsInitialized => isInitialized;
     }
 }

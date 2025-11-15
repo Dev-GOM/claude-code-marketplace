@@ -6,13 +6,13 @@ Complete reference for connection and status commands.
 
 ---
 
-## cd <unity-project-root> node .unity-websocket/uw status
+## cd <unity-project-root> && node .unity-websocket/uw status
 
 Check Unity WebSocket connection status.
 
 **Usage:**
 ```bash
-cd <unity-project-root> node .unity-websocket/uw status
+cd <unity-project-root> && node .unity-websocket/uw status
 ```
 
 **Options:**
@@ -25,10 +25,10 @@ cd <unity-project-root> node .unity-websocket/uw status
 **Example:**
 ```bash
 # Check default connection
-cd <unity-project-root> node .unity-websocket/uw status
+cd <unity-project-root> && node .unity-websocket/uw status
 
 # Check specific port
-cd <unity-project-root> node .unity-websocket/uw --port 9500 status
+cd <unity-project-root> && node .unity-websocket/uw --port 9500 status
 ```
 
 ---
@@ -47,13 +47,13 @@ All commands support these global options:
 **Examples:**
 ```bash
 # Check CLI version
-cd <unity-project-root> node .unity-websocket/uw --version
+cd <unity-project-root> && node .unity-websocket/uw --version
 
 # Enable verbose logging
-cd <unity-project-root> node .unity-websocket/uw --verbose status
+cd <unity-project-root> && node .unity-websocket/uw --verbose status
 
 # Use specific port
-cd <unity-project-root> node .unity-websocket/uw --port 9501 status
+cd <unity-project-root> && node .unity-websocket/uw --port 9501 status
 ```
 
 ---
@@ -79,7 +79,7 @@ Default timeout is 30 seconds (30000ms). Increase for operations that may take l
 
 ```bash
 # Longer timeout for complex operations
-cd <unity-project-root> node .unity-websocket/uw status --timeout 60000
+cd <unity-project-root> && node .unity-websocket/uw status --timeout 60000
 ```
 
 ### Error Handling

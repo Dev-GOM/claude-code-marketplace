@@ -2,7 +2,9 @@
   "name": "UnityEditorToolkit.Editor",
   "rootNamespace": "UnityEditorToolkit.Editor",
   "references": [
-    "UnityEditorToolkit"
+    "UnityEditorToolkit",
+    "UniTask",
+    "Gilzoide.SqliteNet"
   ],
   "includePlatforms": [
     "Editor"

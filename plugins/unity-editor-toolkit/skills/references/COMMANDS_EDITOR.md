@@ -6,13 +6,13 @@ Complete reference for Asset Database refresh, recompilation, and asset reimport
 
 ---
 
-## cd <unity-project-root> node .unity-websocket/uw editor refresh
+## cd <unity-project-root> && node .unity-websocket/uw editor refresh
 
 Refresh Unity AssetDatabase (generates/updates meta files, triggers compilation).
 
 **Usage:**
 ```bash
-cd <unity-project-root> node .unity-websocket/uw editor refresh [options]
+cd <unity-project-root> && node .unity-websocket/uw editor refresh [options]
 ```
 
 **Options:**
@@ -28,21 +28,21 @@ After running `refresh`, you should check Unity Editor for compilation status. U
 **Examples:**
 ```bash
 # Refresh AssetDatabase
-cd <unity-project-root> node .unity-websocket/uw editor refresh
+cd <unity-project-root> && node .unity-websocket/uw editor refresh
 
 # Get JSON output
-cd <unity-project-root> node .unity-websocket/uw editor refresh --json
+cd <unity-project-root> && node .unity-websocket/uw editor refresh --json
 ```
 
 ---
 
-## cd <unity-project-root> node .unity-websocket/uw editor recompile
+## cd <unity-project-root> && node .unity-websocket/uw editor recompile
 
 Request script recompilation.
 
 **Usage:**
 ```bash
-cd <unity-project-root> node .unity-websocket/uw editor recompile [options]
+cd <unity-project-root> && node .unity-websocket/uw editor recompile [options]
 ```
 
 **Options:**
@@ -58,21 +58,21 @@ Unity's incremental compilation automatically recompiles changed assemblies. Thi
 **Examples:**
 ```bash
 # Request recompilation
-cd <unity-project-root> node .unity-websocket/uw editor recompile
+cd <unity-project-root> && node .unity-websocket/uw editor recompile
 
 # Get JSON output
-cd <unity-project-root> node .unity-websocket/uw editor recompile --json
+cd <unity-project-root> && node .unity-websocket/uw editor recompile --json
 ```
 
 ---
 
-## cd <unity-project-root> node .unity-websocket/uw editor reimport
+## cd <unity-project-root> && node .unity-websocket/uw editor reimport
 
 Reimport specific asset (triggers recompilation for that Assembly).
 
 **Usage:**
 ```bash
-cd <unity-project-root> node .unity-websocket/uw editor reimport <path> [options]
+cd <unity-project-root> && node .unity-websocket/uw editor reimport <path> [options]
 ```
 
 **Arguments:**
@@ -93,13 +93,87 @@ After running `reimport`, check Unity Editor for reimport and compilation status
 **Examples:**
 ```bash
 # Reimport folder
-cd <unity-project-root> node .unity-websocket/uw editor reimport "XLua"
+cd <unity-project-root> && node .unity-websocket/uw editor reimport "XLua"
 
 # Reimport specific asset
-cd <unity-project-root> node .unity-websocket/uw editor reimport "Scripts/Player.cs"
+cd <unity-project-root> && node .unity-websocket/uw editor reimport "Scripts/Player.cs"
 
 # Reimport .asmdef (recompiles specific Assembly)
-cd <unity-project-root> node .unity-websocket/uw editor reimport "MyPlugin/Editor/MyPlugin.Editor.asmdef"
+cd <unity-project-root> && node .unity-websocket/uw editor reimport "MyPlugin/Editor/MyPlugin.Editor.asmdef"
+```
+
+---
+
+## cd <unity-project-root> && node .unity-websocket/uw editor execute
+
+Execute a static method marked with `[ExecutableMethod]` attribute.
+
+**Usage:**
+```bash
+cd <unity-project-root> && node .unity-websocket/uw editor execute <commandName> [options]
+```
+
+**Arguments:**
+```
+<commandName>          Command name to execute (e.g., reinstall-cli)
+```
+
+**Options:**
+```
+--json                 Output in JSON format
+--timeout <ms>         Connection timeout in milliseconds (default: 30000)
+-h, --help             Display help for command
+```
+
+**Examples:**
+```bash
+# Reinstall CLI
+cd <unity-project-root> && node .unity-websocket/uw editor execute reinstall-cli
+
+# List available commands first
+cd <unity-project-root> && node .unity-websocket/uw editor list
+
+# Get JSON output
+cd <unity-project-root> && node .unity-websocket/uw editor execute reinstall-cli --json
+```
+
+**Security:**
+Only methods explicitly marked with `[ExecutableMethod]` attribute can be executed. This prevents arbitrary code execution.
+
+---
+
+## cd <unity-project-root> && node .unity-websocket/uw editor list
+
+List all executable methods available via `editor execute` command.
+
+**Usage:**
+```bash
+cd <unity-project-root> && node .unity-websocket/uw editor list [options]
+```
+
+**Options:**
+```
+--json                 Output in JSON format
+--timeout <ms>         Connection timeout in milliseconds (default: 30000)
+-h, --help             Display help for command
+```
+
+**Examples:**
+```bash
+# List all executable methods
+cd <unity-project-root> && node .unity-websocket/uw editor list
+
+# Get JSON output
+cd <unity-project-root> && node .unity-websocket/uw editor list --json
+```
+
+**Output Format:**
+```
+✓ Found 1 executable method(s):
+
+  reinstall-cli
+    Reinstall Unity Editor Toolkit CLI
+    UnityEditorToolkit.Editor.EditorServerWindow.ReinstallCLI
 ```
 
 ---
@@ -118,13 +192,13 @@ All commands support these global options:
 **Examples:**
 ```bash
 # Check CLI version
-cd <unity-project-root> node .unity-websocket/uw --version
+cd <unity-project-root> && node .unity-websocket/uw --version
 
 # Enable verbose logging
-cd <unity-project-root> node .unity-websocket/uw --verbose editor refresh
+cd <unity-project-root> && node .unity-websocket/uw --verbose editor refresh
 
 # Use specific port
-cd <unity-project-root> node .unity-websocket/uw --port 9501 editor recompile
+cd <unity-project-root> && node .unity-websocket/uw --port 9501 editor recompile
 ```
 
 ---
@@ -150,7 +224,7 @@ Default timeout is 30 seconds (30000ms). Increase for operations that may take l
 
 ```bash
 # Longer timeout for complex operations
-cd <unity-project-root> node .unity-websocket/uw editor refresh --timeout 60000
+cd <unity-project-root> && node .unity-websocket/uw editor refresh --timeout 60000
 ```
 
 ### Error Handling

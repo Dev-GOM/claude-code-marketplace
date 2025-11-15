@@ -30,7 +30,7 @@ export function registerGameObjectCommand(program: Command): void {
     .option('--with-children', 'Include children hierarchy')
     .option('--full', 'Include all details (components + children)')
     .option('--json', 'Output in JSON format')
-    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '30000')
+    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '300000')
     .action(async (name, options) => {
       let client = null;
       try {
@@ -129,7 +129,7 @@ export function registerGameObjectCommand(program: Command): void {
     .argument('<name>', 'GameObject name')
     .option('-p, --parent <name>', 'Parent GameObject name or path')
     .option('--json', 'Output in JSON format')
-    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '30000')
+    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '300000')
     .action(async (name, options) => {
       let client = null;
       try {
@@ -189,7 +189,7 @@ export function registerGameObjectCommand(program: Command): void {
     .description('Destroy GameObject')
     .argument('<name>', 'GameObject name or path')
     .option('--json', 'Output in JSON format')
-    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '30000')
+    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '300000')
     .action(async (name, options) => {
       let client = null;
       try {
@@ -236,7 +236,7 @@ export function registerGameObjectCommand(program: Command): void {
     .argument('<name>', 'GameObject name or path')
     .argument('<active>', 'Active state (true/false)', (value) => value === 'true')
     .option('--json', 'Output in JSON format')
-    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '30000')
+    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '300000')
     .action(async (name, active, options) => {
       let client = null;
       try {

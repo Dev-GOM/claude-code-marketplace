@@ -2,6 +2,9 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditorToolkit.Protocol;
+using UnityEditorToolkit.Editor.Database;
+using UnityEditorToolkit.Editor.Database.Commands;
+using Cysharp.Threading.Tasks;
 
 namespace UnityEditorToolkit.Handlers
 {
@@ -60,17 +63,22 @@ namespace UnityEditorToolkit.Handlers
         {
             var param = ValidateParam<CreateParams>(request, "name");
 
+            // Find parent GameObject if specified
+            GameObject parentObj = null;
+            if (!string.IsNullOrEmpty(param.parent))
+            {
+                parentObj = FindGameObject(param.parent);
+                if (parentObj == null)
+                {
+                    throw new Exception($"Parent GameObject not found: {param.parent}");
+                }
+            }
+
             GameObject obj = new GameObject(param.name);
 
             // Set parent if specified
-            if (!string.IsNullOrEmpty(param.parent))
+            if (parentObj != null)
             {
-                var parentObj = FindGameObject(param.parent);
-                if (parentObj == null)
-                {
-                    GameObject.DestroyImmediate(obj);
-                    throw new Exception($"Parent GameObject not found: {param.parent}");
-                }
                 obj.transform.SetParent(parentObj.transform);
             }
 
@@ -78,6 +86,9 @@ namespace UnityEditorToolkit.Handlers
             #if UNITY_EDITOR
             UnityEditor.Undo.RegisterCreatedObjectUndo(obj, "Create GameObject");
             #endif
+
+            // Execute Command Pattern (if database is connected)
+            ExecuteCreateCommandAsync(obj, parentObj).Forget();
 
             return new GameObjectInfo
             {
@@ -88,6 +99,40 @@ namespace UnityEditorToolkit.Handlers
                 tag = obj.tag,
                 layer = obj.layer
             };
+        }
+
+        /// <summary>
+        /// Execute CreateGameObjectCommand asynchronously (database persistence)
+        /// </summary>
+        private async UniTaskVoid ExecuteCreateCommandAsync(GameObject obj, GameObject parent)
+        {
+            try
+            {
+                #if UNITY_EDITOR
+                // Check if database is connected
+                if (DatabaseManager.Instance == null ||
+                    !DatabaseManager.Instance.IsConnected ||
+                    DatabaseManager.Instance.CommandHistory == null)
+                {
+                    return;
+                }
+
+                // Create command
+                var command = new CreateGameObjectCommand(
+                    obj.name,
+                    obj.transform.position,
+                    obj.transform.rotation,
+                    parent
+                );
+
+                // Execute through CommandHistory (async, database persistence)
+                await DatabaseManager.Instance.CommandHistory.ExecuteCommandAsync(command);
+                #endif
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning($"[GameObjectHandler] Command execution failed: {ex.Message}");
+            }
         }
 
         /// <summary>
@@ -103,6 +148,9 @@ namespace UnityEditorToolkit.Handlers
                 throw new Exception($"GameObject not found: {param.name}");
             }
 
+            // Execute Command Pattern before actual destruction (database persistence)
+            ExecuteDeleteCommandAsync(obj).Forget();
+
             #if UNITY_EDITOR
             UnityEditor.Undo.DestroyObjectImmediate(obj);
             #else
@@ -110,6 +158,37 @@ namespace UnityEditorToolkit.Handlers
             #endif
 
             return new { success = true };
+        }
+
+        /// <summary>
+        /// Execute DeleteGameObjectCommand asynchronously (database persistence)
+        /// </summary>
+        private async UniTaskVoid ExecuteDeleteCommandAsync(GameObject obj)
+        {
+            try
+            {
+                #if UNITY_EDITOR
+                // Check if database is connected
+                if (DatabaseManager.Instance == null ||
+                    !DatabaseManager.Instance.IsConnected ||
+                    DatabaseManager.Instance.CommandHistory == null)
+                {
+                    return;
+                }
+
+                // Create command
+                var command = new DeleteGameObjectCommand(obj);
+
+                // Execute through CommandHistory (async, database persistence)
+                // Note: DeleteGameObjectCommand.CanPersist = false (GameObject reference)
+                // So it will be added to Undo stack but not persisted to database
+                await DatabaseManager.Instance.CommandHistory.ExecuteCommandAsync(command);
+                #endif
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning($"[GameObjectHandler] Command execution failed: {ex.Message}");
+            }
         }
 
         /// <summary>

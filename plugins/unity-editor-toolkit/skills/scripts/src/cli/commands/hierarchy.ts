@@ -81,7 +81,7 @@ export function registerHierarchyCommand(program: Command): void {
     .option('-f, --filter <name>', 'Filter GameObjects by name (case-insensitive)')
     .option('-c, --with-components', 'Include component information')
     .option('--json', 'Output in JSON format')
-    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds')
+    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '300000')
     .action(async (options) => {
       let client = null;
       try {

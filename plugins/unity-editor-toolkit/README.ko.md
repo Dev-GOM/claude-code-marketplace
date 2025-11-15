@@ -93,98 +93,22 @@ Claude Code를 위한 완벽한 Unity Editor 제어 및 자동화 툴킷. 25개 
 
 ### CLI 명령어
 
-전체 500+ 명령어 레퍼런스는 [COMMANDS.md](./skills/references/COMMANDS.md) 또는 [COMMANDS.ko.md](./skills/references/COMMANDS.ko.md)를 참조하세요.
-
-#### 현재 구현됨 (15개 명령어)
-
-**Hierarchy (계층 구조)**
 ```bash
-# GameObject 계층 구조를 트리 형태로 보기
-cd <unity-project-root> node .unity-websocket/uw hierarchy
+# 기본 사용법
+cd <unity-project-root> && node .unity-websocket/uw <command> [options]
 
-# 루트 GameObject만 표시
-cd <unity-project-root> node .unity-websocket/uw hierarchy --root-only
+# 사용 가능한 모든 명령어 보기
+cd <unity-project-root> && node .unity-websocket/uw --help
 
-# 비활성 GameObject 포함
-cd <unity-project-root> node .unity-websocket/uw hierarchy --include-inactive
+# 특정 명령어 도움말 보기
+cd <unity-project-root> && node .unity-websocket/uw <command> --help
 ```
 
-**GameObject**
-```bash
-# 이름 또는 경로로 GameObject 찾기
-cd <unity-project-root> node .unity-websocket/uw go find "Player"
-cd <unity-project-root> node .unity-websocket/uw go find "Environment/Terrain"
+**현재 구현됨**: 8개 카테고리에 26개 명령어
 
-# 새 GameObject 생성
-cd <unity-project-root> node .unity-websocket/uw go create "NewObject"
-cd <unity-project-root> node .unity-websocket/uw go create "Child" --parent "Parent"
+전체 명령어 레퍼런스는 [COMMANDS.md](./skills/references/COMMANDS.md) 또는 [COMMANDS.ko.md](./skills/references/COMMANDS.ko.md)를 참조하세요.
 
-# GameObject 삭제
-cd <unity-project-root> node .unity-websocket/uw go destroy "OldObject"
-
-# 활성 상태 설정
-cd <unity-project-root> node .unity-websocket/uw go set-active "Player" true
-cd <unity-project-root> node .unity-websocket/uw go set-active "Enemy" false
-```
-
-**Transform**
-```bash
-# Transform 정보 가져오기
-cd <unity-project-root> node .unity-websocket/uw tf get "Player"
-
-# 위치 설정 (x,y,z)
-cd <unity-project-root> node .unity-websocket/uw tf set-position "Player" "0,5,10"
-
-# 회전 설정 (오일러 각도, 도 단위)
-cd <unity-project-root> node .unity-websocket/uw tf set-rotation "Player" "0,90,0"
-
-# 스케일 설정
-cd <unity-project-root> node .unity-websocket/uw tf set-scale "Player" "2,2,2"
-```
-
-**Scene (씬)**
-```bash
-# 현재 씬 정보 가져오기
-cd <unity-project-root> node .unity-websocket/uw scene current
-
-# 로드된 모든 씬 나열
-cd <unity-project-root> node .unity-websocket/uw scene list
-
-# 이름으로 씬 로드
-cd <unity-project-root> node .unity-websocket/uw scene load "GameScene"
-
-# 씬을 추가로 로드 (Additive)
-cd <unity-project-root> node .unity-websocket/uw scene load "UIScene" --additive
-```
-
-**Console (콘솔)**
-```bash
-# 최근 콘솔 로그 가져오기 (기본값: 50개)
-cd <unity-project-root> node .unity-websocket/uw console logs
-
-# 특정 개수의 로그 가져오기
-cd <unity-project-root> node .unity-websocket/uw console logs --count 100
-
-# 오류 및 예외만 표시
-cd <unity-project-root> node .unity-websocket/uw console logs --errors-only
-
-# 경고 포함
-cd <unity-project-root> node .unity-websocket/uw console logs --warnings
-
-# 콘솔 지우기
-cd <unity-project-root> node .unity-websocket/uw console clear
-```
-
-**Status (상태)**
-```bash
-# 연결 상태 확인
-cd <unity-project-root> node .unity-websocket/uw status
-
-# 사용자 지정 포트 사용
-cd <unity-project-root> node .unity-websocket/uw --port 9301 status
-```
-
-#### 개발 예정 (500+ 명령어)
+#### 명령어 카테고리
 
 전체 명령어 레퍼런스는 [COMMANDS.md](./skills/references/COMMANDS.md)를 참조하세요:
 
@@ -209,33 +133,33 @@ cd <unity-project-root> node .unity-websocket/uw --port 9301 status
 
 **GameObject 생성 및 설정:**
 ```bash
-cd <unity-project-root> node .unity-websocket/uw go create "Enemy" && \
-cd <unity-project-root> node .unity-websocket/uw tf set-position "Enemy" "10,0,5" && \
-cd <unity-project-root> node .unity-websocket/uw tf set-rotation "Enemy" "0,45,0"
+cd <unity-project-root> && node .unity-websocket/uw go create "Enemy" && \
+cd <unity-project-root> && node .unity-websocket/uw tf set-position "Enemy" "10,0,5" && \
+cd <unity-project-root> && node .unity-websocket/uw tf set-rotation "Enemy" "0,45,0"
 ```
 
 **Prefab 인스턴스화 및 수정:**
 ```bash
-cd <unity-project-root> node .unity-websocket/uw prefab instantiate "Prefabs/Player" --position "0,1,0" && \
-cd <unity-project-root> node .unity-websocket/uw material set-color "Player" "_Color" "0,1,0,1"
+cd <unity-project-root> && node .unity-websocket/uw prefab instantiate "Prefabs/Player" --position "0,1,0" && \
+cd <unity-project-root> && node .unity-websocket/uw material set-color "Player" "_Color" "0,1,0,1"
 ```
 
 **씬 로드 및 GameObject 활성화:**
 ```bash
-cd <unity-project-root> node .unity-websocket/uw scene load "Level1" && \
-cd <unity-project-root> node .unity-websocket/uw go set-active "Boss" true
+cd <unity-project-root> && node .unity-websocket/uw scene load "Level1" && \
+cd <unity-project-root> && node .unity-websocket/uw go set-active "Boss" true
 ```
 
 **콘솔 오류 실시간 모니터링:**
 ```bash
-cd <unity-project-root> node .unity-websocket/uw console stream --filter error
+cd <unity-project-root> && node .unity-websocket/uw console stream --filter error
 ```
 
 **GameObject 일괄 생성:**
 ```bash
 for i in {1..10}; do
-  cd <unity-project-root> node .unity-websocket/uw go create "Cube_$i" && \
-  cd <unity-project-root> node .unity-websocket/uw tf set-position "Cube_$i" "$i,0,0"
+  cd <unity-project-root> && node .unity-websocket/uw go create "Cube_$i" && \
+  cd <unity-project-root> && node .unity-websocket/uw tf set-position "Cube_$i" "$i,0,0"
 done
 ```
 
@@ -365,7 +289,7 @@ npm run build
 
 ## 개발 로드맵
 
-**Phase 1 (현재)**: GameObject, Transform, Scene, Console - 15개 명령어
+**Phase 1 (현재)**: GameObject, Transform, Scene, Console, Wait, Chain - 26개 명령어
 **Phase 2**: Component, Material, Prefab - 100+ 명령어
 **Phase 3**: Animation, Physics, Lighting - 150+ 명령어
 **Phase 4**: Build, Profiler, Test Runner - 100+ 명령어
@@ -386,6 +310,9 @@ npm run build
 - [x] Transform (8개 명령어)
 - [x] Scene Management (3개 명령어)
 - [x] Console & Logging (2개 명령어)
+- [x] EditorPrefs Management (6개 명령어)
+- [x] Wait Commands (4개 명령어)
+- [x] Chain Commands (2개 명령어)
 - [ ] Component (20+ 명령어)
 - [ ] Material & Rendering (25+ 명령어)
 - [ ] Prefab (15+ 명령어)

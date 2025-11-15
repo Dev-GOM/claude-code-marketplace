@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -21,6 +22,12 @@ namespace UnityEditorToolkit.Protocol
 
         [JsonProperty("params")]
         public JToken Params { get; set; }
+
+        /// <summary>
+        /// Context data (not serialized, used for passing runtime data like callbacks)
+        /// </summary>
+        [JsonIgnore]
+        private Dictionary<string, object> context = new Dictionary<string, object>();
 
         /// <summary>
         /// Get strongly-typed parameters (✅ 에러 처리 개선)
@@ -48,6 +55,26 @@ namespace UnityEditorToolkit.Protocol
                 UnityEngine.Debug.LogError($"Unexpected error deserializing params: {ex.Message}");
                 throw new ArgumentException($"Failed to deserialize parameters: {ex.Message}", ex);
             }
+        }
+
+        /// <summary>
+        /// Set context data
+        /// </summary>
+        public void SetContext<T>(string key, T value)
+        {
+            context[key] = value;
+        }
+
+        /// <summary>
+        /// Get context data
+        /// </summary>
+        public T GetContext<T>(string key)
+        {
+            if (context.TryGetValue(key, out var value))
+            {
+                return (T)value;
+            }
+            return default(T);
         }
 
         /// <summary>

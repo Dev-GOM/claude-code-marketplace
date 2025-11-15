@@ -11,7 +11,7 @@ import { createUnityClient } from '@/unity/client';
 import { COMMANDS } from '@/constants';
 import { UnityLogType } from '@/constants';
 import type { ConsoleLogEntry } from '@/unity/protocol';
-import { output, outputJson } from '@/utils/output-formatter';
+import { outputJson } from '@/utils/output-formatter';
 
 /**
  * Get log type icon
@@ -62,14 +62,14 @@ export function registerConsoleCommand(program: Command): void {
   consoleCmd
     .command('logs')
     .description('Get Unity console logs')
-    .option('-n, --count <number>', 'Number of recent logs to fetch', '50')
+    .option('-n, --limit <number>', 'Number of recent logs to fetch', '50')
     .option('-e, --errors-only', 'Show only errors and exceptions')
     .option('-w, --warnings', 'Include warnings')
     .option('-t, --type <type>', 'Filter by log type: error, warning, log, exception, assert')
     .option('-f, --filter <text>', 'Filter logs by text (case-insensitive)')
     .option('-v, --verbose', 'Show full stack traces (default: first 5 lines only)')
     .option('--json', 'Output in JSON format')
-    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '30000')
+    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '300000')
     .action(async (options) => {
       let client = null;
       try {
@@ -82,15 +82,12 @@ export function registerConsoleCommand(program: Command): void {
         }
 
         client = createUnityClient(port);
-
-        logger.info('Connecting to Unity Editor...');
         await client.connect();
 
-        logger.info('Fetching console logs...');
         let result = await client.sendRequest<ConsoleLogEntry[]>(
           COMMANDS.CONSOLE_GET_LOGS,
           {
-            count: parseInt(options.count, 10),
+            count: parseInt(options.limit, 10),
             errorsOnly: options.errorsOnly || false,
             includeWarnings: options.warnings || false,
           }
@@ -198,7 +195,7 @@ export function registerConsoleCommand(program: Command): void {
     .command('clear')
     .description('Clear Unity console logs')
     .option('--json', 'Output in JSON format')
-    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '30000')
+    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '300000')
     .action(async (options) => {
       let client = null;
       try {
@@ -211,11 +208,8 @@ export function registerConsoleCommand(program: Command): void {
         }
 
         client = createUnityClient(port);
-
-        logger.info('Connecting to Unity Editor...');
         await client.connect();
 
-        logger.info('Clearing console logs...');
         await client.sendRequest(COMMANDS.CONSOLE_CLEAR);
 
         if (options.json) {

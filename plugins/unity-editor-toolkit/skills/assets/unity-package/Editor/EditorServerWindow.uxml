@@ -1,63 +1,64 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="True">
-    <ui:VisualElement name="root" class="root-container">
+    <ui:ScrollView mode="Vertical" class="scroll-container">
+        <ui:VisualElement name="root" class="root-container">
         <!-- Server Status Section -->
         <ui:VisualElement name="server-section" class="section">
-            <ui:Label text="Server Status" class="section-title" />
+            <ui:Label text="🖥️ Server Status" class="section-title" />
 
             <ui:VisualElement class="status-row">
-                <ui:Label text="Status:" class="label-key" />
+                <ui:Label text="📡 Status:" class="label-key" />
                 <ui:VisualElement class="status-indicator-container">
                     <ui:VisualElement name="status-indicator" class="status-indicator status-stopped" />
-                    <ui:Label name="server-status" text="Stopped" class="label-value" />
+                    <ui:Label name="server-status" text="⏹️ Stopped" class="label-value" />
                 </ui:VisualElement>
             </ui:VisualElement>
 
             <ui:VisualElement class="status-row">
-                <ui:Label text="Port:" class="label-key" />
+                <ui:Label text="🔌 Port:" class="label-key" />
                 <ui:Label name="server-port" text="9500" class="label-value" />
             </ui:VisualElement>
 
             <ui:VisualElement class="status-row">
-                <ui:Label text="Connected Clients:" class="label-key" />
+                <ui:Label text="👥 Connected Clients:" class="label-key" />
                 <ui:Label name="connected-clients" text="0" class="label-value" />
             </ui:VisualElement>
 
-            <ui:Toggle name="autostart-toggle" label="Auto-start server on Unity launch" class="toggle-field" />
+            <ui:Toggle name="autostart-toggle" label="🚀 Auto-start server on Unity launch" class="toggle-field" />
 
             <ui:VisualElement class="status-row">
-                <ui:Label text="Log Level:" class="label-key" />
+                <ui:Label text="📝 Log Level:" class="label-key" />
                 <uie:EnumField name="log-level-dropdown" class="enum-field" />
             </ui:VisualElement>
 
             <ui:VisualElement class="button-row">
-                <ui:Button name="start-button" text="Start Server" class="action-button" />
-                <ui:Button name="stop-button" text="Stop Server" class="action-button" />
+                <ui:Button name="start-button" text="▶️ Start Server" class="action-button" />
+                <ui:Button name="stop-button" text="⏹️ Stop Server" class="action-button" />
             </ui:VisualElement>
 
-            <ui:HelpBox name="server-info" text="Server runs automatically in the background.&#10;Works in both Edit Mode and Play Mode.&#10;No GameObject required!" message-type="Info" />
+            <ui:HelpBox name="server-info" text="Server runs automatically in the background.&#10;Works in both Edit Mode and Play Mode." message-type="Info" />
         </ui:VisualElement>
 
         <!-- CLI Status Section -->
         <ui:VisualElement name="cli-section" class="section">
-            <ui:Label text="CLI Scripts" class="section-title" />
+            <ui:Label text="💻 CLI Scripts" class="section-title" />
 
             <!-- Node.js not installed view -->
             <ui:VisualElement name="nodejs-missing" class="hidden">
                 <ui:HelpBox text="Node.js is not installed or not in PATH.&#10;&#10;Please install Node.js from https://nodejs.org/&#10;Recommended version: 18.x or higher&#10;&#10;After installation, restart Unity Editor." message-type="Error" />
-                <ui:Button name="nodejs-download-button" text="Open Node.js Download Page" class="primary-button" />
-                <ui:Button name="recheck-nodejs-button" text="Recheck Node.js Installation" class="secondary-button" />
+                <ui:Button name="nodejs-download-button" text="🌐 Open Node.js Download Page" class="primary-button" />
+                <ui:Button name="recheck-nodejs-button" text="🔄 Recheck Node.js Installation" class="secondary-button" />
             </ui:VisualElement>
 
             <!-- Node.js installed view -->
             <ui:VisualElement name="cli-status" class="hidden">
                 <ui:VisualElement class="status-row">
-                    <ui:Label text="Package Version:" class="label-key" />
+                    <ui:Label text="📦 Package Version:" class="label-key" />
                     <ui:Label name="package-version" text="Unknown" class="label-value" />
                 </ui:VisualElement>
 
                 <ui:VisualElement class="status-row">
-                    <ui:Label text="Local CLI Version:" class="label-key" />
-                    <ui:Label name="cli-version" text="Not Installed" class="label-value" />
+                    <ui:Label text="💿 Local CLI Version:" class="label-key" />
+                    <ui:Label name="cli-version" text="❌ Not Installed" class="label-value" />
                 </ui:VisualElement>
 
                 <!-- Status messages -->
@@ -68,40 +69,151 @@
                 <ui:HelpBox name="up-to-date" text="CLI scripts up-to-date ✓" message-type="Info" class="hidden" />
 
                 <!-- Action buttons -->
-                <ui:Button name="install-button" text="Install CLI Scripts" class="primary-button hidden" />
+                <ui:Button name="install-button" text="📥 Install CLI Scripts" class="primary-button hidden" />
                 <ui:Button name="update-button" text="⚠️ Update CLI Scripts" class="primary-button hidden" />
-                <ui:Button name="reinstall-button" text="Reinstall CLI Scripts" class="secondary-button hidden" />
-                <ui:Button name="clear-lock-button" text="Clear Lock (if installation stuck)" class="secondary-button hidden" />
+                <ui:Button name="reinstall-button" text="🔄 Reinstall CLI Scripts" class="secondary-button hidden" />
+                <ui:Button name="clear-lock-button" text="🔓 Clear Lock (if installation stuck)" class="secondary-button hidden" />
 
                 <!-- Installation progress -->
                 <ui:HelpBox name="installing-message" text="Installing CLI scripts...&#10;Please wait, this may take a few minutes." message-type="Info" class="hidden" />
 
                 <!-- Installation error log -->
                 <ui:VisualElement name="install-log-container" class="hidden">
-                    <ui:Label text="Last Installation Log (Error):" class="section-subtitle" />
+                    <ui:Label text="📋 Last Installation Log (Error):" class="section-subtitle" />
                     <ui:TextField name="install-log" multiline="true" readonly="true" class="log-field" />
                 </ui:VisualElement>
 
                 <!-- Plugin Scripts Path Configuration -->
-                <ui:Label text="Plugin Scripts Path" class="section-subtitle" />
+                <ui:Label text="📁 Plugin Scripts Path" class="section-subtitle" />
                 <ui:TextField name="plugin-path" readonly="true" class="path-field" />
                 <ui:VisualElement class="button-row">
-                    <ui:Button name="open-path-button" text="Open Folder" class="secondary-button" />
-                    <ui:Button name="browse-path-button" text="Browse..." class="secondary-button" />
-                    <ui:Button name="reset-path-button" text="Reset to Default" class="secondary-button" />
+                    <ui:Button name="open-path-button" text="📂 Open Folder" class="secondary-button" />
+                    <ui:Button name="browse-path-button" text="🔍 Browse..." class="secondary-button" />
+                    <ui:Button name="reset-path-button" text="↩️ Reset to Default" class="secondary-button" />
                 </ui:VisualElement>
                 <ui:HelpBox text="This is the source path where CLI scripts are loaded from.&#10;Default: Claude plugin folder (~/.claude/plugins/.../unity-editor-toolkit)" message-type="None" />
             </ui:VisualElement>
         </ui:VisualElement>
 
-        <!-- Information Section -->
-        <ui:VisualElement name="info-section" class="section">
-            <ui:Label text="Information" class="section-title" />
+        <!-- Database Section -->
+        <ui:VisualElement name="database-section" class="section">
+            <ui:Label text="💾 Database (SQLite)" class="section-title" />
 
-            <ui:ScrollView name="info-scroll" class="info-scroll">
-                <ui:HelpBox text="Unity Editor Toolkit provides a WebSocket server that allows external tools (like Claude Code) to control Unity Editor in real-time.&#10;&#10;Features:&#10;• GameObject manipulation (create, destroy, find)&#10;• Transform control (position, rotation, scale)&#10;• Scene management (load, save, query)&#10;• Console log access&#10;• Hierarchy inspection&#10;&#10;Connection:&#10;• Protocol: JSON-RPC 2.0 over WebSocket&#10;• Default Port: 9500&#10;• Localhost only (secure)" message-type="None" />
-                <ui:Button name="open-docs-button" text="Open Documentation" class="secondary-button" />
-            </ui:ScrollView>
+            <!-- Setup Wizard Section -->
+            <ui:VisualElement name="db-setup-section">
+                <ui:Label text="⚙️ Setup Status" class="section-subtitle" />
+
+                <!-- Setup Status Checks -->
+                <ui:VisualElement class="status-row">
+                    <ui:Label text="📚 SQLite:" class="label-key" />
+                    <ui:Label name="db-setup-sqlite-status" text="✅ Included (unity-sqlite-net)" class="label-value" />
+                </ui:VisualElement>
+
+                <ui:VisualElement class="status-row">
+                    <ui:Label text="⚡ UniTask:" class="label-key" />
+                    <ui:Label name="db-setup-unitask-status" text="✅ Auto-installed (package.json)" class="label-value" />
+                </ui:VisualElement>
+
+                <!-- Setup/Reinstall Button -->
+                <ui:Button name="db-setup-button" text="🔄 Reinstall Database" class="primary-button" />
+
+                <!-- Setup Progress -->
+                <ui:VisualElement name="db-setup-progress-container" class="hidden">
+                    <ui:Label name="db-setup-progress-label" text="재설치 진행 중..." class="section-subtitle" />
+                    <ui:ProgressBar name="db-setup-progress-bar" value="0" />
+                    <ui:Label name="db-setup-step-label" text="" class="label-value" />
+                </ui:VisualElement>
+
+                <!-- Setup Messages -->
+                <ui:HelpBox name="db-setup-info-help" text="Reinstall Database 버튼을 클릭하면:&#10;1. 데이터베이스 파일 재생성 (Application.persistentDataPath)&#10;2. 스키마 마이그레이션 재실행&#10;&#10;⚠️ 기존 데이터가 삭제됩니다. 백업을 권장합니다." message-type="Warning" />
+                <ui:HelpBox name="db-setup-success-help" text="" message-type="Info" class="hidden" />
+                <ui:HelpBox name="db-setup-error-help" text="" message-type="Error" class="hidden" />
+            </ui:VisualElement>
+
+            <!-- Enable Database Toggle -->
+            <ui:Toggle name="db-enable-toggle" label="✅ Enable Database Features" class="toggle-field" />
+
+            <!-- Database Configuration -->
+            <ui:VisualElement name="db-config-section" class="hidden">
+                <ui:Label text="📄 Database File Settings" class="section-subtitle" />
+                <ui:TextField name="db-filepath-field" readonly="true" class="path-field" tooltip="SQLite 데이터베이스 파일 경로&#10;기본 위치: Application.persistentDataPath&#10;단일 파일로 모든 데이터 저장" />
+
+                <ui:VisualElement class="button-row">
+                    <ui:Button name="db-browse-button" text="🔍 Browse..." class="secondary-button" tooltip="다른 위치에 DB 파일 저장" />
+                    <ui:Button name="db-open-folder-button" text="📂 Open Folder" class="secondary-button" tooltip="DB 파일이 있는 폴더 열기" />
+                    <ui:Button name="db-reset-path-button" text="↩️ Reset to Default" class="secondary-button" tooltip="기본 경로로 재설정" />
+                </ui:VisualElement>
+
+                <ui:Toggle name="db-wal-toggle" label="⚡ Enable WAL Mode" class="toggle-field" tooltip="Write-Ahead Logging 모드&#10;• 성능 향상 (최대 10배)&#10;• 동시 읽기 가능&#10;• 쓰기 중에도 읽기 가능&#10;권장: 활성화 (기본값)" />
+
+                <!-- View Status Button -->
+                <ui:Button name="db-view-status-button" text="📊 View Status &amp; Controls" class="primary-button" tooltip="데이터베이스 상태, 연결, 명령 히스토리 등을 별도 창에서 확인" style="margin-top: 10px;" />
+
+                <!-- Status and Controls Section (for separate window) -->
+                <ui:VisualElement name="db-status-controls-section" class="hidden">
+                    <!-- Connection Status -->
+                    <ui:Label text="📊 Status" class="section-subtitle" />
+
+                <ui:VisualElement class="status-row">
+                    <ui:Label text="🔌 Connection:" class="label-key" tooltip="SQLite 데이터베이스 연결 상태&#10;Connect 버튼으로 연결" />
+                    <ui:VisualElement class="status-indicator-container">
+                        <ui:VisualElement name="db-status-indicator" class="status-indicator status-stopped" />
+                        <ui:Label name="db-status-label" text="❌ Not Connected" class="label-value" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+
+                <ui:VisualElement class="status-row">
+                    <ui:Label text="💾 Database File:" class="label-key" tooltip="데이터베이스 파일 생성 여부&#10;Reinstall Database 버튼으로 생성" />
+                    <ui:Label name="db-file-exists-label" text="❌ Not Created" class="label-value" />
+                </ui:VisualElement>
+
+                <ui:VisualElement class="status-row">
+                    <ui:Label text="🔄 Sync Status:" class="label-key" tooltip="실시간 GameObject/Component 동기화 상태&#10;(Phase 2에서 구현 예정)" />
+                    <ui:Label name="db-sync-status-label" text="⏹️ Not Running" class="label-value" />
+                </ui:VisualElement>
+
+                <!-- Action Buttons -->
+                <ui:VisualElement class="button-row">
+                    <ui:Button name="db-test-button" text="🔍 Test Connection" class="action-button" tooltip="데이터베이스 연결 테스트&#10;SQLite 버전 정보 확인" />
+                    <ui:Button name="db-connect-button" text="🔌 Connect" class="action-button" tooltip="데이터베이스에 연결&#10;Command History 활성화" />
+                    <ui:Button name="db-disconnect-button" text="⏸️ Disconnect" class="action-button hidden" tooltip="데이터베이스 연결 해제" />
+                </ui:VisualElement>
+
+                <ui:VisualElement class="button-row">
+                    <ui:Button name="db-migrate-button" text="⚙️ Run Migrations" class="primary-button" tooltip="스키마 마이그레이션 실행&#10;테이블/인덱스/트리거 생성" />
+                    <ui:Button name="db-sync-toggle-button" text="🔄 Start Sync" class="secondary-button" tooltip="GameObject/Component 실시간 동기화&#10;(Phase 2에서 구현 예정)" />
+                </ui:VisualElement>
+
+                <!-- Command History (Undo/Redo) -->
+                <ui:Label text="📜 Command History" class="section-subtitle" />
+                <ui:VisualElement class="status-row">
+                    <ui:Label text="⟲ Undo Stack:" class="label-key" tooltip="실행 취소 가능한 명령 수&#10;데이터베이스에 영구 저장" />
+                    <ui:Label name="db-undo-count" text="🔢 0" class="label-value" />
+                </ui:VisualElement>
+
+                <ui:VisualElement class="status-row">
+                    <ui:Label text="⟳ Redo Stack:" class="label-key" tooltip="다시 실행 가능한 명령 수&#10;Undo 후 사용 가능" />
+                    <ui:Label name="db-redo-count" text="🔢 0" class="label-value" />
+                </ui:VisualElement>
+
+                <ui:VisualElement class="button-row">
+                    <ui:Button name="db-undo-button" text="⟲ Undo" class="action-button" tooltip="마지막 명령 실행 취소&#10;GameObject/Component 변경 복원" />
+                    <ui:Button name="db-redo-button" text="⟳ Redo" class="action-button" tooltip="취소한 명령 다시 실행" />
+                    <ui:Button name="db-clear-history-button" text="🗑️ Clear History" class="secondary-button" tooltip="모든 명령 히스토리 삭제&#10;Undo/Redo 불가능" />
+                </ui:VisualElement>
+                </ui:VisualElement>
+
+                <!-- Status Messages -->
+                <ui:HelpBox name="db-error-help" text="" message-type="Error" class="hidden" />
+                <ui:HelpBox name="db-success-help" text="" message-type="Info" class="hidden" />
+            </ui:VisualElement>
+
+            <!-- Database Disabled Message -->
+            <ui:VisualElement name="db-disabled-section" class="hidden">
+                <ui:HelpBox text="Database features are disabled.&#10;&#10;Enable to use:&#10;• GameObject/Component persistence&#10;• Command history (Undo/Redo across sessions)&#10;• Scene snapshots&#10;• Complex SQL queries&#10;• Project analytics&#10;&#10;SQLite - 설치 불필요!&#10;• unity-sqlite-net (included in package)&#10;• UniTask (auto-installed)&#10;• Unity 6.0+ 권장&#10;&#10;원클릭 Setup으로 바로 사용 가능합니다!" message-type="None" />
+            </ui:VisualElement>
         </ui:VisualElement>
-    </ui:VisualElement>
+
+        </ui:VisualElement>
+    </ui:ScrollView>
 </ui:UXML>

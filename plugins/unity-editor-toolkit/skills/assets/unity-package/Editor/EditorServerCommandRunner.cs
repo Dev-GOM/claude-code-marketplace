@@ -18,6 +18,14 @@ namespace UnityEditorToolkit.Editor
         /// </summary>
         public static bool CheckNodeInstallation()
         {
+            return !string.IsNullOrEmpty(GetNodeVersion());
+        }
+
+        /// <summary>
+        /// Get Node.js version string (e.g., "v22.17.0")
+        /// </summary>
+        public static string GetNodeVersion()
+        {
             try
             {
                 string nodeCommand = Application.platform == RuntimePlatform.WindowsEditor ? "node.exe" : "node";
@@ -36,18 +44,16 @@ namespace UnityEditorToolkit.Editor
                     process.WaitForExit(ProcessKillWaitTimeoutMs);
                     if (process.ExitCode == 0)
                     {
-                        string version = process.StandardOutput.ReadToEnd().Trim();
-                        UnityEngine.Debug.Log($"Unity Editor Toolkit: Node.js detected: {version}");
-                        return true;
+                        return process.StandardOutput.ReadToEnd().Trim();
                     }
                 }
             }
             catch (Exception)
             {
-                return false;
+                return null;
             }
 
-            return false;
+            return null;
         }
 
         /// <summary>
