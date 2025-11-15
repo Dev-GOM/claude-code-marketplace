@@ -186,6 +186,14 @@ namespace UnityEditorToolkit.Editor
             {
                 DatabaseManager.Instance.CommandHistory.OnHistoryChanged += UpdateCommandHistoryUI;
             }
+
+            // Auto-connect to database if enabled
+            if (currentDbConfig?.EnableDatabase == true)
+            {
+                EditorApplication.delayCall += () => {
+                    ConnectDatabaseAsync().Forget();
+                };
+            }
         }
         #endregion
 
