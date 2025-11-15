@@ -7,11 +7,7 @@
             <ui:VisualElement class="status-row">
                 <ui:Label text="🔌 Connection:" class="label-key" tooltip="SQLite 데이터베이스 연결 상태&#10;Connect 버튼으로 연결" />
                 <ui:VisualElement class="status-indicator-container">
-                    <ui:VisualElement name="db-status-indicator">
-                        <Bindings>
-                            <ui:DataBinding property="class" data-source-path="DbStatusIndicatorClass" binding-mode="ToTarget" />
-                        </Bindings>
-                    </ui:VisualElement>
+                    <ui:VisualElement name="db-status-indicator" class="status-indicator status-stopped" />
                     <ui:Label name="db-status-label" class="label-value">
                         <Bindings>
                             <ui:DataBinding property="text" data-source-path="DbStatusText" binding-mode="ToTarget" />

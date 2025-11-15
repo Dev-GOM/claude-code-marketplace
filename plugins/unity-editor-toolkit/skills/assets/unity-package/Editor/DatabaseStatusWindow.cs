@@ -257,6 +257,14 @@ namespace UnityEditorToolkit.Editor
             // Update data (UI auto-updates via data binding)
             windowData.DbIsConnected = isConnected;
 
+            // Update status indicator classes (CSS classes cannot be bound)
+            if (dbStatusIndicator != null)
+            {
+                dbStatusIndicator.RemoveFromClassList("status-stopped");
+                dbStatusIndicator.RemoveFromClassList("status-running");
+                dbStatusIndicator.AddToClassList(isConnected ? "status-running" : "status-stopped");
+            }
+
             // Update button states (not bound to data)
             dbConnectButton?.SetEnabled(!isConnected);
             dbDisconnectButton?.SetEnabled(isConnected);

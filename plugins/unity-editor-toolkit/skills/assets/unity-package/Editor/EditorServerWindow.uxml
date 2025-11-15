@@ -8,11 +8,7 @@
             <ui:VisualElement class="status-row">
                 <ui:Label text="📡 Status:" class="label-key" />
                 <ui:VisualElement class="status-indicator-container">
-                    <ui:VisualElement name="status-indicator">
-                        <Bindings>
-                            <ui:DataBinding property="class" data-source-path="ServerStatusIndicatorClass" binding-mode="ToTarget" />
-                        </Bindings>
-                    </ui:VisualElement>
+                    <ui:VisualElement name="status-indicator" class="status-indicator status-stopped" />
                     <ui:Label name="server-status" class="label-value">
                         <Bindings>
                             <ui:DataBinding property="text" data-source-path="ServerStatusText" binding-mode="ToTarget" />

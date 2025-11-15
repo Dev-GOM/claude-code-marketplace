@@ -300,6 +300,14 @@ namespace UnityEditorToolkit.Editor
             windowData.ConnectedClients = server.ConnectedClients;
             windowData.AutoStart = server.AutoStart;
 
+            // Update status indicator classes (CSS classes cannot be bound)
+            if (statusIndicator != null)
+            {
+                statusIndicator.RemoveFromClassList("status-stopped");
+                statusIndicator.RemoveFromClassList("status-running");
+                statusIndicator.AddToClassList(server.IsRunning ? "status-running" : "status-stopped");
+            }
+
             // Update button states (not bound to data)
             autostartToggle.SetEnabled(!server.IsRunning);
             startButton.SetEnabled(!server.IsRunning);

@@ -36,17 +36,11 @@ namespace UnityEditorToolkit.Editor
                 serverIsRunning = value;
                 Notify();
                 Notify(nameof(ServerStatusText));
-                Notify(nameof(ServerStatusIndicatorClass));
             }
         }
 
         [CreateProperty]
         public string ServerStatusText => ServerIsRunning ? "▶️ Running ✓" : "⏹️ Stopped";
-
-        [CreateProperty]
-        public string ServerStatusIndicatorClass => ServerIsRunning
-            ? "status-indicator status-running"
-            : "status-indicator status-stopped";
 
         [CreateProperty]
         public int ServerPort
@@ -152,17 +146,11 @@ namespace UnityEditorToolkit.Editor
                 dbIsConnected = value;
                 Notify();
                 Notify(nameof(DbStatusText));
-                Notify(nameof(DbStatusIndicatorClass));
             }
         }
 
         [CreateProperty]
         public string DbStatusText => DbIsConnected ? "✅ Connected" : "❌ Not Connected";
-
-        [CreateProperty]
-        public string DbStatusIndicatorClass => DbIsConnected
-            ? "status-indicator status-running"
-            : "status-indicator status-stopped";
 
         [CreateProperty]
         public bool DbFileExists

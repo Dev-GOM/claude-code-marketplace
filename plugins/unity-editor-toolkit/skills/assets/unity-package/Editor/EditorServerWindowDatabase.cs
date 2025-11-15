@@ -682,6 +682,11 @@ namespace UnityEditorToolkit.Editor
             // Update data (UI auto-updates via data binding)
             windowData.DbIsConnected = isConnected;
 
+            // Update status indicator classes (CSS classes cannot be bound)
+            dbStatusIndicator.RemoveFromClassList("status-stopped");
+            dbStatusIndicator.RemoveFromClassList("status-running");
+            dbStatusIndicator.AddToClassList(isConnected ? "status-running" : "status-stopped");
+
             // Update database file status
             if (DatabaseManager.Instance.IsInitialized && DatabaseManager.Instance.Connector != null)
             {
