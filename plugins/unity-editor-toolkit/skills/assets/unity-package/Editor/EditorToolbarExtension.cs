@@ -55,23 +55,38 @@ namespace UnityEditorToolkit.Editor
                 return;
             }
 
+            // PlayModeButtons 바로 앞에 삽입하기 위해 ToolbarZonePlayMode 찾기
+            var playModeZone = toolbarLeft.Q("ToolbarZonePlayMode");
+
             customToolbarLeft = new VisualElement
             {
                 name = "unity-editor-toolkit-toolbar",
                 style =
                 {
-                    flexGrow = 1,
                     flexDirection = FlexDirection.Row,
-                    overflow = Overflow.Hidden,
+                    alignItems = Align.Center,
+                    marginRight = 8,
                 },
             };
-            toolbarLeft.Add(customToolbarLeft);
+
+            if (playModeZone != null)
+            {
+                // PlayModeButtons 바로 앞에 삽입
+                var playModeIndex = toolbarLeft.IndexOf(playModeZone);
+                toolbarLeft.Insert(playModeIndex, customToolbarLeft);
+            }
+            else
+            {
+                // PlayModeZone을 못 찾으면 끝에 추가
+                toolbarLeft.Add(customToolbarLeft);
+            }
 
             InitializeServerStatus();
         }
 
         private static void InitializeServerStatus()
         {
+            // 클릭 가능한 컨테이너 (전체가 버튼처럼 동작)
             var statusContainer = new VisualElement
             {
                 name = "unity-editor-toolkit-status",
@@ -79,40 +94,63 @@ namespace UnityEditorToolkit.Editor
                 {
                     flexDirection = FlexDirection.Row,
                     alignItems = Align.Center,
-                    paddingLeft = 8,
-                    paddingRight = 8,
+                    paddingLeft = 6,
+                    paddingRight = 6,
+                    paddingTop = 2,
+                    paddingBottom = 2,
+                    backgroundColor = new Color(0.2f, 0.2f, 0.2f, 0.3f),
+                    borderTopLeftRadius = 3,
+                    borderTopRightRadius = 3,
+                    borderBottomLeftRadius = 3,
+                    borderBottomRightRadius = 3,
                 },
             };
 
+            // 마우스 이벤트 추가
+            statusContainer.RegisterCallback<MouseDownEvent>(evt =>
+            {
+                if (evt.button == 0) // 왼쪽 클릭
+                {
+                    ShowWindowMenu();
+                }
+            });
+
+            // 마우스 오버 효과
+            statusContainer.RegisterCallback<MouseEnterEvent>(evt =>
+            {
+                statusContainer.style.backgroundColor = new Color(0.3f, 0.3f, 0.3f, 0.5f);
+            });
+
+            statusContainer.RegisterCallback<MouseLeaveEvent>(evt =>
+            {
+                statusContainer.style.backgroundColor = new Color(0.2f, 0.2f, 0.2f, 0.3f);
+            });
+
             // 상태 라벨
-            statusLabel = new Label("●")
+            statusLabel = new Label("● 9500")
             {
                 name = "status-label",
+                tooltip = "Unity Editor Toolkit - Click to open menu",
                 style =
                 {
                     fontSize = 11,
                     unityFontStyleAndWeight = FontStyle.Bold,
-                    marginRight = 5,
+                    marginRight = 3,
                 },
             };
 
-            // 드롭다운 버튼
-            var menuButton = new Button(ShowWindowMenu)
+            // 드롭다운 화살표
+            var dropdownArrow = new Label("▼")
             {
-                text = "⚙",
-                tooltip = "Unity Editor Toolkit Windows",
                 style =
                 {
-                    fontSize = 11,
-                    paddingLeft = 5,
-                    paddingRight = 5,
-                    paddingTop = 2,
-                    paddingBottom = 2,
+                    fontSize = 8,
+                    color = new Color(0.8f, 0.8f, 0.8f, 1f),
                 },
             };
 
             statusContainer.Add(statusLabel);
-            statusContainer.Add(menuButton);
+            statusContainer.Add(dropdownArrow);
             customToolbarLeft.Add(statusContainer);
         }
 
