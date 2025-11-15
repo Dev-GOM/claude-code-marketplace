@@ -1,5 +1,5 @@
+using System.Reflection;
 using UnityEditor;
-using UnityEditor.Toolbars;
 using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEditorToolkit.Editor.Server;
@@ -7,61 +7,142 @@ using UnityEditorToolkit.Editor.Server;
 namespace UnityEditorToolkit.Editor
 {
     /// <summary>
-    /// Unity Editor Toolbar에 서버 연결 상태를 표시 (UI Toolkit 방식)
+    /// Unity Editor Toolbar에 서버 연결 상태를 표시 (Reflection 기반)
     /// </summary>
+    [InitializeOnLoad]
     public static class EditorToolbarExtension
     {
-        private const string ToolbarId = "UnityEditorToolkit/StatusIndicator";
+        private static VisualElement toolbarRoot;
+        private static VisualElement customToolbarLeft;
+        private static Label statusLabel;
 
-        [MainToolbarElement(ToolbarId, MainToolbarAlign.Left)]
-        public static VisualElement CreateToolbarElement()
+        static EditorToolbarExtension()
         {
-            var container = new VisualElement();
-            container.name = "unity-editor-toolkit-status";
-            container.AddToClassList("unity-toolbar-element");
-
-            // 상태 라벨
-            var statusLabel = new Label("●");
-            statusLabel.name = "status-label";
-            statusLabel.AddToClassList("unity-toolbar-label");
-
-            // 드롭다운 버튼
-            var menuButton = new Button(() => ShowWindowMenu())
-            {
-                text = "⚙"
-            };
-            menuButton.AddToClassList("unity-toolbar-button");
-            menuButton.tooltip = "Unity Editor Toolkit Windows";
-
-            container.Add(statusLabel);
-            container.Add(menuButton);
-
-            // 상태 업데이트 스케줄
-            container.schedule.Execute(() => UpdateStatus(statusLabel)).Every(500);
-
-            return container;
+            EditorApplication.update -= OnUpdate;
+            EditorApplication.update += OnUpdate;
         }
 
-        private static void UpdateStatus(Label statusLabel)
+        private static void TryInitialize()
         {
+            if (toolbarRoot != null)
+            {
+                return;
+            }
+
+            var toolbarType = typeof(UnityEditor.Editor).Assembly.GetType("UnityEditor.Toolbar");
+            if (toolbarType == null)
+            {
+                return;
+            }
+
+            var toolbarObj = toolbarType.GetField("get").GetValue(null);
+            if (toolbarObj == null)
+            {
+                return;
+            }
+
+            toolbarRoot = (VisualElement)toolbarType.GetField("m_Root",
+                BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(toolbarObj);
+
+            if (toolbarRoot == null)
+            {
+                return;
+            }
+
+            var toolbarLeft = toolbarRoot.Q("ToolbarZoneLeftAlign");
+            if (toolbarLeft == null)
+            {
+                return;
+            }
+
+            customToolbarLeft = new VisualElement
+            {
+                name = "unity-editor-toolkit-toolbar",
+                style =
+                {
+                    flexGrow = 1,
+                    flexDirection = FlexDirection.Row,
+                    overflow = Overflow.Hidden,
+                },
+            };
+            toolbarLeft.Add(customToolbarLeft);
+
+            InitializeServerStatus();
+        }
+
+        private static void InitializeServerStatus()
+        {
+            var statusContainer = new VisualElement
+            {
+                name = "unity-editor-toolkit-status",
+                style =
+                {
+                    flexDirection = FlexDirection.Row,
+                    alignItems = Align.Center,
+                    paddingLeft = 8,
+                    paddingRight = 8,
+                },
+            };
+
+            // 상태 라벨
+            statusLabel = new Label("●")
+            {
+                name = "status-label",
+                style =
+                {
+                    fontSize = 11,
+                    unityFontStyleAndWeight = FontStyle.Bold,
+                    marginRight = 5,
+                },
+            };
+
+            // 드롭다운 버튼
+            var menuButton = new Button(ShowWindowMenu)
+            {
+                text = "⚙",
+                tooltip = "Unity Editor Toolkit Windows",
+                style =
+                {
+                    fontSize = 11,
+                    paddingLeft = 5,
+                    paddingRight = 5,
+                    paddingTop = 2,
+                    paddingBottom = 2,
+                },
+            };
+
+            statusContainer.Add(statusLabel);
+            statusContainer.Add(menuButton);
+            customToolbarLeft.Add(statusContainer);
+        }
+
+        private static void OnUpdate()
+        {
+            TryInitialize();
+            UpdateServerStatus();
+        }
+
+        private static void UpdateServerStatus()
+        {
+            if (statusLabel == null)
+            {
+                return;
+            }
+
             var server = EditorWebSocketServer.Instance;
             bool isRunning = server != null && server.IsRunning;
-
-            // CSS 클래스로 상태 관리
-            statusLabel.RemoveFromClassList("server-stopped");
-            statusLabel.RemoveFromClassList("server-running");
 
             if (isRunning)
             {
                 statusLabel.text = $"● {server.Port}";
                 statusLabel.tooltip = $"WebSocket Server Running\nPort: {server.Port}\nClients: {server.ConnectedClients}";
-                statusLabel.AddToClassList("server-running");
+                statusLabel.style.color = new Color(0.3f, 1f, 0.3f);
             }
             else
             {
                 statusLabel.text = "●";
                 statusLabel.tooltip = "WebSocket Server Stopped";
-                statusLabel.AddToClassList("server-stopped");
+                statusLabel.style.color = new Color(1f, 0.3f, 0.3f);
             }
         }
 
