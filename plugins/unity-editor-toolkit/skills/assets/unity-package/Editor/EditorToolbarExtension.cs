@@ -49,14 +49,8 @@ namespace UnityEditorToolkit.Editor
                 return;
             }
 
-            var toolbarLeft = toolbarRoot.Q("ToolbarZoneLeftAlign");
-            if (toolbarLeft == null)
-            {
-                return;
-            }
-
             // PlayModeButtons 바로 앞에 삽입하기 위해 ToolbarZonePlayMode 찾기
-            var playModeZone = toolbarLeft.Q("ToolbarZonePlayMode");
+            var playModeZone = toolbarRoot.Q("ToolbarZonePlayMode");
 
             customToolbarLeft = new VisualElement
             {
@@ -71,14 +65,21 @@ namespace UnityEditorToolkit.Editor
 
             if (playModeZone != null)
             {
-                // PlayModeButtons 바로 앞에 삽입
-                var playModeIndex = toolbarLeft.IndexOf(playModeZone);
-                toolbarLeft.Insert(playModeIndex, customToolbarLeft);
+                // ToolbarZonePlayMode의 맨 앞에 삽입
+                playModeZone.Insert(0, customToolbarLeft);
             }
             else
             {
-                // PlayModeZone을 못 찾으면 끝에 추가
-                toolbarLeft.Add(customToolbarLeft);
+                // PlayModeZone을 못 찾으면 ToolbarZoneLeftAlign에 추가
+                var toolbarLeft = toolbarRoot.Q("ToolbarZoneLeftAlign");
+                if (toolbarLeft != null)
+                {
+                    toolbarLeft.Add(customToolbarLeft);
+                }
+                else
+                {
+                    return;
+                }
             }
 
             InitializeServerStatus();
