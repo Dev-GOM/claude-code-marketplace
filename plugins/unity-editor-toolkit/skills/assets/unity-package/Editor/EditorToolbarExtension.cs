@@ -225,12 +225,7 @@ namespace UnityEditorToolkit.Editor
         private static void ShowWindowMenu()
         {
             var menu = new GenericMenu();
-            menu.AddItem(new GUIContent("Server Window"), false, () => EditorServerWindow.ShowWindow());
-            menu.AddItem(new GUIContent("Database Status Window"), false, () =>
-            {
-                var serverWindow = EditorServerWindow.ShowWindow();
-                DatabaseStatusWindow.Open(serverWindow);
-            });
+            menu.AddItem(new GUIContent("Open Unity Editor Toolkit"), false, () => EditorServerWindow.ShowWindow());
             menu.ShowAsContext();
         }
     }
