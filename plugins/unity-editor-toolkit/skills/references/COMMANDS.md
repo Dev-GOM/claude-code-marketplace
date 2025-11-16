@@ -24,7 +24,7 @@ cd <unity-project-root> && node .unity-websocket/uw <command> --help
 | Category | Commands | Documentation |
 |----------|----------|---------------|
 | **Connection & Status** | 1 command | [COMMANDS_CONNECTION_STATUS.md](./COMMANDS_CONNECTION_STATUS.md) |
-| **GameObject & Hierarchy** | 5 commands | [COMMANDS_GAMEOBJECT_HIERARCHY.md](./COMMANDS_GAMEOBJECT_HIERARCHY.md) |
+| **GameObject & Hierarchy** | 8 commands | [COMMANDS_GAMEOBJECT_HIERARCHY.md](./COMMANDS_GAMEOBJECT_HIERARCHY.md) |
 | **Transform** | 4 commands | [COMMANDS_TRANSFORM.md](./COMMANDS_TRANSFORM.md) |
 | **Scene Management** | 3 commands | [COMMANDS_SCENE.md](./COMMANDS_SCENE.md) |
 | **Asset Database & Editor** | 3 commands | [COMMANDS_EDITOR.md](./COMMANDS_EDITOR.md) |
@@ -81,6 +81,15 @@ cd <unity-project-root> && node .unity-websocket/uw go destroy <name> [--json]
 
 # Set active state
 cd <unity-project-root> && node .unity-websocket/uw go set-active <name> <true|false> [--json]
+
+# Set/remove parent
+cd <unity-project-root> && node .unity-websocket/uw go set-parent <name> [parent] [--json]
+
+# Get parent info
+cd <unity-project-root> && node .unity-websocket/uw go get-parent <name> [--json]
+
+# Get children
+cd <unity-project-root> && node .unity-websocket/uw go get-children <name> [--recursive] [--json]
 
 # View hierarchy tree
 cd <unity-project-root> && node .unity-websocket/uw hierarchy [--root-only] [--include-inactive] [--json]

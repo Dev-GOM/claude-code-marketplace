@@ -158,6 +158,120 @@ cd <unity-project-root> && node .unity-websocket/uw go set-active "UI/Menu/Setti
 
 ---
 
+## cd <unity-project-root> && node .unity-websocket/uw go set-parent
+
+Set or remove parent of GameObject.
+
+**Usage:**
+```bash
+cd <unity-project-root> && node .unity-websocket/uw go set-parent <name> [parent] [options]
+```
+
+**Arguments:**
+```
+<name>                 GameObject name or path
+[parent]               Parent GameObject name (omit to remove parent)
+```
+
+**Options:**
+```
+--world-position-stays <bool>  Keep world position (default: true)
+--json                 Output in JSON format
+--timeout <ms>         Connection timeout in milliseconds (default: 30000)
+-h, --help             Display help for command
+```
+
+**Examples:**
+```bash
+# Set parent (attach "Weapon" to "Player")
+cd <unity-project-root> && node .unity-websocket/uw go set-parent "Weapon" "Player"
+
+# Remove parent (detach to root)
+cd <unity-project-root> && node .unity-websocket/uw go set-parent "Weapon"
+
+# Set parent without keeping world position
+cd <unity-project-root> && node .unity-websocket/uw go set-parent "Child" "Parent" --world-position-stays false
+
+# Reparent nested object
+cd <unity-project-root> && node .unity-websocket/uw go set-parent "UI/Menu" "Canvas"
+```
+
+---
+
+## cd <unity-project-root> && node .unity-websocket/uw go get-parent
+
+Get parent information of GameObject.
+
+**Usage:**
+```bash
+cd <unity-project-root> && node .unity-websocket/uw go get-parent <name> [options]
+```
+
+**Arguments:**
+```
+<name>                 GameObject name or path
+```
+
+**Options:**
+```
+--json                 Output in JSON format
+--timeout <ms>         Connection timeout in milliseconds (default: 30000)
+-h, --help             Display help for command
+```
+
+**Examples:**
+```bash
+# Get parent info
+cd <unity-project-root> && node .unity-websocket/uw go get-parent "Weapon"
+
+# Check if object has parent
+cd <unity-project-root> && node .unity-websocket/uw go get-parent "Player" --json
+
+# Get parent of nested object
+cd <unity-project-root> && node .unity-websocket/uw go get-parent "Enemies/Enemy1"
+```
+
+---
+
+## cd <unity-project-root> && node .unity-websocket/uw go get-children
+
+Get children of GameObject.
+
+**Usage:**
+```bash
+cd <unity-project-root> && node .unity-websocket/uw go get-children <name> [options]
+```
+
+**Arguments:**
+```
+<name>                 GameObject name or path
+```
+
+**Options:**
+```
+-r, --recursive        Get all descendants (not just direct children)
+--json                 Output in JSON format
+--timeout <ms>         Connection timeout in milliseconds (default: 30000)
+-h, --help             Display help for command
+```
+
+**Examples:**
+```bash
+# Get direct children
+cd <unity-project-root> && node .unity-websocket/uw go get-children "Player"
+
+# Get all descendants recursively
+cd <unity-project-root> && node .unity-websocket/uw go get-children "Player" --recursive
+
+# Get children with JSON output
+cd <unity-project-root> && node .unity-websocket/uw go get-children "Canvas" --json
+
+# Count nested objects
+cd <unity-project-root> && node .unity-websocket/uw go get-children "Environment" --recursive --json
+```
+
+---
+
 ## cd <unity-project-root> && node .unity-websocket/uw hierarchy
 
 Query Unity GameObject hierarchy with tree visualization.

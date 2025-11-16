@@ -27,6 +27,12 @@ namespace UnityEditorToolkit.Handlers
                     return HandleDestroy(request);
                 case "SetActive":
                     return HandleSetActive(request);
+                case "SetParent":
+                    return HandleSetParent(request);
+                case "GetParent":
+                    return HandleGetParent(request);
+                case "GetChildren":
+                    return HandleGetChildren(request);
                 default:
                     throw new Exception($"Unknown method: {method}");
             }
@@ -209,6 +215,185 @@ namespace UnityEditorToolkit.Handlers
             return new { success = true, active = obj.activeSelf };
         }
 
+        /// <summary>
+        /// Set or remove parent of GameObject
+        /// </summary>
+        private object HandleSetParent(JsonRpcRequest request)
+        {
+            var param = ValidateParam<SetParentParams>(request, "name");
+            var obj = FindGameObject(param.name);
+
+            if (obj == null)
+            {
+                throw new Exception($"GameObject not found: {param.name}");
+            }
+
+            #if UNITY_EDITOR
+            UnityEditor.Undo.SetTransformParent(obj.transform, null, "Set Parent");
+            #endif
+
+            // parent가 null이거나 빈 문자열이면 부모 제거
+            if (string.IsNullOrEmpty(param.parent))
+            {
+                obj.transform.SetParent(null, param.worldPositionStays);
+                return new SetParentResult
+                {
+                    success = true,
+                    name = obj.name,
+                    parent = null,
+                    path = GetGameObjectPath(obj)
+                };
+            }
+
+            // 새 부모 찾기
+            var newParent = FindGameObject(param.parent);
+            if (newParent == null)
+            {
+                throw new Exception($"Parent GameObject not found: {param.parent}");
+            }
+
+            // 순환 참조 체크
+            if (IsDescendantOf(newParent.transform, obj.transform))
+            {
+                throw new Exception($"Cannot set parent: {param.parent} is a descendant of {param.name}");
+            }
+
+            #if UNITY_EDITOR
+            UnityEditor.Undo.SetTransformParent(obj.transform, newParent.transform, "Set Parent");
+            #endif
+
+            obj.transform.SetParent(newParent.transform, param.worldPositionStays);
+
+            return new SetParentResult
+            {
+                success = true,
+                name = obj.name,
+                parent = newParent.name,
+                path = GetGameObjectPath(obj)
+            };
+        }
+
+        /// <summary>
+        /// Get parent information of GameObject
+        /// </summary>
+        private object HandleGetParent(JsonRpcRequest request)
+        {
+            var param = ValidateParam<FindParams>(request, "name");
+            var obj = FindGameObject(param.name);
+
+            if (obj == null)
+            {
+                throw new Exception($"GameObject not found: {param.name}");
+            }
+
+            var parent = obj.transform.parent;
+            if (parent == null)
+            {
+                return new ParentInfo
+                {
+                    hasParent = false,
+                    parent = null
+                };
+            }
+
+            return new ParentInfo
+            {
+                hasParent = true,
+                parent = new GameObjectInfo
+                {
+                    name = parent.gameObject.name,
+                    instanceId = parent.gameObject.GetInstanceID(),
+                    path = GetGameObjectPath(parent.gameObject),
+                    active = parent.gameObject.activeSelf,
+                    tag = parent.gameObject.tag,
+                    layer = parent.gameObject.layer
+                }
+            };
+        }
+
+        /// <summary>
+        /// Get children of GameObject
+        /// </summary>
+        private object HandleGetChildren(JsonRpcRequest request)
+        {
+            var param = ValidateParam<GetChildrenParams>(request, "name");
+            var obj = FindGameObject(param.name);
+
+            if (obj == null)
+            {
+                throw new Exception($"GameObject not found: {param.name}");
+            }
+
+            var children = new List<GameObjectInfo>();
+            var transform = obj.transform;
+
+            // recursive 옵션에 따라 직접 자식만 또는 모든 자손 반환
+            if (param.recursive)
+            {
+                GetAllDescendants(transform, children);
+            }
+            else
+            {
+                for (int i = 0; i < transform.childCount; i++)
+                {
+                    var child = transform.GetChild(i).gameObject;
+                    children.Add(new GameObjectInfo
+                    {
+                        name = child.name,
+                        instanceId = child.GetInstanceID(),
+                        path = GetGameObjectPath(child),
+                        active = child.activeSelf,
+                        tag = child.tag,
+                        layer = child.layer
+                    });
+                }
+            }
+
+            return new ChildrenInfo
+            {
+                count = children.Count,
+                children = children
+            };
+        }
+
+        /// <summary>
+        /// 재귀적으로 모든 자손 가져오기
+        /// </summary>
+        private void GetAllDescendants(Transform parent, List<GameObjectInfo> list)
+        {
+            for (int i = 0; i < parent.childCount; i++)
+            {
+                var child = parent.GetChild(i).gameObject;
+                list.Add(new GameObjectInfo
+                {
+                    name = child.name,
+                    instanceId = child.GetInstanceID(),
+                    path = GetGameObjectPath(child),
+                    active = child.activeSelf,
+                    tag = child.tag,
+                    layer = child.layer
+                });
+
+                // 재귀 호출
+                GetAllDescendants(child.transform, list);
+            }
+        }
+
+        /// <summary>
+        /// target이 parent의 자손인지 확인 (순환 참조 방지)
+        /// </summary>
+        private bool IsDescendantOf(Transform target, Transform parent)
+        {
+            var current = target;
+            while (current != null)
+            {
+                if (current == parent)
+                    return true;
+                current = current.parent;
+            }
+            return false;
+        }
+
         // Parameter classes (✅ private으로 변경)
         [Serializable]
         private class FindParams
@@ -230,6 +415,21 @@ namespace UnityEditorToolkit.Handlers
             public bool active;
         }
 
+        [Serializable]
+        private class SetParentParams
+        {
+            public string name;
+            public string parent; // null 또는 빈 문자열이면 부모 제거
+            public bool worldPositionStays = true; // 월드 좌표 유지 여부
+        }
+
+        [Serializable]
+        private class GetChildrenParams
+        {
+            public string name;
+            public bool recursive = false; // true면 모든 자손, false면 직접 자식만
+        }
+
         // Response classes
         [Serializable]
         public class GameObjectInfo
@@ -240,6 +440,29 @@ namespace UnityEditorToolkit.Handlers
             public bool active;
             public string tag;
             public int layer;
+        }
+
+        [Serializable]
+        public class SetParentResult
+        {
+            public bool success;
+            public string name;
+            public string parent;
+            public string path;
+        }
+
+        [Serializable]
+        public class ParentInfo
+        {
+            public bool hasParent;
+            public GameObjectInfo parent;
+        }
+
+        [Serializable]
+        public class ChildrenInfo
+        {
+            public int count;
+            public List<GameObjectInfo> children;
         }
     }
 }
