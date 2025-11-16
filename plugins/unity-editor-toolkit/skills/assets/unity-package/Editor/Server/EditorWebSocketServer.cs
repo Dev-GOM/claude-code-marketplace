@@ -127,7 +127,8 @@ namespace UnityEditorToolkit.Editor.Server
                 { "Hierarchy", new HierarchyHandler() },
                 { "Editor", new EditorHandler() },
                 { "Prefs", new PrefsHandler() },
-                { "Wait", new WaitHandler() }
+                { "Wait", new WaitHandler() },
+                { "Database", new DatabaseHandler() }
             };
 
             // Initialize ChainHandler with access to all handlers

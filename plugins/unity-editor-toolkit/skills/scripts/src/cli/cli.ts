@@ -21,6 +21,7 @@ import { registerEditorCommand } from './commands/editor';
 import { registerPrefsCommand } from './commands/prefs';
 import { registerWaitCommand } from './commands/wait';
 import { registerChainCommand } from './commands/chain';
+import { registerDatabaseCommand } from './commands/db';
 
 const program = new Command();
 
@@ -51,6 +52,7 @@ registerEditorCommand(program);
 registerPrefsCommand(program);
 registerWaitCommand(program);
 registerChainCommand(program);
+registerDatabaseCommand(program);
 
 // Status command (built-in)
 program

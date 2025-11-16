@@ -115,6 +115,14 @@ export const COMMANDS = {
   ANIMATION_PLAY: 'Animation.Play',
   ANIMATION_STOP: 'Animation.Stop',
   ANIMATION_GET_STATE: 'Animation.GetState',
+
+  // Database commands
+  DATABASE_STATUS: 'Database.Status',
+  DATABASE_CONNECT: 'Database.Connect',
+  DATABASE_DISCONNECT: 'Database.Disconnect',
+  DATABASE_RESET: 'Database.Reset',
+  DATABASE_RUN_MIGRATIONS: 'Database.RunMigrations',
+  DATABASE_CLEAR_MIGRATIONS: 'Database.ClearMigrations',
 } as const;
 
 /**
