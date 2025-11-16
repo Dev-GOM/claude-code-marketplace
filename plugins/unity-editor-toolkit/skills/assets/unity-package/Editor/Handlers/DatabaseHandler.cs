@@ -88,8 +88,8 @@ namespace UnityEditorToolkit.Handlers
                 }
             }
 
-            // Synchronous wrapper (blocking call)
-            var result = DatabaseManager.Instance.InitializeAsync(config).GetAwaiter().GetResult();
+            // Synchronous wrapper (blocking call) - Convert UniTask to Task for synchronous execution
+            var result = DatabaseManager.Instance.InitializeAsync(config).AsTask().GetAwaiter().GetResult();
 
             return new OperationResult
             {
@@ -111,8 +111,8 @@ namespace UnityEditorToolkit.Handlers
                 };
             }
 
-            // Synchronous wrapper
-            DatabaseManager.Instance.ShutdownAsync().GetAwaiter().GetResult();
+            // Synchronous wrapper - Convert UniTask to Task for synchronous execution
+            DatabaseManager.Instance.ShutdownAsync().AsTask().GetAwaiter().GetResult();
 
             return new OperationResult
             {
@@ -131,7 +131,7 @@ namespace UnityEditorToolkit.Handlers
             // Disconnect first
             if (DatabaseManager.Instance.IsConnected)
             {
-                DatabaseManager.Instance.ShutdownAsync().GetAwaiter().GetResult();
+                DatabaseManager.Instance.ShutdownAsync().AsTask().GetAwaiter().GetResult();
             }
 
             // Delete database file
@@ -155,7 +155,7 @@ namespace UnityEditorToolkit.Handlers
             }
 
             // Reconnect (will run migrations automatically)
-            var result = DatabaseManager.Instance.InitializeAsync(config).GetAwaiter().GetResult();
+            var result = DatabaseManager.Instance.InitializeAsync(config).AsTask().GetAwaiter().GetResult();
 
             return new OperationResult
             {
@@ -180,7 +180,7 @@ namespace UnityEditorToolkit.Handlers
             }
 
             var runner = new MigrationRunner(DatabaseManager.Instance);
-            var result = runner.RunMigrationsAsync().GetAwaiter().GetResult();
+            var result = runner.RunMigrationsAsync().AsTask().GetAwaiter().GetResult();
 
             return new MigrationOperationResult
             {
