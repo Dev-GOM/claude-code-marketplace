@@ -168,8 +168,16 @@ namespace UnityEditorToolkit.Editor.Database
                 {
                     var connection = databaseManager.Connector.Connection;
 
-                    // SQLite는 기본적으로 트랜잭션 내에서 실행됨
-                    connection.BeginTransaction();
+                    // SQLite 트랜잭션 시작 (WAL 모드에서 "not an error" 방지)
+                    try
+                    {
+                        connection.BeginTransaction();
+                    }
+                    catch (Exception txEx)
+                    {
+                        Debug.LogWarning($"[MigrationRunner] 트랜잭션 시작 경고 (무시됨): {txEx.Message}");
+                        // 트랜잭션 없이 계속 진행
+                    }
 
                     try
                     {
@@ -211,13 +219,27 @@ namespace UnityEditorToolkit.Editor.Database
 
                         connection.Execute(insertSql, migrationName);
 
-                        // 커밋
-                        connection.Commit();
+                        // 커밋 (트랜잭션이 없으면 무시)
+                        try
+                        {
+                            connection.Commit();
+                        }
+                        catch (Exception commitEx)
+                        {
+                            Debug.LogWarning($"[MigrationRunner] 커밋 경고 (무시됨): {commitEx.Message}");
+                        }
                     }
                     catch
                     {
-                        // 롤백
-                        connection.Rollback();
+                        // 롤백 (트랜잭션이 없으면 무시)
+                        try
+                        {
+                            connection.Rollback();
+                        }
+                        catch (Exception rollbackEx)
+                        {
+                            Debug.LogWarning($"[MigrationRunner] 롤백 경고 (무시됨): {rollbackEx.Message}");
+                        }
                         throw;
                     }
                 }, cancellationToken: cancellationToken);
