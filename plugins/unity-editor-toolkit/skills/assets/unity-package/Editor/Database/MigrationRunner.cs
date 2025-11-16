@@ -285,6 +285,43 @@ namespace UnityEditorToolkit.Editor.Database
         }
         #endregion
 
+        #region Pending Migration Check
+        /// <summary>
+        /// 대기 중인 마이그레이션 수 조회 (UI 표시용)
+        /// </summary>
+        public async UniTask<int> GetPendingMigrationCountAsync(CancellationToken cancellationToken = default)
+        {
+            if (!databaseManager.IsInitialized || !databaseManager.IsConnected)
+            {
+                return -1; // 연결 안됨
+            }
+
+            try
+            {
+                // migrations 테이블 확인
+                await EnsureMigrationTableExistsAsync(cancellationToken);
+
+                // 실행된 마이그레이션 목록 조회
+                var appliedMigrations = await GetAppliedMigrationsAsync(cancellationToken);
+
+                // 마이그레이션 파일 목록 조회
+                var migrationFiles = GetMigrationFiles();
+
+                // 미실행 마이그레이션 필터링
+                var pendingMigrations = migrationFiles
+                    .Where(file => !appliedMigrations.Contains(Path.GetFileNameWithoutExtension(file)))
+                    .ToList();
+
+                return pendingMigrations.Count;
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning($"[MigrationRunner] 펜딩 마이그레이션 확인 실패: {ex.Message}");
+                return -1;
+            }
+        }
+        #endregion
+
         #region File Discovery
         /// <summary>
         /// 마이그레이션 파일 목록 조회 (.sql 파일)

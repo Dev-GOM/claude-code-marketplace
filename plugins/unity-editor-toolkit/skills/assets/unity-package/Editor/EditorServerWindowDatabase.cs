@@ -419,7 +419,7 @@ namespace UnityEditorToolkit.Editor
 
                 Debug.Log($"[EditorServerWindow] 데이터베이스 연결 중... (자동연결: {autoConnect})");
 
-                // Step 1: 데이터베이스 연결
+                // 데이터베이스 연결 (InitializeAsync에서 자동 마이그레이션 실행)
                 var result = await DatabaseManager.Instance.InitializeAsync(currentDbConfig);
 
                 if (!result.Success)
@@ -433,35 +433,11 @@ namespace UnityEditorToolkit.Editor
                     return;
                 }
 
-                Debug.Log("[EditorServerWindow] 데이터베이스 연결 성공.");
+                Debug.Log("[EditorServerWindow] 데이터베이스 연결 성공 (자동 마이그레이션 완료).");
 
-                // Step 2: 자동으로 마이그레이션 실행
-                Debug.Log("[EditorServerWindow] 마이그레이션 자동 실행 중...");
-                var runner = new MigrationRunner(DatabaseManager.Instance);
-                var migrationResult = await runner.RunMigrationsAsync();
-
-                if (migrationResult.Success)
+                if (!autoConnect)
                 {
-                    if (!autoConnect)
-                    {
-                        if (migrationResult.MigrationsApplied > 0)
-                        {
-                            ShowDatabaseSuccess($"✅ 데이터베이스 연결 완료!\n\n마이그레이션: {migrationResult.MigrationsApplied}개 적용됨\nCommand History 활성화됨");
-                        }
-                        else
-                        {
-                            ShowDatabaseSuccess("✅ 데이터베이스 연결 완료!\n\nCommand History 활성화됨");
-                        }
-                    }
-                    Debug.Log($"[EditorServerWindow] 마이그레이션 성공: {migrationResult.MigrationsApplied}개");
-                }
-                else
-                {
-                    if (!autoConnect)
-                    {
-                        ShowDatabaseError($"⚠️ 연결은 성공했지만 마이그레이션 실패:\n{migrationResult.ErrorMessage}\n\n'Run Migrations' 버튼을 수동으로 눌러주세요.");
-                    }
-                    Debug.LogWarning($"[EditorServerWindow] 마이그레이션 실패: {migrationResult.ErrorMessage}");
+                    ShowDatabaseSuccess("✅ 데이터베이스 연결 완료!\n\nCommand History 활성화됨\n(자동 마이그레이션 실행됨)");
                 }
             }
             catch (System.Exception ex)
@@ -745,8 +721,50 @@ namespace UnityEditorToolkit.Editor
             dbMigrateButton?.SetEnabled(isConnected);
             dbSyncToggleButton?.SetEnabled(false);  // TODO Phase 2
 
+            // Update Migration button text based on pending migrations
+            UpdateMigrationButtonTextAsync().Forget();
+
             // Update Command History UI
             UpdateCommandHistoryUI();
+        }
+
+        /// <summary>
+        /// Migration 버튼 텍스트 업데이트 (비동기)
+        /// </summary>
+        private async UniTaskVoid UpdateMigrationButtonTextAsync()
+        {
+            if (dbMigrateButton == null)
+                return;
+
+            if (!DatabaseManager.Instance.IsConnected)
+            {
+                dbMigrateButton.text = "⚙️ Run Migrations";
+                return;
+            }
+
+            try
+            {
+                var runner = new MigrationRunner(DatabaseManager.Instance);
+                int pendingCount = await runner.GetPendingMigrationCountAsync();
+
+                if (pendingCount > 0)
+                {
+                    dbMigrateButton.text = $"⚙️ Run Migrations ({pendingCount} pending)";
+                }
+                else if (pendingCount == 0)
+                {
+                    dbMigrateButton.text = "✅ Migrations Up-to-date";
+                }
+                else
+                {
+                    dbMigrateButton.text = "⚙️ Run Migrations";
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning($"[EditorServerWindow] Migration 상태 확인 실패: {ex.Message}");
+                dbMigrateButton.text = "⚙️ Run Migrations";
+            }
         }
 
         private void HideDatabaseMessages()
