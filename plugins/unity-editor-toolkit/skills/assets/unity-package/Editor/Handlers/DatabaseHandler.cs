@@ -167,7 +167,7 @@ namespace UnityEditorToolkit.Handlers
                     message = "Reset operation failed unexpectedly"
                 },
                 sendCallback,
-                timeout: 120.0 // 2 minutes timeout
+                timeoutSeconds: 120.0 // 2 minutes timeout
             );
 
             // Return null to indicate delayed response
