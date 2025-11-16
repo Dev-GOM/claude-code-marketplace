@@ -223,6 +223,9 @@ namespace UnityEditorToolkit.Editor.Database
                 isConnected = true;
                 isInitialized = true;
 
+                // 자동 마이그레이션 실행
+                await RunAutoMigrationAsync(lifecycleCts.Token);
+
                 Debug.Log($"[DatabaseManager] 초기화 완료: {this.config.DatabaseFilePath}");
                 return new InitializationResult
                 {
@@ -371,6 +374,43 @@ namespace UnityEditorToolkit.Editor.Database
                 Debug.LogError($"[DatabaseManager] 재연결 중 예외 발생: {ex.Message}");
                 isConnected = false;
                 return false;
+            }
+        }
+        #endregion
+
+        #region Auto Migration
+        /// <summary>
+        /// 자동 마이그레이션 실행 (연결 시 자동 호출)
+        /// </summary>
+        private async UniTask RunAutoMigrationAsync(CancellationToken cancellationToken)
+        {
+            try
+            {
+                Debug.Log("[DatabaseManager] 자동 마이그레이션 확인 중...");
+
+                var migrationRunner = new MigrationRunner(this);
+                var result = await migrationRunner.RunMigrationsAsync(cancellationToken);
+
+                if (result.Success)
+                {
+                    if (result.MigrationsApplied > 0)
+                    {
+                        Debug.Log($"[DatabaseManager] 자동 마이그레이션 완료: {result.MigrationsApplied}개 적용됨");
+                    }
+                    else
+                    {
+                        Debug.Log("[DatabaseManager] 마이그레이션이 최신 상태입니다.");
+                    }
+                }
+                else
+                {
+                    Debug.LogWarning($"[DatabaseManager] 자동 마이그레이션 실패: {result.ErrorMessage}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning($"[DatabaseManager] 자동 마이그레이션 중 예외 발생: {ex.Message}");
+                // 마이그레이션 실패해도 연결은 유지
             }
         }
         #endregion
