@@ -70,7 +70,7 @@
             <ui:VisualElement class="button-row">
                 <ui:Button name="db-undo-button" text="⟲ Undo" class="action-button" tooltip="마지막 명령 실행 취소&#10;GameObject/Component 변경 복원" />
                 <ui:Button name="db-redo-button" text="⟳ Redo" class="action-button" tooltip="취소한 명령 다시 실행" />
-                <ui:Button name="db-clear-history-button" text="🗑️ Clear History" class="secondary-button" tooltip="모든 명령 히스토리 삭제&#10;Undo/Redo 불가능" />
+                <ui:Button name="db-clear-history-button" text="🗑️ Clear History" class="action-button" tooltip="모든 명령 히스토리 삭제&#10;Undo/Redo 불가능" />
             </ui:VisualElement>
 
             <!-- Status Messages -->
