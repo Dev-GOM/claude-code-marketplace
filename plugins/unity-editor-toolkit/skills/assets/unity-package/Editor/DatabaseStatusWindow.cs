@@ -10,7 +10,7 @@ namespace UnityEditorToolkit.Editor
     public class DatabaseStatusWindow : EditorWindow
     {
         #region Fields
-        private EditorServerWindow _parentWindow;
+        private EditorServerWindow parentWindow;
 
         // Data binding source
         private EditorServerWindowData windowData = new EditorServerWindowData();
@@ -46,10 +46,23 @@ namespace UnityEditorToolkit.Editor
         /// </summary>
         public static DatabaseStatusWindow Open(EditorServerWindow parentWindow)
         {
+            Debug.Log($"[DatabaseStatusWindow.Open] 시작, parentWindow: {(parentWindow != null ? "존재" : "null")}");
+
             var window = GetWindow<DatabaseStatusWindow>("Database Status & Controls");
             window.minSize = new Vector2(400, 500);
+
+            Debug.Log($"[DatabaseStatusWindow.Open] GetWindow 완료, _parentWindow 설정 전: {(window._parentWindow != null ? "존재" : "null")}");
+
             window._parentWindow = parentWindow;
+
+            Debug.Log($"[DatabaseStatusWindow.Open] _parentWindow 설정 완료: {(window._parentWindow != null ? "존재" : "null")}");
+
             window.Show();
+
+            // CreateGUI()가 _parentWindow 설정 전에 실행되었을 수 있으므로 다시 업데이트
+            Debug.Log("[DatabaseStatusWindow.Open] UpdateUI() 호출");
+            window.UpdateUI();
+
             return window;
         }
         #endregion
@@ -57,6 +70,8 @@ namespace UnityEditorToolkit.Editor
         #region Unity Lifecycle
         private void CreateGUI()
         {
+            Debug.Log($"[DatabaseStatusWindow.CreateGUI] 시작, _parentWindow: {(_parentWindow != null ? "존재" : "null")}");
+
             // Load UXML
             var visualTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(
                 "Packages/com.devgom.unity-editor-toolkit/Editor/DatabaseStatusWindow.uxml");
@@ -88,6 +103,7 @@ namespace UnityEditorToolkit.Editor
             RegisterEvents();
 
             // Initial UI update
+            Debug.Log("[DatabaseStatusWindow.CreateGUI] UpdateUI() 호출");
             UpdateUI();
         }
 
@@ -186,49 +202,49 @@ namespace UnityEditorToolkit.Editor
 
         private void OnTestConnectionClicked()
         {
-            _parentWindow?.TestConnection();
+            parentWindow?.TestConnection();
             UpdateUI();
         }
 
         private void OnConnectClicked()
         {
-            _parentWindow?.Connect();
+            parentWindow?.Connect();
             UpdateUI();
         }
 
         private void OnDisconnectClicked()
         {
-            _parentWindow?.Disconnect();
+            parentWindow?.Disconnect();
             UpdateUI();
         }
 
         private void OnRunMigrationsClicked()
         {
-            _parentWindow?.RunMigrations();
+            parentWindow?.RunMigrations();
             UpdateUI();
         }
 
         private void OnSyncToggleClicked()
         {
-            _parentWindow?.ToggleSync();
+            parentWindow?.ToggleSync();
             UpdateUI();
         }
 
         private void OnUndoClicked()
         {
-            _parentWindow?.Undo();
+            parentWindow?.Undo();
             UpdateUI();
         }
 
         private void OnRedoClicked()
         {
-            _parentWindow?.Redo();
+            parentWindow?.Redo();
             UpdateUI();
         }
 
         private void OnClearHistoryClicked()
         {
-            _parentWindow?.ClearHistory();
+            parentWindow?.ClearHistory();
             UpdateUI();
         }
         #endregion
@@ -239,20 +255,27 @@ namespace UnityEditorToolkit.Editor
         /// </summary>
         public void UpdateUI()
         {
+            Debug.Log($"[DatabaseStatusWindow.UpdateUI] 시작, _parentWindow: {(_parentWindow != null ? "존재" : "null")}");
+
             if (_parentWindow == null)
+            {
+                Debug.LogWarning("[DatabaseStatusWindow.UpdateUI] _parentWindow가 null이므로 업데이트 중단");
                 return;
+            }
 
             // Status
+            Debug.Log("[DatabaseStatusWindow.UpdateUI] 상태 업데이트 시작");
             UpdateConnectionStatus();
             UpdateDatabaseFileStatus();
             UpdateSyncStatus();
             UpdateCommandHistory();
             UpdateMessages();
+            Debug.Log("[DatabaseStatusWindow.UpdateUI] 상태 업데이트 완료");
         }
 
         private void UpdateConnectionStatus()
         {
-            bool isConnected = _parentWindow.IsConnected;
+            bool isConnected = parentWindow.IsConnected;
 
             // Update data (UI auto-updates via data binding)
             windowData.DbIsConnected = isConnected;
@@ -277,7 +300,7 @@ namespace UnityEditorToolkit.Editor
 
         private void UpdateDatabaseFileStatus()
         {
-            bool fileExists = _parentWindow.DatabaseFileExists();
+            bool fileExists = parentWindow.DatabaseFileExists();
 
             // Update data (UI auto-updates via data binding)
             windowData.DbFileExists = fileExists;
@@ -285,7 +308,7 @@ namespace UnityEditorToolkit.Editor
 
         private void UpdateSyncStatus()
         {
-            bool isSyncing = _parentWindow.IsSyncing;
+            bool isSyncing = parentWindow.IsSyncing;
 
             // Update data (UI auto-updates via data binding)
             windowData.DbIsSyncing = isSyncing;
@@ -299,8 +322,8 @@ namespace UnityEditorToolkit.Editor
 
         private void UpdateCommandHistory()
         {
-            int undoCount = _parentWindow.UndoCount;
-            int redoCount = _parentWindow.RedoCount;
+            int undoCount = parentWindow.UndoCount;
+            int redoCount = parentWindow.RedoCount;
 
             // Update data (UI auto-updates via data binding)
             windowData.DbUndoCount = undoCount;
@@ -313,8 +336,8 @@ namespace UnityEditorToolkit.Editor
 
         private void UpdateMessages()
         {
-            var errorMessage = _parentWindow.GetErrorMessage();
-            var successMessage = _parentWindow.GetSuccessMessage();
+            var errorMessage = parentWindow.GetErrorMessage();
+            var successMessage = parentWindow.GetSuccessMessage();
 
             if (dbErrorHelp != null)
             {
