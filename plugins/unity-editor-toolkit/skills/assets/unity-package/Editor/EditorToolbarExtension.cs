@@ -226,7 +226,11 @@ namespace UnityEditorToolkit.Editor
         {
             var menu = new GenericMenu();
             menu.AddItem(new GUIContent("Server Window"), false, () => EditorServerWindow.ShowWindow());
-            menu.AddItem(new GUIContent("Database Status Window"), false, () => DatabaseStatusWindow.Open(null));
+            menu.AddItem(new GUIContent("Database Status Window"), false, () =>
+            {
+                var serverWindow = EditorServerWindow.ShowWindow();
+                DatabaseStatusWindow.Open(serverWindow);
+            });
             menu.ShowAsContext();
         }
     }
