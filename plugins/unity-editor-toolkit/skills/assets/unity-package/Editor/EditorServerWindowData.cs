@@ -182,7 +182,7 @@ namespace UnityEditorToolkit.Editor
         }
 
         [CreateProperty]
-        public string DbSyncStatusText => DbIsSyncing ? "✅ Running" : "⏹️ Not Running";
+        public string DbSyncStatusText => DbIsSyncing ? "✅ Running" : "🚧 (구현예정)";
 
         [CreateProperty]
         public int DbUndoCount
