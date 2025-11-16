@@ -211,7 +211,8 @@ export function registerDatabaseCommand(program: Command): void {
         await client.connect();
 
         logger.info('Resetting database (this will delete all data)...');
-        const result = await client.sendRequest(COMMANDS.DATABASE_RESET) as OperationResponse;
+        const timeout = parseInt(options.timeout, 10);
+        const result = await client.sendRequest(COMMANDS.DATABASE_RESET, undefined, timeout) as OperationResponse;
 
         if (options.json) {
           outputJson(result);
@@ -260,7 +261,8 @@ export function registerDatabaseCommand(program: Command): void {
         await client.connect();
 
         logger.info('Running database migrations...');
-        const result = await client.sendRequest(COMMANDS.DATABASE_RUN_MIGRATIONS) as MigrationResponse;
+        const timeout = parseInt(options.timeout, 10);
+        const result = await client.sendRequest(COMMANDS.DATABASE_RUN_MIGRATIONS, undefined, timeout) as MigrationResponse;
 
         if (options.json) {
           outputJson(result);

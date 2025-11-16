@@ -21,9 +21,9 @@ export const UNITY = {
   MAX_RECONNECT_ATTEMPTS: 3,
 
   // Command execution timeouts
-  COMMAND_TIMEOUT: 5000,       // 5 seconds for most commands
-  HIERARCHY_TIMEOUT: 10000,    // 10 seconds for hierarchy queries
-  SCENE_LOAD_TIMEOUT: 30000,   // 30 seconds for scene loading
+  COMMAND_TIMEOUT: 30000,      // 30 seconds for most commands
+  HIERARCHY_TIMEOUT: 30000,    // 30 seconds for hierarchy queries
+  SCENE_LOAD_TIMEOUT: 60000,   // 60 seconds for scene loading
 } as const;
 
 /**
