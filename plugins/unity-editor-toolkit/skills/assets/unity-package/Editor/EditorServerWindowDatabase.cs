@@ -71,6 +71,7 @@ namespace UnityEditorToolkit.Editor
         private DatabaseSetupWizard setupWizard;
         private bool isLoadingConfig = false; // UI 로드 중 플래그
         private System.Threading.CancellationTokenSource migrationCheckCts; // Migration 버튼 업데이트 취소 토큰
+        private bool lastConnectionState = false; // 마지막 연결 상태 (상태 변경 감지용)
         #endregion
 
         #region Database UI Initialization
@@ -496,6 +497,9 @@ namespace UnityEditorToolkit.Editor
                 {
                     ShowDatabaseSuccess($"✅ 마이그레이션 완료!\n{result.MigrationsApplied}개 적용됨.");
                     Debug.Log($"[EditorServerWindow] 마이그레이션 성공: {result.MigrationsApplied}개");
+
+                    // Update migration button text after successful migration
+                    UpdateMigrationButtonTextAsync().Forget();
                 }
                 else
                 {
@@ -722,8 +726,12 @@ namespace UnityEditorToolkit.Editor
             dbMigrateButton?.SetEnabled(isConnected);
             dbSyncToggleButton?.SetEnabled(false);  // TODO Phase 2
 
-            // Update Migration button text based on pending migrations
-            UpdateMigrationButtonTextAsync().Forget();
+            // Update Migration button text only when connection state changes (avoid polling)
+            if (isConnected != lastConnectionState)
+            {
+                lastConnectionState = isConnected;
+                UpdateMigrationButtonTextAsync().Forget();
+            }
 
             // Update Command History UI
             UpdateCommandHistoryUI();
