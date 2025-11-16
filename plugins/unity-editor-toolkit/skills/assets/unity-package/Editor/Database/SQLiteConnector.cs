@@ -150,12 +150,30 @@ namespace UnityEditorToolkit.Editor.Database
 
                 await UniTask.RunOnThreadPool(() =>
                 {
+                    // WAL 체크포인트 수행 (파일 잠금 해제를 위해)
+                    if (config.EnableWAL && connection != null)
+                    {
+                        try
+                        {
+                            connection.Execute("PRAGMA wal_checkpoint(TRUNCATE);");
+                            Debug.Log("[SQLiteConnector] WAL checkpoint completed.");
+                        }
+                        catch (Exception walEx)
+                        {
+                            Debug.LogWarning($"[SQLiteConnector] WAL checkpoint failed: {walEx.Message}");
+                        }
+                    }
+
                     connection?.Close();
                     connection?.Dispose();
                     connection = null;
                 });
 
                 isConnected = false;
+
+                // 강제 GC (파일 핸들 해제를 위해)
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
 
                 Debug.Log("[SQLiteConnector] Disconnected.");
             }
