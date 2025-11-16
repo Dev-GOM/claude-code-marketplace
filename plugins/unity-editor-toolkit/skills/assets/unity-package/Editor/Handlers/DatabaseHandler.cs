@@ -128,10 +128,26 @@ namespace UnityEditorToolkit.Handlers
             var config = DatabaseConfig.LoadFromEditorPrefs();
             string dbPath = config.DatabaseFilePath;
 
-            // Disconnect first
-            if (DatabaseManager.Instance.IsConnected)
+            // Shutdown first (check IsInitialized, not just IsConnected)
+            if (DatabaseManager.Instance.IsInitialized)
             {
-                DatabaseManager.Instance.ShutdownAsync().AsTask().GetAwaiter().GetResult();
+                try
+                {
+                    // Force synchronous shutdown
+                    var shutdownTask = DatabaseManager.Instance.ShutdownAsync().AsTask();
+                    if (!shutdownTask.Wait(TimeSpan.FromSeconds(10)))
+                    {
+                        return new OperationResult
+                        {
+                            success = false,
+                            message = "Shutdown timeout. Please try again."
+                        };
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogWarning($"[DatabaseHandler] Shutdown warning: {ex.Message}");
+                }
             }
 
             // Delete database file
@@ -155,15 +171,35 @@ namespace UnityEditorToolkit.Handlers
             }
 
             // Reconnect (will run migrations automatically)
-            var result = DatabaseManager.Instance.InitializeAsync(config).AsTask().GetAwaiter().GetResult();
-
-            return new OperationResult
+            try
             {
-                success = result.Success,
-                message = result.Success
-                    ? $"Database reset successfully. File deleted: {fileDeleted}"
-                    : $"Reset failed: {result.ErrorMessage}"
-            };
+                var initTask = DatabaseManager.Instance.InitializeAsync(config).AsTask();
+                if (!initTask.Wait(TimeSpan.FromSeconds(30)))
+                {
+                    return new OperationResult
+                    {
+                        success = false,
+                        message = "Initialization timeout. Please try again."
+                    };
+                }
+
+                var result = initTask.Result;
+                return new OperationResult
+                {
+                    success = result.Success,
+                    message = result.Success
+                        ? $"Database reset successfully. File deleted: {fileDeleted}"
+                        : $"Reset failed: {result.ErrorMessage}"
+                };
+            }
+            catch (Exception ex)
+            {
+                return new OperationResult
+                {
+                    success = false,
+                    message = $"Reset failed: {ex.Message}"
+                };
+            }
         }
         #endregion
 
