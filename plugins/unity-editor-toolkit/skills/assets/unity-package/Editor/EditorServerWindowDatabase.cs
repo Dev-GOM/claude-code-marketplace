@@ -70,6 +70,7 @@ namespace UnityEditorToolkit.Editor
         private DatabaseConfig currentDbConfig;
         private DatabaseSetupWizard setupWizard;
         private bool isLoadingConfig = false; // UI 로드 중 플래그
+        private System.Threading.CancellationTokenSource migrationCheckCts; // Migration 버튼 업데이트 취소 토큰
         #endregion
 
         #region Database UI Initialization
@@ -742,10 +743,28 @@ namespace UnityEditorToolkit.Editor
                 return;
             }
 
+            // 이전 요청 취소 (race condition 방지)
+            migrationCheckCts?.Cancel();
+            migrationCheckCts?.Dispose();
+            migrationCheckCts = new System.Threading.CancellationTokenSource();
+            var token = migrationCheckCts.Token;
+
             try
             {
                 var runner = new MigrationRunner(DatabaseManager.Instance);
-                int pendingCount = await runner.GetPendingMigrationCountAsync();
+                int pendingCount = await runner.GetPendingMigrationCountAsync(token);
+
+                // 취소되었으면 무시
+                if (token.IsCancellationRequested)
+                {
+                    return;
+                }
+
+                // 비동기 작업 후 UI 요소 및 연결 상태 재확인 (윈도우 닫힘, 도메인 리로드 등)
+                if (dbMigrateButton == null || !DatabaseManager.Instance.IsConnected)
+                {
+                    return;
+                }
 
                 if (pendingCount > 0)
                 {
@@ -760,10 +779,20 @@ namespace UnityEditorToolkit.Editor
                     dbMigrateButton.text = "⚙️ Run Migrations";
                 }
             }
+            catch (OperationCanceledException)
+            {
+                // 취소됨 - 무시
+            }
             catch (Exception ex)
             {
+                // 비동기 작업 중 예외 발생 시 (컴파일, 도메인 리로드 등)
                 Debug.LogWarning($"[EditorServerWindow] Migration 상태 확인 실패: {ex.Message}");
-                dbMigrateButton.text = "⚙️ Run Migrations";
+
+                // UI 요소가 여전히 유효한지 확인
+                if (dbMigrateButton != null)
+                {
+                    dbMigrateButton.text = "⚙️ Run Migrations";
+                }
             }
         }
 
@@ -799,6 +828,11 @@ namespace UnityEditorToolkit.Editor
         #region Database Cleanup
         private void CleanupDatabaseUI()
         {
+            // Cancel any pending migration check
+            migrationCheckCts?.Cancel();
+            migrationCheckCts?.Dispose();
+            migrationCheckCts = null;
+
             // Unsubscribe from CommandHistory events
             if (DatabaseManager.Instance.CommandHistory != null)
             {
