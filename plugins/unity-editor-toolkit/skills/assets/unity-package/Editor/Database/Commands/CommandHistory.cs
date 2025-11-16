@@ -98,6 +98,37 @@ namespace UnityEditorToolkit.Editor.Database.Commands
 
             return success;
         }
+
+        /// <summary>
+        /// 이미 실행된 명령을 히스토리에 기록 (실행 없이 기록만)
+        /// </summary>
+        public async UniTask RecordCommandAsync(ICommand command)
+        {
+            if (command == null)
+            {
+                throw new ArgumentNullException(nameof(command));
+            }
+
+            // Undo 스택에 추가 (이미 실행됨)
+            undoStack.Push(command);
+
+            // Redo 스택 초기화 (새로운 명령이 기록되면 Redo 불가)
+            redoStack.Clear();
+
+            // 히스토리 크기 제한
+            TrimHistory();
+
+            // 데이터베이스에 저장 (선택적)
+            if (command.CanPersist && databaseManager.IsConnected)
+            {
+                await PersistCommandAsync(command);
+            }
+
+            // 이벤트 발생
+            OnHistoryChanged?.Invoke();
+
+            Debug.Log($"[CommandHistory] 명령 기록: {command.CommandName} (Undo: {UndoCount}, Redo: {RedoCount})");
+        }
         #endregion
 
         #region Undo/Redo

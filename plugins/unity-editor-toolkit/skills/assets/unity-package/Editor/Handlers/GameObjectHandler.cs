@@ -87,8 +87,8 @@ namespace UnityEditorToolkit.Handlers
             UnityEditor.Undo.RegisterCreatedObjectUndo(obj, "Create GameObject");
             #endif
 
-            // Execute Command Pattern (if database is connected)
-            ExecuteCreateCommandAsync(obj, parentObj).Forget();
+            // Record Command for history (without re-executing creation)
+            RecordCreateCommandAsync(obj, parentObj).Forget();
 
             return new GameObjectInfo
             {
@@ -102,9 +102,9 @@ namespace UnityEditorToolkit.Handlers
         }
 
         /// <summary>
-        /// Execute CreateGameObjectCommand asynchronously (database persistence)
+        /// Record CreateGameObjectCommand for history (without re-executing)
         /// </summary>
-        private async UniTaskVoid ExecuteCreateCommandAsync(GameObject obj, GameObject parent)
+        private async UniTaskVoid RecordCreateCommandAsync(GameObject obj, GameObject parent)
         {
             try
             {
@@ -117,21 +117,16 @@ namespace UnityEditorToolkit.Handlers
                     return;
                 }
 
-                // Create command
-                var command = new CreateGameObjectCommand(
-                    obj.name,
-                    obj.transform.position,
-                    obj.transform.rotation,
-                    parent
-                );
+                // Create command with already created GameObject reference
+                var command = CreateGameObjectCommand.CreateFromExisting(obj, parent);
 
-                // Execute through CommandHistory (async, database persistence)
-                await DatabaseManager.Instance.CommandHistory.ExecuteCommandAsync(command);
+                // Add to history without executing (already created)
+                await DatabaseManager.Instance.CommandHistory.RecordCommandAsync(command);
                 #endif
             }
             catch (Exception ex)
             {
-                Debug.LogWarning($"[GameObjectHandler] Command execution failed: {ex.Message}");
+                Debug.LogWarning($"[GameObjectHandler] Command recording failed: {ex.Message}");
             }
         }
 

@@ -31,6 +31,27 @@ namespace UnityEditorToolkit.Editor.Database.Commands
             parentInstanceId = parent != null ? parent.GetInstanceID() : 0;
             createdInstanceId = 0;
         }
+
+        /// <summary>
+        /// 이미 생성된 GameObject로부터 Command 생성 (중복 생성 방지)
+        /// </summary>
+        public static CreateGameObjectCommand CreateFromExisting(GameObject existingObject, GameObject parent = null)
+        {
+            if (existingObject == null)
+                throw new ArgumentNullException(nameof(existingObject));
+
+            var command = new CreateGameObjectCommand(
+                existingObject.name,
+                existingObject.transform.position,
+                existingObject.transform.rotation,
+                parent
+            );
+
+            // 이미 생성된 객체의 InstanceID 저장
+            command.createdInstanceId = existingObject.GetInstanceID();
+
+            return command;
+        }
         #endregion
 
         #region Command Implementation
