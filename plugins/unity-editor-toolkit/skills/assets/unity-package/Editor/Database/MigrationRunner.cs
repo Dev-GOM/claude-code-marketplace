@@ -190,6 +190,13 @@ namespace UnityEditorToolkit.Editor.Database
                                 continue;
                             }
 
+                            // PRAGMA 문은 스킵 (SQLiteConnector에서 이미 설정됨)
+                            if (trimmedStatement.StartsWith("PRAGMA ", StringComparison.OrdinalIgnoreCase))
+                            {
+                                Debug.Log($"[MigrationRunner] PRAGMA 문 스킵: {trimmedStatement}");
+                                continue;
+                            }
+
                             // SQL 실행
                             connection.Execute(trimmedStatement);
                             executedCount++;
