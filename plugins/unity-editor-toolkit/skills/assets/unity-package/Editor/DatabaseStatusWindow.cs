@@ -51,15 +51,15 @@ namespace UnityEditorToolkit.Editor
             var window = GetWindow<DatabaseStatusWindow>("Database Status & Controls");
             window.minSize = new Vector2(400, 500);
 
-            Debug.Log($"[DatabaseStatusWindow.Open] GetWindow 완료, _parentWindow 설정 전: {(window._parentWindow != null ? "존재" : "null")}");
+            Debug.Log($"[DatabaseStatusWindow.Open] GetWindow 완료, parentWindow 설정 전: {(window.parentWindow != null ? "존재" : "null")}");
 
-            window._parentWindow = parentWindow;
+            window.parentWindow = parentWindow;
 
-            Debug.Log($"[DatabaseStatusWindow.Open] _parentWindow 설정 완료: {(window._parentWindow != null ? "존재" : "null")}");
+            Debug.Log($"[DatabaseStatusWindow.Open] parentWindow 설정 완료: {(window.parentWindow != null ? "존재" : "null")}");
 
             window.Show();
 
-            // CreateGUI()가 _parentWindow 설정 전에 실행되었을 수 있으므로 다시 업데이트
+            // CreateGUI()가 parentWindow 설정 전에 실행되었을 수 있으므로 다시 업데이트
             Debug.Log("[DatabaseStatusWindow.Open] UpdateUI() 호출");
             window.UpdateUI();
 
@@ -70,7 +70,7 @@ namespace UnityEditorToolkit.Editor
         #region Unity Lifecycle
         private void CreateGUI()
         {
-            Debug.Log($"[DatabaseStatusWindow.CreateGUI] 시작, _parentWindow: {(_parentWindow != null ? "존재" : "null")}");
+            Debug.Log($"[DatabaseStatusWindow.CreateGUI] 시작, parentWindow: {(parentWindow != null ? "존재" : "null")}");
 
             // Load UXML
             var visualTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(
@@ -255,11 +255,11 @@ namespace UnityEditorToolkit.Editor
         /// </summary>
         public void UpdateUI()
         {
-            Debug.Log($"[DatabaseStatusWindow.UpdateUI] 시작, _parentWindow: {(_parentWindow != null ? "존재" : "null")}");
+            Debug.Log($"[DatabaseStatusWindow.UpdateUI] 시작, parentWindow: {(parentWindow != null ? "존재" : "null")}");
 
-            if (_parentWindow == null)
+            if (parentWindow == null)
             {
-                Debug.LogWarning("[DatabaseStatusWindow.UpdateUI] _parentWindow가 null이므로 업데이트 중단");
+                Debug.LogWarning("[DatabaseStatusWindow.UpdateUI] parentWindow가 null이므로 업데이트 중단");
                 return;
             }
 
