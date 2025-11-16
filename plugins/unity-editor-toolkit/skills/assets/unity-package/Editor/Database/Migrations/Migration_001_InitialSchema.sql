@@ -8,9 +8,10 @@
 -- PRAGMA 설정
 -- ============================================================
 
-PRAGMA foreign_keys = ON;  -- Foreign Key 제약 활성화
-PRAGMA journal_mode = WAL;  -- Write-Ahead Logging (성능 향상)
-PRAGMA synchronous = NORMAL;  -- fsync 최적화
+-- 참고: PRAGMA 설정은 SQLiteConnector.ConnectAsync()에서 자동으로 적용됩니다.
+-- - foreign_keys = ON (Foreign Key 제약 활성화)
+-- - journal_mode = WAL (Write-Ahead Logging, 성능 향상)
+-- - synchronous = NORMAL (fsync 최적화)
 
 -- ============================================================
 -- TABLE 1: scenes
