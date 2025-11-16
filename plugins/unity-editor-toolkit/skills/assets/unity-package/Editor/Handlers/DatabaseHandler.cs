@@ -3,6 +3,7 @@ using System.IO;
 using UnityEngine;
 using UnityEditorToolkit.Protocol;
 using UnityEditorToolkit.Editor.Database;
+using UnityEditorToolkit.Editor.Utils;
 using Cysharp.Threading.Tasks;
 
 namespace UnityEditorToolkit.Handlers
@@ -15,6 +16,10 @@ namespace UnityEditorToolkit.Handlers
     {
         public override string Category => "Database";
 
+        // Reset operation state tracking (for async reset via ResponseQueue)
+        private static bool resetInProgress = false;
+        private static OperationResult resetResult = null;
+
         protected override object HandleMethod(string method, JsonRpcRequest request)
         {
             switch (method)
@@ -26,7 +31,7 @@ namespace UnityEditorToolkit.Handlers
                 case "Disconnect":
                     return HandleDisconnect();
                 case "Reset":
-                    return HandleReset();
+                    return HandleReset(request);
                 case "RunMigrations":
                     return HandleRunMigrations();
                 case "ClearMigrations":
@@ -124,82 +129,123 @@ namespace UnityEditorToolkit.Handlers
         #endregion
 
         #region Reset
-        private object HandleReset()
+        private object HandleReset(JsonRpcRequest request)
         {
-            var config = DatabaseConfig.LoadFromEditorPrefs();
-            string dbPath = config.DatabaseFilePath;
-
-            // Shutdown first (check IsInitialized, not just IsConnected)
-            if (DatabaseManager.Instance.IsInitialized)
+            // Check if reset is already in progress
+            if (resetInProgress)
             {
-                try
+                return new OperationResult
                 {
-                    // Force synchronous shutdown
-                    var shutdownTask = DatabaseManager.Instance.ShutdownAsync().AsTask();
-                    if (!shutdownTask.Wait(TimeSpan.FromSeconds(10)))
-                    {
-                        return new OperationResult
-                        {
-                            success = false,
-                            message = "Shutdown timeout. Please try again."
-                        };
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Debug.LogWarning($"[DatabaseHandler] Shutdown warning: {ex.Message}");
-                }
+                    success = false,
+                    message = "Reset operation already in progress"
+                };
             }
 
-            // Delete database file
-            bool fileDeleted = false;
-            if (File.Exists(dbPath))
+            // Get send callback from request context
+            var sendCallback = request.GetContext<Action<string>>("sendCallback");
+            if (sendCallback == null)
             {
-                try
-                {
-                    File.Delete(dbPath);
-                    fileDeleted = true;
-                    Debug.Log($"[DatabaseHandler] Database file deleted: {dbPath}");
-                }
-                catch (Exception ex)
-                {
-                    return new OperationResult
-                    {
-                        success = false,
-                        message = $"Failed to delete database file: {ex.Message}"
-                    };
-                }
+                throw new Exception("Send callback not found in request context");
             }
 
-            // Reconnect (will run migrations automatically)
+            string requestId = request.Id?.ToString() ?? string.Empty;
+
+            // Start async reset operation
+            resetInProgress = true;
+            resetResult = null;
+
+            // Fire and forget async operation
+            ResetDatabaseAsync().Forget();
+
+            // Register delayed response
+            ResponseQueue.Instance.Register(
+                requestId,
+                condition: () => !resetInProgress,
+                resultProvider: () => resetResult ?? new OperationResult
+                {
+                    success = false,
+                    message = "Reset operation failed unexpectedly"
+                },
+                sendCallback,
+                timeout: 120.0 // 2 minutes timeout
+            );
+
+            // Return null to indicate delayed response
+            return null;
+        }
+
+        private async UniTaskVoid ResetDatabaseAsync()
+        {
             try
             {
-                var initTask = DatabaseManager.Instance.InitializeAsync(config).AsTask();
-                if (!initTask.Wait(TimeSpan.FromSeconds(30)))
+                var config = DatabaseConfig.LoadFromEditorPrefs();
+                string dbPath = config.DatabaseFilePath;
+
+                Debug.Log("[DatabaseHandler] Starting database reset...");
+
+                // Shutdown first (check IsInitialized, not just IsConnected)
+                if (DatabaseManager.Instance.IsInitialized)
                 {
-                    return new OperationResult
+                    try
                     {
-                        success = false,
-                        message = "Initialization timeout. Please try again."
-                    };
+                        Debug.Log("[DatabaseHandler] Shutting down database...");
+                        await DatabaseManager.Instance.ShutdownAsync();
+                        Debug.Log("[DatabaseHandler] Database shutdown complete.");
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.LogWarning($"[DatabaseHandler] Shutdown warning: {ex.Message}");
+                    }
                 }
 
-                var result = initTask.Result;
-                return new OperationResult
+                // Delete database file
+                bool fileDeleted = false;
+                if (File.Exists(dbPath))
+                {
+                    try
+                    {
+                        File.Delete(dbPath);
+                        fileDeleted = true;
+                        Debug.Log($"[DatabaseHandler] Database file deleted: {dbPath}");
+                    }
+                    catch (Exception ex)
+                    {
+                        resetResult = new OperationResult
+                        {
+                            success = false,
+                            message = $"Failed to delete database file: {ex.Message}"
+                        };
+                        resetInProgress = false;
+                        return;
+                    }
+                }
+
+                // Reconnect (will run migrations automatically)
+                Debug.Log("[DatabaseHandler] Reconnecting to database...");
+                var result = await DatabaseManager.Instance.InitializeAsync(config);
+
+                resetResult = new OperationResult
                 {
                     success = result.Success,
                     message = result.Success
                         ? $"Database reset successfully. File deleted: {fileDeleted}"
                         : $"Reset failed: {result.ErrorMessage}"
                 };
+
+                Debug.Log($"[DatabaseHandler] Reset complete: {resetResult.message}");
             }
             catch (Exception ex)
             {
-                return new OperationResult
+                Debug.LogError($"[DatabaseHandler] Reset exception: {ex.Message}");
+                resetResult = new OperationResult
                 {
                     success = false,
                     message = $"Reset failed: {ex.Message}"
                 };
+            }
+            finally
+            {
+                resetInProgress = false;
             }
         }
         #endregion
