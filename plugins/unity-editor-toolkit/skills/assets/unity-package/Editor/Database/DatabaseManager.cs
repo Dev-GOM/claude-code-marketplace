@@ -123,6 +123,7 @@ namespace UnityEditorToolkit.Editor.Database
         private bool isInitialized = false;
         private bool isConnected = false;
         private CancellationTokenSource lifecycleCts;
+        private static bool isInitializing = false; // Race condition prevention
         #endregion
 
         #region Properties
@@ -159,42 +160,59 @@ namespace UnityEditorToolkit.Editor.Database
         /// <param name="config">데이터베이스 설정</param>
         public async UniTask<InitializationResult> InitializeAsync(DatabaseConfig config)
         {
-            // 이미 초기화된 경우
-            if (isInitialized)
+            // Race condition prevention: 이미 초기화 진행 중인 경우
+            lock (@lock)
             {
-                Debug.LogWarning("[DatabaseManager] 이미 초기화되었습니다. Shutdown 후 재초기화하세요.");
-                return new InitializationResult
+                if (isInitializing)
                 {
-                    Success = false,
-                    ErrorMessage = "Already initialized. Call Shutdown() first."
-                };
-            }
+                    Debug.LogWarning("[DatabaseManager] 이미 초기화가 진행 중입니다.");
+                    return new InitializationResult
+                    {
+                        Success = false,
+                        ErrorMessage = "Initialization already in progress."
+                    };
+                }
 
-            // 데이터베이스 비활성화 시
-            if (!config.EnableDatabase)
-            {
-                Debug.Log("[DatabaseManager] 데이터베이스 기능이 비활성화되어 있습니다.");
-                return new InitializationResult
+                // 이미 초기화된 경우
+                if (isInitialized)
                 {
-                    Success = true,
-                    Message = "Database feature is disabled."
-                };
-            }
+                    Debug.LogWarning("[DatabaseManager] 이미 초기화되었습니다. Shutdown 후 재초기화하세요.");
+                    return new InitializationResult
+                    {
+                        Success = false,
+                        ErrorMessage = "Already initialized. Call Shutdown() first."
+                    };
+                }
 
-            // 설정 유효성 검증
-            var validation = config.Validate();
-            if (!validation.IsValid)
-            {
-                Debug.LogError($"[DatabaseManager] 설정 유효성 검증 실패: {validation.ErrorMessage}");
-                return new InitializationResult
-                {
-                    Success = false,
-                    ErrorMessage = validation.ErrorMessage
-                };
+                // 초기화 시작 표시
+                isInitializing = true;
             }
 
             try
             {
+                // 데이터베이스 비활성화 시
+                if (!config.EnableDatabase)
+                {
+                    Debug.Log("[DatabaseManager] 데이터베이스 기능이 비활성화되어 있습니다.");
+                    return new InitializationResult
+                    {
+                        Success = true,
+                        Message = "Database feature is disabled."
+                    };
+                }
+
+                // 설정 유효성 검증
+                var validation = config.Validate();
+                if (!validation.IsValid)
+                {
+                    Debug.LogError($"[DatabaseManager] 설정 유효성 검증 실패: {validation.ErrorMessage}");
+                    return new InitializationResult
+                    {
+                        Success = false,
+                        ErrorMessage = validation.ErrorMessage
+                    };
+                }
+
                 // 설정 저장
                 this.config = config;
 
@@ -242,6 +260,11 @@ namespace UnityEditorToolkit.Editor.Database
                     Success = false,
                     ErrorMessage = ex.Message
                 };
+            }
+            finally
+            {
+                // 초기화 완료 표시 (성공/실패 모두)
+                isInitializing = false;
             }
         }
 
