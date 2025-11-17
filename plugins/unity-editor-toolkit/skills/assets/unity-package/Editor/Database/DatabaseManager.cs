@@ -124,6 +124,7 @@ namespace UnityEditorToolkit.Editor.Database
         private bool isConnected = false;
         private CancellationTokenSource lifecycleCts;
         private static bool isInitializing = false; // Race condition prevention
+        private bool isMigrationRunning = false; // Migration in progress flag
         #endregion
 
         #region Properties
@@ -151,6 +152,11 @@ namespace UnityEditorToolkit.Editor.Database
         /// Command History (Undo/Redo)
         /// </summary>
         public CommandHistory CommandHistory => commandHistory;
+
+        /// <summary>
+        /// 마이그레이션 실행 중 여부
+        /// </summary>
+        public bool IsMigrationRunning => isMigrationRunning;
         #endregion
 
         #region Initialization
@@ -407,6 +413,7 @@ namespace UnityEditorToolkit.Editor.Database
         /// </summary>
         private async UniTask RunAutoMigrationAsync(CancellationToken cancellationToken)
         {
+            isMigrationRunning = true;
             try
             {
                 Debug.Log("[DatabaseManager] 자동 마이그레이션 확인 중...");
@@ -434,6 +441,10 @@ namespace UnityEditorToolkit.Editor.Database
             {
                 Debug.LogWarning($"[DatabaseManager] 자동 마이그레이션 중 예외 발생: {ex.Message}");
                 // 마이그레이션 실패해도 연결은 유지
+            }
+            finally
+            {
+                isMigrationRunning = false;
             }
         }
         #endregion

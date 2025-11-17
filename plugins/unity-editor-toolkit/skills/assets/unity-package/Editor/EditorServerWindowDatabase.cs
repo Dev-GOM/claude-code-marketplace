@@ -759,6 +759,19 @@ namespace UnityEditorToolkit.Editor
 
             try
             {
+                // 마이그레이션이 실행 중이면 완료될 때까지 대기 (최대 60초)
+                int waitCount = 0;
+                while (DatabaseManager.Instance.IsMigrationRunning && waitCount < 600)
+                {
+                    await UniTask.Delay(100, cancellationToken: token);
+                    waitCount++;
+                }
+
+                if (token.IsCancellationRequested || !DatabaseManager.Instance.IsConnected)
+                {
+                    return;
+                }
+
                 var runner = new MigrationRunner(DatabaseManager.Instance);
                 int pendingCount = await runner.GetPendingMigrationCountAsync(token);
 
