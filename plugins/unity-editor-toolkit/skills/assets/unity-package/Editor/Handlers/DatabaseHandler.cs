@@ -565,8 +565,8 @@ namespace UnityEditorToolkit.Handlers
         // Pre-defined table schemas for safe querying
         private class MigrationRecord
         {
-            public int id { get; set; }
-            public string name { get; set; }
+            public int migration_id { get; set; }
+            public string migration_name { get; set; }
             public string applied_at { get; set; }
         }
 
@@ -631,16 +631,16 @@ namespace UnityEditorToolkit.Handlers
                 {
                     case "migrations":
                         {
-                            columnNames = new[] { "id", "name", "applied_at" };
-                            string sql = $"SELECT id, name, applied_at FROM migrations ORDER BY id DESC LIMIT {paramsObj.limit}";
+                            columnNames = new[] { "migration_id", "migration_name", "applied_at" };
+                            string sql = $"SELECT migration_id, migration_name, applied_at FROM migrations ORDER BY migration_id DESC LIMIT {paramsObj.limit}";
                             var records = connection.Query<MigrationRecord>(sql);
 
                             foreach (var record in records)
                             {
                                 var row = new System.Collections.Generic.Dictionary<string, object>
                                 {
-                                    ["id"] = record.id,
-                                    ["name"] = record.name,
+                                    ["migration_id"] = record.migration_id,
+                                    ["migration_name"] = record.migration_name,
                                     ["applied_at"] = record.applied_at
                                 };
                                 results.Add(row);
