@@ -154,7 +154,7 @@ namespace UnityEditorToolkit.Editor.Database.Setup
 
             try
             {
-                // DatabaseManager 초기화
+                // DatabaseManager 초기화 (InitializeAsync가 자동으로 마이그레이션도 실행함)
                 var initResult = await DatabaseManager.Instance.InitializeAsync(config);
                 if (!initResult.Success)
                 {
@@ -163,21 +163,10 @@ namespace UnityEditorToolkit.Editor.Database.Setup
                     return false;
                 }
 
-                // MigrationRunner 생성 및 실행
-                var migrationRunner = new MigrationRunner(DatabaseManager.Instance);
-                var migrationResult = await migrationRunner.RunMigrationsAsync(cancellationToken);
-
-                if (migrationResult.Success)
-                {
-                    Debug.Log($"[DatabaseSetupWizard] 마이그레이션 완료: {migrationResult.MigrationsApplied}개 적용됨");
-                    return true;
-                }
-                else
-                {
-                    errorMessage = $"마이그레이션 실패: {migrationResult.ErrorMessage}";
-                    Debug.LogError($"[DatabaseSetupWizard] {errorMessage}");
-                    return false;
-                }
+                // 마이그레이션은 InitializeAsync에서 자동으로 실행됨
+                // 중복 실행을 방지하기 위해 별도 호출하지 않음
+                Debug.Log("[DatabaseSetupWizard] 마이그레이션 완료 (DatabaseManager.InitializeAsync에서 실행됨)");
+                return true;
             }
             catch (Exception ex)
             {
