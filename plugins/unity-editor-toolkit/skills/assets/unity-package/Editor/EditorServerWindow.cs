@@ -354,13 +354,13 @@ namespace UnityEditorToolkit.Editor
             else if (cliInstaller.UpdateAvailable)
             {
                 bool isMinorUpdate = EditorServerCLIInstaller.IsMinorVersionDifference(
-                    cliInstaller.LocalCLIVersion, cliInstaller.PluginVersion);
+                    cliInstaller.LocalCLIVersion, cliInstaller.HomeCLIVersion);
 
                 if (isMinorUpdate)
                 {
                     if (updateMinorHelp != null)
                     {
-                        updateMinorHelp.text = $"CLI update available: {cliInstaller.LocalCLIVersion} → {cliInstaller.PluginVersion}\n(Minor update, current version still works)";
+                        updateMinorHelp.text = $"CLI update available: {cliInstaller.LocalCLIVersion} → {cliInstaller.HomeCLIVersion}\n(Minor update, current version still works)";
                         updateMinorHelp.RemoveFromClassList("hidden");
                     }
                 }
@@ -368,7 +368,7 @@ namespace UnityEditorToolkit.Editor
                 {
                     if (updateMajorHelp != null)
                     {
-                        updateMajorHelp.text = $"CLI update available: {cliInstaller.LocalCLIVersion} → {cliInstaller.PluginVersion}\n(Recommended to update)";
+                        updateMajorHelp.text = $"CLI update available: {cliInstaller.LocalCLIVersion} → {cliInstaller.HomeCLIVersion}\n(Recommended to update)";
                         updateMajorHelp.RemoveFromClassList("hidden");
                     }
                 }
