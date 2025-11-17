@@ -437,6 +437,15 @@ namespace UnityEditorToolkit.Editor
 
                 Debug.Log("[EditorServerWindow] 데이터베이스 연결 성공 (자동 마이그레이션 완료).");
 
+                // Subscribe to CommandHistory events after successful connection
+                if (DatabaseManager.Instance.CommandHistory != null)
+                {
+                    // Unsubscribe first to avoid duplicate subscriptions
+                    DatabaseManager.Instance.CommandHistory.OnHistoryChanged -= UpdateCommandHistoryUI;
+                    DatabaseManager.Instance.CommandHistory.OnHistoryChanged += UpdateCommandHistoryUI;
+                    Debug.Log("[EditorServerWindow] CommandHistory 이벤트 구독 완료.");
+                }
+
                 if (!autoConnect)
                 {
                     ShowDatabaseSuccess("✅ 데이터베이스 연결 완료!\n\nCommand History 활성화됨\n(자동 마이그레이션 실행됨)");
