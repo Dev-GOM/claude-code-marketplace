@@ -128,6 +128,13 @@ export const COMMANDS = {
   DATABASE_GET_HISTORY: 'Database.GetHistory',
   DATABASE_CLEAR_HISTORY: 'Database.ClearHistory',
   DATABASE_QUERY: 'Database.Query',
+
+  // Snapshot commands
+  SNAPSHOT_SAVE: 'Snapshot.Save',
+  SNAPSHOT_LIST: 'Snapshot.List',
+  SNAPSHOT_GET: 'Snapshot.Get',
+  SNAPSHOT_RESTORE: 'Snapshot.Restore',
+  SNAPSHOT_DELETE: 'Snapshot.Delete',
 } as const;
 
 /**
