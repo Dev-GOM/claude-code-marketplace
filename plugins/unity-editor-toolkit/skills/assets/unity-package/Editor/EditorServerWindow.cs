@@ -4,6 +4,7 @@ using UnityEngine.UIElements;
 using UnityEditorToolkit.Editor.Server;
 using UnityEditorToolkit.Editor.Attributes;
 using UnityEditorToolkit.Editor.Database;
+using Cysharp.Threading.Tasks;
 using System.IO;
 using UnityEditor.Callbacks;
 
@@ -85,13 +86,39 @@ namespace UnityEditorToolkit.Editor
             }
         }
 
-        private void OnServerStateChanged()
+        private void OnServerStartedHandler()
         {
+            // Auto-reconnect database if it was previously connected
+            if (EditorPrefs.GetBool("UnityEditorToolkit.Database.AutoReconnect", false))
+            {
+                EditorPrefs.DeleteKey("UnityEditorToolkit.Database.AutoReconnect");
+
+                // Reconnect using saved config
+                string dbPath = EditorPrefs.GetString("UnityEditorToolkit.Database.Path", "");
+                bool enableWAL = EditorPrefs.GetBool("UnityEditorToolkit.Database.EnableWAL", true);
+
+                if (!string.IsNullOrEmpty(dbPath))
+                {
+                    var config = new DatabaseConfig
+                    {
+                        DatabaseFilePath = dbPath,
+                        EnableWAL = enableWAL
+                    };
+                    DatabaseManager.Instance.InitializeAsync(config).Forget();
+                    Debug.Log("[EditorServerWindow] 서버 시작 - 데이터베이스 자동 재연결");
+                }
+            }
             UpdateUI();
         }
 
         private void OnServerStoppedHandler()
         {
+            // Save auto-reconnect flag before disconnecting
+            if (DatabaseManager.Instance.IsConnected)
+            {
+                EditorPrefs.SetBool("UnityEditorToolkit.Database.AutoReconnect", true);
+            }
+
             // Disconnect database when server stops
             DatabaseManager.Instance.Disconnect();
             UpdateUI();
@@ -202,7 +229,7 @@ namespace UnityEditorToolkit.Editor
             stopButton?.RegisterCallback<ClickEvent>(evt => server.StopServer());
 
             // Server state change events
-            server.OnServerStarted += OnServerStateChanged;
+            server.OnServerStarted += OnServerStartedHandler;
             server.OnServerStopped += OnServerStoppedHandler;
 
             // Node.js section
@@ -588,7 +615,7 @@ namespace UnityEditorToolkit.Editor
             // Unsubscribe from server events
             if (server != null)
             {
-                server.OnServerStarted -= OnServerStateChanged;
+                server.OnServerStarted -= OnServerStartedHandler;
                 server.OnServerStopped -= OnServerStoppedHandler;
             }
 
