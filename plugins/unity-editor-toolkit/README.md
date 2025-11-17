@@ -1,6 +1,6 @@
 # Unity Editor Toolkit
 
-> **⚠️ Status**: 🧪 Experimental (v0.6.2)
+> **⚠️ Status**: 🧪 Experimental (v0.7.0)
 >
 > **This plugin is currently in experimental stage. APIs and features may change.**
 

@@ -84,19 +84,6 @@ namespace UnityEditorToolkit.Editor
             }
         }
 
-        private void OnDisable()
-        {
-            // Unsubscribe from server events
-            if (server != null)
-            {
-                server.OnServerStarted -= OnServerStateChanged;
-                server.OnServerStopped -= OnServerStoppedHandler;
-            }
-
-            // Cleanup database UI
-            CleanupDatabaseUI();
-        }
-
         private void OnServerStateChanged()
         {
             UpdateUI();
@@ -597,6 +584,13 @@ namespace UnityEditorToolkit.Editor
 
         private void OnDisable()
         {
+            // Unsubscribe from server events
+            if (server != null)
+            {
+                server.OnServerStarted -= OnServerStateChanged;
+                server.OnServerStopped -= OnServerStoppedHandler;
+            }
+
             // UI Toolkit automatically cleans up event handlers when the window closes
             // Clear any references to prevent potential memory leaks
             statusIndicator = null;
