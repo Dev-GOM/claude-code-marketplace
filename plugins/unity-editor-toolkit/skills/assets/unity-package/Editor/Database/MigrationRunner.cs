@@ -191,10 +191,10 @@ namespace UnityEditorToolkit.Editor.Database
                             if (string.IsNullOrWhiteSpace(trimmedStatement))
                                 continue;
 
-                            // SELECT 문 (결과 메시지용)은 스킵
-                            if (trimmedStatement.StartsWith("SELECT ", StringComparison.OrdinalIgnoreCase) &&
-                                trimmedStatement.Contains(" AS message", StringComparison.OrdinalIgnoreCase))
+                            // SELECT 문 (결과 메시지용)은 스킵 - Execute()는 결과를 반환하지 않음
+                            if (trimmedStatement.StartsWith("SELECT ", StringComparison.OrdinalIgnoreCase))
                             {
+                                Debug.Log($"[MigrationRunner] SELECT 문 스킵");
                                 continue;
                             }
 
