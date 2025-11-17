@@ -67,7 +67,9 @@ export function registerConsoleCommand(program: Command): void {
     .option('-w, --warnings', 'Include warnings')
     .option('-t, --type <type>', 'Filter by log type: error, warning, log, exception, assert')
     .option('-f, --filter <text>', 'Filter logs by text (case-insensitive)')
-    .option('-v, --verbose', 'Show full stack traces (default: first 5 lines only)')
+    .option('-s, --stack', 'Show stack traces (default: title only)')
+    .option('--stack-lines <number>', 'Number of stack trace lines to show (default: 5)', '5')
+    .option('-v, --verbose', 'Show full messages and complete stack traces')
     .option('--json', 'Output in JSON format')
     .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '300000')
     .action(async (options) => {
@@ -150,24 +152,47 @@ export function registerConsoleCommand(program: Command): void {
         logger.info('✓ Unity Console Logs:');
         logger.info('━'.repeat(80));
 
+        const showStack = options.stack || options.verbose;
+        const stackLineCount = options.verbose ? Infinity : parseInt(options.stackLines, 10);
+
         for (const log of result) {
           const icon = getLogTypeIcon(log.type);
           const typeName = getLogTypeName(log.type);
+
+          // Extract first line as title (or full message if --verbose)
+          const messageLines = log.message.split('\n');
+          const title = messageLines[0];
+
           logger.info(`${icon} [${log.timestamp}] [${typeName}]`);
-          logger.info(`   ${log.message}`);
 
-          if (log.stackTrace && log.stackTrace.trim()) {
-            logger.info('   Stack Trace:');
-            const stackLines = log.stackTrace.split('\n');
+          if (options.verbose) {
+            // Show full message
+            logger.info('');
+            logger.info('Stack Trace:');
+            for (const line of messageLines) {
+              logger.info(line);
+            }
+          } else {
+            // Show title only (first line)
+            logger.info(title);
+          }
 
-            // Show all lines if --verbose, otherwise first 5 lines
-            const linesToShow = options.verbose ? stackLines : stackLines.slice(0, 5);
+          // Show stack trace if --stack or --verbose
+          if (showStack && log.stackTrace && log.stackTrace.trim()) {
+            if (!options.verbose) {
+              logger.info('');
+              logger.info('Stack Trace:');
+            }
+            const stackLines = log.stackTrace.split('\n').filter(line => line.trim());
+
+            // Show specified number of lines
+            const linesToShow = stackLineCount === Infinity ? stackLines : stackLines.slice(0, stackLineCount);
             for (const line of linesToShow) {
-              logger.info(`     ${line}`);
+              logger.info(line);
             }
 
-            if (!options.verbose && stackLines.length > 5) {
-              logger.info(`     ... (${stackLines.length - 5} more lines, use --verbose to see all)`);
+            if (stackLineCount !== Infinity && stackLines.length > stackLineCount) {
+              logger.info(`... (${stackLines.length - stackLineCount} more lines, use --verbose to see all)`);
             }
           }
 
