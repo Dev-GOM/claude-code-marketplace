@@ -195,9 +195,21 @@ namespace UnityEditorToolkit.Editor.Database
                             continue;
                         }
 
-                        // SQL 실행
-                        connection.Execute(trimmedStatement);
-                        executedCount++;
+                        // SQL 실행 (오류 발생 시 어떤 문에서 발생했는지 확인용)
+                        try
+                        {
+                            connection.Execute(trimmedStatement);
+                            executedCount++;
+                        }
+                        catch (Exception sqlEx)
+                        {
+                            // SQL 문의 첫 100자만 출력 (너무 길면 로그가 지저분해짐)
+                            string sqlPreview = trimmedStatement.Length > 100
+                                ? trimmedStatement.Substring(0, 100) + "..."
+                                : trimmedStatement;
+                            Debug.LogError($"[MigrationRunner] SQL 실행 실패 ({executedCount + 1}번째): {sqlEx.Message}\nSQL: {sqlPreview}");
+                            throw;
+                        }
                     }
 
                     Debug.Log($"[MigrationRunner] SQL 문장 실행 완료: {executedCount}개");
