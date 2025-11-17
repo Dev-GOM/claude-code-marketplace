@@ -189,6 +189,11 @@ namespace UnityEditorToolkit.Editor
                 DatabaseManager.Instance.CommandHistory.OnHistoryChanged -= UpdateCommandHistoryUI;
                 DatabaseManager.Instance.CommandHistory.OnHistoryChanged += UpdateCommandHistoryUI;
                 Debug.Log("[EditorServerWindow] CommandHistory 이벤트 재구독 완료 (도메인 리로드 후).");
+
+                // Reload history from database after domain reload
+                EditorApplication.delayCall += () => {
+                    ReloadHistoryFromDatabaseAsync().Forget();
+                };
             }
 
             // Auto-connect to database if enabled and not already connected
@@ -446,6 +451,22 @@ namespace UnityEditorToolkit.Editor
                     DatabaseManager.Instance.CommandHistory.OnHistoryChanged -= UpdateCommandHistoryUI;
                     DatabaseManager.Instance.CommandHistory.OnHistoryChanged += UpdateCommandHistoryUI;
                     Debug.Log("[EditorServerWindow] CommandHistory 이벤트 구독 완료.");
+
+                    // Load history from database (restore from last session)
+                    try
+                    {
+                        // Load commands from last 24 hours
+                        var since = DateTime.UtcNow.AddHours(-24);
+                        int loadedCount = await DatabaseManager.Instance.CommandHistory.LoadHistoryFromDatabaseAsync(since);
+                        if (loadedCount > 0)
+                        {
+                            Debug.Log($"[EditorServerWindow] DB에서 {loadedCount}개 명령 히스토리 복원 완료.");
+                        }
+                    }
+                    catch (Exception loadEx)
+                    {
+                        Debug.LogWarning($"[EditorServerWindow] 히스토리 로드 실패 (무시됨): {loadEx.Message}");
+                    }
                 }
 
                 if (!autoConnect)
@@ -656,6 +677,37 @@ namespace UnityEditorToolkit.Editor
 
             await UniTask.Yield();
             UpdateCommandHistoryUI();
+        }
+
+        /// <summary>
+        /// DB에서 Command History 리로드 (도메인 리로드 후)
+        /// </summary>
+        private async UniTaskVoid ReloadHistoryFromDatabaseAsync()
+        {
+            var history = DatabaseManager.Instance.CommandHistory;
+            if (history == null || !DatabaseManager.Instance.IsConnected)
+            {
+                return;
+            }
+
+            try
+            {
+                // Load commands from last 24 hours
+                var since = DateTime.UtcNow.AddHours(-24);
+                int loadedCount = await history.LoadHistoryFromDatabaseAsync(since);
+
+                if (loadedCount > 0)
+                {
+                    Debug.Log($"[EditorServerWindow] DB에서 {loadedCount}개 명령 히스토리 복원 완료 (도메인 리로드 후).");
+                }
+
+                // Update UI
+                UpdateCommandHistoryUI();
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning($"[EditorServerWindow] 히스토리 리로드 실패 (무시됨): {ex.Message}");
+            }
         }
 
         /// <summary>
