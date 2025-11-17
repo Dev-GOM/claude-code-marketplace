@@ -558,8 +558,26 @@ namespace UnityEditorToolkit.Handlers
         #region Query
         private class QueryParams
         {
-            public string sql { get; set; }
+            public string table { get; set; }
             public int limit { get; set; } = 100;
+        }
+
+        // Pre-defined table schemas for safe querying
+        private class MigrationRecord
+        {
+            public int id { get; set; }
+            public string name { get; set; }
+            public string applied_at { get; set; }
+        }
+
+        private class CommandHistoryQueryRecord
+        {
+            public string command_id { get; set; }
+            public string command_name { get; set; }
+            public string command_type { get; set; }
+            public string command_data { get; set; }
+            public string executed_at { get; set; }
+            public string executed_by { get; set; }
         }
 
         private object HandleQuery(JsonRpcRequest request)
@@ -581,7 +599,7 @@ namespace UnityEditorToolkit.Handlers
                 return new QueryResult
                 {
                     success = false,
-                    message = "SQL query is required",
+                    message = "Table name is required. Supported: migrations, command_history",
                     rows = new object[0],
                     columns = new string[0],
                     rowCount = 0
@@ -589,26 +607,12 @@ namespace UnityEditorToolkit.Handlers
             }
 
             var paramsObj = request.GetParams<QueryParams>();
-            if (paramsObj == null || string.IsNullOrEmpty(paramsObj.sql))
+            if (paramsObj == null || string.IsNullOrEmpty(paramsObj.table))
             {
                 return new QueryResult
                 {
                     success = false,
-                    message = "SQL query is required",
-                    rows = new object[0],
-                    columns = new string[0],
-                    rowCount = 0
-                };
-            }
-
-            // Security: Only allow SELECT queries
-            string sql = paramsObj.sql.Trim();
-            if (!sql.StartsWith("SELECT", StringComparison.OrdinalIgnoreCase))
-            {
-                return new QueryResult
-                {
-                    success = false,
-                    message = "Only SELECT queries are allowed for safety",
+                    message = "Table name is required. Supported: migrations, command_history",
                     rows = new object[0],
                     columns = new string[0],
                     rowCount = 0
@@ -618,63 +622,63 @@ namespace UnityEditorToolkit.Handlers
             try
             {
                 var connection = DatabaseManager.Instance.Connector.Connection;
-
-                // Execute query and get results using SQLite-net's Query method
                 var results = new System.Collections.Generic.List<System.Collections.Generic.Dictionary<string, object>>();
                 string[] columnNames = null;
 
-                // Use SQLite-net's PrepareStatement to execute raw SQL
-                var stmt = SQLite4Unity3d.SQLite3.Prepare2(connection.Handle, sql);
+                string tableName = paramsObj.table.ToLower().Trim();
 
-                try
+                switch (tableName)
                 {
-                    // Get column count and names
-                    int columnCount = SQLite4Unity3d.SQLite3.ColumnCount(stmt);
-                    columnNames = new string[columnCount];
-                    for (int i = 0; i < columnCount; i++)
-                    {
-                        columnNames[i] = SQLite4Unity3d.SQLite3.ColumnName16(stmt, i);
-                    }
-
-                    // Read rows
-                    int rowCount = 0;
-                    while (SQLite4Unity3d.SQLite3.Step(stmt) == SQLite4Unity3d.SQLite3.Result.Row && rowCount < paramsObj.limit)
-                    {
-                        var row = new System.Collections.Generic.Dictionary<string, object>();
-                        for (int i = 0; i < columnCount; i++)
+                    case "migrations":
                         {
-                            var colType = SQLite4Unity3d.SQLite3.ColumnType(stmt, i);
-                            object value = null;
+                            columnNames = new[] { "id", "name", "applied_at" };
+                            string sql = $"SELECT id, name, applied_at FROM migrations ORDER BY id DESC LIMIT {paramsObj.limit}";
+                            var records = connection.Query<MigrationRecord>(sql);
 
-                            switch (colType)
+                            foreach (var record in records)
                             {
-                                case SQLite4Unity3d.SQLite3.ColType.Integer:
-                                    value = SQLite4Unity3d.SQLite3.ColumnInt64(stmt, i);
-                                    break;
-                                case SQLite4Unity3d.SQLite3.ColType.Float:
-                                    value = SQLite4Unity3d.SQLite3.ColumnDouble(stmt, i);
-                                    break;
-                                case SQLite4Unity3d.SQLite3.ColType.Text:
-                                    value = SQLite4Unity3d.SQLite3.ColumnString(stmt, i);
-                                    break;
-                                case SQLite4Unity3d.SQLite3.ColType.Blob:
-                                    value = SQLite4Unity3d.SQLite3.ColumnBlob(stmt, i);
-                                    break;
-                                case SQLite4Unity3d.SQLite3.ColType.Null:
-                                default:
-                                    value = null;
-                                    break;
+                                var row = new System.Collections.Generic.Dictionary<string, object>
+                                {
+                                    ["id"] = record.id,
+                                    ["name"] = record.name,
+                                    ["applied_at"] = record.applied_at
+                                };
+                                results.Add(row);
                             }
-
-                            row[columnNames[i]] = value;
                         }
-                        results.Add(row);
-                        rowCount++;
-                    }
-                }
-                finally
-                {
-                    SQLite4Unity3d.SQLite3.Finalize(stmt);
+                        break;
+
+                    case "command_history":
+                        {
+                            columnNames = new[] { "command_id", "command_name", "command_type", "command_data", "executed_at", "executed_by" };
+                            string sql = $"SELECT command_id, command_name, command_type, command_data, executed_at, executed_by FROM command_history ORDER BY executed_at DESC LIMIT {paramsObj.limit}";
+                            var records = connection.Query<CommandHistoryQueryRecord>(sql);
+
+                            foreach (var record in records)
+                            {
+                                var row = new System.Collections.Generic.Dictionary<string, object>
+                                {
+                                    ["command_id"] = record.command_id,
+                                    ["command_name"] = record.command_name,
+                                    ["command_type"] = record.command_type,
+                                    ["command_data"] = record.command_data,
+                                    ["executed_at"] = record.executed_at,
+                                    ["executed_by"] = record.executed_by
+                                };
+                                results.Add(row);
+                            }
+                        }
+                        break;
+
+                    default:
+                        return new QueryResult
+                        {
+                            success = false,
+                            message = $"Unknown table: {paramsObj.table}. Supported: migrations, command_history",
+                            rows = new object[0],
+                            columns = new string[0],
+                            rowCount = 0
+                        };
                 }
 
                 return new QueryResult

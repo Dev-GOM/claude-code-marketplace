@@ -610,15 +610,15 @@ export function registerDatabaseCommand(program: Command): void {
       }
     });
 
-  // Query (SQL SELECT only)
+  // Query (table-based)
   dbCmd
     .command('query')
-    .description('Execute SQL SELECT query on database')
-    .argument('<sql>', 'SQL SELECT query to execute')
+    .description('Query database table (migrations, command_history)')
+    .argument('<table>', 'Table name to query (migrations, command_history)')
     .option('-n, --limit <number>', 'Maximum rows to return', '100')
     .option('--json', 'Output in JSON format')
     .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '30000')
-    .action(async (sql: string, options) => {
+    .action(async (table: string, options) => {
       let client = null;
       try {
         const projectRoot = config.getProjectRoot();
@@ -634,9 +634,9 @@ export function registerDatabaseCommand(program: Command): void {
         logger.info('Connecting to Unity Editor...');
         await client.connect();
 
-        logger.info('Executing query...');
+        logger.info(`Querying table: ${table}...`);
         const limit = parseInt(options.limit, 10);
-        const result = await client.sendRequest(COMMANDS.DATABASE_QUERY, { sql, limit }) as QueryResponse;
+        const result = await client.sendRequest(COMMANDS.DATABASE_QUERY, { table, limit }) as QueryResponse;
 
         if (options.json) {
           outputJson(result);
