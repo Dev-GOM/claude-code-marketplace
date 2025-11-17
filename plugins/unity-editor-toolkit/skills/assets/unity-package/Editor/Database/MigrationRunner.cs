@@ -185,6 +185,7 @@ namespace UnityEditorToolkit.Editor.Database
                         string withoutComments = RemoveSqlComments(trimmedStatement);
                         if (string.IsNullOrWhiteSpace(withoutComments))
                         {
+                            Debug.Log($"[MigrationRunner] 주석만 있는 문장 스킵 (RemoveSqlComments v2 적용됨)");
                             continue;
                         }
 
