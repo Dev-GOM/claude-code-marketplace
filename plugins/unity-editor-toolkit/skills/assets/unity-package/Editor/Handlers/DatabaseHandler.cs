@@ -619,36 +619,62 @@ namespace UnityEditorToolkit.Handlers
             {
                 var connection = DatabaseManager.Instance.Connector.Connection;
 
-                // Execute query and get results
+                // Execute query and get results using SQLite-net's Query method
                 var results = new System.Collections.Generic.List<System.Collections.Generic.Dictionary<string, object>>();
                 string[] columnNames = null;
 
-                // Use raw SQLite command to get dynamic results
-                var cmd = connection.CreateCommand(sql);
+                // Use SQLite-net's PrepareStatement to execute raw SQL
+                var stmt = SQLite4Unity3d.SQLite3.Prepare2(connection.Handle, sql);
 
-                using (var reader = cmd.ExecuteReader())
+                try
                 {
-                    // Get column names
-                    int columnCount = reader.FieldCount;
+                    // Get column count and names
+                    int columnCount = SQLite4Unity3d.SQLite3.ColumnCount(stmt);
                     columnNames = new string[columnCount];
                     for (int i = 0; i < columnCount; i++)
                     {
-                        columnNames[i] = reader.GetName(i);
+                        columnNames[i] = SQLite4Unity3d.SQLite3.ColumnName16(stmt, i);
                     }
 
                     // Read rows
                     int rowCount = 0;
-                    while (reader.Read() && rowCount < paramsObj.limit)
+                    while (SQLite4Unity3d.SQLite3.Step(stmt) == SQLite4Unity3d.SQLite3.Result.Row && rowCount < paramsObj.limit)
                     {
                         var row = new System.Collections.Generic.Dictionary<string, object>();
                         for (int i = 0; i < columnCount; i++)
                         {
-                            var value = reader.GetValue(i);
-                            row[columnNames[i]] = value == DBNull.Value ? null : value;
+                            var colType = SQLite4Unity3d.SQLite3.ColumnType(stmt, i);
+                            object value = null;
+
+                            switch (colType)
+                            {
+                                case SQLite4Unity3d.SQLite3.ColType.Integer:
+                                    value = SQLite4Unity3d.SQLite3.ColumnInt64(stmt, i);
+                                    break;
+                                case SQLite4Unity3d.SQLite3.ColType.Float:
+                                    value = SQLite4Unity3d.SQLite3.ColumnDouble(stmt, i);
+                                    break;
+                                case SQLite4Unity3d.SQLite3.ColType.Text:
+                                    value = SQLite4Unity3d.SQLite3.ColumnString(stmt, i);
+                                    break;
+                                case SQLite4Unity3d.SQLite3.ColType.Blob:
+                                    value = SQLite4Unity3d.SQLite3.ColumnBlob(stmt, i);
+                                    break;
+                                case SQLite4Unity3d.SQLite3.ColType.Null:
+                                default:
+                                    value = null;
+                                    break;
+                            }
+
+                            row[columnNames[i]] = value;
                         }
                         results.Add(row);
                         rowCount++;
                     }
+                }
+                finally
+                {
+                    SQLite4Unity3d.SQLite3.Finalize(stmt);
                 }
 
                 return new QueryResult
