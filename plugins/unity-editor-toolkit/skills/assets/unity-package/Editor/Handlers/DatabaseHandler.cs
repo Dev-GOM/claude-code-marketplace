@@ -44,6 +44,8 @@ namespace UnityEditorToolkit.Handlers
                     return HandleGetHistory(request);
                 case "ClearHistory":
                     return HandleClearHistory();
+                case "Query":
+                    return HandleQuery(request);
                 default:
                     throw new ArgumentException($"Unknown method: {method}");
             }
@@ -552,6 +554,125 @@ namespace UnityEditorToolkit.Handlers
             }
         }
         #endregion
+
+        #region Query
+        private class QueryParams
+        {
+            public string sql { get; set; }
+            public int limit { get; set; } = 100;
+        }
+
+        private object HandleQuery(JsonRpcRequest request)
+        {
+            if (!DatabaseManager.Instance.IsConnected)
+            {
+                return new QueryResult
+                {
+                    success = false,
+                    message = "Not connected to database",
+                    rows = new object[0],
+                    columns = new string[0],
+                    rowCount = 0
+                };
+            }
+
+            if (request.Params == null)
+            {
+                return new QueryResult
+                {
+                    success = false,
+                    message = "SQL query is required",
+                    rows = new object[0],
+                    columns = new string[0],
+                    rowCount = 0
+                };
+            }
+
+            var paramsObj = request.GetParams<QueryParams>();
+            if (paramsObj == null || string.IsNullOrEmpty(paramsObj.sql))
+            {
+                return new QueryResult
+                {
+                    success = false,
+                    message = "SQL query is required",
+                    rows = new object[0],
+                    columns = new string[0],
+                    rowCount = 0
+                };
+            }
+
+            // Security: Only allow SELECT queries
+            string sql = paramsObj.sql.Trim();
+            if (!sql.StartsWith("SELECT", StringComparison.OrdinalIgnoreCase))
+            {
+                return new QueryResult
+                {
+                    success = false,
+                    message = "Only SELECT queries are allowed for safety",
+                    rows = new object[0],
+                    columns = new string[0],
+                    rowCount = 0
+                };
+            }
+
+            try
+            {
+                var connection = DatabaseManager.Instance.Connector.Connection;
+
+                // Execute query and get results
+                var results = new System.Collections.Generic.List<System.Collections.Generic.Dictionary<string, object>>();
+                string[] columnNames = null;
+
+                // Use raw SQLite command to get dynamic results
+                var cmd = connection.CreateCommand(sql);
+
+                using (var reader = cmd.ExecuteReader())
+                {
+                    // Get column names
+                    int columnCount = reader.FieldCount;
+                    columnNames = new string[columnCount];
+                    for (int i = 0; i < columnCount; i++)
+                    {
+                        columnNames[i] = reader.GetName(i);
+                    }
+
+                    // Read rows
+                    int rowCount = 0;
+                    while (reader.Read() && rowCount < paramsObj.limit)
+                    {
+                        var row = new System.Collections.Generic.Dictionary<string, object>();
+                        for (int i = 0; i < columnCount; i++)
+                        {
+                            var value = reader.GetValue(i);
+                            row[columnNames[i]] = value == DBNull.Value ? null : value;
+                        }
+                        results.Add(row);
+                        rowCount++;
+                    }
+                }
+
+                return new QueryResult
+                {
+                    success = true,
+                    message = $"Query executed successfully. {results.Count} row(s) returned.",
+                    rows = results.ToArray(),
+                    columns = columnNames ?? new string[0],
+                    rowCount = results.Count
+                };
+            }
+            catch (Exception ex)
+            {
+                return new QueryResult
+                {
+                    success = false,
+                    message = $"Query failed: {ex.Message}",
+                    rows = new object[0],
+                    columns = new string[0],
+                    rowCount = 0
+                };
+            }
+        }
+        #endregion
     }
 
     #region Response Types
@@ -597,6 +718,13 @@ namespace UnityEditorToolkit.Handlers
         public HistoryEntryResult[] redoStack { get; set; }
         public int totalUndo { get; set; }
         public int totalRedo { get; set; }
+    }
+
+    public class QueryResult : OperationResult
+    {
+        public object[] rows { get; set; }
+        public string[] columns { get; set; }
+        public int rowCount { get; set; }
     }
     #endregion
 }

@@ -50,6 +50,12 @@ interface HistoryResponse {
   totalRedo: number;
 }
 
+interface QueryResponse extends OperationResponse {
+  rows: Record<string, unknown>[];
+  columns: string[];
+  rowCount: number;
+}
+
 /**
  * Register Database command
  */
@@ -592,6 +598,96 @@ export function registerDatabaseCommand(program: Command): void {
         }
       } catch (error) {
         logger.error('Failed to get history', error);
+        process.exit(1);
+      } finally {
+        if (client) {
+          try {
+            client.disconnect();
+          } catch (disconnectError) {
+            logger.debug(`Error during disconnect: ${disconnectError instanceof Error ? disconnectError.message : String(disconnectError)}`);
+          }
+        }
+      }
+    });
+
+  // Query (SQL SELECT only)
+  dbCmd
+    .command('query')
+    .description('Execute SQL SELECT query on database')
+    .argument('<sql>', 'SQL SELECT query to execute')
+    .option('-n, --limit <number>', 'Maximum rows to return', '100')
+    .option('--json', 'Output in JSON format')
+    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '30000')
+    .action(async (sql: string, options) => {
+      let client = null;
+      try {
+        const projectRoot = config.getProjectRoot();
+        const port = program.opts().port || config.getUnityPort(projectRoot);
+
+        if (!port) {
+          logger.error('Unity server not running. Start Unity Editor with WebSocket server enabled.');
+          process.exit(1);
+        }
+
+        client = createUnityClient(port);
+
+        logger.info('Connecting to Unity Editor...');
+        await client.connect();
+
+        logger.info('Executing query...');
+        const limit = parseInt(options.limit, 10);
+        const result = await client.sendRequest(COMMANDS.DATABASE_QUERY, { sql, limit }) as QueryResponse;
+
+        if (options.json) {
+          outputJson(result);
+        } else {
+          if (result.success) {
+            logger.info(`✓ ${result.message}`);
+            logger.info('');
+
+            if (result.rowCount === 0) {
+              logger.info('(no rows returned)');
+            } else {
+              // Display as table
+              const columns = result.columns;
+              const rows = result.rows;
+
+              // Calculate column widths
+              const colWidths: number[] = columns.map(col => col.length);
+              for (const row of rows) {
+                for (let i = 0; i < columns.length; i++) {
+                  const value = String(row[columns[i]] ?? 'NULL');
+                  colWidths[i] = Math.max(colWidths[i], Math.min(value.length, 50));
+                }
+              }
+
+              // Print header
+              const header = columns.map((col, i) => col.padEnd(colWidths[i])).join(' | ');
+              logger.info(header);
+              logger.info('-'.repeat(header.length));
+
+              // Print rows
+              for (const row of rows) {
+                const rowStr = columns.map((col, i) => {
+                  let value = String(row[col] ?? 'NULL');
+                  if (value.length > 50) {
+                    value = value.substring(0, 47) + '...';
+                  }
+                  return value.padEnd(colWidths[i]);
+                }).join(' | ');
+                logger.info(rowStr);
+              }
+
+              logger.info('');
+              logger.info(`${result.rowCount} row(s) returned`);
+            }
+          } else {
+            logger.error(`❌ ${result.message}`);
+            process.exit(1);
+          }
+        }
+      } catch (error) {
+        logger.error('Failed to execute query', error);
         process.exit(1);
       } finally {
         if (client) {

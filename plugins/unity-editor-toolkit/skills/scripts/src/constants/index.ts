@@ -127,6 +127,7 @@ export const COMMANDS = {
   DATABASE_REDO: 'Database.Redo',
   DATABASE_GET_HISTORY: 'Database.GetHistory',
   DATABASE_CLEAR_HISTORY: 'Database.ClearHistory',
+  DATABASE_QUERY: 'Database.Query',
 } as const;
 
 /**
