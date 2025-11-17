@@ -189,24 +189,27 @@ namespace UnityEditorToolkit.Editor.Database
                             continue;
                         }
 
+                        // 주석이 제거된 SQL 사용 (Execute()가 주석을 처리하지 못할 수 있음)
+                        string cleanedSql = withoutComments.Trim();
+
                         // SELECT 문 (결과 메시지용)은 스킵 - Execute()는 결과를 반환하지 않음
-                        if (trimmedStatement.StartsWith("SELECT ", StringComparison.OrdinalIgnoreCase))
+                        if (cleanedSql.StartsWith("SELECT ", StringComparison.OrdinalIgnoreCase))
                         {
                             Debug.Log($"[MigrationRunner] SELECT 문 스킵");
                             continue;
                         }
 
                         // PRAGMA 문은 스킵 (SQLiteConnector에서 이미 설정됨)
-                        if (trimmedStatement.StartsWith("PRAGMA ", StringComparison.OrdinalIgnoreCase))
+                        if (cleanedSql.StartsWith("PRAGMA ", StringComparison.OrdinalIgnoreCase))
                         {
-                            Debug.Log($"[MigrationRunner] PRAGMA 문 스킵: {trimmedStatement}");
+                            Debug.Log($"[MigrationRunner] PRAGMA 문 스킵: {cleanedSql}");
                             continue;
                         }
 
                         // SQL 실행 (오류 발생 시 어떤 문에서 발생했는지 확인용)
                         try
                         {
-                            connection.Execute(trimmedStatement);
+                            connection.Execute(cleanedSql);
                             executedCount++;
                         }
                         catch (Exception sqlEx)
