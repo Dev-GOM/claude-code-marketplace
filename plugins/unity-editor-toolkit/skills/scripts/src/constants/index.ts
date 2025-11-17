@@ -135,6 +135,13 @@ export const COMMANDS = {
   SNAPSHOT_GET: 'Snapshot.Get',
   SNAPSHOT_RESTORE: 'Snapshot.Restore',
   SNAPSHOT_DELETE: 'Snapshot.Delete',
+
+  // Transform History commands
+  TRANSFORM_HISTORY_RECORD: 'TransformHistory.Record',
+  TRANSFORM_HISTORY_LIST: 'TransformHistory.List',
+  TRANSFORM_HISTORY_RESTORE: 'TransformHistory.Restore',
+  TRANSFORM_HISTORY_COMPARE: 'TransformHistory.Compare',
+  TRANSFORM_HISTORY_CLEAR: 'TransformHistory.Clear',
 } as const;
 
 /**

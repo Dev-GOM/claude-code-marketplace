@@ -133,7 +133,8 @@ namespace UnityEditorToolkit.Editor.Server
                 { "Prefs", new PrefsHandler() },
                 { "Wait", new WaitHandler() },
                 { "Database", new DatabaseHandler() },
-                { "Snapshot", new SnapshotHandler() }
+                { "Snapshot", new SnapshotHandler() },
+                { "TransformHistory", new TransformHistoryHandler() }
             };
 
             // Initialize ChainHandler with access to all handlers

@@ -23,6 +23,7 @@ import { registerWaitCommand } from './commands/wait';
 import { registerChainCommand } from './commands/chain';
 import { registerDatabaseCommand } from './commands/db';
 import { registerSnapshotCommand } from './commands/snapshot';
+import { registerTransformHistoryCommand } from './commands/transform-history';
 
 const program = new Command();
 
@@ -55,6 +56,7 @@ registerWaitCommand(program);
 registerChainCommand(program);
 registerDatabaseCommand(program);
 registerSnapshotCommand(program);
+registerTransformHistoryCommand(program);
 
 // Status command (built-in)
 program
