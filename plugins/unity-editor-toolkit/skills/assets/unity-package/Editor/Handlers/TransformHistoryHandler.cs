@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEditorToolkit.Protocol;
-using UnityEditorToolkit.Database;
+using UnityEditorToolkit.Editor.Database;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -391,7 +391,7 @@ namespace UnityEditorToolkit.Handlers
 
         #region Helper Methods
 
-        private int EnsureGameObjectRecord(SQLite4Unity3d.SQLiteConnection connection, GameObject obj)
+        private int EnsureGameObjectRecord(SQLite.SQLiteConnection connection, GameObject obj)
         {
             var checkSql = "SELECT object_id FROM gameobjects WHERE instance_id = ?";
             var ids = connection.Query<ObjectIdRecord>(checkSql, obj.GetInstanceID());
@@ -426,7 +426,7 @@ namespace UnityEditorToolkit.Handlers
             return connection.ExecuteScalar<int>("SELECT last_insert_rowid()");
         }
 
-        private int EnsureSceneRecord(SQLite4Unity3d.SQLiteConnection connection, UnityEngine.SceneManagement.Scene scene)
+        private int EnsureSceneRecord(SQLite.SQLiteConnection connection, UnityEngine.SceneManagement.Scene scene)
         {
             var checkSql = "SELECT scene_id FROM scenes WHERE scene_path = ?";
             var ids = connection.Query<SceneIdRecord>(checkSql, scene.path);

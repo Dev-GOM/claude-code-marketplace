@@ -4,7 +4,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEditorToolkit.Protocol;
-using UnityEditorToolkit.Database;
+using UnityEditorToolkit.Editor.Database;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -300,7 +300,7 @@ namespace UnityEditorToolkit.Handlers
 
         #region Helper Methods
 
-        private int EnsureSceneRecord(SQLite4Unity3d.SQLiteConnection connection, Scene scene)
+        private int EnsureSceneRecord(SQLite.SQLiteConnection connection, Scene scene)
         {
             var checkSql = "SELECT scene_id FROM scenes WHERE scene_path = ?";
             var ids = connection.Query<SceneIdRecord>(checkSql, scene.path);
