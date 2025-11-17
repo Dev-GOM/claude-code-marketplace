@@ -84,6 +84,10 @@ namespace UnityEditorToolkit.Editor.Server
         public bool IsRunning { get; private set; }
         public int ConnectedClients => activeConnections.Count;
 
+        // Server state change events
+        public event Action OnServerStarted;
+        public event Action OnServerStopped;
+
         private WebSocketServer server;
         private Dictionary<string, BaseHandler> handlers;
         private HashSet<string> activeConnections = new HashSet<string>();
@@ -219,6 +223,9 @@ namespace UnityEditorToolkit.Editor.Server
                 ServerStatus.Save(status, projectRoot);
 
                 Log($"✓ Unity Editor Server started on ws://127.0.0.1:{Port}", LogLevel.Info);
+
+                // Notify subscribers
+                OnServerStarted?.Invoke();
             }
             catch (Exception ex)
             {
@@ -252,6 +259,9 @@ namespace UnityEditorToolkit.Editor.Server
                 activeConnections.Clear();
                 ConsoleHandler.StopListening();
                 Log("Unity Editor Server stopped", LogLevel.Info);
+
+                // Notify subscribers
+                OnServerStopped?.Invoke();
             }
             catch (Exception ex)
             {

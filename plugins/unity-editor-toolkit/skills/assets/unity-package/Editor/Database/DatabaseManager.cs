@@ -339,6 +339,28 @@ namespace UnityEditorToolkit.Editor.Database
 
         #region Connection Management
         /// <summary>
+        /// 데이터베이스 연결 해제 (동기 방식 - 서버 종료 시 사용)
+        /// </summary>
+        public void Disconnect()
+        {
+            if (!isInitialized || !isConnected)
+            {
+                return;
+            }
+
+            Debug.Log("[DatabaseManager] 서버 종료로 인한 연결 해제...");
+
+            // ShutdownAsync를 동기적으로 실행
+            ShutdownAsync().Forget();
+
+            // 상태 플래그 즉시 업데이트
+            isConnected = false;
+            isInitialized = false;
+
+            Debug.Log("[DatabaseManager] 연결 해제 완료.");
+        }
+
+        /// <summary>
         /// 연결 상태 확인
         /// </summary>
         public async UniTask<bool> TestConnectionAsync()

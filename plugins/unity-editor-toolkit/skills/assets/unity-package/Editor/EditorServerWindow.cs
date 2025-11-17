@@ -84,6 +84,31 @@ namespace UnityEditorToolkit.Editor
             }
         }
 
+        private void OnDisable()
+        {
+            // Unsubscribe from server events
+            if (server != null)
+            {
+                server.OnServerStarted -= OnServerStateChanged;
+                server.OnServerStopped -= OnServerStoppedHandler;
+            }
+
+            // Cleanup database UI
+            CleanupDatabaseUI();
+        }
+
+        private void OnServerStateChanged()
+        {
+            UpdateUI();
+        }
+
+        private void OnServerStoppedHandler()
+        {
+            // Disconnect database when server stops
+            DatabaseManager.Instance.Disconnect();
+            UpdateUI();
+        }
+
         public void CreateGUI()
         {
             // Load UXML
@@ -187,6 +212,10 @@ namespace UnityEditorToolkit.Editor
 
             startButton?.RegisterCallback<ClickEvent>(evt => server.StartServer());
             stopButton?.RegisterCallback<ClickEvent>(evt => server.StopServer());
+
+            // Server state change events
+            server.OnServerStarted += OnServerStateChanged;
+            server.OnServerStopped += OnServerStoppedHandler;
 
             // Node.js section
             var nodejsDownloadBtn = rootVisualElement.Q<Button>("nodejs-download-button");
