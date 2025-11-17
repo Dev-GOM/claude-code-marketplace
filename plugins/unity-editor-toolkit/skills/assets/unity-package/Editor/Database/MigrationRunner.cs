@@ -181,6 +181,13 @@ namespace UnityEditorToolkit.Editor.Database
                         if (string.IsNullOrWhiteSpace(trimmedStatement))
                             continue;
 
+                        // 주석만 있는 문장 스킵 (Execute()에 전달하면 "not an error" 발생)
+                        string withoutComments = RemoveSqlComments(trimmedStatement);
+                        if (string.IsNullOrWhiteSpace(withoutComments))
+                        {
+                            continue;
+                        }
+
                         // SELECT 문 (결과 메시지용)은 스킵 - Execute()는 결과를 반환하지 않음
                         if (trimmedStatement.StartsWith("SELECT ", StringComparison.OrdinalIgnoreCase))
                         {
@@ -348,6 +355,82 @@ namespace UnityEditorToolkit.Editor.Database
                 .ToList();
 
             return files;
+        }
+
+        /// <summary>
+        /// SQL 문에서 주석을 제거 (Execute() 호출 전 유효성 검증용)
+        /// </summary>
+        private string RemoveSqlComments(string sql)
+        {
+            var result = new System.Text.StringBuilder();
+            bool inSingleLineComment = false;
+            bool inMultiLineComment = false;
+            bool inString = false;
+
+            for (int i = 0; i < sql.Length; i++)
+            {
+                char c = sql[i];
+                char nextChar = i + 1 < sql.Length ? sql[i + 1] : '\0';
+
+                // 줄바꿈 처리 (단일 줄 주석 종료)
+                if (c == '\n' || c == '\r')
+                {
+                    inSingleLineComment = false;
+                    if (!inMultiLineComment)
+                    {
+                        result.Append(c);
+                    }
+                    continue;
+                }
+
+                // 단일 줄 주석 시작
+                if (!inString && !inMultiLineComment && c == '-' && nextChar == '-')
+                {
+                    inSingleLineComment = true;
+                    i++; // 두 번째 '-' 스킵
+                    continue;
+                }
+
+                // 다중 줄 주석 시작
+                if (!inString && !inSingleLineComment && c == '/' && nextChar == '*')
+                {
+                    inMultiLineComment = true;
+                    i++; // '*' 스킵
+                    continue;
+                }
+
+                // 다중 줄 주석 종료
+                if (inMultiLineComment && c == '*' && nextChar == '/')
+                {
+                    inMultiLineComment = false;
+                    i++; // '/' 스킵
+                    continue;
+                }
+
+                // 주석 내부면 스킵
+                if (inSingleLineComment || inMultiLineComment)
+                {
+                    continue;
+                }
+
+                // 문자열 시작/종료 (작은따옴표)
+                if (c == '\'')
+                {
+                    // 이스케이프된 따옴표 확인 ('')
+                    if (inString && nextChar == '\'')
+                    {
+                        result.Append(c);
+                        i++; // 다음 따옴표도 추가
+                        result.Append('\'');
+                        continue;
+                    }
+                    inString = !inString;
+                }
+
+                result.Append(c);
+            }
+
+            return result.ToString();
         }
 
         /// <summary>
