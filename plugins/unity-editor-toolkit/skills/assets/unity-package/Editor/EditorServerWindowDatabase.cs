@@ -183,14 +183,16 @@ namespace UnityEditorToolkit.Editor
             // Update UI
             UpdateDatabaseUI();
 
-            // Subscribe to CommandHistory events
-            if (DatabaseManager.Instance.CommandHistory != null)
+            // Subscribe to CommandHistory events if already connected (e.g., after domain reload)
+            if (DatabaseManager.Instance.IsConnected && DatabaseManager.Instance.CommandHistory != null)
             {
+                DatabaseManager.Instance.CommandHistory.OnHistoryChanged -= UpdateCommandHistoryUI;
                 DatabaseManager.Instance.CommandHistory.OnHistoryChanged += UpdateCommandHistoryUI;
+                Debug.Log("[EditorServerWindow] CommandHistory 이벤트 재구독 완료 (도메인 리로드 후).");
             }
 
-            // Auto-connect to database if enabled
-            if (currentDbConfig?.EnableDatabase == true)
+            // Auto-connect to database if enabled and not already connected
+            if (currentDbConfig?.EnableDatabase == true && !DatabaseManager.Instance.IsConnected)
             {
                 EditorApplication.delayCall += () => {
                     ConnectDatabaseAsync(autoConnect: true).Forget();
