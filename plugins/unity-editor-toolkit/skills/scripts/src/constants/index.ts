@@ -123,6 +123,10 @@ export const COMMANDS = {
   DATABASE_RESET: 'Database.Reset',
   DATABASE_RUN_MIGRATIONS: 'Database.RunMigrations',
   DATABASE_CLEAR_MIGRATIONS: 'Database.ClearMigrations',
+  DATABASE_UNDO: 'Database.Undo',
+  DATABASE_REDO: 'Database.Redo',
+  DATABASE_GET_HISTORY: 'Database.GetHistory',
+  DATABASE_CLEAR_HISTORY: 'Database.ClearHistory',
 } as const;
 
 /**

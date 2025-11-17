@@ -31,6 +31,25 @@ interface MigrationResponse extends OperationResponse {
   migrationsApplied: number;
 }
 
+interface UndoRedoResponse extends OperationResponse {
+  commandName: string;
+  remainingUndo: number;
+  remainingRedo: number;
+}
+
+interface HistoryEntry {
+  name: string;
+  timestamp: string;
+  canUndo: boolean;
+}
+
+interface HistoryResponse {
+  undoStack: HistoryEntry[];
+  redoStack: HistoryEntry[];
+  totalUndo: number;
+  totalRedo: number;
+}
+
 /**
  * Register Database command
  */
@@ -328,6 +347,251 @@ export function registerDatabaseCommand(program: Command): void {
         }
       } catch (error) {
         logger.error('Failed to clear migration history', error);
+        process.exit(1);
+      } finally {
+        if (client) {
+          try {
+            client.disconnect();
+          } catch (disconnectError) {
+            logger.debug(`Error during disconnect: ${disconnectError instanceof Error ? disconnectError.message : String(disconnectError)}`);
+          }
+        }
+      }
+    });
+
+  // Undo
+  dbCmd
+    .command('undo')
+    .description('Undo last command (Transform, GameObject changes)')
+    .option('-n, --count <number>', 'Number of commands to undo', '1')
+    .option('--json', 'Output in JSON format')
+    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '30000')
+    .action(async (options) => {
+      let client = null;
+      try {
+        const projectRoot = config.getProjectRoot();
+        const port = program.opts().port || config.getUnityPort(projectRoot);
+
+        if (!port) {
+          logger.error('Unity server not running. Start Unity Editor with WebSocket server enabled.');
+          process.exit(1);
+        }
+
+        client = createUnityClient(port);
+
+        logger.info('Connecting to Unity Editor...');
+        await client.connect();
+
+        const count = parseInt(options.count, 10);
+        const results: UndoRedoResponse[] = [];
+
+        for (let i = 0; i < count; i++) {
+          logger.info(`Undoing command ${i + 1}/${count}...`);
+          const result = await client.sendRequest(COMMANDS.DATABASE_UNDO) as UndoRedoResponse;
+          results.push(result);
+
+          if (!result.success) {
+            if (options.json) {
+              outputJson({ results, totalUndone: i, error: result.message });
+            } else {
+              if (i === 0) {
+                logger.error(`❌ ${result.message}`);
+              } else {
+                logger.warn(`⚠️  Stopped after ${i} undo(s): ${result.message}`);
+              }
+            }
+            if (i === 0) process.exit(1);
+            break;
+          }
+
+          if (!options.json) {
+            logger.info(`  ↩️  Undone: ${result.commandName}`);
+          }
+        }
+
+        if (options.json) {
+          outputJson({ results, totalUndone: results.filter(r => r.success).length });
+        } else {
+          const successCount = results.filter(r => r.success).length;
+          if (successCount > 0) {
+            const lastResult = results[results.length - 1];
+            logger.info(`✓ Undone ${successCount} command(s)`);
+            logger.info(`  Remaining: Undo=${lastResult.remainingUndo}, Redo=${lastResult.remainingRedo}`);
+          }
+        }
+      } catch (error) {
+        logger.error('Failed to undo', error);
+        process.exit(1);
+      } finally {
+        if (client) {
+          try {
+            client.disconnect();
+          } catch (disconnectError) {
+            logger.debug(`Error during disconnect: ${disconnectError instanceof Error ? disconnectError.message : String(disconnectError)}`);
+          }
+        }
+      }
+    });
+
+  // Redo
+  dbCmd
+    .command('redo')
+    .description('Redo previously undone command')
+    .option('-n, --count <number>', 'Number of commands to redo', '1')
+    .option('--json', 'Output in JSON format')
+    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '30000')
+    .action(async (options) => {
+      let client = null;
+      try {
+        const projectRoot = config.getProjectRoot();
+        const port = program.opts().port || config.getUnityPort(projectRoot);
+
+        if (!port) {
+          logger.error('Unity server not running. Start Unity Editor with WebSocket server enabled.');
+          process.exit(1);
+        }
+
+        client = createUnityClient(port);
+
+        logger.info('Connecting to Unity Editor...');
+        await client.connect();
+
+        const count = parseInt(options.count, 10);
+        const results: UndoRedoResponse[] = [];
+
+        for (let i = 0; i < count; i++) {
+          logger.info(`Redoing command ${i + 1}/${count}...`);
+          const result = await client.sendRequest(COMMANDS.DATABASE_REDO) as UndoRedoResponse;
+          results.push(result);
+
+          if (!result.success) {
+            if (options.json) {
+              outputJson({ results, totalRedone: i, error: result.message });
+            } else {
+              if (i === 0) {
+                logger.error(`❌ ${result.message}`);
+              } else {
+                logger.warn(`⚠️  Stopped after ${i} redo(s): ${result.message}`);
+              }
+            }
+            if (i === 0) process.exit(1);
+            break;
+          }
+
+          if (!options.json) {
+            logger.info(`  ↪️  Redone: ${result.commandName}`);
+          }
+        }
+
+        if (options.json) {
+          outputJson({ results, totalRedone: results.filter(r => r.success).length });
+        } else {
+          const successCount = results.filter(r => r.success).length;
+          if (successCount > 0) {
+            const lastResult = results[results.length - 1];
+            logger.info(`✓ Redone ${successCount} command(s)`);
+            logger.info(`  Remaining: Undo=${lastResult.remainingUndo}, Redo=${lastResult.remainingRedo}`);
+          }
+        }
+      } catch (error) {
+        logger.error('Failed to redo', error);
+        process.exit(1);
+      } finally {
+        if (client) {
+          try {
+            client.disconnect();
+          } catch (disconnectError) {
+            logger.debug(`Error during disconnect: ${disconnectError instanceof Error ? disconnectError.message : String(disconnectError)}`);
+          }
+        }
+      }
+    });
+
+  // History
+  dbCmd
+    .command('history')
+    .description('Show command history (undo/redo stacks)')
+    .option('-n, --limit <number>', 'Maximum entries to show per stack', '10')
+    .option('--clear', 'Clear all history')
+    .option('--json', 'Output in JSON format')
+    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '30000')
+    .action(async (options) => {
+      let client = null;
+      try {
+        const projectRoot = config.getProjectRoot();
+        const port = program.opts().port || config.getUnityPort(projectRoot);
+
+        if (!port) {
+          logger.error('Unity server not running. Start Unity Editor with WebSocket server enabled.');
+          process.exit(1);
+        }
+
+        client = createUnityClient(port);
+
+        logger.info('Connecting to Unity Editor...');
+        await client.connect();
+
+        if (options.clear) {
+          logger.info('Clearing command history...');
+          const result = await client.sendRequest(COMMANDS.DATABASE_CLEAR_HISTORY) as OperationResponse;
+
+          if (options.json) {
+            outputJson(result);
+          } else {
+            if (result.success) {
+              logger.info(`✓ ${result.message}`);
+            } else {
+              logger.error(`❌ ${result.message}`);
+              process.exit(1);
+            }
+          }
+          return;
+        }
+
+        logger.info('Getting command history...');
+        const limit = parseInt(options.limit, 10);
+        const result = await client.sendRequest(COMMANDS.DATABASE_GET_HISTORY, { limit }) as HistoryResponse;
+
+        if (options.json) {
+          outputJson(result);
+        } else {
+          logger.info('✓ Command History');
+          logger.info('');
+
+          // Undo stack (most recent first)
+          logger.info(`📜 Undo Stack (${result.totalUndo} total):`);
+          if (result.undoStack.length === 0) {
+            logger.info('  (empty)');
+          } else {
+            for (let i = 0; i < result.undoStack.length; i++) {
+              const entry = result.undoStack[i];
+              const marker = i === 0 ? '→' : ' ';
+              logger.info(`  ${marker} ${i + 1}. ${entry.name} [${entry.timestamp}]`);
+            }
+            if (result.totalUndo > result.undoStack.length) {
+              logger.info(`  ... and ${result.totalUndo - result.undoStack.length} more`);
+            }
+          }
+
+          logger.info('');
+
+          // Redo stack
+          logger.info(`🔄 Redo Stack (${result.totalRedo} total):`);
+          if (result.redoStack.length === 0) {
+            logger.info('  (empty)');
+          } else {
+            for (let i = 0; i < result.redoStack.length; i++) {
+              const entry = result.redoStack[i];
+              const marker = i === 0 ? '→' : ' ';
+              logger.info(`  ${marker} ${i + 1}. ${entry.name} [${entry.timestamp}]`);
+            }
+            if (result.totalRedo > result.redoStack.length) {
+              logger.info(`  ... and ${result.totalRedo - result.redoStack.length} more`);
+            }
+          }
+        }
+      } catch (error) {
+        logger.error('Failed to get history', error);
         process.exit(1);
       } finally {
         if (client) {

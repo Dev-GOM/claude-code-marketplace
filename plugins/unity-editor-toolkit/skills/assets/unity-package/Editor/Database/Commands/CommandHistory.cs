@@ -167,6 +167,14 @@ namespace UnityEditorToolkit.Editor.Database.Commands
         }
 
         /// <summary>
+        /// Undo 실행 (동기)
+        /// </summary>
+        public bool Undo()
+        {
+            return UndoAsync().AsTask().GetAwaiter().GetResult();
+        }
+
+        /// <summary>
         /// Redo 실행
         /// </summary>
         public async UniTask<bool> RedoAsync()
@@ -198,6 +206,82 @@ namespace UnityEditorToolkit.Editor.Database.Commands
             }
 
             return success;
+        }
+
+        /// <summary>
+        /// Redo 실행 (동기)
+        /// </summary>
+        public bool Redo()
+        {
+            return RedoAsync().AsTask().GetAwaiter().GetResult();
+        }
+
+        /// <summary>
+        /// 다음 Undo할 명령 확인 (스택에서 제거 안함)
+        /// </summary>
+        public ICommand PeekUndo()
+        {
+            return CanUndo ? undoStack.Peek() : null;
+        }
+
+        /// <summary>
+        /// 다음 Redo할 명령 확인 (스택에서 제거 안함)
+        /// </summary>
+        public ICommand PeekRedo()
+        {
+            return CanRedo ? redoStack.Peek() : null;
+        }
+
+        /// <summary>
+        /// Undo 스택 목록 가져오기
+        /// </summary>
+        public List<ICommand> GetUndoStack(int limit = 10)
+        {
+            var result = new List<ICommand>();
+            var temp = new Stack<ICommand>();
+
+            int count = 0;
+            while (undoStack.Count > 0 && count < limit)
+            {
+                var cmd = undoStack.Pop();
+                temp.Push(cmd);
+                result.Add(cmd);
+                count++;
+            }
+
+            // 복원
+            while (temp.Count > 0)
+            {
+                undoStack.Push(temp.Pop());
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Redo 스택 목록 가져오기
+        /// </summary>
+        public List<ICommand> GetRedoStack(int limit = 10)
+        {
+            var result = new List<ICommand>();
+            var temp = new Stack<ICommand>();
+
+            int count = 0;
+            while (redoStack.Count > 0 && count < limit)
+            {
+                var cmd = redoStack.Pop();
+                temp.Push(cmd);
+                result.Add(cmd);
+                count++;
+            }
+
+            // 복원
+            while (temp.Count > 0)
+            {
+                redoStack.Push(temp.Pop());
+            }
+
+            return result;
         }
         #endregion
 

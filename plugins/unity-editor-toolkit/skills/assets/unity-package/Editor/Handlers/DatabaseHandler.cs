@@ -36,6 +36,14 @@ namespace UnityEditorToolkit.Handlers
                     return HandleRunMigrations();
                 case "ClearMigrations":
                     return HandleClearMigrations();
+                case "Undo":
+                    return HandleUndo();
+                case "Redo":
+                    return HandleRedo();
+                case "GetHistory":
+                    return HandleGetHistory(request);
+                case "ClearHistory":
+                    return HandleClearHistory();
                 default:
                     throw new ArgumentException($"Unknown method: {method}");
             }
@@ -309,6 +317,241 @@ namespace UnityEditorToolkit.Handlers
             }
         }
         #endregion
+
+        #region Undo
+        private object HandleUndo()
+        {
+            if (!DatabaseManager.Instance.IsConnected)
+            {
+                return new UndoRedoResult
+                {
+                    success = false,
+                    message = "Not connected to database",
+                    commandName = "",
+                    remainingUndo = 0,
+                    remainingRedo = 0
+                };
+            }
+
+            var history = DatabaseManager.Instance.CommandHistory;
+            if (history == null || history.UndoCount == 0)
+            {
+                return new UndoRedoResult
+                {
+                    success = false,
+                    message = "Nothing to undo",
+                    commandName = "",
+                    remainingUndo = 0,
+                    remainingRedo = history?.RedoCount ?? 0
+                };
+            }
+
+            try
+            {
+                string commandName = history.PeekUndo()?.CommandName ?? "Unknown";
+                bool result = history.Undo();
+
+                return new UndoRedoResult
+                {
+                    success = result,
+                    message = result ? "Undo successful" : "Undo failed",
+                    commandName = commandName,
+                    remainingUndo = history.UndoCount,
+                    remainingRedo = history.RedoCount
+                };
+            }
+            catch (Exception ex)
+            {
+                return new UndoRedoResult
+                {
+                    success = false,
+                    message = $"Undo failed: {ex.Message}",
+                    commandName = "",
+                    remainingUndo = history.UndoCount,
+                    remainingRedo = history.RedoCount
+                };
+            }
+        }
+        #endregion
+
+        #region Redo
+        private object HandleRedo()
+        {
+            if (!DatabaseManager.Instance.IsConnected)
+            {
+                return new UndoRedoResult
+                {
+                    success = false,
+                    message = "Not connected to database",
+                    commandName = "",
+                    remainingUndo = 0,
+                    remainingRedo = 0
+                };
+            }
+
+            var history = DatabaseManager.Instance.CommandHistory;
+            if (history == null || history.RedoCount == 0)
+            {
+                return new UndoRedoResult
+                {
+                    success = false,
+                    message = "Nothing to redo",
+                    commandName = "",
+                    remainingUndo = history?.UndoCount ?? 0,
+                    remainingRedo = 0
+                };
+            }
+
+            try
+            {
+                string commandName = history.PeekRedo()?.CommandName ?? "Unknown";
+                bool result = history.Redo();
+
+                return new UndoRedoResult
+                {
+                    success = result,
+                    message = result ? "Redo successful" : "Redo failed",
+                    commandName = commandName,
+                    remainingUndo = history.UndoCount,
+                    remainingRedo = history.RedoCount
+                };
+            }
+            catch (Exception ex)
+            {
+                return new UndoRedoResult
+                {
+                    success = false,
+                    message = $"Redo failed: {ex.Message}",
+                    commandName = "",
+                    remainingUndo = history.UndoCount,
+                    remainingRedo = history.RedoCount
+                };
+            }
+        }
+        #endregion
+
+        #region GetHistory
+        private class GetHistoryParams
+        {
+            public int limit { get; set; } = 10;
+        }
+
+        private object HandleGetHistory(JsonRpcRequest request)
+        {
+            if (!DatabaseManager.Instance.IsConnected)
+            {
+                return new HistoryResult
+                {
+                    undoStack = new HistoryEntryResult[0],
+                    redoStack = new HistoryEntryResult[0],
+                    totalUndo = 0,
+                    totalRedo = 0
+                };
+            }
+
+            var history = DatabaseManager.Instance.CommandHistory;
+            if (history == null)
+            {
+                return new HistoryResult
+                {
+                    undoStack = new HistoryEntryResult[0],
+                    redoStack = new HistoryEntryResult[0],
+                    totalUndo = 0,
+                    totalRedo = 0
+                };
+            }
+
+            int limit = 10;
+            if (request.Params != null)
+            {
+                var paramsObj = request.GetParams<GetHistoryParams>();
+                if (paramsObj != null)
+                {
+                    limit = paramsObj.limit;
+                }
+            }
+
+            var undoCommands = history.GetUndoStack(limit);
+            var redoCommands = history.GetRedoStack(limit);
+
+            var undoEntries = new HistoryEntryResult[undoCommands.Count];
+            for (int i = 0; i < undoCommands.Count; i++)
+            {
+                var cmd = undoCommands[i];
+                undoEntries[i] = new HistoryEntryResult
+                {
+                    name = cmd.CommandName,
+                    timestamp = cmd.ExecutedAt.ToString("yyyy-MM-dd HH:mm:ss"),
+                    canUndo = true
+                };
+            }
+
+            var redoEntries = new HistoryEntryResult[redoCommands.Count];
+            for (int i = 0; i < redoCommands.Count; i++)
+            {
+                var cmd = redoCommands[i];
+                redoEntries[i] = new HistoryEntryResult
+                {
+                    name = cmd.CommandName,
+                    timestamp = cmd.ExecutedAt.ToString("yyyy-MM-dd HH:mm:ss"),
+                    canUndo = false
+                };
+            }
+
+            return new HistoryResult
+            {
+                undoStack = undoEntries,
+                redoStack = redoEntries,
+                totalUndo = history.UndoCount,
+                totalRedo = history.RedoCount
+            };
+        }
+        #endregion
+
+        #region ClearHistory
+        private object HandleClearHistory()
+        {
+            if (!DatabaseManager.Instance.IsConnected)
+            {
+                return new OperationResult
+                {
+                    success = false,
+                    message = "Not connected to database"
+                };
+            }
+
+            var history = DatabaseManager.Instance.CommandHistory;
+            if (history == null)
+            {
+                return new OperationResult
+                {
+                    success = false,
+                    message = "Command history not available"
+                };
+            }
+
+            try
+            {
+                int undoCount = history.UndoCount;
+                int redoCount = history.RedoCount;
+                history.Clear();
+
+                return new OperationResult
+                {
+                    success = true,
+                    message = $"Cleared {undoCount} undo and {redoCount} redo entries"
+                };
+            }
+            catch (Exception ex)
+            {
+                return new OperationResult
+                {
+                    success = false,
+                    message = $"Failed to clear history: {ex.Message}"
+                };
+            }
+        }
+        #endregion
     }
 
     #region Response Types
@@ -332,6 +575,28 @@ namespace UnityEditorToolkit.Handlers
     public class MigrationOperationResult : OperationResult
     {
         public int migrationsApplied { get; set; }
+    }
+
+    public class UndoRedoResult : OperationResult
+    {
+        public string commandName { get; set; }
+        public int remainingUndo { get; set; }
+        public int remainingRedo { get; set; }
+    }
+
+    public class HistoryEntryResult
+    {
+        public string name { get; set; }
+        public string timestamp { get; set; }
+        public bool canUndo { get; set; }
+    }
+
+    public class HistoryResult
+    {
+        public HistoryEntryResult[] undoStack { get; set; }
+        public HistoryEntryResult[] redoStack { get; set; }
+        public int totalUndo { get; set; }
+        public int totalRedo { get; set; }
     }
     #endregion
 }
