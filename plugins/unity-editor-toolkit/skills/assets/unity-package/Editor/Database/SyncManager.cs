@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace UnityEditorToolkit.Editor.Database
 {
@@ -151,7 +153,7 @@ namespace UnityEditorToolkit.Editor.Database
             try
             {
                 // Phase 1: 단순 연결 테스트만 수행
-                // Phase 2+: 실제 GameObject/Component 동기화 구현
+                // Phase 2: GameObject 변경 감지 및 배치 업데이트
 
                 bool isConnected = await databaseManager.TestConnectionAsync();
                 if (!isConnected)
@@ -161,11 +163,44 @@ namespace UnityEditorToolkit.Editor.Database
                     return;
                 }
 
-                // TODO Phase 2: GameObject 변경 감지 및 배치 업데이트
-                // 1. Unity Scene에서 변경된 GameObject 목록 수집
-                // 2. 배치 크기(500개)로 나누어 처리
-                // 3. PostgreSQL에 업데이트 쿼리 실행
-                // 4. 충돌 해결 (타임스탬프 기반)
+                // Phase 2: GameObject 변경 감지 및 배치 업데이트
+                var scene = SceneManager.GetActiveScene();
+                if (!scene.isLoaded)
+                {
+                    Debug.LogWarning("[SyncManager] 활성 씬이 로드되지 않았습니다.");
+                    return;
+                }
+
+                // 1. Unity Scene에서 모든 GameObject 수집
+                var allGameObjects = CollectAllGameObjects(scene);
+                if (allGameObjects.Count == 0)
+                {
+                    LastSyncTime = DateTime.UtcNow;
+                    SuccessfulSyncCount++;
+                    return;
+                }
+
+                // 2. DB에서 현재 씬의 GameObject 목록 가져오기
+                var dbGameObjects = await GetDatabaseGameObjectsAsync(scene, cancellationToken);
+
+                // 3. 변경 감지
+                var changes = DetectChanges(allGameObjects, dbGameObjects);
+
+                // 4. 배치 업데이트 실행
+                if (changes.Updated.Count > 0)
+                {
+                    await BatchUpdateGameObjectsAsync(changes.Updated, cancellationToken);
+                }
+
+                if (changes.Inserted.Count > 0)
+                {
+                    await BatchInsertGameObjectsAsync(scene, changes.Inserted, cancellationToken);
+                }
+
+                if (changes.Deleted.Count > 0)
+                {
+                    await BatchMarkDeletedAsync(changes.Deleted, cancellationToken);
+                }
 
                 LastSyncTime = DateTime.UtcNow;
                 SuccessfulSyncCount++;
@@ -235,7 +270,7 @@ namespace UnityEditorToolkit.Editor.Database
 
         #region Batch Operations (Phase 2+)
         /// <summary>
-        /// GameObject 배치 업데이트 (Phase 2에서 구현)
+        /// GameObject 배치 업데이트
         /// </summary>
         /// <param name="gameObjects">업데이트할 GameObject 목록</param>
         public async UniTask<int> BatchUpdateGameObjectsAsync(List<GameObject> gameObjects, CancellationToken cancellationToken = default)
@@ -247,28 +282,69 @@ namespace UnityEditorToolkit.Editor.Database
                 return 0;
             }
 
-            int updatedCount = 0;
+            await UniTask.SwitchToThreadPool();
 
-            // 배치 크기로 나누어 처리
-            for (int i = 0; i < gameObjects.Count; i += BatchSize)
+            try
             {
-                int batchCount = Math.Min(BatchSize, gameObjects.Count - i);
-                var batch = gameObjects.GetRange(i, batchCount);
+                var connection = databaseManager.Connector?.Connection;
+                if (connection == null)
+                {
+                    Debug.LogError("[SyncManager] Database connection is null");
+                    return 0;
+                }
 
-                // TODO Phase 2: 실제 SQL UPDATE 쿼리 실행
-                // using (var connection = await _databaseManager.ConnectionPool.AcquireConnectionAsync(cancellationToken))
-                // {
-                //     // SQL 쿼리 실행
-                // }
+                int updatedCount = 0;
 
-                updatedCount += batchCount;
+                // 배치 크기로 나누어 처리
+                for (int i = 0; i < gameObjects.Count; i += BatchSize)
+                {
+                    int batchCount = Math.Min(BatchSize, gameObjects.Count - i);
+                    var batch = gameObjects.GetRange(i, batchCount);
 
-                // 취소 확인
-                cancellationToken.ThrowIfCancellationRequested();
+                    connection.BeginTransaction();
+                    try
+                    {
+                        foreach (var obj in batch)
+                        {
+                            int instanceId = obj.GetInstanceID();
+                            int? parentId = obj.transform.parent != null ? obj.transform.parent.gameObject.GetInstanceID() : (int?)null;
+
+                            var sql = @"
+                                UPDATE gameobjects
+                                SET object_name = ?,
+                                    parent_id = ?,
+                                    tag = ?,
+                                    layer = ?,
+                                    is_active = ?,
+                                    is_static = ?,
+                                    updated_at = datetime('now', 'localtime')
+                                WHERE instance_id = ?
+                            ";
+
+                            connection.Execute(sql, obj.name, parentId, obj.tag, obj.layer, obj.activeSelf ? 1 : 0, obj.isStatic ? 1 : 0, instanceId);
+                        }
+
+                        connection.Commit();
+                        updatedCount += batchCount;
+                        Debug.Log($"[SyncManager] 배치 업데이트 완료: {batchCount}개 GameObject");
+                    }
+                    catch (Exception ex)
+                    {
+                        connection.Rollback();
+                        Debug.LogError($"[SyncManager] 배치 업데이트 실패: {ex.Message}");
+                        throw;
+                    }
+
+                    // 취소 확인
+                    cancellationToken.ThrowIfCancellationRequested();
+                }
+
+                return updatedCount;
             }
-
-            Debug.Log($"[SyncManager] 배치 업데이트 완료: {updatedCount}개 GameObject");
-            return updatedCount;
+            finally
+            {
+                await UniTask.SwitchToMainThread();
+            }
         }
 
         /// <summary>
@@ -287,6 +363,326 @@ namespace UnityEditorToolkit.Editor.Database
 
             await UniTask.Yield();
             return 0;
+        }
+        #endregion
+
+        #region Helper Methods (Phase 2)
+        /// <summary>
+        /// Unity Scene에서 모든 GameObject 재귀적으로 수집
+        /// </summary>
+        private List<GameObject> CollectAllGameObjects(Scene scene)
+        {
+            var result = new List<GameObject>();
+            var rootObjects = scene.GetRootGameObjects();
+
+            foreach (var root in rootObjects)
+            {
+                CollectGameObjectsRecursive(root, result);
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// GameObject를 재귀적으로 수집하는 헬퍼 메서드
+        /// </summary>
+        private void CollectGameObjectsRecursive(GameObject obj, List<GameObject> list)
+        {
+            list.Add(obj);
+            for (int i = 0; i < obj.transform.childCount; i++)
+            {
+                CollectGameObjectsRecursive(obj.transform.GetChild(i).gameObject, list);
+            }
+        }
+
+        /// <summary>
+        /// DB에서 현재 씬의 GameObject 목록 가져오기
+        /// </summary>
+        private async UniTask<Dictionary<int, DbGameObject>> GetDatabaseGameObjectsAsync(Scene scene, CancellationToken cancellationToken)
+        {
+            await UniTask.SwitchToThreadPool();
+
+            try
+            {
+                var connection = databaseManager.Connector?.Connection;
+                if (connection == null)
+                {
+                    Debug.LogError("[SyncManager] Database connection is null");
+                    return new Dictionary<int, DbGameObject>();
+                }
+
+                // 1. scene_id 가져오기
+                var sceneIdSql = "SELECT scene_id FROM scenes WHERE scene_path = ?";
+                var sceneIds = connection.Query<SceneIdRecord>(sceneIdSql, scene.path);
+
+                if (sceneIds.Count() == 0)
+                {
+                    // Scene이 DB에 없으면 빈 딕셔너리 반환
+                    return new Dictionary<int, DbGameObject>();
+                }
+
+                int sceneId = sceneIds.First().scene_id;
+
+                // 2. GameObject 목록 가져오기
+                var sql = @"
+                    SELECT object_id, instance_id, object_name, parent_id, tag, layer, is_active, is_static, is_deleted
+                    FROM gameobjects
+                    WHERE scene_id = ? AND is_deleted = 0
+                ";
+
+                var dbObjects = connection.Query<DbGameObject>(sql, sceneId);
+
+                // Dictionary로 변환 (instance_id를 키로 사용)
+                var result = new Dictionary<int, DbGameObject>();
+                foreach (var obj in dbObjects)
+                {
+                    result[obj.instance_id] = obj;
+                }
+
+                return result;
+            }
+            finally
+            {
+                await UniTask.SwitchToMainThread();
+            }
+        }
+
+        /// <summary>
+        /// Scene ID를 가져오기 위한 레코드 클래스
+        /// </summary>
+        private class SceneIdRecord
+        {
+            public int scene_id { get; set; }
+        }
+        #endregion
+
+        #region Change Detection (Phase 2)
+        /// <summary>
+        /// Unity GameObject와 DB GameObject 비교하여 변경사항 감지
+        /// </summary>
+        private GameObjectChangeSet DetectChanges(List<GameObject> unityObjects, Dictionary<int, DbGameObject> dbObjects)
+        {
+            var changeSet = new GameObjectChangeSet
+            {
+                Updated = new List<GameObject>(),
+                Inserted = new List<GameObject>(),
+                Deleted = new List<int>()
+            };
+
+            // Unity에 있는 객체 확인
+            var processedInstanceIds = new HashSet<int>();
+
+            foreach (var obj in unityObjects)
+            {
+                int instanceId = obj.GetInstanceID();
+                processedInstanceIds.Add(instanceId);
+
+                if (dbObjects.TryGetValue(instanceId, out var dbObj))
+                {
+                    // DB에 존재: 변경 여부 확인
+                    if (HasChanged(obj, dbObj))
+                    {
+                        changeSet.Updated.Add(obj);
+                    }
+                }
+                else
+                {
+                    // DB에 없음: 새로운 객체
+                    changeSet.Inserted.Add(obj);
+                }
+            }
+
+            // DB에만 있고 Unity에 없는 객체 확인 (삭제된 객체)
+            foreach (var kvp in dbObjects)
+            {
+                if (!processedInstanceIds.Contains(kvp.Key))
+                {
+                    changeSet.Deleted.Add(kvp.Value.object_id);
+                }
+            }
+
+            return changeSet;
+        }
+
+        /// <summary>
+        /// GameObject가 DB 레코드와 비교하여 변경되었는지 확인
+        /// </summary>
+        private bool HasChanged(GameObject obj, DbGameObject dbObj)
+        {
+            // 이름 변경
+            if (obj.name != dbObj.object_name)
+                return true;
+
+            // Parent 변경
+            int? currentParentId = obj.transform.parent != null ? obj.transform.parent.gameObject.GetInstanceID() : (int?)null;
+            if (currentParentId != dbObj.parent_id)
+                return true;
+
+            // Tag 변경
+            if (obj.tag != dbObj.tag)
+                return true;
+
+            // Layer 변경
+            if (obj.layer != dbObj.layer)
+                return true;
+
+            // Active 상태 변경
+            if (obj.activeSelf != dbObj.is_active)
+                return true;
+
+            // Static 플래그 변경
+            if (obj.isStatic != dbObj.is_static)
+                return true;
+
+            return false;
+        }
+        #endregion
+
+        #region Batch Insert/Delete (Phase 2)
+        /// <summary>
+        /// GameObject 배치 삽입
+        /// </summary>
+        private async UniTask BatchInsertGameObjectsAsync(Scene scene, List<GameObject> gameObjects, CancellationToken cancellationToken)
+        {
+            if (gameObjects == null || gameObjects.Count == 0)
+                return;
+
+            await UniTask.SwitchToThreadPool();
+
+            try
+            {
+                var connection = databaseManager.Connector?.Connection;
+                if (connection == null)
+                {
+                    Debug.LogError("[SyncManager] Database connection is null");
+                    return;
+                }
+
+                // 1. scene_id 가져오기 (또는 생성)
+                int sceneId = EnsureSceneRecord(connection, scene);
+
+                // 2. 배치 INSERT
+                for (int i = 0; i < gameObjects.Count; i += BatchSize)
+                {
+                    int batchCount = Math.Min(BatchSize, gameObjects.Count - i);
+                    var batch = gameObjects.GetRange(i, batchCount);
+
+                    connection.BeginTransaction();
+                    try
+                    {
+                        foreach (var obj in batch)
+                        {
+                            int instanceId = obj.GetInstanceID();
+                            int? parentId = obj.transform.parent != null ? obj.transform.parent.gameObject.GetInstanceID() : (int?)null;
+
+                            var sql = @"
+                                INSERT INTO gameobjects (instance_id, scene_id, object_name, parent_id, tag, layer, is_active, is_static, is_deleted, created_at, updated_at)
+                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, datetime('now', 'localtime'), datetime('now', 'localtime'))
+                            ";
+
+                            connection.Execute(sql, instanceId, sceneId, obj.name, parentId, obj.tag, obj.layer, obj.activeSelf ? 1 : 0, obj.isStatic ? 1 : 0);
+                        }
+
+                        connection.Commit();
+                        Debug.Log($"[SyncManager] 배치 삽입 완료: {batchCount}개 GameObject");
+                    }
+                    catch (Exception ex)
+                    {
+                        connection.Rollback();
+                        Debug.LogError($"[SyncManager] 배치 삽입 실패: {ex.Message}");
+                        throw;
+                    }
+
+                    cancellationToken.ThrowIfCancellationRequested();
+                }
+            }
+            finally
+            {
+                await UniTask.SwitchToMainThread();
+            }
+        }
+
+        /// <summary>
+        /// GameObject 배치 삭제 (soft delete)
+        /// </summary>
+        private async UniTask BatchMarkDeletedAsync(List<int> objectIds, CancellationToken cancellationToken)
+        {
+            if (objectIds == null || objectIds.Count == 0)
+                return;
+
+            await UniTask.SwitchToThreadPool();
+
+            try
+            {
+                var connection = databaseManager.Connector?.Connection;
+                if (connection == null)
+                {
+                    Debug.LogError("[SyncManager] Database connection is null");
+                    return;
+                }
+
+                // 배치 UPDATE (soft delete)
+                for (int i = 0; i < objectIds.Count; i += BatchSize)
+                {
+                    int batchCount = Math.Min(BatchSize, objectIds.Count - i);
+                    var batch = objectIds.GetRange(i, batchCount);
+
+                    connection.BeginTransaction();
+                    try
+                    {
+                        foreach (var objectId in batch)
+                        {
+                            var sql = @"
+                                UPDATE gameobjects
+                                SET is_deleted = 1, updated_at = datetime('now', 'localtime')
+                                WHERE object_id = ?
+                            ";
+
+                            connection.Execute(sql, objectId);
+                        }
+
+                        connection.Commit();
+                        Debug.Log($"[SyncManager] 배치 삭제 완료: {batchCount}개 GameObject");
+                    }
+                    catch (Exception ex)
+                    {
+                        connection.Rollback();
+                        Debug.LogError($"[SyncManager] 배치 삭제 실패: {ex.Message}");
+                        throw;
+                    }
+
+                    cancellationToken.ThrowIfCancellationRequested();
+                }
+            }
+            finally
+            {
+                await UniTask.SwitchToMainThread();
+            }
+        }
+
+        /// <summary>
+        /// Scene 레코드가 DB에 존재하는지 확인하고 없으면 생성
+        /// </summary>
+        private int EnsureSceneRecord(SQLite.SQLiteConnection connection, Scene scene)
+        {
+            var sceneIdSql = "SELECT scene_id FROM scenes WHERE scene_path = ?";
+            var sceneIds = connection.Query<SceneIdRecord>(sceneIdSql, scene.path);
+
+            if (sceneIds.Count() > 0)
+            {
+                return sceneIds.First().scene_id;
+            }
+
+            // Scene 레코드 생성
+            var insertSql = @"
+                INSERT INTO scenes (scene_path, scene_name, created_at, updated_at)
+                VALUES (?, ?, datetime('now', 'localtime'), datetime('now', 'localtime'))
+            ";
+            connection.Execute(insertSql, scene.path, scene.name);
+
+            // 생성된 scene_id 반환
+            var newSceneIds = connection.Query<SceneIdRecord>(sceneIdSql, scene.path);
+            return newSceneIds.First().scene_id;
         }
         #endregion
 
@@ -363,6 +759,32 @@ namespace UnityEditorToolkit.Editor.Database
                    $"  Success: {SuccessfulSyncCount}, Failed: {FailedSyncCount}\n" +
                    $"  Interval: {SyncIntervalMs}ms, Batch: {BatchSize}";
         }
+    }
+
+    /// <summary>
+    /// DB GameObject 레코드 (SQLite-net ORM용)
+    /// </summary>
+    public class DbGameObject
+    {
+        public int object_id { get; set; }
+        public int instance_id { get; set; }
+        public string object_name { get; set; }
+        public int? parent_id { get; set; }
+        public string tag { get; set; }
+        public int layer { get; set; }
+        public bool is_active { get; set; }
+        public bool is_static { get; set; }
+        public bool is_deleted { get; set; }
+    }
+
+    /// <summary>
+    /// GameObject 변경사항 집합
+    /// </summary>
+    public class GameObjectChangeSet
+    {
+        public List<GameObject> Updated { get; set; }
+        public List<GameObject> Inserted { get; set; }
+        public List<int> Deleted { get; set; }
     }
     #endregion
 }

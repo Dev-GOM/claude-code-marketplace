@@ -69,6 +69,7 @@ namespace UnityEditorToolkit.Editor
         #region Database State
         private DatabaseConfig currentDbConfig;
         private DatabaseSetupWizard setupWizard;
+        private SyncManager syncManager;
         private bool isLoadingConfig = false; // UI 로드 중 플래그
         private System.Threading.CancellationTokenSource migrationCheckCts; // Migration 버튼 업데이트 취소 토큰
         private bool lastConnectionState = false; // 마지막 연결 상태 (상태 변경 감지용)
@@ -548,9 +549,43 @@ namespace UnityEditorToolkit.Editor
 
         private async UniTaskVoid ToggleDatabaseSyncAsync()
         {
-            // TODO Phase 2: SyncManager 통합
-            await UniTask.Yield();
-            ShowDatabaseError("🚧 동기화 기능은 Phase 2에서 구현 예정입니다.");
+            if (!DatabaseManager.Instance.IsConnected)
+            {
+                ShowDatabaseError("⚠️ 데이터베이스에 연결되어 있지 않습니다.");
+                return;
+            }
+
+            try
+            {
+                // SyncManager 초기화 (처음 1회만)
+                if (syncManager == null)
+                {
+                    syncManager = new SyncManager(DatabaseManager.Instance);
+                }
+
+                // 토글 동작
+                if (syncManager.IsRunning)
+                {
+                    // 동기화 중지
+                    syncManager.StopSync();
+                    ShowDatabaseSuccess("🛑 동기화가 중지되었습니다.");
+                }
+                else
+                {
+                    // 동기화 시작
+                    syncManager.StartSync();
+                    ShowDatabaseSuccess("▶️ 동기화가 시작되었습니다.");
+                }
+
+                // UI 업데이트
+                await UniTask.Yield();
+                UpdateDatabaseUI();
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[EditorServerWindow] 동기화 토글 실패: {ex.Message}");
+                ShowDatabaseError($"⚠️ 동기화 토글 실패: {ex.Message}");
+            }
         }
         #endregion
 
@@ -768,7 +803,7 @@ namespace UnityEditorToolkit.Editor
             }
 
             // Update sync status
-            windowData.DbIsSyncing = false;  // TODO Phase 2: SyncManager 통합
+            windowData.DbIsSyncing = syncManager != null && syncManager.IsRunning;
 
             // Update button visibility and states (not bound to data)
             dbConnectButton?.SetEnabled(!isConnected && (dbEnableToggle?.value ?? false));
@@ -787,7 +822,7 @@ namespace UnityEditorToolkit.Editor
 
             dbTestButton?.SetEnabled(dbEnableToggle?.value ?? false);
             dbMigrateButton?.SetEnabled(isConnected);
-            dbSyncToggleButton?.SetEnabled(false);  // TODO Phase 2
+            dbSyncToggleButton?.SetEnabled(isConnected);
 
             // Update Migration button text only when connection state changes (avoid polling)
             if (isConnected != lastConnectionState)
@@ -912,6 +947,13 @@ namespace UnityEditorToolkit.Editor
         #region Database Cleanup
         private void CleanupDatabaseUI()
         {
+            // Dispose SyncManager
+            if (syncManager != null)
+            {
+                syncManager.Dispose();
+                syncManager = null;
+            }
+
             // Cancel any pending migration check
             migrationCheckCts?.Cancel();
             migrationCheckCts?.Dispose();
@@ -1147,7 +1189,7 @@ namespace UnityEditorToolkit.Editor
         /// </summary>
         public bool IsSyncing
         {
-            get { return false; } // TODO Phase 2: SyncManager 통합
+            get { return syncManager != null && syncManager.IsRunning; }
         }
 
         /// <summary>
