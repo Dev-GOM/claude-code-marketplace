@@ -566,8 +566,42 @@ namespace UnityEditorToolkit.Handlers
             var objectIds = objectIdMap.Values.ToList();
             if (objectIds.Count > 0)
             {
-                var idList = string.Join(",", objectIds);
-                connection.Execute($"DELETE FROM gameobject_closure WHERE descendant_id IN ({idList})");
+                // Use parameterized query to prevent SQL injection
+                // For small lists, delete individually
+                if (objectIds.Count <= 100)
+                {
+                    foreach (var id in objectIds)
+                    {
+                        connection.Execute("DELETE FROM gameobject_closure WHERE descendant_id = ?", id);
+                    }
+                }
+                else
+                {
+                    // For large lists, use temporary table
+                    connection.Execute("CREATE TEMP TABLE IF NOT EXISTS temp_object_ids (id INTEGER)");
+
+                    connection.BeginTransaction();
+                    try
+                    {
+                        foreach (var id in objectIds)
+                        {
+                            connection.Execute("INSERT INTO temp_object_ids VALUES (?)", id);
+                        }
+
+                        connection.Execute(@"
+                            DELETE FROM gameobject_closure
+                            WHERE descendant_id IN (SELECT id FROM temp_object_ids)
+                        ");
+
+                        connection.Execute("DELETE FROM temp_object_ids");
+                        connection.Commit();
+                    }
+                    catch
+                    {
+                        connection.Rollback();
+                        throw;
+                    }
+                }
             }
 
             int count = 0;

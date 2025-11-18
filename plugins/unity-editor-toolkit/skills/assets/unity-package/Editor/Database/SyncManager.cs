@@ -147,7 +147,7 @@ namespace UnityEditorToolkit.Editor.Database
         }
 
         /// <summary>
-        /// 단일 동기화 수행
+        /// 단일 동기화 수행 (모든 로드된 씬)
         /// </summary>
         private async UniTask PerformSyncAsync(CancellationToken cancellationToken)
         {
@@ -164,53 +164,65 @@ namespace UnityEditorToolkit.Editor.Database
                     return;
                 }
 
-                // Phase 2: GameObject 변경 감지 및 배치 업데이트
-                var scene = SceneManager.GetActiveScene();
-                if (!scene.isLoaded)
+                // Phase 2: 모든 로드된 씬에 대해 GameObject 변경 감지 및 배치 업데이트
+                int sceneCount = SceneManager.sceneCount;
+                if (sceneCount == 0)
                 {
-                    Debug.LogWarning("[SyncManager] 활성 씬이 로드되지 않았습니다.");
+                    Debug.LogWarning("[SyncManager] 로드된 씬이 없습니다.");
                     return;
                 }
 
-                // 1. Unity Scene에서 모든 GameObject 수집
-                var allGameObjects = CollectAllGameObjects(scene);
-                if (allGameObjects.Count == 0)
+                // 모든 로드된 씬 순회
+                for (int i = 0; i < sceneCount; i++)
                 {
-                    LastSyncTime = DateTime.UtcNow;
-                    SuccessfulSyncCount++;
-                    return;
-                }
+                    var scene = SceneManager.GetSceneAt(i);
 
-                // 2. DB에서 현재 씬의 GameObject 목록 가져오기
-                Dictionary<string, DbGameObject> dbGameObjects;
-                try
-                {
-                    dbGameObjects = await GetDatabaseGameObjectsAsync(scene, cancellationToken);
-                }
-                catch (InvalidOperationException ex)
-                {
-                    Debug.LogError($"[SyncManager] DB 연결 실패로 동기화 건너뜀: {ex.Message}");
-                    FailedSyncCount++;
-                    return;
-                }
+                    // 로드되지 않은 씬은 건너뛰기
+                    if (!scene.isLoaded)
+                    {
+                        continue;
+                    }
 
-                // 3. 변경 감지
-                var changes = DetectChanges(allGameObjects, dbGameObjects);
+                    // 1. Unity Scene에서 모든 GameObject 수집
+                    var allGameObjects = CollectAllGameObjects(scene);
+                    if (allGameObjects.Count == 0)
+                    {
+                        continue; // 빈 씬은 건너뛰기
+                    }
 
-                // 4. 배치 업데이트 실행
-                if (changes.Updated.Count > 0)
-                {
-                    await BatchUpdateGameObjectsAsync(changes.Updated, cancellationToken);
-                }
+                    // 2. DB에서 현재 씬의 GameObject 목록 가져오기
+                    Dictionary<string, DbGameObject> dbGameObjects;
+                    try
+                    {
+                        dbGameObjects = await GetDatabaseGameObjectsAsync(scene, cancellationToken);
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        Debug.LogError($"[SyncManager] DB 연결 실패로 씬 '{scene.name}' 동기화 건너뜀: {ex.Message}");
+                        continue; // 이 씬은 건너뛰고 다음 씬 처리
+                    }
 
-                if (changes.Inserted.Count > 0)
-                {
-                    await BatchInsertGameObjectsAsync(scene, changes.Inserted, cancellationToken);
-                }
+                    // 3. 변경 감지
+                    var changes = DetectChanges(allGameObjects, dbGameObjects);
 
-                if (changes.Deleted.Count > 0)
-                {
-                    await BatchMarkDeletedAsync(changes.Deleted, cancellationToken);
+                    // 4. 배치 업데이트 실행
+                    if (changes.Updated.Count > 0)
+                    {
+                        await BatchUpdateGameObjectsAsync(changes.Updated, cancellationToken);
+                    }
+
+                    if (changes.Inserted.Count > 0)
+                    {
+                        await BatchInsertGameObjectsAsync(scene, changes.Inserted, cancellationToken);
+                    }
+
+                    if (changes.Deleted.Count > 0)
+                    {
+                        await BatchMarkDeletedAsync(changes.Deleted, cancellationToken);
+                    }
+
+                    // 취소 확인
+                    cancellationToken.ThrowIfCancellationRequested();
                 }
 
                 LastSyncTime = DateTime.UtcNow;
@@ -312,8 +324,7 @@ namespace UnityEditorToolkit.Editor.Database
                     int batchCount = Math.Min(BatchSize, gameObjects.Count - i);
                     var batch = gameObjects.GetRange(i, batchCount);
 
-                    connection.BeginTransaction();
-                    try
+                    ExecuteInTransaction(connection, () =>
                     {
                         foreach (var obj in batch)
                         {
@@ -337,17 +348,10 @@ namespace UnityEditorToolkit.Editor.Database
 
                             connection.Execute(sql, obj.name, parentId, obj.tag, obj.layer, obj.activeSelf, obj.isStatic, instanceId, guid);
                         }
+                    });
 
-                        connection.Commit();
-                        updatedCount += batchCount;
-                        Debug.Log($"[SyncManager] 배치 업데이트 완료: {batchCount}개 GameObject");
-                    }
-                    catch (Exception ex)
-                    {
-                        connection.Rollback();
-                        Debug.LogError($"[SyncManager] 배치 업데이트 실패: {ex.Message}");
-                        throw;
-                    }
+                    updatedCount += batchCount;
+                    Debug.Log($"[SyncManager] 배치 업데이트 완료: {batchCount}개 GameObject");
 
                     // 취소 확인
                     cancellationToken.ThrowIfCancellationRequested();
@@ -385,6 +389,42 @@ namespace UnityEditorToolkit.Editor.Database
         #endregion
 
         #region Helper Methods (Phase 2)
+        /// <summary>
+        /// 트랜잭션을 안전하게 실행하는 헬퍼 메서드
+        /// </summary>
+        private void ExecuteInTransaction(SQLite.SQLiteConnection connection, Action action)
+        {
+            // SQLite는 중첩 트랜잭션을 지원하지 않으므로 try-catch로 감지
+            bool transactionStarted = false;
+            try
+            {
+                connection.BeginTransaction();
+                transactionStarted = true;
+
+                action();
+
+                connection.Commit();
+            }
+            catch (InvalidOperationException ex) when (ex.Message.Contains("transaction") || ex.Message.Contains("Transaction"))
+            {
+                // 이미 트랜잭션이 시작된 경우, 그냥 액션만 실행
+                Debug.LogWarning($"[SyncManager] Transaction already started, executing without nested transaction: {ex.Message}");
+                if (transactionStarted)
+                {
+                    connection.Rollback();
+                }
+                action();
+            }
+            catch
+            {
+                if (transactionStarted)
+                {
+                    connection.Rollback();
+                }
+                throw;
+            }
+        }
+
         /// <summary>
         /// Unity Scene에서 모든 GameObject 재귀적으로 수집
         /// </summary>
@@ -433,7 +473,7 @@ namespace UnityEditorToolkit.Editor.Database
                 var sceneIdSql = "SELECT scene_id FROM scenes WHERE scene_path = ?";
                 var sceneIds = connection.Query<SceneIdRecord>(sceneIdSql, scene.path);
 
-                if (sceneIds.Count() == 0)
+                if (!sceneIds.Any())
                 {
                     // Scene이 DB에 없는 것은 정상 (첫 동기화)
                     Debug.Log($"[SyncManager] Scene '{scene.name}'이 DB에 없습니다 (첫 동기화).");
@@ -607,8 +647,7 @@ namespace UnityEditorToolkit.Editor.Database
                     int batchCount = Math.Min(BatchSize, gameObjects.Count - i);
                     var batch = gameObjects.GetRange(i, batchCount);
 
-                    connection.BeginTransaction();
-                    try
+                    ExecuteInTransaction(connection, () =>
                     {
                         foreach (var obj in batch)
                         {
@@ -624,16 +663,9 @@ namespace UnityEditorToolkit.Editor.Database
 
                             connection.Execute(sql, guid, instanceId, sceneId, obj.name, parentId, obj.tag, obj.layer, obj.activeSelf, obj.isStatic);
                         }
+                    });
 
-                        connection.Commit();
-                        Debug.Log($"[SyncManager] 배치 삽입 완료: {batchCount}개 GameObject");
-                    }
-                    catch (Exception ex)
-                    {
-                        connection.Rollback();
-                        Debug.LogError($"[SyncManager] 배치 삽입 실패: {ex.Message}");
-                        throw;
-                    }
+                    Debug.Log($"[SyncManager] 배치 삽입 완료: {batchCount}개 GameObject");
 
                     cancellationToken.ThrowIfCancellationRequested();
                 }
@@ -673,8 +705,7 @@ namespace UnityEditorToolkit.Editor.Database
                     int batchCount = Math.Min(BatchSize, objectIds.Count - i);
                     var batch = objectIds.GetRange(i, batchCount);
 
-                    connection.BeginTransaction();
-                    try
+                    ExecuteInTransaction(connection, () =>
                     {
                         foreach (var objectId in batch)
                         {
@@ -686,16 +717,9 @@ namespace UnityEditorToolkit.Editor.Database
 
                             connection.Execute(sql, objectId);
                         }
+                    });
 
-                        connection.Commit();
-                        Debug.Log($"[SyncManager] 배치 삭제 완료: {batchCount}개 GameObject");
-                    }
-                    catch (Exception ex)
-                    {
-                        connection.Rollback();
-                        Debug.LogError($"[SyncManager] 배치 삭제 실패: {ex.Message}");
-                        throw;
-                    }
+                    Debug.Log($"[SyncManager] 배치 삭제 완료: {batchCount}개 GameObject");
 
                     cancellationToken.ThrowIfCancellationRequested();
                 }
@@ -718,7 +742,7 @@ namespace UnityEditorToolkit.Editor.Database
             var sceneIdSql = "SELECT scene_id FROM scenes WHERE scene_path = ?";
             var sceneIds = connection.Query<SceneIdRecord>(sceneIdSql, scene.path);
 
-            if (sceneIds.Count() > 0)
+            if (sceneIds.Any())
             {
                 return sceneIds.First().scene_id;
             }
