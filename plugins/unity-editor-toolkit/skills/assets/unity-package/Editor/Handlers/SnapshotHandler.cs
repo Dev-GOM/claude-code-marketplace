@@ -51,7 +51,7 @@ namespace UnityEditorToolkit.Handlers
                 throw new Exception("Database is not connected");
             }
 
-            var connection = DatabaseManager.Instance.GetConnection();
+            var connection = DatabaseManager.Instance.Connector?.Connection;
             if (connection == null)
             {
                 throw new Exception("Failed to get database connection");
@@ -101,7 +101,7 @@ namespace UnityEditorToolkit.Handlers
                 throw new Exception("Database is not connected");
             }
 
-            var connection = DatabaseManager.Instance.GetConnection();
+            var connection = DatabaseManager.Instance.Connector?.Connection;
             if (connection == null)
             {
                 throw new Exception("Failed to get database connection");
@@ -168,7 +168,7 @@ namespace UnityEditorToolkit.Handlers
                 throw new Exception("Database is not connected");
             }
 
-            var connection = DatabaseManager.Instance.GetConnection();
+            var connection = DatabaseManager.Instance.Connector?.Connection;
             if (connection == null)
             {
                 throw new Exception("Failed to get database connection");
@@ -183,7 +183,7 @@ namespace UnityEditorToolkit.Handlers
             ";
             var records = connection.Query<SnapshotDataRecord>(sql, param.snapshotId);
 
-            if (records.Count == 0)
+            if (records.Count() == 0)
             {
                 throw new Exception($"Snapshot with ID {param.snapshotId} not found");
             }
@@ -218,7 +218,7 @@ namespace UnityEditorToolkit.Handlers
                 throw new Exception("Database is not connected");
             }
 
-            var connection = DatabaseManager.Instance.GetConnection();
+            var connection = DatabaseManager.Instance.Connector?.Connection;
             if (connection == null)
             {
                 throw new Exception("Failed to get database connection");
@@ -234,7 +234,7 @@ namespace UnityEditorToolkit.Handlers
             ";
             var records = connection.Query<SnapshotDataRecord>(sql, param.snapshotId);
 
-            if (records.Count == 0)
+            if (records.Count() == 0)
             {
                 throw new Exception($"Snapshot with ID {param.snapshotId} not found");
             }
@@ -268,7 +268,7 @@ namespace UnityEditorToolkit.Handlers
                 throw new Exception("Database is not connected");
             }
 
-            var connection = DatabaseManager.Instance.GetConnection();
+            var connection = DatabaseManager.Instance.Connector?.Connection;
             if (connection == null)
             {
                 throw new Exception("Failed to get database connection");
@@ -278,7 +278,7 @@ namespace UnityEditorToolkit.Handlers
             var checkSql = "SELECT snapshot_name FROM snapshots WHERE snapshot_id = ?";
             var names = connection.Query<NameRecord>(checkSql, param.snapshotId);
 
-            if (names.Count == 0)
+            if (names.Count() == 0)
             {
                 throw new Exception($"Snapshot with ID {param.snapshotId} not found");
             }
@@ -305,7 +305,7 @@ namespace UnityEditorToolkit.Handlers
             var checkSql = "SELECT scene_id FROM scenes WHERE scene_path = ?";
             var ids = connection.Query<SceneIdRecord>(checkSql, scene.path);
 
-            if (ids.Count > 0)
+            if (ids.Count() > 0)
             {
                 return ids[0].scene_id;
             }

@@ -49,7 +49,7 @@ namespace UnityEditorToolkit.Handlers
                 throw new Exception("Database is not connected");
             }
 
-            var connection = DatabaseManager.Instance.GetConnection();
+            var connection = DatabaseManager.Instance.Connector?.Connection;
             if (connection == null)
             {
                 throw new Exception("Failed to get database connection");
@@ -112,7 +112,7 @@ namespace UnityEditorToolkit.Handlers
                 throw new Exception("Database is not connected");
             }
 
-            var connection = DatabaseManager.Instance.GetConnection();
+            var connection = DatabaseManager.Instance.Connector?.Connection;
             if (connection == null)
             {
                 throw new Exception("Failed to get database connection");
@@ -129,7 +129,7 @@ namespace UnityEditorToolkit.Handlers
             var checkSql = "SELECT object_id FROM gameobjects WHERE instance_id = ?";
             var ids = connection.Query<ObjectIdRecord>(checkSql, obj.GetInstanceID());
 
-            if (ids.Count == 0)
+            if (ids.Count() == 0)
             {
                 return new ListResult
                 {
@@ -188,7 +188,7 @@ namespace UnityEditorToolkit.Handlers
                 throw new Exception("Database is not connected");
             }
 
-            var connection = DatabaseManager.Instance.GetConnection();
+            var connection = DatabaseManager.Instance.Connector?.Connection;
             if (connection == null)
             {
                 throw new Exception("Failed to get database connection");
@@ -209,7 +209,7 @@ namespace UnityEditorToolkit.Handlers
 
             var records = connection.Query<TransformWithObjectRecord>(sql, param.transformId);
 
-            if (records.Count == 0)
+            if (records.Count() == 0)
             {
                 throw new Exception($"Transform record {param.transformId} not found");
             }
@@ -262,7 +262,7 @@ namespace UnityEditorToolkit.Handlers
                 throw new Exception("Database is not connected");
             }
 
-            var connection = DatabaseManager.Instance.GetConnection();
+            var connection = DatabaseManager.Instance.Connector?.Connection;
             if (connection == null)
             {
                 throw new Exception("Failed to get database connection");
@@ -280,7 +280,7 @@ namespace UnityEditorToolkit.Handlers
 
             var records = connection.Query<TransformRecord>(sql, param.transformId1, param.transformId2);
 
-            if (records.Count < 2)
+            if (records.Count() < 2)
             {
                 throw new Exception("One or both transform records not found");
             }
@@ -341,7 +341,7 @@ namespace UnityEditorToolkit.Handlers
                 throw new Exception("Database is not connected");
             }
 
-            var connection = DatabaseManager.Instance.GetConnection();
+            var connection = DatabaseManager.Instance.Connector?.Connection;
             if (connection == null)
             {
                 throw new Exception("Failed to get database connection");
@@ -358,7 +358,7 @@ namespace UnityEditorToolkit.Handlers
             var checkSql = "SELECT object_id FROM gameobjects WHERE instance_id = ?";
             var ids = connection.Query<ObjectIdRecord>(checkSql, obj.GetInstanceID());
 
-            if (ids.Count == 0)
+            if (ids.Count() == 0)
             {
                 return new ClearResult
                 {
@@ -396,7 +396,7 @@ namespace UnityEditorToolkit.Handlers
             var checkSql = "SELECT object_id FROM gameobjects WHERE instance_id = ?";
             var ids = connection.Query<ObjectIdRecord>(checkSql, obj.GetInstanceID());
 
-            if (ids.Count > 0)
+            if (ids.Count() > 0)
             {
                 return ids[0].object_id;
             }
@@ -431,7 +431,7 @@ namespace UnityEditorToolkit.Handlers
             var checkSql = "SELECT scene_id FROM scenes WHERE scene_path = ?";
             var ids = connection.Query<SceneIdRecord>(checkSql, scene.path);
 
-            if (ids.Count > 0)
+            if (ids.Count() > 0)
             {
                 return ids[0].scene_id;
             }
