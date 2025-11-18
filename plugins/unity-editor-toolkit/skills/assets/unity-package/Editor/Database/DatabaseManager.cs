@@ -120,6 +120,7 @@ namespace UnityEditorToolkit.Editor.Database
         private DatabaseConfig config;
         private SQLiteConnector connector;
         private CommandHistory commandHistory;
+        private SyncManager syncManager;
         private bool isInitialized = false;
         private bool isConnected = false;
         private CancellationTokenSource lifecycleCts;
@@ -152,6 +153,11 @@ namespace UnityEditorToolkit.Editor.Database
         /// Command History (Undo/Redo)
         /// </summary>
         public CommandHistory CommandHistory => commandHistory;
+
+        /// <summary>
+        /// Sync Manager (실시간 동기화)
+        /// </summary>
+        public SyncManager SyncManager => syncManager;
 
         /// <summary>
         /// 마이그레이션 실행 중 여부
@@ -250,6 +256,10 @@ namespace UnityEditorToolkit.Editor.Database
                 // 자동 마이그레이션 실행
                 await RunAutoMigrationAsync(lifecycleCts.Token);
 
+                // SyncManager 초기화
+                syncManager = new SyncManager(this);
+                Debug.Log("[DatabaseManager] SyncManager initialized.");
+
                 Debug.Log($"[DatabaseManager] 초기화 완료: {this.config.DatabaseFilePath}");
                 return new InitializationResult
                 {
@@ -312,6 +322,14 @@ namespace UnityEditorToolkit.Editor.Database
         {
             try
             {
+                // SyncManager 정리
+                if (syncManager != null)
+                {
+                    syncManager.Dispose();
+                    syncManager = null;
+                    Debug.Log("[DatabaseManager] SyncManager disposed.");
+                }
+
                 // Command History 정리
                 if (commandHistory != null)
                 {

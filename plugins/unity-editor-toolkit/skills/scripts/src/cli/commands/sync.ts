@@ -50,6 +50,23 @@ interface ClearSyncResult {
   message: string;
 }
 
+interface AutoSyncResult {
+  success: boolean;
+  message: string;
+  isRunning: boolean;
+}
+
+interface AutoSyncStatusResult {
+  success: boolean;
+  isRunning: boolean;
+  isInitialized: boolean;
+  lastSyncTime: string | null;
+  successfulSyncCount: number;
+  failedSyncCount: number;
+  syncIntervalMs: number;
+  batchSize: number;
+}
+
 /**
  * Register Sync command
  */
@@ -261,6 +278,155 @@ export function registerSyncCommand(program: Command): void {
         logger.info(`  Deleted Components: ${result.deletedComponents}`);
       } catch (error) {
         logger.error('Failed to clear sync data', error);
+        process.exit(1);
+      } finally {
+        if (client) {
+          try {
+            client.disconnect();
+          } catch (disconnectError) {
+            logger.debug(`Error during disconnect: ${disconnectError instanceof Error ? disconnectError.message : String(disconnectError)}`);
+          }
+        }
+      }
+    });
+
+  // Auto-sync start
+  syncCmd
+    .command('auto-start')
+    .description('Start automatic synchronization')
+    .option('--json', 'Output in JSON format')
+    .action(async (options) => {
+      let client = null;
+      try {
+        const projectRoot = config.getProjectRoot();
+        const port = program.opts().port || config.getUnityPort(projectRoot);
+
+        if (!port) {
+          logger.error('Unity server not running. Start Unity Editor with WebSocket server enabled.');
+          process.exit(1);
+        }
+
+        client = createUnityClient(port);
+
+        logger.info('Connecting to Unity Editor...');
+        await client.connect();
+
+        logger.info('Starting automatic synchronization...');
+        const result = await client.sendRequest<AutoSyncResult>(
+          COMMANDS.SYNC_START_AUTO
+        );
+
+        if (options.json) {
+          outputJson(result);
+          return;
+        }
+
+        logger.info(`✓ ${result.message}`);
+        logger.info(`  Running: ${result.isRunning ? 'Yes' : 'No'}`);
+      } catch (error) {
+        logger.error('Failed to start auto-sync', error);
+        process.exit(1);
+      } finally {
+        if (client) {
+          try {
+            client.disconnect();
+          } catch (disconnectError) {
+            logger.debug(`Error during disconnect: ${disconnectError instanceof Error ? disconnectError.message : String(disconnectError)}`);
+          }
+        }
+      }
+    });
+
+  // Auto-sync stop
+  syncCmd
+    .command('auto-stop')
+    .description('Stop automatic synchronization')
+    .option('--json', 'Output in JSON format')
+    .action(async (options) => {
+      let client = null;
+      try {
+        const projectRoot = config.getProjectRoot();
+        const port = program.opts().port || config.getUnityPort(projectRoot);
+
+        if (!port) {
+          logger.error('Unity server not running. Start Unity Editor with WebSocket server enabled.');
+          process.exit(1);
+        }
+
+        client = createUnityClient(port);
+
+        logger.info('Connecting to Unity Editor...');
+        await client.connect();
+
+        logger.info('Stopping automatic synchronization...');
+        const result = await client.sendRequest<AutoSyncResult>(
+          COMMANDS.SYNC_STOP_AUTO
+        );
+
+        if (options.json) {
+          outputJson(result);
+          return;
+        }
+
+        logger.info(`✓ ${result.message}`);
+        logger.info(`  Running: ${result.isRunning ? 'Yes' : 'No'}`);
+      } catch (error) {
+        logger.error('Failed to stop auto-sync', error);
+        process.exit(1);
+      } finally {
+        if (client) {
+          try {
+            client.disconnect();
+          } catch (disconnectError) {
+            logger.debug(`Error during disconnect: ${disconnectError instanceof Error ? disconnectError.message : String(disconnectError)}`);
+          }
+        }
+      }
+    });
+
+  // Auto-sync status
+  syncCmd
+    .command('auto-status')
+    .description('Get automatic synchronization status')
+    .option('--json', 'Output in JSON format')
+    .action(async (options) => {
+      let client = null;
+      try {
+        const projectRoot = config.getProjectRoot();
+        const port = program.opts().port || config.getUnityPort(projectRoot);
+
+        if (!port) {
+          logger.error('Unity server not running. Start Unity Editor with WebSocket server enabled.');
+          process.exit(1);
+        }
+
+        client = createUnityClient(port);
+
+        logger.info('Connecting to Unity Editor...');
+        await client.connect();
+
+        logger.info('Getting auto-sync status...');
+        const result = await client.sendRequest<AutoSyncStatusResult>(
+          COMMANDS.SYNC_GET_AUTO_STATUS
+        );
+
+        if (options.json) {
+          outputJson(result);
+          return;
+        }
+
+        logger.info('✓ Auto-Sync Status:');
+        logger.info(`  Initialized: ${result.isInitialized ? '✓' : '✗'}`);
+        logger.info(`  Running: ${result.isRunning ? '✓' : '✗'}`);
+        if (result.lastSyncTime) {
+          logger.info(`  Last Sync: ${result.lastSyncTime}`);
+        }
+        logger.info(`  Successful Syncs: ${result.successfulSyncCount}`);
+        logger.info(`  Failed Syncs: ${result.failedSyncCount}`);
+        logger.info(`  Sync Interval: ${result.syncIntervalMs}ms`);
+        logger.info(`  Batch Size: ${result.batchSize}`);
+      } catch (error) {
+        logger.error('Failed to get auto-sync status', error);
         process.exit(1);
       } finally {
         if (client) {

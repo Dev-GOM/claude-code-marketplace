@@ -31,6 +31,12 @@ namespace UnityEditorToolkit.Handlers
                     return HandleGetSyncStatus(request);
                 case "ClearSync":
                     return HandleClearSync(request);
+                case "StartAutoSync":
+                    return HandleStartAutoSync(request);
+                case "StopAutoSync":
+                    return HandleStopAutoSync(request);
+                case "GetAutoSyncStatus":
+                    return HandleGetAutoSyncStatus(request);
                 default:
                     throw new Exception($"Unknown method: {method}");
             }
@@ -307,6 +313,143 @@ namespace UnityEditorToolkit.Handlers
             };
         }
 
+        /// <summary>
+        /// Start automatic synchronization
+        /// </summary>
+        private object HandleStartAutoSync(JsonRpcRequest request)
+        {
+            if (!DatabaseManager.Instance.IsConnected)
+            {
+                throw new Exception("Database is not connected");
+            }
+
+            try
+            {
+                var syncManager = DatabaseManager.Instance.SyncManager;
+                if (syncManager == null)
+                {
+                    throw new Exception("SyncManager is not initialized");
+                }
+
+                if (syncManager.IsRunning)
+                {
+                    return new AutoSyncResult
+                    {
+                        success = true,
+                        message = "Auto-sync is already running",
+                        isRunning = true
+                    };
+                }
+
+                syncManager.StartSync();
+
+                return new AutoSyncResult
+                {
+                    success = true,
+                    message = "Auto-sync started successfully",
+                    isRunning = true
+                };
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[SyncHandler] Failed to start auto-sync: {ex.Message}");
+                throw new Exception($"Failed to start auto-sync: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Stop automatic synchronization
+        /// </summary>
+        private object HandleStopAutoSync(JsonRpcRequest request)
+        {
+            if (!DatabaseManager.Instance.IsConnected)
+            {
+                throw new Exception("Database is not connected");
+            }
+
+            try
+            {
+                var syncManager = DatabaseManager.Instance.SyncManager;
+                if (syncManager == null)
+                {
+                    throw new Exception("SyncManager is not initialized");
+                }
+
+                if (!syncManager.IsRunning)
+                {
+                    return new AutoSyncResult
+                    {
+                        success = true,
+                        message = "Auto-sync is not running",
+                        isRunning = false
+                    };
+                }
+
+                syncManager.StopSync();
+
+                return new AutoSyncResult
+                {
+                    success = true,
+                    message = "Auto-sync stopped successfully",
+                    isRunning = false
+                };
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[SyncHandler] Failed to stop auto-sync: {ex.Message}");
+                throw new Exception($"Failed to stop auto-sync: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Get automatic synchronization status
+        /// </summary>
+        private object HandleGetAutoSyncStatus(JsonRpcRequest request)
+        {
+            if (!DatabaseManager.Instance.IsConnected)
+            {
+                throw new Exception("Database is not connected");
+            }
+
+            try
+            {
+                var syncManager = DatabaseManager.Instance.SyncManager;
+                if (syncManager == null)
+                {
+                    return new AutoSyncStatusResult
+                    {
+                        success = true,
+                        isRunning = false,
+                        isInitialized = false,
+                        lastSyncTime = null,
+                        successfulSyncCount = 0,
+                        failedSyncCount = 0,
+                        syncIntervalMs = 0,
+                        batchSize = 0
+                    };
+                }
+
+                var healthStatus = syncManager.GetHealthStatus();
+
+                return new AutoSyncStatusResult
+                {
+                    success = true,
+                    isRunning = healthStatus.IsRunning,
+                    isInitialized = true,
+                    lastSyncTime = healthStatus.LastSyncTime == DateTime.MinValue ? null : healthStatus.LastSyncTime.ToString("yyyy-MM-dd HH:mm:ss"),
+                    successfulSyncCount = healthStatus.SuccessfulSyncCount,
+                    failedSyncCount = healthStatus.FailedSyncCount,
+                    syncIntervalMs = healthStatus.SyncIntervalMs,
+                    batchSize = healthStatus.BatchSize
+                };
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[SyncHandler] Failed to get auto-sync status: {ex.Message}");
+                throw new Exception($"Failed to get auto-sync status: {ex.Message}");
+            }
+        }
+
         #region Helper Methods
 
         private void CollectGameObjectsRecursive(GameObject obj, List<GameObject> list)
@@ -531,6 +674,27 @@ namespace UnityEditorToolkit.Handlers
             public int deletedObjects;
             public int deletedComponents;
             public string message;
+        }
+
+        [Serializable]
+        public class AutoSyncResult
+        {
+            public bool success;
+            public string message;
+            public bool isRunning;
+        }
+
+        [Serializable]
+        public class AutoSyncStatusResult
+        {
+            public bool success;
+            public bool isRunning;
+            public bool isInitialized;
+            public string lastSyncTime;
+            public int successfulSyncCount;
+            public int failedSyncCount;
+            public int syncIntervalMs;
+            public int batchSize;
         }
 
         #endregion

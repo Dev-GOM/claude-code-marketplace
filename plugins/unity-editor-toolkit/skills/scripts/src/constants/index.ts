@@ -148,6 +148,9 @@ export const COMMANDS = {
   SYNC_GAMEOBJECT: 'Sync.SyncGameObject',
   SYNC_STATUS: 'Sync.GetSyncStatus',
   SYNC_CLEAR: 'Sync.ClearSync',
+  SYNC_START_AUTO: 'Sync.StartAutoSync',
+  SYNC_STOP_AUTO: 'Sync.StopAutoSync',
+  SYNC_GET_AUTO_STATUS: 'Sync.GetAutoSyncStatus',
 
   // Analytics commands
   ANALYTICS_PROJECT_STATS: 'Analytics.GetProjectStats',
