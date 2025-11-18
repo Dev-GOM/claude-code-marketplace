@@ -74,7 +74,7 @@ namespace UnityEditorToolkit.Handlers
                     rotation_x, rotation_y, rotation_z, rotation_w,
                     scale_x, scale_y, scale_z,
                     recorded_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now', 'localtime'))
             ";
 
             connection.Execute(sql,
@@ -410,7 +410,7 @@ namespace UnityEditorToolkit.Handlers
                     instance_id, scene_id, object_name,
                     tag, layer, is_active, is_static, is_deleted,
                     created_at, updated_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, 0, datetime('now'), datetime('now'))
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, 0, datetime('now', 'localtime'), datetime('now', 'localtime'))
             ";
 
             connection.Execute(insertSql,
@@ -438,7 +438,7 @@ namespace UnityEditorToolkit.Handlers
 
             var insertSql = @"
                 INSERT INTO scenes (scene_name, scene_path, build_index, is_loaded, created_at, updated_at)
-                VALUES (?, ?, ?, 1, datetime('now'), datetime('now'))
+                VALUES (?, ?, ?, 1, datetime('now', 'localtime'), datetime('now', 'localtime'))
             ";
             connection.Execute(insertSql, scene.name, scene.path, scene.buildIndex);
 

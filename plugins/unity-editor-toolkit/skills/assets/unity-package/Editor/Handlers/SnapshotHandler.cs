@@ -69,7 +69,7 @@ namespace UnityEditorToolkit.Handlers
             // Insert snapshot
             var sql = @"
                 INSERT INTO snapshots (scene_id, snapshot_name, snapshot_data, description, created_at)
-                VALUES (?, ?, ?, ?, datetime('now'))
+                VALUES (?, ?, ?, ?, datetime('now', 'localtime'))
             ";
             connection.Execute(sql, sceneId, param.name, snapshotJson, param.description ?? "");
 
@@ -313,7 +313,7 @@ namespace UnityEditorToolkit.Handlers
             // Insert new scene record
             var insertSql = @"
                 INSERT INTO scenes (scene_name, scene_path, build_index, is_loaded, created_at, updated_at)
-                VALUES (?, ?, ?, 1, datetime('now'), datetime('now'))
+                VALUES (?, ?, ?, 1, datetime('now', 'localtime'), datetime('now', 'localtime'))
             ";
             connection.Execute(insertSql, scene.name, scene.path, scene.buildIndex);
 
@@ -328,7 +328,7 @@ namespace UnityEditorToolkit.Handlers
                 sceneName = scene.name,
                 scenePath = scene.path,
                 buildIndex = scene.buildIndex,
-                capturedAt = DateTime.UtcNow.ToString("O"),
+                capturedAt = DateTime.Now.ToString("O"),
                 objects = new List<GameObjectData>()
             };
 
