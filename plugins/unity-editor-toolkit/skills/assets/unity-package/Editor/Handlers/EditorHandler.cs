@@ -1,6 +1,10 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using UnityEngine;
 using UnityEditorToolkit.Protocol;
+using UnityEditorToolkit.Editor.Attributes;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -14,6 +18,9 @@ namespace UnityEditorToolkit.Handlers
     public class EditorHandler : BaseHandler
     {
         public override string Category => "Editor";
+
+        private static Dictionary<string, MethodInfo> executableMethods;
+        private static bool isInitialized = false;
 
         protected override object HandleMethod(string method, JsonRpcRequest request)
         {
@@ -33,6 +40,10 @@ namespace UnityEditorToolkit.Handlers
                     return HandleFocusGameView(request);
                 case "FocusSceneView":
                     return HandleFocusSceneView(request);
+                case "Execute":
+                    return HandleExecute(request);
+                case "ListExecutable":
+                    return HandleListExecutable(request);
                 default:
                     throw new Exception($"Unknown method: {method}");
             }
@@ -200,6 +211,145 @@ namespace UnityEditorToolkit.Handlers
         }
         #endif
 
+        private void InitializeExecutableMethods()
+        {
+            if (isInitialized)
+                return;
+
+            executableMethods = new Dictionary<string, MethodInfo>();
+
+            try
+            {
+                var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+
+                foreach (var assembly in assemblies)
+                {
+                    try
+                    {
+                        var types = assembly.GetTypes();
+
+                        foreach (var type in types)
+                        {
+                            var methods = type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
+
+                            foreach (var method in methods)
+                            {
+                                var attribute = method.GetCustomAttribute<ExecutableMethodAttribute>();
+                                if (attribute != null)
+                                {
+                                    if (!method.IsStatic)
+                                    {
+                                        Debug.LogWarning($"[EditorHandler] Method {type.FullName}.{method.Name} has [ExecutableMethod] but is not static. Skipping.");
+                                        continue;
+                                    }
+
+                                    if (method.ReturnType != typeof(void))
+                                    {
+                                        Debug.LogWarning($"[EditorHandler] Method {type.FullName}.{method.Name} has [ExecutableMethod] but does not return void. Skipping.");
+                                        continue;
+                                    }
+
+                                    if (method.GetParameters().Length > 0)
+                                    {
+                                        Debug.LogWarning($"[EditorHandler] Method {type.FullName}.{method.Name} has [ExecutableMethod] but has parameters. Skipping.");
+                                        continue;
+                                    }
+
+                                    if (executableMethods.ContainsKey(attribute.CommandName))
+                                    {
+                                        Debug.LogWarning($"[EditorHandler] Duplicate command name '{attribute.CommandName}'. Method {type.FullName}.{method.Name} will override previous registration.");
+                                    }
+
+                                    executableMethods[attribute.CommandName] = method;
+                                    Debug.Log($"[EditorHandler] Registered executable method: '{attribute.CommandName}' -> {type.FullName}.{method.Name}");
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.LogWarning($"[EditorHandler] Failed to scan assembly {assembly.FullName}: {ex.Message}");
+                    }
+                }
+
+                Debug.Log($"[EditorHandler] Initialized with {executableMethods.Count} executable methods");
+                isInitialized = true;
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[EditorHandler] Failed to initialize executable methods: {ex.Message}");
+                executableMethods = new Dictionary<string, MethodInfo>();
+                isInitialized = true;
+            }
+        }
+
+        private object HandleExecute(JsonRpcRequest request)
+        {
+            InitializeExecutableMethods();
+
+            var param = ValidateParam<ExecuteParams>(request, "commandName");
+
+            if (string.IsNullOrWhiteSpace(param.commandName))
+            {
+                throw new Exception("Command name is required");
+            }
+
+            if (!executableMethods.TryGetValue(param.commandName, out var methodInfo))
+            {
+                throw new Exception($"Unknown command: '{param.commandName}'. Use Editor.ListExecutable to see available commands.");
+            }
+
+            try
+            {
+                Debug.Log($"[EditorHandler] Executing command: '{param.commandName}'");
+                methodInfo.Invoke(null, null);
+
+                return new
+                {
+                    success = true,
+                    commandName = param.commandName,
+                    message = $"Command '{param.commandName}' executed successfully"
+                };
+            }
+            catch (TargetInvocationException ex)
+            {
+                var innerException = ex.InnerException ?? ex;
+                Debug.LogError($"[EditorHandler] Failed to execute '{param.commandName}': {innerException.Message}\n{innerException.StackTrace}");
+                throw new Exception($"Failed to execute '{param.commandName}': {innerException.Message}");
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[EditorHandler] Failed to execute '{param.commandName}': {ex.Message}\n{ex.StackTrace}");
+                throw new Exception($"Failed to execute '{param.commandName}': {ex.Message}");
+            }
+        }
+
+        private object HandleListExecutable(JsonRpcRequest request)
+        {
+            InitializeExecutableMethods();
+
+            var methods = executableMethods.Select(kvp =>
+            {
+                var methodInfo = kvp.Value;
+                var attribute = methodInfo.GetCustomAttribute<ExecutableMethodAttribute>();
+
+                return new
+                {
+                    commandName = kvp.Key,
+                    description = attribute?.Description ?? "",
+                    className = methodInfo.DeclaringType?.FullName ?? "Unknown",
+                    methodName = methodInfo.Name
+                };
+            }).OrderBy(m => m.commandName).ToList();
+
+            return new
+            {
+                success = true,
+                count = methods.Count,
+                methods = methods
+            };
+        }
+
         // Parameter classes
         [Serializable]
         public class ReimportParams
@@ -211,6 +361,12 @@ namespace UnityEditorToolkit.Handlers
         public class SelectionParams
         {
             public int instanceId;
+        }
+
+        [Serializable]
+        public class ExecuteParams
+        {
+            public string commandName;
         }
     }
 }

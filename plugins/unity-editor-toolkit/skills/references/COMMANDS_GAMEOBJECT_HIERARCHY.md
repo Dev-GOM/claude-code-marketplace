@@ -6,13 +6,13 @@ Complete reference for GameObject manipulation and hierarchy query commands.
 
 ---
 
-## cd <unity-project-root> node .unity-websocket/uw go find
+## cd <unity-project-root> && node .unity-websocket/uw go find
 
 Find GameObject by name or hierarchical path.
 
 **Usage:**
 ```bash
-cd <unity-project-root> node .unity-websocket/uw go find <name> [options]
+cd <unity-project-root> && node .unity-websocket/uw go find <name> [options]
 ```
 
 **Arguments:**
@@ -33,27 +33,27 @@ cd <unity-project-root> node .unity-websocket/uw go find <name> [options]
 **Examples:**
 ```bash
 # Find GameObject by name
-cd <unity-project-root> node .unity-websocket/uw go find "Player"
+cd <unity-project-root> && node .unity-websocket/uw go find "Player"
 
 # Find with full hierarchy path
-cd <unity-project-root> node .unity-websocket/uw go find "Environment/Terrain/Trees"
+cd <unity-project-root> && node .unity-websocket/uw go find "Environment/Terrain/Trees"
 
 # Include component information
-cd <unity-project-root> node .unity-websocket/uw go find "Player" --with-components
+cd <unity-project-root> && node .unity-websocket/uw go find "Player" --with-components
 
 # Get all details in JSON format
-cd <unity-project-root> node .unity-websocket/uw go find "Enemy" --full --json
+cd <unity-project-root> && node .unity-websocket/uw go find "Enemy" --full --json
 ```
 
 ---
 
-## cd <unity-project-root> node .unity-websocket/uw go create
+## cd <unity-project-root> && node .unity-websocket/uw go create
 
 Create new GameObject.
 
 **Usage:**
 ```bash
-cd <unity-project-root> node .unity-websocket/uw go create <name> [options]
+cd <unity-project-root> && node .unity-websocket/uw go create <name> [options]
 ```
 
 **Arguments:**
@@ -73,27 +73,27 @@ cd <unity-project-root> node .unity-websocket/uw go create <name> [options]
 **Examples:**
 ```bash
 # Create empty GameObject
-cd <unity-project-root> node .unity-websocket/uw go create "NewObject"
+cd <unity-project-root> && node .unity-websocket/uw go create "NewObject"
 
 # Create with parent
-cd <unity-project-root> node .unity-websocket/uw go create "Child" --parent "Parent"
+cd <unity-project-root> && node .unity-websocket/uw go create "Child" --parent "Parent"
 
 # Create primitive
-cd <unity-project-root> node .unity-websocket/uw go create "MyCube" --primitive cube
+cd <unity-project-root> && node .unity-websocket/uw go create "MyCube" --primitive cube
 
 # Create nested object
-cd <unity-project-root> node .unity-websocket/uw go create "Enemy" --parent "Enemies/Group1"
+cd <unity-project-root> && node .unity-websocket/uw go create "Enemy" --parent "Enemies/Group1"
 ```
 
 ---
 
-## cd <unity-project-root> node .unity-websocket/uw go destroy
+## cd <unity-project-root> && node .unity-websocket/uw go destroy
 
 Destroy GameObject.
 
 **Usage:**
 ```bash
-cd <unity-project-root> node .unity-websocket/uw go destroy <name> [options]
+cd <unity-project-root> && node .unity-websocket/uw go destroy <name> [options]
 ```
 
 **Arguments:**
@@ -111,24 +111,24 @@ cd <unity-project-root> node .unity-websocket/uw go destroy <name> [options]
 **Examples:**
 ```bash
 # Destroy GameObject
-cd <unity-project-root> node .unity-websocket/uw go destroy "OldObject"
+cd <unity-project-root> && node .unity-websocket/uw go destroy "OldObject"
 
 # Destroy nested GameObject
-cd <unity-project-root> node .unity-websocket/uw go destroy "Enemies/Enemy1"
+cd <unity-project-root> && node .unity-websocket/uw go destroy "Enemies/Enemy1"
 
 # Get JSON response
-cd <unity-project-root> node .unity-websocket/uw go destroy "Temp" --json
+cd <unity-project-root> && node .unity-websocket/uw go destroy "Temp" --json
 ```
 
 ---
 
-## cd <unity-project-root> node .unity-websocket/uw go set-active
+## cd <unity-project-root> && node .unity-websocket/uw go set-active
 
 Set GameObject active state.
 
 **Usage:**
 ```bash
-cd <unity-project-root> node .unity-websocket/uw go set-active <name> <active> [options]
+cd <unity-project-root> && node .unity-websocket/uw go set-active <name> <active> [options]
 ```
 
 **Arguments:**
@@ -147,24 +147,138 @@ cd <unity-project-root> node .unity-websocket/uw go set-active <name> <active> [
 **Examples:**
 ```bash
 # Activate GameObject
-cd <unity-project-root> node .unity-websocket/uw go set-active "Player" true
+cd <unity-project-root> && node .unity-websocket/uw go set-active "Player" true
 
 # Deactivate GameObject
-cd <unity-project-root> node .unity-websocket/uw go set-active "Enemy" false
+cd <unity-project-root> && node .unity-websocket/uw go set-active "Enemy" false
 
 # Set nested GameObject state
-cd <unity-project-root> node .unity-websocket/uw go set-active "UI/Menu/Settings" false
+cd <unity-project-root> && node .unity-websocket/uw go set-active "UI/Menu/Settings" false
 ```
 
 ---
 
-## cd <unity-project-root> node .unity-websocket/uw hierarchy
+## cd <unity-project-root> && node .unity-websocket/uw go set-parent
+
+Set or remove parent of GameObject.
+
+**Usage:**
+```bash
+cd <unity-project-root> && node .unity-websocket/uw go set-parent <name> [parent] [options]
+```
+
+**Arguments:**
+```
+<name>                 GameObject name or path
+[parent]               Parent GameObject name (omit to remove parent)
+```
+
+**Options:**
+```
+--world-position-stays <bool>  Keep world position (default: true)
+--json                 Output in JSON format
+--timeout <ms>         Connection timeout in milliseconds (default: 30000)
+-h, --help             Display help for command
+```
+
+**Examples:**
+```bash
+# Set parent (attach "Weapon" to "Player")
+cd <unity-project-root> && node .unity-websocket/uw go set-parent "Weapon" "Player"
+
+# Remove parent (detach to root)
+cd <unity-project-root> && node .unity-websocket/uw go set-parent "Weapon"
+
+# Set parent without keeping world position
+cd <unity-project-root> && node .unity-websocket/uw go set-parent "Child" "Parent" --world-position-stays false
+
+# Reparent nested object
+cd <unity-project-root> && node .unity-websocket/uw go set-parent "UI/Menu" "Canvas"
+```
+
+---
+
+## cd <unity-project-root> && node .unity-websocket/uw go get-parent
+
+Get parent information of GameObject.
+
+**Usage:**
+```bash
+cd <unity-project-root> && node .unity-websocket/uw go get-parent <name> [options]
+```
+
+**Arguments:**
+```
+<name>                 GameObject name or path
+```
+
+**Options:**
+```
+--json                 Output in JSON format
+--timeout <ms>         Connection timeout in milliseconds (default: 30000)
+-h, --help             Display help for command
+```
+
+**Examples:**
+```bash
+# Get parent info
+cd <unity-project-root> && node .unity-websocket/uw go get-parent "Weapon"
+
+# Check if object has parent
+cd <unity-project-root> && node .unity-websocket/uw go get-parent "Player" --json
+
+# Get parent of nested object
+cd <unity-project-root> && node .unity-websocket/uw go get-parent "Enemies/Enemy1"
+```
+
+---
+
+## cd <unity-project-root> && node .unity-websocket/uw go get-children
+
+Get children of GameObject.
+
+**Usage:**
+```bash
+cd <unity-project-root> && node .unity-websocket/uw go get-children <name> [options]
+```
+
+**Arguments:**
+```
+<name>                 GameObject name or path
+```
+
+**Options:**
+```
+-r, --recursive        Get all descendants (not just direct children)
+--json                 Output in JSON format
+--timeout <ms>         Connection timeout in milliseconds (default: 30000)
+-h, --help             Display help for command
+```
+
+**Examples:**
+```bash
+# Get direct children
+cd <unity-project-root> && node .unity-websocket/uw go get-children "Player"
+
+# Get all descendants recursively
+cd <unity-project-root> && node .unity-websocket/uw go get-children "Player" --recursive
+
+# Get children with JSON output
+cd <unity-project-root> && node .unity-websocket/uw go get-children "Canvas" --json
+
+# Count nested objects
+cd <unity-project-root> && node .unity-websocket/uw go get-children "Environment" --recursive --json
+```
+
+---
+
+## cd <unity-project-root> && node .unity-websocket/uw hierarchy
 
 Query Unity GameObject hierarchy with tree visualization.
 
 **Usage:**
 ```bash
-cd <unity-project-root> node .unity-websocket/uw hierarchy [options]
+cd <unity-project-root> && node .unity-websocket/uw hierarchy [options]
 ```
 
 **Options:**
@@ -183,22 +297,22 @@ cd <unity-project-root> node .unity-websocket/uw hierarchy [options]
 **Examples:**
 ```bash
 # View full hierarchy
-cd <unity-project-root> node .unity-websocket/uw hierarchy
+cd <unity-project-root> && node .unity-websocket/uw hierarchy
 
 # Show only root GameObjects
-cd <unity-project-root> node .unity-websocket/uw hierarchy --root-only
+cd <unity-project-root> && node .unity-websocket/uw hierarchy --root-only
 
 # Limit depth to 2 levels
-cd <unity-project-root> node .unity-websocket/uw hierarchy --depth 2
+cd <unity-project-root> && node .unity-websocket/uw hierarchy --depth 2
 
 # Filter by name
-cd <unity-project-root> node .unity-websocket/uw hierarchy --filter "enemy"
+cd <unity-project-root> && node .unity-websocket/uw hierarchy --filter "enemy"
 
 # Show only active GameObjects with components
-cd <unity-project-root> node .unity-websocket/uw hierarchy --active-only --with-components
+cd <unity-project-root> && node .unity-websocket/uw hierarchy --active-only --with-components
 
 # Get JSON output
-cd <unity-project-root> node .unity-websocket/uw hierarchy --json
+cd <unity-project-root> && node .unity-websocket/uw hierarchy --json
 ```
 
 ---
@@ -217,13 +331,13 @@ All commands support these global options:
 **Examples:**
 ```bash
 # Check CLI version
-cd <unity-project-root> node .unity-websocket/uw --version
+cd <unity-project-root> && node .unity-websocket/uw --version
 
 # Enable verbose logging
-cd <unity-project-root> node .unity-websocket/uw --verbose hierarchy
+cd <unity-project-root> && node .unity-websocket/uw --verbose hierarchy
 
 # Use specific port
-cd <unity-project-root> node .unity-websocket/uw --port 9501 go find "Player"
+cd <unity-project-root> && node .unity-websocket/uw --port 9501 go find "Player"
 ```
 
 ---
@@ -249,7 +363,7 @@ Default timeout is 30 seconds (30000ms). Increase for operations that may take l
 
 ```bash
 # Longer timeout for complex operations
-cd <unity-project-root> node .unity-websocket/uw hierarchy --timeout 60000
+cd <unity-project-root> && node .unity-websocket/uw hierarchy --timeout 60000
 ```
 
 ### Error Handling

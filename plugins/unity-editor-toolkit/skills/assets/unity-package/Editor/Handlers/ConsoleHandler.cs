@@ -111,6 +111,20 @@ namespace UnityEditorToolkit.Handlers
                                 string stackTrace = messageField != null ? (string)messageField.GetValue(entry) : "";
                                 int mode = modeField != null ? (int)modeField.GetValue(entry) : 0;
 
+                                // If message is empty, use first line of stackTrace as message
+                                if (string.IsNullOrEmpty(message) && !string.IsNullOrEmpty(stackTrace))
+                                {
+                                    int firstNewLine = stackTrace.IndexOf('\n');
+                                    if (firstNewLine > 0)
+                                    {
+                                        message = stackTrace.Substring(0, firstNewLine);
+                                    }
+                                    else
+                                    {
+                                        message = stackTrace;
+                                    }
+                                }
+
                                 // Convert mode to LogType
                                 LogType logType = ConvertModeToLogType(mode);
 

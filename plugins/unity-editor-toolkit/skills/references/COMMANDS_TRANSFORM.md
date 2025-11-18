@@ -6,13 +6,13 @@ Complete reference for Transform manipulation commands.
 
 ---
 
-## cd <unity-project-root> node .unity-websocket/uw tf get
+## cd <unity-project-root> && node .unity-websocket/uw tf get
 
 Get Transform information (position, rotation, scale).
 
 **Usage:**
 ```bash
-cd <unity-project-root> node .unity-websocket/uw tf get <name> [options]
+cd <unity-project-root> && node .unity-websocket/uw tf get <name> [options]
 ```
 
 **Arguments:**
@@ -30,24 +30,24 @@ cd <unity-project-root> node .unity-websocket/uw tf get <name> [options]
 **Examples:**
 ```bash
 # Get Transform info
-cd <unity-project-root> node .unity-websocket/uw tf get "Player"
+cd <unity-project-root> && node .unity-websocket/uw tf get "Player"
 
 # Get nested GameObject Transform
-cd <unity-project-root> node .unity-websocket/uw tf get "Environment/Trees/Oak"
+cd <unity-project-root> && node .unity-websocket/uw tf get "Environment/Trees/Oak"
 
 # Get JSON output
-cd <unity-project-root> node .unity-websocket/uw tf get "Enemy" --json
+cd <unity-project-root> && node .unity-websocket/uw tf get "Enemy" --json
 ```
 
 ---
 
-## cd <unity-project-root> node .unity-websocket/uw tf set-position
+## cd <unity-project-root> && node .unity-websocket/uw tf set-position
 
 Set Transform position.
 
 **Usage:**
 ```bash
-cd <unity-project-root> node .unity-websocket/uw tf set-position <name> <position> [options]
+cd <unity-project-root> && node .unity-websocket/uw tf set-position <name> <position> [options]
 ```
 
 **Arguments:**
@@ -66,24 +66,24 @@ cd <unity-project-root> node .unity-websocket/uw tf set-position <name> <positio
 **Examples:**
 ```bash
 # Set position
-cd <unity-project-root> node .unity-websocket/uw tf set-position "Player" "0,5,10"
+cd <unity-project-root> && node .unity-websocket/uw tf set-position "Player" "0,5,10"
 
 # Set position with negative values
-cd <unity-project-root> node .unity-websocket/uw tf set-position "Enemy" "-5.5,0,3.2"
+cd <unity-project-root> && node .unity-websocket/uw tf set-position "Enemy" "-5.5,0,3.2"
 
 # Set nested GameObject position
-cd <unity-project-root> node .unity-websocket/uw tf set-position "UI/Menu/Button" "100,50,0"
+cd <unity-project-root> && node .unity-websocket/uw tf set-position "UI/Menu/Button" "100,50,0"
 ```
 
 ---
 
-## cd <unity-project-root> node .unity-websocket/uw tf set-rotation
+## cd <unity-project-root> && node .unity-websocket/uw tf set-rotation
 
 Set Transform rotation using Euler angles.
 
 **Usage:**
 ```bash
-cd <unity-project-root> node .unity-websocket/uw tf set-rotation <name> <rotation> [options]
+cd <unity-project-root> && node .unity-websocket/uw tf set-rotation <name> <rotation> [options]
 ```
 
 **Arguments:**
@@ -102,24 +102,24 @@ cd <unity-project-root> node .unity-websocket/uw tf set-rotation <name> <rotatio
 **Examples:**
 ```bash
 # Rotate 90 degrees on Y axis
-cd <unity-project-root> node .unity-websocket/uw tf set-rotation "Player" "0,90,0"
+cd <unity-project-root> && node .unity-websocket/uw tf set-rotation "Player" "0,90,0"
 
 # Set rotation with all axes
-cd <unity-project-root> node .unity-websocket/uw tf set-rotation "Camera" "30,45,0"
+cd <unity-project-root> && node .unity-websocket/uw tf set-rotation "Camera" "30,45,0"
 
 # Reset rotation
-cd <unity-project-root> node .unity-websocket/uw tf set-rotation "Enemy" "0,0,0"
+cd <unity-project-root> && node .unity-websocket/uw tf set-rotation "Enemy" "0,0,0"
 ```
 
 ---
 
-## cd <unity-project-root> node .unity-websocket/uw tf set-scale
+## cd <unity-project-root> && node .unity-websocket/uw tf set-scale
 
 Set Transform scale.
 
 **Usage:**
 ```bash
-cd <unity-project-root> node .unity-websocket/uw tf set-scale <name> <scale> [options]
+cd <unity-project-root> && node .unity-websocket/uw tf set-scale <name> <scale> [options]
 ```
 
 **Arguments:**
@@ -138,13 +138,13 @@ cd <unity-project-root> node .unity-websocket/uw tf set-scale <name> <scale> [op
 **Examples:**
 ```bash
 # Double size
-cd <unity-project-root> node .unity-websocket/uw tf set-scale "Cube" "2,2,2"
+cd <unity-project-root> && node .unity-websocket/uw tf set-scale "Cube" "2,2,2"
 
 # Scale only on Y axis
-cd <unity-project-root> node .unity-websocket/uw tf set-scale "Platform" "1,0.5,1"
+cd <unity-project-root> && node .unity-websocket/uw tf set-scale "Platform" "1,0.5,1"
 
 # Non-uniform scaling
-cd <unity-project-root> node .unity-websocket/uw tf set-scale "Wall" "5,3,0.2"
+cd <unity-project-root> && node .unity-websocket/uw tf set-scale "Wall" "5,3,0.2"
 ```
 
 ---
@@ -163,13 +163,13 @@ All commands support these global options:
 **Examples:**
 ```bash
 # Check CLI version
-cd <unity-project-root> node .unity-websocket/uw --version
+cd <unity-project-root> && node .unity-websocket/uw --version
 
 # Enable verbose logging
-cd <unity-project-root> node .unity-websocket/uw --verbose tf get "Player"
+cd <unity-project-root> && node .unity-websocket/uw --verbose tf get "Player"
 
 # Use specific port
-cd <unity-project-root> node .unity-websocket/uw --port 9501 tf set-position "Enemy" "0,0,0"
+cd <unity-project-root> && node .unity-websocket/uw --port 9501 tf set-position "Enemy" "0,0,0"
 ```
 
 ---
@@ -195,7 +195,7 @@ Default timeout is 30 seconds (30000ms). Increase for operations that may take l
 
 ```bash
 # Longer timeout for complex operations
-cd <unity-project-root> node .unity-websocket/uw tf get "Player" --timeout 60000
+cd <unity-project-root> && node .unity-websocket/uw tf get "Player" --timeout 60000
 ```
 
 ### Error Handling

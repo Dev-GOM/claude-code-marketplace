@@ -21,9 +21,9 @@ export const UNITY = {
   MAX_RECONNECT_ATTEMPTS: 3,
 
   // Command execution timeouts
-  COMMAND_TIMEOUT: 5000,       // 5 seconds for most commands
-  HIERARCHY_TIMEOUT: 10000,    // 10 seconds for hierarchy queries
-  SCENE_LOAD_TIMEOUT: 30000,   // 30 seconds for scene loading
+  COMMAND_TIMEOUT: 30000,      // 30 seconds for most commands
+  HIERARCHY_TIMEOUT: 30000,    // 30 seconds for hierarchy queries
+  SCENE_LOAD_TIMEOUT: 60000,   // 60 seconds for scene loading
 } as const;
 
 /**
@@ -102,11 +102,63 @@ export const COMMANDS = {
   EDITOR_REFRESH: 'Editor.Refresh',
   EDITOR_RECOMPILE: 'Editor.Recompile',
   EDITOR_REIMPORT: 'Editor.Reimport',
+  EDITOR_EXECUTE: 'Editor.Execute',
+  EDITOR_LIST_EXECUTABLE: 'Editor.ListExecutable',
+
+  // Wait commands
+  WAIT_WAIT: 'Wait.Wait',
+
+  // Chain commands
+  CHAIN_EXECUTE: 'Chain.Execute',
 
   // Animation commands
   ANIMATION_PLAY: 'Animation.Play',
   ANIMATION_STOP: 'Animation.Stop',
   ANIMATION_GET_STATE: 'Animation.GetState',
+
+  // Database commands
+  DATABASE_STATUS: 'Database.Status',
+  DATABASE_CONNECT: 'Database.Connect',
+  DATABASE_DISCONNECT: 'Database.Disconnect',
+  DATABASE_RESET: 'Database.Reset',
+  DATABASE_RUN_MIGRATIONS: 'Database.RunMigrations',
+  DATABASE_CLEAR_MIGRATIONS: 'Database.ClearMigrations',
+  DATABASE_UNDO: 'Database.Undo',
+  DATABASE_REDO: 'Database.Redo',
+  DATABASE_GET_HISTORY: 'Database.GetHistory',
+  DATABASE_CLEAR_HISTORY: 'Database.ClearHistory',
+  DATABASE_QUERY: 'Database.Query',
+
+  // Snapshot commands
+  SNAPSHOT_SAVE: 'Snapshot.Save',
+  SNAPSHOT_LIST: 'Snapshot.List',
+  SNAPSHOT_GET: 'Snapshot.Get',
+  SNAPSHOT_RESTORE: 'Snapshot.Restore',
+  SNAPSHOT_DELETE: 'Snapshot.Delete',
+
+  // Transform History commands
+  TRANSFORM_HISTORY_RECORD: 'TransformHistory.Record',
+  TRANSFORM_HISTORY_LIST: 'TransformHistory.List',
+  TRANSFORM_HISTORY_RESTORE: 'TransformHistory.Restore',
+  TRANSFORM_HISTORY_COMPARE: 'TransformHistory.Compare',
+  TRANSFORM_HISTORY_CLEAR: 'TransformHistory.Clear',
+
+  // Sync commands
+  SYNC_SCENE: 'Sync.SyncScene',
+  SYNC_GAMEOBJECT: 'Sync.SyncGameObject',
+  SYNC_STATUS: 'Sync.GetSyncStatus',
+  SYNC_CLEAR: 'Sync.ClearSync',
+  SYNC_START_AUTO: 'Sync.StartAutoSync',
+  SYNC_STOP_AUTO: 'Sync.StopAutoSync',
+  SYNC_GET_AUTO_STATUS: 'Sync.GetAutoSyncStatus',
+
+  // Analytics commands
+  ANALYTICS_PROJECT_STATS: 'Analytics.GetProjectStats',
+  ANALYTICS_SCENE_STATS: 'Analytics.GetSceneStats',
+  ANALYTICS_SET_CACHE: 'Analytics.SetCache',
+  ANALYTICS_GET_CACHE: 'Analytics.GetCache',
+  ANALYTICS_CLEAR_CACHE: 'Analytics.ClearCache',
+  ANALYTICS_LIST_CACHE: 'Analytics.ListCache',
 } as const;
 
 /**

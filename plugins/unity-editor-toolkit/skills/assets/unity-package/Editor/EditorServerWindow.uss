@@ -83,30 +83,25 @@
     margin-bottom: 5px;
 }
 
-.button-row > .secondary-button {
+.button-row > Button {
     flex-grow: 1;
     flex-shrink: 1;
     flex-basis: 0;
-}
-
-/* Buttons */
-.action-button {
-    flex-grow: 1;
-    height: 30px;
     margin-left: 2px;
     margin-right: 2px;
 }
 
+/* Buttons */
+.action-button {
+    height: 30px;
+}
+
 .primary-button {
     height: 30px;
-    margin-top: 5px;
-    margin-bottom: 5px;
 }
 
 .secondary-button {
-    height: 25px;
-    margin-top: 3px;
-    margin-bottom: 3px;
+    height: 28px;
 }
 
 /* Path Field */
@@ -137,4 +132,31 @@
 .unity-help-box {
     margin-top: 5px;
     margin-bottom: 5px;
+}
+
+/* Toolbar Extension Styles */
+.unity-toolbar-element {
+    flex-direction: row;
+    align-items: center;
+    padding-left: 8px;
+    padding-right: 8px;
+}
+
+.unity-toolbar-label {
+    font-size: 11px;
+    -unity-font-style: bold;
+    margin-right: 5px;
+}
+
+.unity-toolbar-button {
+    font-size: 11px;
+    padding: 2px 5px;
+}
+
+.server-running {
+    color: rgb(76, 255, 76);
+}
+
+.server-stopped {
+    color: rgb(255, 76, 76);
 }

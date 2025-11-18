@@ -2,17 +2,24 @@ using UnityEngine;
 using UnityEditor;
 using UnityEngine.UIElements;
 using UnityEditorToolkit.Editor.Server;
+using UnityEditorToolkit.Editor.Attributes;
+using UnityEditorToolkit.Editor.Database;
+using Cysharp.Threading.Tasks;
 using System.IO;
+using UnityEditor.Callbacks;
 
 namespace UnityEditorToolkit.Editor
 {
     /// <summary>
     /// Editor window for Unity Editor Toolkit Server (UI Toolkit version)
     /// </summary>
-    public class EditorServerWindow : EditorWindow
+    public partial class EditorServerWindow : EditorWindow
     {
         private EditorWebSocketServer server => EditorWebSocketServer.Instance;
         private EditorServerCLIInstaller cliInstaller;
+
+        // Data binding source
+        private EditorServerWindowData windowData = new EditorServerWindowData();
 
         private bool wasPlaying = false;
         private float lastUpdateTime = 0f;
@@ -79,6 +86,44 @@ namespace UnityEditorToolkit.Editor
             }
         }
 
+        private void OnServerStartedHandler()
+        {
+            // Auto-reconnect database if it was previously connected
+            if (EditorPrefs.GetBool("UnityEditorToolkit.Database.AutoReconnect", false))
+            {
+                EditorPrefs.DeleteKey("UnityEditorToolkit.Database.AutoReconnect");
+
+                // Reconnect using saved config
+                string dbPath = EditorPrefs.GetString("UnityEditorToolkit.Database.Path", "");
+                bool enableWAL = EditorPrefs.GetBool("UnityEditorToolkit.Database.EnableWAL", true);
+
+                if (!string.IsNullOrEmpty(dbPath))
+                {
+                    var config = new DatabaseConfig
+                    {
+                        DatabaseFilePath = dbPath,
+                        EnableWAL = enableWAL
+                    };
+                    DatabaseManager.Instance.InitializeAsync(config).Forget();
+                    Debug.Log("[EditorServerWindow] 서버 시작 - 데이터베이스 자동 재연결");
+                }
+            }
+            UpdateUI();
+        }
+
+        private void OnServerStoppedHandler()
+        {
+            // Save auto-reconnect flag before disconnecting
+            if (DatabaseManager.Instance.IsConnected)
+            {
+                EditorPrefs.SetBool("UnityEditorToolkit.Database.AutoReconnect", true);
+            }
+
+            // Disconnect database when server stops
+            DatabaseManager.Instance.Disconnect();
+            UpdateUI();
+        }
+
         public void CreateGUI()
         {
             // Load UXML
@@ -95,6 +140,9 @@ namespace UnityEditorToolkit.Editor
 
             visualTree.CloneTree(rootVisualElement);
 
+            // Set data binding source
+            rootVisualElement.dataSource = windowData;
+
             // Load USS
             var styleSheet = AssetDatabase.LoadAssetAtPath<StyleSheet>(
                 "Packages/com.devgom.unity-editor-toolkit/Editor/EditorServerWindow.uss");
@@ -110,8 +158,14 @@ namespace UnityEditorToolkit.Editor
             // Bind events
             BindEvents();
 
+            // Initialize Database UI
+            InitializeDatabaseUI();
+
             // Initial UI update
             UpdateUI();
+
+            // Log initialization status (한 번에 출력)
+            LogInitializationStatus();
         }
 
         private void QueryUIElements()
@@ -150,6 +204,9 @@ namespace UnityEditorToolkit.Editor
             installLogContainer = rootVisualElement.Q<VisualElement>("install-log-container");
             installLogField = rootVisualElement.Q<TextField>("install-log");
             pluginPathField = rootVisualElement.Q<TextField>("plugin-path");
+
+            // Database section
+            QueryDatabaseUIElements();
         }
 
         private void BindEvents()
@@ -170,6 +227,10 @@ namespace UnityEditorToolkit.Editor
 
             startButton?.RegisterCallback<ClickEvent>(evt => server.StartServer());
             stopButton?.RegisterCallback<ClickEvent>(evt => server.StopServer());
+
+            // Server state change events
+            server.OnServerStarted += OnServerStartedHandler;
+            server.OnServerStopped += OnServerStoppedHandler;
 
             // Node.js section
             var nodejsDownloadBtn = rootVisualElement.Q<Button>("nodejs-download-button");
@@ -250,6 +311,9 @@ namespace UnityEditorToolkit.Editor
             openDocsBtn?.RegisterCallback<ClickEvent>(evt => {
                 Application.OpenURL("https://github.com/Dev-GOM/claude-code-marketplace/tree/main/plugins/unity-editor-toolkit");
             });
+
+            // Database section
+            BindDatabaseEvents();
         }
 
         private void InstallCLI()
@@ -267,31 +331,28 @@ namespace UnityEditorToolkit.Editor
 
             // Update CLI status
             UpdateCLIStatus();
+
+            // Update database status
+            UpdateDatabaseUI();
         }
 
         private void UpdateServerStatus()
         {
-            // Update status indicator
+            // Update data properties (UI auto-updates via data binding)
+            windowData.ServerIsRunning = server.IsRunning;
+            windowData.ServerPort = server.Port;
+            windowData.ConnectedClients = server.ConnectedClients;
+            windowData.AutoStart = server.AutoStart;
+
+            // Update status indicator classes (CSS classes cannot be bound)
             if (statusIndicator != null)
             {
                 statusIndicator.RemoveFromClassList("status-stopped");
                 statusIndicator.RemoveFromClassList("status-running");
-                statusIndicator.RemoveFromClassList("status-error");
-
-                if (server.IsRunning)
-                {
-                    statusIndicator.AddToClassList("status-running");
-                }
-                else
-                {
-                    statusIndicator.AddToClassList("status-stopped");
-                }
+                statusIndicator.AddToClassList(server.IsRunning ? "status-running" : "status-stopped");
             }
 
-            serverStatusLabel.text = server.IsRunning ? "Running ✓" : "Stopped";
-            serverPortLabel.text = server.Port.ToString();
-            connectedClientsLabel.text = server.ConnectedClients.ToString();
-            autostartToggle.value = server.AutoStart;
+            // Update button states (not bound to data)
             autostartToggle.SetEnabled(!server.IsRunning);
             startButton.SetEnabled(!server.IsRunning);
             stopButton.SetEnabled(server.IsRunning);
@@ -312,11 +373,11 @@ namespace UnityEditorToolkit.Editor
             nodejsMissingSection?.AddToClassList("hidden");
             cliStatusSection?.RemoveFromClassList("hidden");
 
-            // Version labels
-            if (packageVersionLabel != null)
-                packageVersionLabel.text = cliInstaller.PluginVersion ?? "Unknown";
-            if (cliVersionLabel != null)
-                cliVersionLabel.text = cliInstaller.LocalCLIVersion ?? "Not Installed";
+            // Update version data (UI auto-updates via data binding)
+            windowData.PackageVersion = cliInstaller.PluginVersion ?? "Unknown";
+            windowData.CLIVersion = cliInstaller.LocalCLIVersion != null
+                ? $"✅ {cliInstaller.LocalCLIVersion}"
+                : "❌ Not Installed";
 
             // Hide all status messages first
             installProgressHelp?.AddToClassList("hidden");
@@ -337,13 +398,13 @@ namespace UnityEditorToolkit.Editor
             else if (cliInstaller.UpdateAvailable)
             {
                 bool isMinorUpdate = EditorServerCLIInstaller.IsMinorVersionDifference(
-                    cliInstaller.LocalCLIVersion, cliInstaller.PluginVersion);
+                    cliInstaller.LocalCLIVersion, cliInstaller.HomeCLIVersion);
 
                 if (isMinorUpdate)
                 {
                     if (updateMinorHelp != null)
                     {
-                        updateMinorHelp.text = $"CLI update available: {cliInstaller.LocalCLIVersion} → {cliInstaller.PluginVersion}\n(Minor update, current version still works)";
+                        updateMinorHelp.text = $"CLI update available: {cliInstaller.LocalCLIVersion} → {cliInstaller.HomeCLIVersion}\n(Minor update, current version still works)";
                         updateMinorHelp.RemoveFromClassList("hidden");
                     }
                 }
@@ -351,7 +412,7 @@ namespace UnityEditorToolkit.Editor
                 {
                     if (updateMajorHelp != null)
                     {
-                        updateMajorHelp.text = $"CLI update available: {cliInstaller.LocalCLIVersion} → {cliInstaller.PluginVersion}\n(Recommended to update)";
+                        updateMajorHelp.text = $"CLI update available: {cliInstaller.LocalCLIVersion} → {cliInstaller.HomeCLIVersion}\n(Recommended to update)";
                         updateMajorHelp.RemoveFromClassList("hidden");
                     }
                 }
@@ -478,8 +539,86 @@ namespace UnityEditorToolkit.Editor
             }
         }
 
+        private void LogInitializationStatus()
+        {
+            var sb = new System.Text.StringBuilder();
+            sb.AppendLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+            sb.AppendLine("✓ Unity Editor Toolkit - Initialized");
+            sb.AppendLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+
+            // Node.js 상태
+            if (hasNodeJS)
+            {
+                string nodeVersion = EditorServerCommandRunner.GetNodeVersion();
+                sb.AppendLine($"  Node.js: {nodeVersion}");
+            }
+            else
+            {
+                sb.AppendLine("  Node.js: Not installed");
+            }
+
+            // CLI 상태
+            if (cliInstaller != null)
+            {
+                string cliVersion = cliInstaller.LocalCLIVersion;
+                sb.AppendLine($"  CLI Version: {(string.IsNullOrEmpty(cliVersion) ? "Not installed" : cliVersion)}");
+            }
+
+            // Database 상태
+            if (currentDbConfig != null)
+            {
+                sb.AppendLine($"  Database: {(currentDbConfig.EnableDatabase ? "Enabled" : "Disabled")}");
+                if (currentDbConfig.EnableDatabase)
+                {
+                    sb.AppendLine($"    - WAL Mode: {(currentDbConfig.EnableWAL ? "Enabled" : "Disabled")}");
+                    sb.AppendLine($"    - File Path: {currentDbConfig.DatabaseFilePath}");
+                }
+            }
+
+            // Server 상태
+            sb.AppendLine($"  WebSocket Server: {(server.IsRunning ? $"Running (Port {server.Port})" : "Stopped")}");
+
+            sb.AppendLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+
+            Debug.Log(sb.ToString());
+        }
+
+        #region Executable Methods (CLI)
+
+        /// <summary>
+        /// Reinstall Unity Editor Toolkit CLI (executable via CLI)
+        /// </summary>
+        [ExecutableMethod("reinstall-cli", "Reinstall Unity Editor Toolkit CLI")]
+        public static void ReinstallCLI()
+        {
+            var window = GetWindow<EditorServerWindow>("Unity Editor Toolkit");
+            if (window == null)
+            {
+                Debug.LogError("[EditorServerWindow] Failed to get window instance for CLI reinstall");
+                throw new System.Exception("Failed to get Unity Editor Toolkit window instance");
+            }
+
+            if (window.cliInstaller == null)
+            {
+                Debug.LogError("[EditorServerWindow] CLI installer is not initialized");
+                throw new System.Exception("CLI installer is not initialized");
+            }
+
+            Debug.Log("[EditorServerWindow] Reinstalling CLI via execute command...");
+            window.cliInstaller.InstallOrUpdate();
+        }
+
+        #endregion
+
         private void OnDisable()
         {
+            // Unsubscribe from server events
+            if (server != null)
+            {
+                server.OnServerStarted -= OnServerStartedHandler;
+                server.OnServerStopped -= OnServerStoppedHandler;
+            }
+
             // UI Toolkit automatically cleans up event handlers when the window closes
             // Clear any references to prevent potential memory leaks
             statusIndicator = null;
@@ -506,6 +645,9 @@ namespace UnityEditorToolkit.Editor
             installLogContainer = null;
             installLogField = null;
             pluginPathField = null;
+
+            // Database section cleanup
+            CleanupDatabaseUI();
         }
     }
 }

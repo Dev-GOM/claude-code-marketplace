@@ -1,24 +1,13 @@
 # Unity Editor Toolkit
 
-> **⚠️ Status**: 🧪 Experimental (v0.5.0)
+> **⚠️ Status**: 🧪 Experimental (v0.7.0) - **Unity 6+ Required**
 >
 > **This plugin is currently in experimental stage. APIs and features may change.**
+> **Database features require Unity 6 or higher** (embedded SQLite, no installation required)
 
-Complete Unity Editor control and automation toolkit for Claude Code. Command 500+ Unity Editor features across 25 categories - GameObjects, components, scenes, materials, physics, animation, and more through real-time WebSocket automation.
+Complete Unity Editor control and automation toolkit for Claude Code with SQLite database integration. Command 500+ Unity Editor features across 25 categories - GameObjects, components, scenes, materials, physics, animation, and more through real-time WebSocket automation.
 
-## Recent Updates (v0.5.0)
-
-**Documentation Improvements:**
-- 📚 Reorganized documentation structure (user docs vs Claude reference docs)
-- ✅ Split command reference into 6 category-specific files
-- ✅ Moved user documentation (QUICKSTART, TEST_GUIDE, API_COMPATIBILITY) to plugin root
-- ✅ Added bilingual navigation with language switcher links
-- ✅ Updated all internal documentation links
-
-**Previous Updates (v0.4.0):**
-- 🔒 Fixed path traversal vulnerability
-- ✅ Improved resource cleanup and atomic file operations
-- ✅ Enhanced input validation and error handling
+## Recent Updates
 
 See [CHANGELOG.md](./CHANGELOG.md) for full release notes.
 
@@ -26,6 +15,12 @@ See [CHANGELOG.md](./CHANGELOG.md) for full release notes.
 
 - **500+ Commands**: Comprehensive control across 25 Unity Editor categories
 - **Real-time WebSocket**: Instant bidirectional communication (port 9500-9600)
+- **SQLite Database Integration**: Real-time GameObject synchronization with GUID-based persistence
+  - **GUID-based Identification**: Persistent GameObject tracking across Unity sessions
+  - **Multi-scene Support**: Synchronize all loaded scenes simultaneously
+  - **Command Pattern**: Undo/Redo support for database operations
+  - **Auto Migration**: Automatic schema migration system
+  - **Batch Operations**: Efficient bulk inserts, updates, and deletes (500 objects/batch)
 - **GameObject & Hierarchy**: Create, destroy, manipulate, query hierarchies with tree visualization
 - **Transform Control**: Precise Vector3 manipulation for position, rotation, scale
 - **Component Management**: Add, remove, configure components with property access
@@ -39,7 +34,7 @@ See [CHANGELOG.md](./CHANGELOG.md) for full release notes.
 - **Editor Automation**: Play mode, window focus, selection, scene view control
 - **Build & Deploy**: Build pipeline, player settings, platform switching
 - **Advanced Features**: Lighting, Camera, Audio, Navigation, Particles, Timeline, UI Toolkit
-- **Security Hardened**: Defense against path traversal, command injection, JSON injection
+- **Security Hardened**: Defense against path traversal, command injection, JSON injection, SQL injection
 - **Cross-Platform**: Full Windows, macOS, Linux support
 
 ## Installation
@@ -86,105 +81,38 @@ This plugin is part of the [Dev GOM Plugins](https://github.com/Dev-GOM/claude-c
    - Click "Install CLI" to build the WebSocket server (one-time setup)
    - Server starts automatically when Unity Editor opens
 
-3. **Server Status**:
+3. **Database Setup** (Optional):
+   - In the Server window, switch to "Database" tab
+   - Click "Connect" to initialize SQLite database
+   - Database file location: `{ProjectRoot}/.unity-websocket/unity-editor.db`
+   - Click "Start Sync" to enable real-time GameObject synchronization (1s interval)
+   - **GUID Components**: GameObjects are automatically tagged with persistent GUIDs
+   - **Multi-scene**: All loaded scenes are synchronized automatically
+   - **Analytics**: View sync stats, database health, and Undo/Redo history
+
+4. **Server Status**:
    - Port: Auto-assigned (9500-9600 range)
    - Status file: `{ProjectRoot}/.unity-websocket/server-status.json`
    - CLI automatically detects the correct port from this file
 
 ### CLI Commands
 
-See [COMMANDS.md](./skills/references/COMMANDS.md) for complete 500+ command reference.
-
-#### Currently Implemented (15 commands)
-
-**Hierarchy**
 ```bash
-# View GameObject hierarchy with tree visualization
-cd <unity-project-root> node .unity-websocket/uw hierarchy
+# Basic usage
+cd <unity-project-root> && node .unity-websocket/uw <command> [options]
 
-# Show only root GameObjects
-cd <unity-project-root> node .unity-websocket/uw hierarchy --root-only
+# Show all available commands
+cd <unity-project-root> && node .unity-websocket/uw --help
 
-# Include inactive GameObjects
-cd <unity-project-root> node .unity-websocket/uw hierarchy --include-inactive
+# Show help for specific command
+cd <unity-project-root> && node .unity-websocket/uw <command> --help
 ```
 
-**GameObject**
-```bash
-# Find GameObject by name or path
-cd <unity-project-root> node .unity-websocket/uw go find "Player"
-cd <unity-project-root> node .unity-websocket/uw go find "Environment/Terrain"
+**Currently Implemented**: 26 commands across 8 categories
 
-# Create new GameObject
-cd <unity-project-root> node .unity-websocket/uw go create "NewObject"
-cd <unity-project-root> node .unity-websocket/uw go create "Child" --parent "Parent"
+See [COMMANDS.md](./skills/references/COMMANDS.md) for complete command reference.
 
-# Destroy GameObject
-cd <unity-project-root> node .unity-websocket/uw go destroy "OldObject"
-
-# Set active state
-cd <unity-project-root> node .unity-websocket/uw go set-active "Player" true
-cd <unity-project-root> node .unity-websocket/uw go set-active "Enemy" false
-```
-
-**Transform**
-```bash
-# Get Transform information
-cd <unity-project-root> node .unity-websocket/uw tf get "Player"
-
-# Set position (x,y,z)
-cd <unity-project-root> node .unity-websocket/uw tf set-position "Player" "0,5,10"
-
-# Set rotation (Euler angles in degrees)
-cd <unity-project-root> node .unity-websocket/uw tf set-rotation "Player" "0,90,0"
-
-# Set scale
-cd <unity-project-root> node .unity-websocket/uw tf set-scale "Player" "2,2,2"
-```
-
-**Scene**
-```bash
-# Get current scene info
-cd <unity-project-root> node .unity-websocket/uw scene current
-
-# List all loaded scenes
-cd <unity-project-root> node .unity-websocket/uw scene list
-
-# Load scene by name
-cd <unity-project-root> node .unity-websocket/uw scene load "GameScene"
-
-# Load scene additively
-cd <unity-project-root> node .unity-websocket/uw scene load "UIScene" --additive
-```
-
-**Console**
-```bash
-# Get recent console logs (default: 50)
-cd <unity-project-root> node .unity-websocket/uw console logs
-
-# Get specific number of logs
-cd <unity-project-root> node .unity-websocket/uw console logs --count 100
-
-# Show only errors and exceptions
-cd <unity-project-root> node .unity-websocket/uw console logs --errors-only
-
-# Include warnings
-cd <unity-project-root> node .unity-websocket/uw console logs --warnings
-
-# Clear console
-cd <unity-project-root> node .unity-websocket/uw console clear
-```
-
-**Status**
-```bash
-# Check connection status
-cd <unity-project-root> node .unity-websocket/uw status
-
-# Use custom port
-cd <unity-project-root> node .unity-websocket/uw --port 9301 status
-```
-
-#### Coming Soon (500+ commands)
+#### Command Categories
 
 See [COMMANDS.md](./skills/references/COMMANDS.md) for full command reference including:
 
@@ -209,33 +137,33 @@ See [COMMANDS.md](./skills/references/COMMANDS.md) for full command reference in
 
 **Create and configure GameObject:**
 ```bash
-cd <unity-project-root> node .unity-websocket/uw go create "Enemy" && \
-cd <unity-project-root> node .unity-websocket/uw tf set-position "Enemy" "10,0,5" && \
-cd <unity-project-root> node .unity-websocket/uw tf set-rotation "Enemy" "0,45,0"
+cd <unity-project-root> && node .unity-websocket/uw go create "Enemy" && \
+cd <unity-project-root> && node .unity-websocket/uw tf set-position "Enemy" "10,0,5" && \
+cd <unity-project-root> && node .unity-websocket/uw tf set-rotation "Enemy" "0,45,0"
 ```
 
 **Instantiate Prefab and modify:**
 ```bash
-cd <unity-project-root> node .unity-websocket/uw prefab instantiate "Prefabs/Player" --position "0,1,0" && \
-cd <unity-project-root> node .unity-websocket/uw material set-color "Player" "_Color" "0,1,0,1"
+cd <unity-project-root> && node .unity-websocket/uw prefab instantiate "Prefabs/Player" --position "0,1,0" && \
+cd <unity-project-root> && node .unity-websocket/uw material set-color "Player" "_Color" "0,1,0,1"
 ```
 
 **Load scene and activate GameObject:**
 ```bash
-cd <unity-project-root> node .unity-websocket/uw scene load "Level1" && \
-cd <unity-project-root> node .unity-websocket/uw go set-active "Boss" true
+cd <unity-project-root> && node .unity-websocket/uw scene load "Level1" && \
+cd <unity-project-root> && node .unity-websocket/uw go set-active "Boss" true
 ```
 
 **Monitor console errors in real-time:**
 ```bash
-cd <unity-project-root> node .unity-websocket/uw console stream --filter error
+cd <unity-project-root> && node .unity-websocket/uw console stream --filter error
 ```
 
 **Batch GameObject creation:**
 ```bash
 for i in {1..10}; do
-  cd <unity-project-root> node .unity-websocket/uw go create "Cube_$i" && \
-  cd <unity-project-root> node .unity-websocket/uw tf set-position "Cube_$i" "$i,0,0"
+  cd <unity-project-root> && node .unity-websocket/uw go create "Cube_$i" && \
+  cd <unity-project-root> && node .unity-websocket/uw tf set-position "Cube_$i" "$i,0,0"
 done
 ```
 
@@ -295,10 +223,14 @@ Defense-in-depth security implementation:
 - **Command Injection Defense**: Sanitized npm execution and environment isolation
 - **JSON Injection Prevention**: Runtime type validation for all structures
 - **Log Injection Defense**: Message sanitization prevents log manipulation
+- **SQL Injection Prevention**: Parameterized queries for all database operations
+  - Individual DELETE statements for small batches (≤100 items)
+  - Temporary table pattern for large batches (>100 items)
+- **Transaction Safety**: Nested transaction detection and graceful fallback
 - **WebSocket Security**: Localhost-only connections
 - **Port Validation**: Enforced 9500-9600 range
 - **Atomic Operations**: Race-condition-free lock acquisition (`{ flag: 'wx' }`)
-- **Memory Safety**: Proper event listener cleanup
+- **Memory Safety**: Proper event listener cleanup and Domain Reload safety checks
 
 ## Development
 
@@ -358,7 +290,7 @@ Unity C# server implementation required for end-to-end testing. Unit tests comin
 
 ## Development Roadmap
 
-**Phase 1 (Current)**: GameObject, Transform, Scene, Console - 15 commands
+**Phase 1 (Current)**: GameObject, Transform, Scene, Console, Wait, Chain - 26 commands
 **Phase 2**: Component, Material, Prefab - 100+ commands
 **Phase 3**: Animation, Physics, Lighting - 150+ commands
 **Phase 4**: Build, Profiler, Test Runner - 100+ commands
@@ -376,12 +308,23 @@ See [COMMANDS.md](./skills/references/COMMANDS.md) for detailed roadmap.
 - [x] Server status synchronization (`.unity-websocket/server-status.json`)
 - [x] Automatic port discovery
 - [x] Home folder-based plugin path detection
+- [x] SQLite database integration with UniTask async/await
+- [x] GUID-based GameObject identification (persistent across sessions)
+- [x] Multi-scene synchronization support
+- [x] Command Pattern with Undo/Redo support
+- [x] Auto migration system
+- [x] Batch operations (500 objects/batch)
+- [x] SQL injection prevention (parameterized queries)
+- [x] Transaction nesting prevention
 
 ### Commands (500+)
 - [x] GameObject & Hierarchy (15 commands)
 - [x] Transform (8 commands)
 - [x] Scene Management (3 commands)
 - [x] Console & Logging (2 commands)
+- [x] EditorPrefs Management (6 commands)
+- [x] Wait Commands (4 commands)
+- [x] Chain Commands (2 commands)
 - [ ] Component (20+ commands)
 - [ ] Material & Rendering (25+ commands)
 - [ ] Prefab (15+ commands)
@@ -414,18 +357,16 @@ Apache License 2.0 - See [LICENSE](../../LICENSE) for details
 - [Blender Toolkit](../blender-toolkit) - Blender 3D automation and scene management
 - [Unity Dev Toolkit](../unity-dev-toolkit) - Unity development utilities and compile error fixing
 
-## Contributing
-
-Contributions welcome! Please read [CONTRIBUTING.md](../../CONTRIBUTING.md) for guidelines.
-
 ## Documentation
 
 - [COMMANDS.md](./skills/references/COMMANDS.md) - Complete command reference (500+ commands)
 - [COMMANDS.ko.md](./skills/references/COMMANDS.ko.md) - Korean command reference
+- [DATABASE_GUIDE.md](./skills/references/DATABASE_GUIDE.md) - Database usage guide
 
 ---
 
-**Version**: 0.5.0
-**Last Updated**: 2025-11-13
+**Version**: 0.7.0
+**Unity Version**: Unity 6+ (Database features require embedded SQLite support)
+**Last Updated**: 2025-11-19
 **Author**: Dev GOM
 **Marketplace**: [dev-gom-plugins](https://github.com/Dev-GOM/claude-code-marketplace)

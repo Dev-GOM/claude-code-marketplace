@@ -22,6 +22,7 @@ namespace UnityEditorToolkit.Editor
 
         public string PluginVersion { get; private set; }
         public string LocalCLIVersion { get; private set; }
+        public string HomeCLIVersion { get; private set; }
         public bool UpdateAvailable { get; private set; }
         public bool IsInstalling { get; private set; }
         public string InstallLog { get; private set; } = "";
@@ -40,7 +41,9 @@ namespace UnityEditorToolkit.Editor
         {
             PluginVersion = EditorServerPathManager.GetPluginVersion();
             LocalCLIVersion = EditorServerPathManager.GetLocalCLIVersion();
-            UpdateAvailable = (PluginVersion != null && LocalCLIVersion != null && PluginVersion != LocalCLIVersion);
+            HomeCLIVersion = EditorServerPathManager.GetHomeCLIVersion();
+            // Update available when home CLI version differs from installed local CLI version
+            UpdateAvailable = (HomeCLIVersion != null && LocalCLIVersion != null && HomeCLIVersion != LocalCLIVersion);
         }
 
         /// <summary>

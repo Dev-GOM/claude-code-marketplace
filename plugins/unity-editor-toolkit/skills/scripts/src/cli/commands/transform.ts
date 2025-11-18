@@ -45,7 +45,7 @@ export function registerTransformCommand(program: Command): void {
     .description('Get Transform information')
     .argument('<name>', 'GameObject name or path')
     .option('--json', 'Output in JSON format')
-    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '30000')
+    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '300000')
     .action(async (name, options) => {
       let client = null;
       try {
@@ -110,6 +110,162 @@ export function registerTransformCommand(program: Command): void {
       }
     });
 
+  // Get position
+  transformCmd
+    .command('get-position')
+    .description('Get Transform position')
+    .argument('<name>', 'GameObject name or path')
+    .option('--json', 'Output in JSON format')
+    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '300000')
+    .action(async (name, options) => {
+      let client = null;
+      try {
+        const projectRoot = config.getProjectRoot();
+        const port = program.opts().port || config.getUnityPort(projectRoot);
+
+        if (!port) {
+          logger.error('Unity server not running. Start Unity Editor with WebSocket server enabled.');
+          process.exit(1);
+        }
+
+        client = createUnityClient(port);
+
+        logger.info('Connecting to Unity Editor...');
+        await client.connect();
+
+        logger.info(`Getting position: ${name}`);
+        const position = await client.sendRequest<Vector3>(
+          COMMANDS.TRANSFORM_GET_POSITION,
+          { name }
+        );
+
+        // JSON output
+        if (options.json) {
+          outputJson({
+            gameObject: name,
+            position,
+          });
+        } else {
+          logger.info(`✓ Position: ${formatVector3(position)}`);
+        }
+      } catch (error) {
+        logger.error('Failed to get position', error);
+        process.exit(1);
+      } finally {
+        if (client) {
+          try {
+            client.disconnect();
+          } catch (disconnectError) {
+            logger.debug(`Error during disconnect: ${disconnectError instanceof Error ? disconnectError.message : String(disconnectError)}`);
+          }
+        }
+      }
+    });
+
+  // Get rotation
+  transformCmd
+    .command('get-rotation')
+    .description('Get Transform rotation (Euler angles)')
+    .argument('<name>', 'GameObject name or path')
+    .option('--json', 'Output in JSON format')
+    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '300000')
+    .action(async (name, options) => {
+      let client = null;
+      try {
+        const projectRoot = config.getProjectRoot();
+        const port = program.opts().port || config.getUnityPort(projectRoot);
+
+        if (!port) {
+          logger.error('Unity server not running. Start Unity Editor with WebSocket server enabled.');
+          process.exit(1);
+        }
+
+        client = createUnityClient(port);
+
+        logger.info('Connecting to Unity Editor...');
+        await client.connect();
+
+        logger.info(`Getting rotation: ${name}`);
+        const rotation = await client.sendRequest<Vector3>(
+          COMMANDS.TRANSFORM_GET_ROTATION,
+          { name }
+        );
+
+        // JSON output
+        if (options.json) {
+          outputJson({
+            gameObject: name,
+            rotation,
+          });
+        } else {
+          logger.info(`✓ Rotation: ${formatVector3(rotation)}°`);
+        }
+      } catch (error) {
+        logger.error('Failed to get rotation', error);
+        process.exit(1);
+      } finally {
+        if (client) {
+          try {
+            client.disconnect();
+          } catch (disconnectError) {
+            logger.debug(`Error during disconnect: ${disconnectError instanceof Error ? disconnectError.message : String(disconnectError)}`);
+          }
+        }
+      }
+    });
+
+  // Get scale
+  transformCmd
+    .command('get-scale')
+    .description('Get Transform scale')
+    .argument('<name>', 'GameObject name or path')
+    .option('--json', 'Output in JSON format')
+    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '300000')
+    .action(async (name, options) => {
+      let client = null;
+      try {
+        const projectRoot = config.getProjectRoot();
+        const port = program.opts().port || config.getUnityPort(projectRoot);
+
+        if (!port) {
+          logger.error('Unity server not running. Start Unity Editor with WebSocket server enabled.');
+          process.exit(1);
+        }
+
+        client = createUnityClient(port);
+
+        logger.info('Connecting to Unity Editor...');
+        await client.connect();
+
+        logger.info(`Getting scale: ${name}`);
+        const scale = await client.sendRequest<Vector3>(
+          COMMANDS.TRANSFORM_GET_SCALE,
+          { name }
+        );
+
+        // JSON output
+        if (options.json) {
+          outputJson({
+            gameObject: name,
+            scale,
+          });
+        } else {
+          logger.info(`✓ Scale: ${formatVector3(scale)}`);
+        }
+      } catch (error) {
+        logger.error('Failed to get scale', error);
+        process.exit(1);
+      } finally {
+        if (client) {
+          try {
+            client.disconnect();
+          } catch (disconnectError) {
+            logger.debug(`Error during disconnect: ${disconnectError instanceof Error ? disconnectError.message : String(disconnectError)}`);
+          }
+        }
+      }
+    });
+
   // Set position
   transformCmd
     .command('set-position')
@@ -117,7 +273,7 @@ export function registerTransformCommand(program: Command): void {
     .argument('<name>', 'GameObject name or path')
     .argument('<position>', 'Position as "x,y,z" (e.g., "1,2,3")')
     .option('--json', 'Output in JSON format')
-    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '30000')
+    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '300000')
     .action(async (name, positionStr, options) => {
       let client = null;
       try {
@@ -173,7 +329,7 @@ export function registerTransformCommand(program: Command): void {
     .argument('<name>', 'GameObject name or path')
     .argument('<rotation>', 'Rotation as "x,y,z" degrees (e.g., "0,90,0")')
     .option('--json', 'Output in JSON format')
-    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '30000')
+    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '300000')
     .action(async (name, rotationStr, options) => {
       let client = null;
       try {
@@ -229,7 +385,7 @@ export function registerTransformCommand(program: Command): void {
     .argument('<name>', 'GameObject name or path')
     .argument('<scale>', 'Scale as "x,y,z" (e.g., "1,1,1")')
     .option('--json', 'Output in JSON format')
-    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '30000')
+    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '300000')
     .action(async (name, scaleStr, options) => {
       let client = null;
       try {

@@ -10,40 +10,40 @@ namespace UnityEditorToolkit.Utils
     /// </summary>
     public class UnityMainThreadDispatcher : MonoBehaviour
     {
-        private static UnityMainThreadDispatcher _instance;
-        private static readonly Queue<Action> _executionQueue = new Queue<Action>();
-        private static readonly object _lock = new object();
+        private static UnityMainThreadDispatcher instance;
+        private static readonly Queue<Action> executionQueue = new Queue<Action>();
+        private static readonly object @lock = new object();
 
         /// <summary>
         /// Singleton 인스턴스 가져오기
         /// </summary>
         public static UnityMainThreadDispatcher Instance()
         {
-            if (_instance == null)
+            if (instance == null)
             {
                 // 메인 스레드에서만 GameObject 생성 가능
                 if (UnityEngine.Object.FindObjectOfType<UnityMainThreadDispatcher>() == null)
                 {
                     var go = new GameObject("UnityMainThreadDispatcher");
-                    _instance = go.AddComponent<UnityMainThreadDispatcher>();
+                    instance = go.AddComponent<UnityMainThreadDispatcher>();
                     DontDestroyOnLoad(go);
                 }
                 else
                 {
-                    _instance = UnityEngine.Object.FindObjectOfType<UnityMainThreadDispatcher>();
+                    instance = UnityEngine.Object.FindObjectOfType<UnityMainThreadDispatcher>();
                 }
             }
-            return _instance;
+            return instance;
         }
 
         private void Awake()
         {
-            if (_instance == null)
+            if (instance == null)
             {
-                _instance = this;
+                instance = this;
                 DontDestroyOnLoad(gameObject);
             }
-            else if (_instance != this)
+            else if (instance != this)
             {
                 Destroy(gameObject);
             }
@@ -60,9 +60,9 @@ namespace UnityEditorToolkit.Utils
                 throw new ArgumentNullException(nameof(action));
             }
 
-            lock (_lock)
+            lock (@lock)
             {
-                _executionQueue.Enqueue(action);
+                executionQueue.Enqueue(action);
             }
         }
 
@@ -78,9 +78,9 @@ namespace UnityEditorToolkit.Utils
                 throw new ArgumentNullException(nameof(action));
             }
 
-            lock (_lock)
+            lock (@lock)
             {
-                _executionQueue.Enqueue(() =>
+                executionQueue.Enqueue(() =>
                 {
                     try
                     {
@@ -98,11 +98,11 @@ namespace UnityEditorToolkit.Utils
         private void Update()
         {
             // 메인 스레드에서 큐에 있는 작업 실행
-            lock (_lock)
+            lock (@lock)
             {
-                while (_executionQueue.Count > 0)
+                while (executionQueue.Count > 0)
                 {
-                    var action = _executionQueue.Dequeue();
+                    var action = executionQueue.Dequeue();
                     try
                     {
                         action.Invoke();
@@ -117,9 +117,9 @@ namespace UnityEditorToolkit.Utils
 
         private void OnDestroy()
         {
-            if (_instance == this)
+            if (instance == this)
             {
-                _instance = null;
+                instance = null;
             }
         }
 
@@ -130,9 +130,9 @@ namespace UnityEditorToolkit.Utils
         {
             get
             {
-                lock (_lock)
+                lock (@lock)
                 {
-                    return _executionQueue.Count;
+                    return executionQueue.Count;
                 }
             }
         }
@@ -142,9 +142,9 @@ namespace UnityEditorToolkit.Utils
         /// </summary>
         public void ClearQueue()
         {
-            lock (_lock)
+            lock (@lock)
             {
-                _executionQueue.Clear();
+                executionQueue.Clear();
             }
         }
     }

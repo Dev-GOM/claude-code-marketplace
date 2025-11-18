@@ -151,6 +151,34 @@ namespace UnityEditorToolkit.Editor
         }
 
         /// <summary>
+        /// Get home folder CLI version (source version to be installed)
+        /// </summary>
+        public static string GetHomeCLIVersion()
+        {
+            try
+            {
+                string homeCLIPath = FindPluginScriptsPath();
+                if (string.IsNullOrEmpty(homeCLIPath))
+                {
+                    return null;
+                }
+
+                string homePackageJson = Path.Combine(homeCLIPath, "package.json");
+                if (!File.Exists(homePackageJson))
+                {
+                    return null;
+                }
+
+                string json = File.ReadAllText(homePackageJson);
+                return ExtractVersionFromJson(json);
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
         /// Copy directory with security validation
         /// </summary>
         public static void CopyDirectory(string sourceDir, string destDir)

@@ -210,9 +210,9 @@ Claude Code를 위한 Chrome DevTools Protocol (CDP) 기반 브라우저 자동�
 <details>
 <summary><strong>📖 플러그인 상세</strong> (펼치기)</summary>
 
-**⚠️ 실험 단계 플러그인** - WebSocket을 통한 실시간 Unity Editor 제어 및 포괄적인 자동화 테스트, 보안 강화 제공.
+**⚠️ 실험 단계 플러그인** - WebSocket을 통한 실시간 Unity Editor 제어, SQLite 데이터베이스 통합, GUID 기반 영속성, 포괄적인 자동화 테스트, 보안 강화 제공.
 
-**요약:** WebSocket 기반 Unity Editor 제어 (자동 할당 포트 9500-9600) | GameObject/Transform/Scene/Console 관리 | Unity Test Framework로 66개 자동화 테스트 | **상태:** 🧪 실험 단계 (v0.5.0) | **Unity 호환성:** Unity 2020.3 - Unity 6+ | **설정:** Editor Window 기반 (`Tools > Unity Editor Toolkit > Server Window`)에서 자동 시작 | **보안:** Path traversal 방어, 강화된 입력 검증, 리소스 정리 | **기능:** 실시간 에디터 통신, JSON-RPC 2.0 프로토콜, 스레드 안전 작업, Status 파일 통한 자동 포트 감지 | **API:** GameObject.Find/Create/Destroy/SetActive, Transform.Get/SetPosition/Rotation/Scale, Scene.GetCurrent/GetAll/Load, Console.GetLogs/Clear, Hierarchy.Get
+**요약:** WebSocket 기반 Unity Editor 제어 (자동 할당 포트 9500-9600) | GUID 기반 GameObject 추적 SQLite 데이터베이스 | 멀티 씬 동기화 | Command Pattern 실행취소/재실행 | Unity Test Framework로 66개 자동화 테스트 | **상태:** 🧪 실험 단계 (v0.7.0) | **Unity 호환성:** Unity 6+ (내장 SQLite) | **설정:** Editor Window 기반 (`Tools > Unity Editor Toolkit > Server Window`)에서 자동 시작 및 선택적 데이터베이스 동기화 | **보안:** SQL 인젝션 방어, Path traversal 방어, 트랜잭션 안전성, 강화된 입력 검증 | **기능:** 실시간 에디터 통신, JSON-RPC 2.0 프로토콜, 영구 GameObject 추적, 자동 마이그레이션, 배치 작업 (500개/배치), 스레드 안전 작업 | **API:** GameObject.Find/Create/Destroy/SetActive, Transform.Get/SetPosition/Rotation/Scale, Scene.GetCurrent/GetAll/Load, Console.GetLogs/Clear, Hierarchy.Get, Database.Connect/Sync/Analytics
 
 **[전체 문서 보기 →](plugins/unity-editor-toolkit/README.md)**
 

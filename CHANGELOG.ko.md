@@ -2,7 +2,45 @@
 
 Dev GOM Plugins 마켓플레이스의 모든 주요 변경사항이 이 파일에 문서화됩니다.
 
-> **버전**: 2.22.0 | **최종 업데이트**: 2025-11-13
+> **버전**: 2.23.0 | **최종 업데이트**: 2025-11-19
+
+---
+
+## [2.23.0] - 2025-11-19
+
+### 주요 기능
+- 🎮 **Unity Editor Toolkit v0.7.0**: SQLite 데이터베이스 통합 (Unity 6+ 필수)
+  - **GUID 기반 GameObject 식별**: Unity 세션 간 영구 추적
+    - System.Guid를 사용한 `GameObjectGuid` 컴포넌트로 고유 식별
+    - Instance ID 재사용으로 인한 데이터 손상 방지
+  - **실시간 멀티 씬 동기화**: 1초마다 자동 동기화
+    - 로드된 모든 씬을 동시에 동기화
+    - 효율적인 배치 작업 (배치당 500개 객체)
+  - **데이터베이스 관리**:
+    - UniTask async/await를 사용한 SQLite-net ORM
+    - 자동 마이그레이션 시스템 (Migration_001, Migration_002)
+    - 동시성을 위한 WAL (Write-Ahead Logging) 모드
+  - **실행취소/재실행 지원 Command Pattern**: 완전한 트랜잭션 지원
+  - **CLI 명령어**: `db`, `sync`, `analytics`, `snapshot`, `transform-history`
+  - **Unity Editor 창**: 연결 상태, 동기화 제어, 분석이 포함된 Database 탭
+  - **문서화**: 완전한 DATABASE_GUIDE.md (693줄)
+
+### 보안 강화
+- 🔒 **Unity Editor Toolkit**: SQL 인젝션 방어 및 트랜잭션 안전성
+  - 모든 데이터베이스 작업에 파라미터화된 쿼리 사용
+  - 대규모 배치용 임시 테이블 패턴 (>100 항목)
+  - 중첩 트랜잭션 감지 및 방지
+  - Domain Reload 안전성 검사
+
+### 버그 수정
+- **Unity Editor Toolkit**: 코드 리뷰 이슈 9건 수정
+  - CRITICAL: GameObject instance_id 재사용, SyncManager 이중 초기화
+  - HIGH: SQL 인젝션, 트랜잭션 중첩, async/sync 혼용
+  - MEDIUM: Null 처리, boolean 변환, LINQ 최적화
+  - Unity 관련: Domain Reload 안전성, 멀티 씬 지원
+
+### 변경됨
+- **Unity Editor Toolkit**: 데이터베이스 기능을 위해 Unity 6+ 필요 (내장 SQLite)
 
 ---
 

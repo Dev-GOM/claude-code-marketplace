@@ -25,7 +25,7 @@ export function registerSceneCommand(program: Command): void {
     .command('current')
     .description('Get current active scene')
     .option('--json', 'Output in JSON format')
-    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '30000')
+    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '300000')
     .action(async (options) => {
       let client = null;
       try {
@@ -80,7 +80,7 @@ export function registerSceneCommand(program: Command): void {
     .command('list')
     .description('List all loaded scenes')
     .option('--json', 'Output in JSON format')
-    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '30000')
+    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '300000')
     .action(async (options) => {
       let client = null;
       try {
@@ -122,7 +122,6 @@ export function registerSceneCommand(program: Command): void {
 
         // Text output
         logger.info('✓ Loaded Scenes:');
-        logger.info('━'.repeat(60));
         for (const scene of result) {
           const loadedIcon = scene.isLoaded ? '●' : '○';
           const dirtyIcon = scene.isDirty ? '*' : ' ';
@@ -130,9 +129,7 @@ export function registerSceneCommand(program: Command): void {
           logger.info(`   Path: ${scene.path}`);
           logger.info(`   Build Index: ${scene.buildIndex}`);
           logger.info(`   Root GameObjects: ${scene.rootCount}`);
-          logger.info('');
         }
-        logger.info('━'.repeat(60));
         logger.info(`Total: ${result.length} scene(s)`);
       } catch (error) {
         logger.error('Failed to list scenes', error);
@@ -155,7 +152,7 @@ export function registerSceneCommand(program: Command): void {
     .argument('<name>', 'Scene name or path')
     .option('-a, --additive', 'Load scene additively')
     .option('--json', 'Output in JSON format')
-    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds')
+    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '300000')
     .action(async (name, options) => {
       let client = null;
       try {

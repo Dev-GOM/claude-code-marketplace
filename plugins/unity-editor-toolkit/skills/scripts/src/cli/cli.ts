@@ -18,6 +18,14 @@ import { registerTransformCommand } from './commands/transform';
 import { registerSceneCommand } from './commands/scene';
 import { registerConsoleCommand } from './commands/console';
 import { registerEditorCommand } from './commands/editor';
+import { registerPrefsCommand } from './commands/prefs';
+import { registerWaitCommand } from './commands/wait';
+import { registerChainCommand } from './commands/chain';
+import { registerDatabaseCommand } from './commands/db';
+import { registerSnapshotCommand } from './commands/snapshot';
+import { registerTransformHistoryCommand } from './commands/transform-history';
+import { registerSyncCommand } from './commands/sync';
+import { registerAnalyticsCommand } from './commands/analytics';
 
 const program = new Command();
 
@@ -45,6 +53,14 @@ registerTransformCommand(program);
 registerSceneCommand(program);
 registerConsoleCommand(program);
 registerEditorCommand(program);
+registerPrefsCommand(program);
+registerWaitCommand(program);
+registerChainCommand(program);
+registerDatabaseCommand(program);
+registerSnapshotCommand(program);
+registerTransformHistoryCommand(program);
+registerSyncCommand(program);
+registerAnalyticsCommand(program);
 
 // Status command (built-in)
 program

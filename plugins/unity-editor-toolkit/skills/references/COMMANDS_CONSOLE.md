@@ -6,18 +6,18 @@ Complete reference for Unity console log retrieval and clearing commands.
 
 ---
 
-## cd <unity-project-root> node .unity-websocket/uw console logs
+## cd <unity-project-root> && node .unity-websocket/uw console logs
 
 Get Unity console logs.
 
 **Usage:**
 ```bash
-cd <unity-project-root> node .unity-websocket/uw console logs [options]
+cd <unity-project-root> && node .unity-websocket/uw console logs [options]
 ```
 
 **Options:**
 ```
--n, --count <number>   Number of recent logs to fetch (default: 50)
+-n, --limit <number>   Number of recent logs to fetch (default: 50)
 -e, --errors-only      Show only errors and exceptions
 -w, --warnings         Include warnings in output
 -t, --type <type>      Filter by log type: error, warning, log, exception, assert
@@ -31,36 +31,36 @@ cd <unity-project-root> node .unity-websocket/uw console logs [options]
 **Examples:**
 ```bash
 # Get last 50 logs
-cd <unity-project-root> node .unity-websocket/uw console logs
+cd <unity-project-root> && node .unity-websocket/uw console logs
 
 # Get only errors
-cd <unity-project-root> node .unity-websocket/uw console logs --errors-only
+cd <unity-project-root> && node .unity-websocket/uw console logs --errors-only
 
 # Get last 100 logs with warnings
-cd <unity-project-root> node .unity-websocket/uw console logs --count 100 --warnings
+cd <unity-project-root> && node .unity-websocket/uw console logs --limit 100 --warnings
 
 # Filter logs by text
-cd <unity-project-root> node .unity-websocket/uw console logs --filter "player"
+cd <unity-project-root> && node .unity-websocket/uw console logs --filter "player"
 
 # Get specific log type
-cd <unity-project-root> node .unity-websocket/uw console logs --type error
+cd <unity-project-root> && node .unity-websocket/uw console logs --type error
 
 # Get verbose output with full stack traces
-cd <unity-project-root> node .unity-websocket/uw console logs --verbose --errors-only
+cd <unity-project-root> && node .unity-websocket/uw console logs --verbose --errors-only
 
 # Get JSON output
-cd <unity-project-root> node .unity-websocket/uw console logs --json
+cd <unity-project-root> && node .unity-websocket/uw console logs --json
 ```
 
 ---
 
-## cd <unity-project-root> node .unity-websocket/uw console clear
+## cd <unity-project-root> && node .unity-websocket/uw console clear
 
 Clear Unity console.
 
 **Usage:**
 ```bash
-cd <unity-project-root> node .unity-websocket/uw console clear [options]
+cd <unity-project-root> && node .unity-websocket/uw console clear [options]
 ```
 
 **Options:**
@@ -73,10 +73,10 @@ cd <unity-project-root> node .unity-websocket/uw console clear [options]
 **Examples:**
 ```bash
 # Clear console
-cd <unity-project-root> node .unity-websocket/uw console clear
+cd <unity-project-root> && node .unity-websocket/uw console clear
 
 # Get JSON output
-cd <unity-project-root> node .unity-websocket/uw console clear --json
+cd <unity-project-root> && node .unity-websocket/uw console clear --json
 ```
 
 ---
@@ -95,13 +95,13 @@ All commands support these global options:
 **Examples:**
 ```bash
 # Check CLI version
-cd <unity-project-root> node .unity-websocket/uw --version
+cd <unity-project-root> && node .unity-websocket/uw --version
 
 # Enable verbose logging
-cd <unity-project-root> node .unity-websocket/uw --verbose console logs
+cd <unity-project-root> && node .unity-websocket/uw --verbose console logs
 
 # Use specific port
-cd <unity-project-root> node .unity-websocket/uw --port 9501 console logs
+cd <unity-project-root> && node .unity-websocket/uw --port 9501 console logs
 ```
 
 ---
@@ -127,7 +127,7 @@ Default timeout is 30 seconds (30000ms). Increase for operations that may take l
 
 ```bash
 # Longer timeout for complex operations
-cd <unity-project-root> node .unity-websocket/uw console logs --timeout 60000
+cd <unity-project-root> && node .unity-websocket/uw console logs --timeout 60000
 ```
 
 ### Error Handling

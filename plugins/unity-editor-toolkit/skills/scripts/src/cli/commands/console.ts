@@ -11,7 +11,7 @@ import { createUnityClient } from '@/unity/client';
 import { COMMANDS } from '@/constants';
 import { UnityLogType } from '@/constants';
 import type { ConsoleLogEntry } from '@/unity/protocol';
-import { output, outputJson } from '@/utils/output-formatter';
+import { outputJson } from '@/utils/output-formatter';
 
 /**
  * Get log type icon
@@ -62,14 +62,16 @@ export function registerConsoleCommand(program: Command): void {
   consoleCmd
     .command('logs')
     .description('Get Unity console logs')
-    .option('-n, --count <number>', 'Number of recent logs to fetch', '50')
+    .option('-n, --limit <number>', 'Number of recent logs to fetch', '50')
     .option('-e, --errors-only', 'Show only errors and exceptions')
     .option('-w, --warnings', 'Include warnings')
     .option('-t, --type <type>', 'Filter by log type: error, warning, log, exception, assert')
     .option('-f, --filter <text>', 'Filter logs by text (case-insensitive)')
-    .option('-v, --verbose', 'Show full stack traces (default: first 5 lines only)')
+    .option('-s, --stack', 'Show stack traces (default: title only)')
+    .option('--stack-lines <number>', 'Number of stack trace lines to show (default: 5)', '5')
+    .option('-v, --verbose', 'Show full messages and complete stack traces')
     .option('--json', 'Output in JSON format')
-    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '30000')
+    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '300000')
     .action(async (options) => {
       let client = null;
       try {
@@ -82,15 +84,12 @@ export function registerConsoleCommand(program: Command): void {
         }
 
         client = createUnityClient(port);
-
-        logger.info('Connecting to Unity Editor...');
         await client.connect();
 
-        logger.info('Fetching console logs...');
         let result = await client.sendRequest<ConsoleLogEntry[]>(
           COMMANDS.CONSOLE_GET_LOGS,
           {
-            count: parseInt(options.count, 10),
+            count: parseInt(options.limit, 10),
             errorsOnly: options.errorsOnly || false,
             includeWarnings: options.warnings || false,
           }
@@ -151,33 +150,49 @@ export function registerConsoleCommand(program: Command): void {
 
         // Text output
         logger.info('✓ Unity Console Logs:');
-        logger.info('━'.repeat(80));
+
+        const showStack = options.stack || options.verbose;
+        const stackLineCount = options.verbose ? Infinity : parseInt(options.stackLines, 10);
 
         for (const log of result) {
           const icon = getLogTypeIcon(log.type);
           const typeName = getLogTypeName(log.type);
-          logger.info(`${icon} [${log.timestamp}] [${typeName}]`);
-          logger.info(`   ${log.message}`);
 
-          if (log.stackTrace && log.stackTrace.trim()) {
-            logger.info('   Stack Trace:');
-            const stackLines = log.stackTrace.split('\n');
+          // Extract first line as title (or full message if --verbose)
+          const messageLines = log.message.split('\n');
+          const title = messageLines[0];
 
-            // Show all lines if --verbose, otherwise first 5 lines
-            const linesToShow = options.verbose ? stackLines : stackLines.slice(0, 5);
-            for (const line of linesToShow) {
-              logger.info(`     ${line}`);
+          if (options.verbose) {
+            // Show full message
+            logger.info(`${icon} [${log.timestamp}] [${typeName}]`);
+            logger.info('Stack Trace:');
+            for (const line of messageLines) {
+              logger.info(line);
             }
-
-            if (!options.verbose && stackLines.length > 5) {
-              logger.info(`     ... (${stackLines.length - 5} more lines, use --verbose to see all)`);
-            }
+          } else {
+            // Show title only (first line) - single line format
+            logger.info(`${icon} [${log.timestamp}] [${typeName}] ${title}`);
           }
 
-          logger.info('');
+          // Show stack trace if --stack or --verbose
+          if (showStack && log.stackTrace && log.stackTrace.trim()) {
+            if (!options.verbose) {
+              logger.info('Stack Trace:');
+            }
+            const stackLines = log.stackTrace.split('\n').filter(line => line.trim());
+
+            // Show specified number of lines
+            const linesToShow = stackLineCount === Infinity ? stackLines : stackLines.slice(0, stackLineCount);
+            for (const line of linesToShow) {
+              logger.info(line);
+            }
+
+            if (stackLineCount !== Infinity && stackLines.length > stackLineCount) {
+              logger.info(`... (${stackLines.length - stackLineCount} more lines, use --verbose to see all)`);
+            }
+          }
         }
 
-        logger.info('━'.repeat(80));
         logger.info(`Total: ${result.length} log(s)`);
       } catch (error) {
         logger.error('Failed to get console logs', error);
@@ -198,7 +213,7 @@ export function registerConsoleCommand(program: Command): void {
     .command('clear')
     .description('Clear Unity console logs')
     .option('--json', 'Output in JSON format')
-    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '30000')
+    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '300000')
     .action(async (options) => {
       let client = null;
       try {
@@ -211,11 +226,8 @@ export function registerConsoleCommand(program: Command): void {
         }
 
         client = createUnityClient(port);
-
-        logger.info('Connecting to Unity Editor...');
         await client.connect();
 
-        logger.info('Clearing console logs...');
         await client.sendRequest(COMMANDS.CONSOLE_CLEAR);
 
         if (options.json) {

@@ -225,9 +225,9 @@ Chrome DevTools Protocol (CDP) based browser automation, web scraping, and crawl
 <details>
 <summary><strong>📖 Plugin Details</strong> (Click to expand)</summary>
 
-**⚠️ Experimental Plugin** - Real-time Unity Editor control via WebSocket with comprehensive automated testing and security hardening.
+**⚠️ Experimental Plugin** - Real-time Unity Editor control via WebSocket with SQLite database integration, GUID-based persistence, comprehensive automated testing and security hardening.
 
-**Quick Info:** WebSocket-based Unity Editor control (auto-assigned port 9500-9600) | GameObject/Transform/Scene/Console management | 66 automated tests with Unity Test Framework | **Status:** 🧪 Experimental (v0.5.0) | **Unity Compatibility:** Unity 2020.3 - Unity 6+ | **Setup:** Editor Window-based (`Tools > Unity Editor Toolkit > Server Window`) with auto-start | **Security:** Path traversal protection, enhanced input validation, resource cleanup | **Features:** Real-time editor communication, JSON-RPC 2.0 protocol, Thread-safe operations, Automatic port detection via status file | **APIs:** GameObject.Find/Create/Destroy/SetActive, Transform.Get/SetPosition/Rotation/Scale, Scene.GetCurrent/GetAll/Load, Console.GetLogs/Clear, Hierarchy.Get
+**Quick Info:** WebSocket-based Unity Editor control (auto-assigned port 9500-9600) | SQLite database with GUID-based GameObject tracking | Multi-scene synchronization | Command Pattern Undo/Redo | 66 automated tests with Unity Test Framework | **Status:** 🧪 Experimental (v0.7.0) | **Unity Compatibility:** Unity 6+ (embedded SQLite) | **Setup:** Editor Window-based (`Tools > Unity Editor Toolkit > Server Window`) with auto-start and optional database sync | **Security:** SQL injection prevention, path traversal protection, transaction safety, enhanced input validation | **Features:** Real-time editor communication, JSON-RPC 2.0 protocol, Persistent GameObject tracking, Auto migration, Batch operations (500/batch), Thread-safe operations | **APIs:** GameObject.Find/Create/Destroy/SetActive, Transform.Get/SetPosition/Rotation/Scale, Scene.GetCurrent/GetAll/Load, Console.GetLogs/Clear, Hierarchy.Get, Database.Connect/Sync/Analytics
 
 **[Read Full Documentation →](plugins/unity-editor-toolkit/README.md)**
 

@@ -1,6 +1,9 @@
 using System;
 using UnityEngine;
 using UnityEditorToolkit.Protocol;
+using UnityEditorToolkit.Editor.Database;
+using UnityEditorToolkit.Editor.Database.Commands;
+using Cysharp.Threading.Tasks;
 
 namespace UnityEditorToolkit.Handlers
 {
@@ -50,12 +53,25 @@ namespace UnityEditorToolkit.Handlers
             var param = ValidateParam<SetPositionParam>(request, "name and position");
             var transform = GetTransform(param.name);
 
+            // Save old values for Command Pattern
+            var oldPosition = transform.position;
+            var oldRotation = transform.rotation;
+            var oldScale = transform.localScale;
+
             #if UNITY_EDITOR
             UnityEditor.Undo.RecordObject(transform, "Set Position");
             #endif
 
             // ✅ ToVector3() 사용 (유효성 검증 포함)
-            transform.position = param.position.ToVector3();
+            var newPosition = param.position.ToVector3();
+            transform.position = newPosition;
+
+            // Execute Command Pattern (if database is connected)
+            ExecuteTransformCommandAsync(
+                transform.gameObject,
+                oldPosition, oldRotation, oldScale,
+                newPosition, oldRotation, oldScale
+            ).Forget();
 
             return new { success = true };
         }
@@ -79,12 +95,25 @@ namespace UnityEditorToolkit.Handlers
             var param = ValidateParam<SetRotationParam>(request, "name and rotation");
             var transform = GetTransform(param.name);
 
+            // Save old values for Command Pattern
+            var oldPosition = transform.position;
+            var oldRotation = transform.rotation;
+            var oldScale = transform.localScale;
+
             #if UNITY_EDITOR
             UnityEditor.Undo.RecordObject(transform, "Set Rotation");
             #endif
 
             // ✅ ToVector3() 사용 (유효성 검증 포함)
             transform.eulerAngles = param.rotation.ToVector3();
+            var newRotation = transform.rotation; // Quaternion으로 가져오기
+
+            // Execute Command Pattern (if database is connected)
+            ExecuteTransformCommandAsync(
+                transform.gameObject,
+                oldPosition, oldRotation, oldScale,
+                oldPosition, newRotation, oldScale
+            ).Forget();
 
             return new { success = true };
         }
@@ -107,14 +136,63 @@ namespace UnityEditorToolkit.Handlers
             var param = ValidateParam<SetScaleParam>(request, "name and scale");
             var transform = GetTransform(param.name);
 
+            // Save old values for Command Pattern
+            var oldPosition = transform.position;
+            var oldRotation = transform.rotation;
+            var oldScale = transform.localScale;
+
             #if UNITY_EDITOR
             UnityEditor.Undo.RecordObject(transform, "Set Scale");
             #endif
 
             // ✅ ToVector3() 사용 (유효성 검증 포함)
-            transform.localScale = param.scale.ToVector3();
+            var newScale = param.scale.ToVector3();
+            transform.localScale = newScale;
+
+            // Execute Command Pattern (if database is connected)
+            ExecuteTransformCommandAsync(
+                transform.gameObject,
+                oldPosition, oldRotation, oldScale,
+                oldPosition, oldRotation, newScale
+            ).Forget();
 
             return new { success = true };
+        }
+
+        /// <summary>
+        /// Execute TransformChangeCommand asynchronously (database persistence)
+        /// </summary>
+        private async UniTaskVoid ExecuteTransformCommandAsync(
+            GameObject gameObject,
+            Vector3 oldPosition, Quaternion oldRotation, Vector3 oldScale,
+            Vector3 newPosition, Quaternion newRotation, Vector3 newScale)
+        {
+            try
+            {
+                #if UNITY_EDITOR
+                // Check if database is connected
+                if (DatabaseManager.Instance == null ||
+                    !DatabaseManager.Instance.IsConnected ||
+                    DatabaseManager.Instance.CommandHistory == null)
+                {
+                    return;
+                }
+
+                // Create command
+                var command = new TransformChangeCommand(
+                    gameObject,
+                    oldPosition, oldRotation, oldScale,
+                    newPosition, newRotation, newScale
+                );
+
+                // Execute through CommandHistory (async, database persistence)
+                await DatabaseManager.Instance.CommandHistory.ExecuteCommandAsync(command);
+                #endif
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning($"[TransformHandler] Command execution failed: {ex.Message}");
+            }
         }
 
         private Transform GetTransform(string name)

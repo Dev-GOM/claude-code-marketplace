@@ -1,0 +1,81 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="True">
+    <ui:ScrollView mode="Vertical" class="scroll-container">
+        <ui:VisualElement name="root" class="root-container">
+            <!-- Connection Status -->
+            <ui:Label text="📊 Status" class="section-title" />
+
+            <ui:VisualElement class="status-row">
+                <ui:Label text="🔌 Connection:" class="label-key" tooltip="SQLite 데이터베이스 연결 상태&#10;Connect 버튼으로 연결" />
+                <ui:VisualElement class="status-indicator-container">
+                    <ui:VisualElement name="db-status-indicator" class="status-indicator status-stopped" />
+                    <ui:Label name="db-status-label" class="label-value">
+                        <Bindings>
+                            <ui:DataBinding property="text" data-source-path="DbStatusText" binding-mode="ToTarget" />
+                        </Bindings>
+                    </ui:Label>
+                </ui:VisualElement>
+            </ui:VisualElement>
+
+            <ui:VisualElement class="status-row">
+                <ui:Label text="💾 Database File:" class="label-key" tooltip="데이터베이스 파일 생성 여부&#10;Reinstall Database 버튼으로 생성" />
+                <ui:Label name="db-file-exists-label" class="label-value">
+                    <Bindings>
+                        <ui:DataBinding property="text" data-source-path="DbFileExistsText" binding-mode="ToTarget" />
+                    </Bindings>
+                </ui:Label>
+            </ui:VisualElement>
+
+            <ui:VisualElement class="status-row">
+                <ui:Label text="🔄 Sync Status:" class="label-key" tooltip="실시간 GameObject/Component 동기화 상태&#10;(Phase 2에서 구현 예정)" />
+                <ui:Label name="db-sync-status-label" class="label-value">
+                    <Bindings>
+                        <ui:DataBinding property="text" data-source-path="DbSyncStatusText" binding-mode="ToTarget" />
+                    </Bindings>
+                </ui:Label>
+            </ui:VisualElement>
+
+            <!-- Action Buttons -->
+            <ui:Label text="🎮 Connection Controls" class="section-title" style="margin-top: 15px;" />
+            <ui:VisualElement class="button-row">
+                <ui:Button name="db-test-button" text="🔍 Test Connection" class="action-button" tooltip="데이터베이스 연결 테스트&#10;SQLite 버전 정보 확인" />
+                <ui:Button name="db-connect-button" text="🔌 Connect" class="action-button" tooltip="데이터베이스에 연결&#10;Command History 활성화" />
+                <ui:Button name="db-disconnect-button" text="⏸️ Disconnect" class="action-button hidden" tooltip="데이터베이스 연결 해제" />
+            </ui:VisualElement>
+
+            <ui:VisualElement class="button-row">
+                <ui:Button name="db-migrate-button" text="⚙️ Run Migrations" class="primary-button" tooltip="스키마 마이그레이션 실행&#10;테이블/인덱스/트리거 생성" />
+                <ui:Button name="db-sync-toggle-button" text="🔄 Start Sync" class="secondary-button" tooltip="GameObject/Component 실시간 동기화&#10;(Phase 2에서 구현 예정)" />
+            </ui:VisualElement>
+
+            <!-- Command History (Undo/Redo) -->
+            <ui:Label text="📜 Command History" class="section-title" style="margin-top: 15px;" />
+            <ui:VisualElement class="status-row">
+                <ui:Label text="⟲ Undo Stack:" class="label-key" tooltip="실행 취소 가능한 명령 수&#10;데이터베이스에 영구 저장" />
+                <ui:Label name="db-undo-count" class="label-value">
+                    <Bindings>
+                        <ui:DataBinding property="text" data-source-path="DbUndoCountText" binding-mode="ToTarget" />
+                    </Bindings>
+                </ui:Label>
+            </ui:VisualElement>
+
+            <ui:VisualElement class="status-row">
+                <ui:Label text="⟳ Redo Stack:" class="label-key" tooltip="다시 실행 가능한 명령 수&#10;Undo 후 사용 가능" />
+                <ui:Label name="db-redo-count" class="label-value">
+                    <Bindings>
+                        <ui:DataBinding property="text" data-source-path="DbRedoCountText" binding-mode="ToTarget" />
+                    </Bindings>
+                </ui:Label>
+            </ui:VisualElement>
+
+            <ui:VisualElement class="button-row">
+                <ui:Button name="db-undo-button" text="⟲ Undo" class="action-button" tooltip="마지막 명령 실행 취소&#10;GameObject/Component 변경 복원" />
+                <ui:Button name="db-redo-button" text="⟳ Redo" class="action-button" tooltip="취소한 명령 다시 실행" />
+                <ui:Button name="db-clear-history-button" text="🗑️ Clear History" class="action-button" tooltip="모든 명령 히스토리 삭제&#10;Undo/Redo 불가능" />
+            </ui:VisualElement>
+
+            <!-- Status Messages -->
+            <ui:HelpBox name="db-error-help" text="" message-type="Error" class="hidden" />
+            <ui:HelpBox name="db-success-help" text="" message-type="Info" class="hidden" />
+        </ui:VisualElement>
+    </ui:ScrollView>
+</ui:UXML>

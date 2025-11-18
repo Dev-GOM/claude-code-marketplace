@@ -30,16 +30,16 @@ namespace UnityEditorToolkit.Editor.Server
         }
 
         // Singleton instance
-        private static EditorWebSocketServer _instance;
+        private static EditorWebSocketServer instance;
         public static EditorWebSocketServer Instance
         {
             get
             {
-                if (_instance == null)
+                if (instance == null)
                 {
-                    _instance = new EditorWebSocketServer();
+                    instance = new EditorWebSocketServer();
                 }
-                return _instance;
+                return instance;
             }
         }
 
@@ -84,6 +84,10 @@ namespace UnityEditorToolkit.Editor.Server
         public bool IsRunning { get; private set; }
         public int ConnectedClients => activeConnections.Count;
 
+        // Server state change events
+        public event Action OnServerStarted;
+        public event Action OnServerStopped;
+
         private WebSocketServer server;
         private Dictionary<string, BaseHandler> handlers;
         private HashSet<string> activeConnections = new HashSet<string>();
@@ -125,8 +129,20 @@ namespace UnityEditorToolkit.Editor.Server
                 { "Scene", new SceneHandler() },
                 { "Console", new ConsoleHandler() },
                 { "Hierarchy", new HierarchyHandler() },
-                { "Editor", new EditorHandler() }
+                { "Editor", new EditorHandler() },
+                { "Prefs", new PrefsHandler() },
+                { "Wait", new WaitHandler() },
+                { "Database", new DatabaseHandler() },
+                { "Snapshot", new SnapshotHandler() },
+                { "TransformHistory", new TransformHistoryHandler() },
+                { "Sync", new SyncHandler() },
+                { "Analytics", new AnalyticsHandler() }
             };
+
+            // Initialize ChainHandler with access to all handlers
+            var chainHandler = new ChainHandler();
+            chainHandler.SetHandlers(handlers);
+            handlers.Add("Chain", chainHandler);
 
             // Start console logging
             ConsoleHandler.StartListening();
@@ -137,6 +153,9 @@ namespace UnityEditorToolkit.Editor.Server
         /// </summary>
         private void OnUpdate()
         {
+            // Process pending delayed responses
+            ResponseQueue.Instance.Update();
+
             // Periodic heartbeat update
             if (IsRunning && EditorApplication.timeSinceStartup - lastHeartbeatTime > HeartbeatInterval)
             {
@@ -174,6 +193,10 @@ namespace UnityEditorToolkit.Editor.Server
         /// </summary>
         private void OnBeforeAssemblyReload()
         {
+            // Cancel all pending responses before domain reload
+            // This notifies clients that their requests are cancelled due to compilation
+            ResponseQueue.Instance.CancelAllPending("Script compilation started, request cancelled");
+
             StopServer();
         }
 
@@ -204,6 +227,9 @@ namespace UnityEditorToolkit.Editor.Server
                 ServerStatus.Save(status, projectRoot);
 
                 Log($"✓ Unity Editor Server started on ws://127.0.0.1:{Port}", LogLevel.Info);
+
+                // Notify subscribers
+                OnServerStarted?.Invoke();
             }
             catch (Exception ex)
             {
@@ -224,6 +250,9 @@ namespace UnityEditorToolkit.Editor.Server
 
             try
             {
+                // Cancel all pending responses before stopping server
+                ResponseQueue.Instance.CancelAllPending("Server stopping");
+
                 // Mark server as stopped
                 string projectRoot = Path.GetDirectoryName(Application.dataPath);
                 ServerStatus.MarkStopped(projectRoot);
@@ -234,6 +263,9 @@ namespace UnityEditorToolkit.Editor.Server
                 activeConnections.Clear();
                 ConsoleHandler.StopListening();
                 Log("Unity Editor Server stopped", LogLevel.Info);
+
+                // Notify subscribers
+                OnServerStopped?.Invoke();
             }
             catch (Exception ex)
             {
@@ -244,7 +276,7 @@ namespace UnityEditorToolkit.Editor.Server
         /// <summary>
         /// Handle JSON-RPC request (called from main thread)
         /// </summary>
-        internal string HandleRequest(string message)
+        internal string HandleRequest(string message, Action<string> sendCallback)
         {
             JsonRpcRequest request = null;
             double startTime = EditorApplication.timeSinceStartup;
@@ -258,6 +290,9 @@ namespace UnityEditorToolkit.Editor.Server
                 {
                     return new JsonRpcErrorResponse(null, JsonRpcError.InvalidRequest()).ToJson();
                 }
+
+                // Set send callback in request context for delayed responses
+                request.SetContext("sendCallback", sendCallback);
 
                 Log($"Request: {request.Method}", LogLevel.Debug);
 
@@ -285,6 +320,13 @@ namespace UnityEditorToolkit.Editor.Server
                 // Handle request with appropriate handler
                 var handler = handlers[category];
                 var result = handler.Handle(request);
+
+                // If result is null, it's a delayed response (handled by ResponseQueue)
+                if (result == null)
+                {
+                    Log($"Delayed response registered for: {request.Method}", LogLevel.Debug);
+                    return null;
+                }
 
                 // Check timeout
                 double elapsed = EditorApplication.timeSinceStartup - startTime;
@@ -403,10 +445,11 @@ namespace UnityEditorToolkit.Editor.Server
                 {
                     try
                     {
-                        // Handle request on main thread
-                        string response = server.HandleRequest(message);
+                        // Handle request on main thread with send callback for delayed responses
+                        string response = server.HandleRequest(message, Send);
 
                         // Send response (Send is thread-safe)
+                        // Note: response can be null for delayed responses handled by ResponseQueue
                         if (!string.IsNullOrEmpty(response))
                         {
                             Send(response);

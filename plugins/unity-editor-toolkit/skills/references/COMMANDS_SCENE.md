@@ -6,13 +6,13 @@ Complete reference for scene management commands.
 
 ---
 
-## cd <unity-project-root> node .unity-websocket/uw scene current
+## cd <unity-project-root> && node .unity-websocket/uw scene current
 
 Get current active scene information.
 
 **Usage:**
 ```bash
-cd <unity-project-root> node .unity-websocket/uw scene current [options]
+cd <unity-project-root> && node .unity-websocket/uw scene current [options]
 ```
 
 **Options:**
@@ -25,21 +25,21 @@ cd <unity-project-root> node .unity-websocket/uw scene current [options]
 **Examples:**
 ```bash
 # Get current scene info
-cd <unity-project-root> node .unity-websocket/uw scene current
+cd <unity-project-root> && node .unity-websocket/uw scene current
 
 # Get JSON output
-cd <unity-project-root> node .unity-websocket/uw scene current --json
+cd <unity-project-root> && node .unity-websocket/uw scene current --json
 ```
 
 ---
 
-## cd <unity-project-root> node .unity-websocket/uw scene list
+## cd <unity-project-root> && node .unity-websocket/uw scene list
 
 List all loaded scenes.
 
 **Usage:**
 ```bash
-cd <unity-project-root> node .unity-websocket/uw scene list [options]
+cd <unity-project-root> && node .unity-websocket/uw scene list [options]
 ```
 
 **Options:**
@@ -52,21 +52,21 @@ cd <unity-project-root> node .unity-websocket/uw scene list [options]
 **Examples:**
 ```bash
 # List all scenes
-cd <unity-project-root> node .unity-websocket/uw scene list
+cd <unity-project-root> && node .unity-websocket/uw scene list
 
 # Get JSON output
-cd <unity-project-root> node .unity-websocket/uw scene list --json
+cd <unity-project-root> && node .unity-websocket/uw scene list --json
 ```
 
 ---
 
-## cd <unity-project-root> node .unity-websocket/uw scene load
+## cd <unity-project-root> && node .unity-websocket/uw scene load
 
 Load scene by name or path.
 
 **Usage:**
 ```bash
-cd <unity-project-root> node .unity-websocket/uw scene load <name> [options]
+cd <unity-project-root> && node .unity-websocket/uw scene load <name> [options]
 ```
 
 **Arguments:**
@@ -85,13 +85,13 @@ cd <unity-project-root> node .unity-websocket/uw scene load <name> [options]
 **Examples:**
 ```bash
 # Load scene (replace current)
-cd <unity-project-root> node .unity-websocket/uw scene load "MainMenu"
+cd <unity-project-root> && node .unity-websocket/uw scene load "MainMenu"
 
 # Load scene additively
-cd <unity-project-root> node .unity-websocket/uw scene load "UIOverlay" --additive
+cd <unity-project-root> && node .unity-websocket/uw scene load "UIOverlay" --additive
 
 # Load scene by path
-cd <unity-project-root> node .unity-websocket/uw scene load "Assets/Scenes/Level1"
+cd <unity-project-root> && node .unity-websocket/uw scene load "Assets/Scenes/Level1"
 ```
 
 ---
@@ -110,13 +110,13 @@ All commands support these global options:
 **Examples:**
 ```bash
 # Check CLI version
-cd <unity-project-root> node .unity-websocket/uw --version
+cd <unity-project-root> && node .unity-websocket/uw --version
 
 # Enable verbose logging
-cd <unity-project-root> node .unity-websocket/uw --verbose scene current
+cd <unity-project-root> && node .unity-websocket/uw --verbose scene current
 
 # Use specific port
-cd <unity-project-root> node .unity-websocket/uw --port 9501 scene load "Level1"
+cd <unity-project-root> && node .unity-websocket/uw --port 9501 scene load "Level1"
 ```
 
 ---
@@ -142,7 +142,7 @@ Default timeout is 30 seconds (30000ms). Increase for operations that may take l
 
 ```bash
 # Longer timeout for complex operations
-cd <unity-project-root> node .unity-websocket/uw scene load "Level1" --timeout 60000
+cd <unity-project-root> && node .unity-websocket/uw scene load "Level1" --timeout 60000
 ```
 
 ### Error Handling
