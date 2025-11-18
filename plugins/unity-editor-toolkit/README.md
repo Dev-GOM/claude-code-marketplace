@@ -14,6 +14,12 @@ See [CHANGELOG.md](./CHANGELOG.md) for full release notes.
 
 - **500+ Commands**: Comprehensive control across 25 Unity Editor categories
 - **Real-time WebSocket**: Instant bidirectional communication (port 9500-9600)
+- **SQLite Database Integration**: Real-time GameObject synchronization with GUID-based persistence
+  - **GUID-based Identification**: Persistent GameObject tracking across Unity sessions
+  - **Multi-scene Support**: Synchronize all loaded scenes simultaneously
+  - **Command Pattern**: Undo/Redo support for database operations
+  - **Auto Migration**: Automatic schema migration system
+  - **Batch Operations**: Efficient bulk inserts, updates, and deletes (500 objects/batch)
 - **GameObject & Hierarchy**: Create, destroy, manipulate, query hierarchies with tree visualization
 - **Transform Control**: Precise Vector3 manipulation for position, rotation, scale
 - **Component Management**: Add, remove, configure components with property access
@@ -27,7 +33,7 @@ See [CHANGELOG.md](./CHANGELOG.md) for full release notes.
 - **Editor Automation**: Play mode, window focus, selection, scene view control
 - **Build & Deploy**: Build pipeline, player settings, platform switching
 - **Advanced Features**: Lighting, Camera, Audio, Navigation, Particles, Timeline, UI Toolkit
-- **Security Hardened**: Defense against path traversal, command injection, JSON injection
+- **Security Hardened**: Defense against path traversal, command injection, JSON injection, SQL injection
 - **Cross-Platform**: Full Windows, macOS, Linux support
 
 ## Installation
@@ -74,7 +80,16 @@ This plugin is part of the [Dev GOM Plugins](https://github.com/Dev-GOM/claude-c
    - Click "Install CLI" to build the WebSocket server (one-time setup)
    - Server starts automatically when Unity Editor opens
 
-3. **Server Status**:
+3. **Database Setup** (Optional):
+   - In the Server window, switch to "Database" tab
+   - Click "Connect" to initialize SQLite database
+   - Database file location: `{ProjectRoot}/.unity-websocket/unity-editor.db`
+   - Click "Start Sync" to enable real-time GameObject synchronization (1s interval)
+   - **GUID Components**: GameObjects are automatically tagged with persistent GUIDs
+   - **Multi-scene**: All loaded scenes are synchronized automatically
+   - **Analytics**: View sync stats, database health, and Undo/Redo history
+
+4. **Server Status**:
    - Port: Auto-assigned (9500-9600 range)
    - Status file: `{ProjectRoot}/.unity-websocket/server-status.json`
    - CLI automatically detects the correct port from this file
@@ -207,10 +222,14 @@ Defense-in-depth security implementation:
 - **Command Injection Defense**: Sanitized npm execution and environment isolation
 - **JSON Injection Prevention**: Runtime type validation for all structures
 - **Log Injection Defense**: Message sanitization prevents log manipulation
+- **SQL Injection Prevention**: Parameterized queries for all database operations
+  - Individual DELETE statements for small batches (≤100 items)
+  - Temporary table pattern for large batches (>100 items)
+- **Transaction Safety**: Nested transaction detection and graceful fallback
 - **WebSocket Security**: Localhost-only connections
 - **Port Validation**: Enforced 9500-9600 range
 - **Atomic Operations**: Race-condition-free lock acquisition (`{ flag: 'wx' }`)
-- **Memory Safety**: Proper event listener cleanup
+- **Memory Safety**: Proper event listener cleanup and Domain Reload safety checks
 
 ## Development
 
@@ -288,6 +307,14 @@ See [COMMANDS.md](./skills/references/COMMANDS.md) for detailed roadmap.
 - [x] Server status synchronization (`.unity-websocket/server-status.json`)
 - [x] Automatic port discovery
 - [x] Home folder-based plugin path detection
+- [x] SQLite database integration with UniTask async/await
+- [x] GUID-based GameObject identification (persistent across sessions)
+- [x] Multi-scene synchronization support
+- [x] Command Pattern with Undo/Redo support
+- [x] Auto migration system
+- [x] Batch operations (500 objects/batch)
+- [x] SQL injection prevention (parameterized queries)
+- [x] Transaction nesting prevention
 
 ### Commands (500+)
 - [x] GameObject & Hierarchy (15 commands)
@@ -340,7 +367,7 @@ Contributions welcome! Please read [CONTRIBUTING.md](../../CONTRIBUTING.md) for 
 
 ---
 
-**Version**: 0.5.0
-**Last Updated**: 2025-11-13
+**Version**: 0.7.0
+**Last Updated**: 2025-11-19
 **Author**: Dev GOM
 **Marketplace**: [dev-gom-plugins](https://github.com/Dev-GOM/claude-code-marketplace)
