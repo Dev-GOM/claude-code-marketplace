@@ -162,18 +162,17 @@ export function registerConsoleCommand(program: Command): void {
           const messageLines = log.message.split('\n');
           const title = messageLines[0];
 
-          logger.info(`${icon} [${log.timestamp}] [${typeName}]`);
-
           if (options.verbose) {
             // Show full message
+            logger.info(`${icon} [${log.timestamp}] [${typeName}]`);
             logger.info('');
             logger.info('Stack Trace:');
             for (const line of messageLines) {
               logger.info(line);
             }
           } else {
-            // Show title only (first line)
-            logger.info(title);
+            // Show title only (first line) - single line format
+            logger.info(`${icon} [${log.timestamp}] [${typeName}] ${title}`);
           }
 
           // Show stack trace if --stack or --verbose
