@@ -562,7 +562,6 @@ export function registerDatabaseCommand(program: Command): void {
           outputJson(result);
         } else {
           logger.info('✓ Command History');
-          logger.info('');
 
           // Undo stack (most recent first)
           logger.info(`📜 Undo Stack (${result.totalUndo} total):`);
@@ -579,7 +578,6 @@ export function registerDatabaseCommand(program: Command): void {
             }
           }
 
-          logger.info('');
 
           // Redo stack
           logger.info(`🔄 Redo Stack (${result.totalRedo} total):`);
@@ -643,7 +641,6 @@ export function registerDatabaseCommand(program: Command): void {
         } else {
           if (result.success) {
             logger.info(`✓ ${result.message}`);
-            logger.info('');
 
             if (result.rowCount === 0) {
               logger.info('(no rows returned)');
@@ -678,7 +675,6 @@ export function registerDatabaseCommand(program: Command): void {
                 logger.info(rowStr);
               }
 
-              logger.info('');
               logger.info(`${result.rowCount} row(s) returned`);
             }
           } else {

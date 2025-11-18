@@ -98,7 +98,6 @@ export function registerPrefsCommand(program: Command): void {
           outputJson(result);
         } else {
           logger.info(`✓ EditorPrefs value retrieved`);
-          logger.info('');
           logger.info(`Key: ${result.key}`);
           logger.info(`Type: ${result.type}`);
           logger.info(`Value: ${result.value}`);
@@ -166,7 +165,6 @@ export function registerPrefsCommand(program: Command): void {
           outputJson(result);
         } else {
           logger.info(`✓ EditorPrefs value set`);
-          logger.info('');
           logger.info(`Key: ${key}`);
           logger.info(`Value: ${value}`);
           logger.info(`Type: ${options.type}`);
@@ -216,7 +214,6 @@ export function registerPrefsCommand(program: Command): void {
           outputJson(result);
         } else {
           logger.info(`✓ EditorPrefs key deleted`);
-          logger.info('');
           logger.info(`Key: ${key}`);
         }
       } catch (error) {
@@ -247,7 +244,6 @@ export function registerPrefsCommand(program: Command): void {
         if (!options.force) {
           logger.warn('WARNING: This will delete ALL EditorPrefs data!');
           logger.warn('This action cannot be undone.');
-          logger.info('');
           logger.info('Use --force flag to skip this confirmation.');
           process.exit(1);
         }
@@ -319,7 +315,6 @@ export function registerPrefsCommand(program: Command): void {
           outputJson(result);
         } else {
           logger.info(`✓ Check complete`);
-          logger.info('');
           logger.info(`Key: ${key}`);
           logger.info(`Exists: ${result.hasKey ? 'Yes' : 'No'}`);
 

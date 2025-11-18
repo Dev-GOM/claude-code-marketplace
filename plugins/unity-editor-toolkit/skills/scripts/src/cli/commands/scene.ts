@@ -129,7 +129,6 @@ export function registerSceneCommand(program: Command): void {
           logger.info(`   Path: ${scene.path}`);
           logger.info(`   Build Index: ${scene.buildIndex}`);
           logger.info(`   Root GameObjects: ${scene.rootCount}`);
-          logger.info('');
         }
         logger.info(`Total: ${result.length} scene(s)`);
       } catch (error) {

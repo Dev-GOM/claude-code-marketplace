@@ -165,7 +165,6 @@ export function registerConsoleCommand(program: Command): void {
           if (options.verbose) {
             // Show full message
             logger.info(`${icon} [${log.timestamp}] [${typeName}]`);
-            logger.info('');
             logger.info('Stack Trace:');
             for (const line of messageLines) {
               logger.info(line);
@@ -178,7 +177,6 @@ export function registerConsoleCommand(program: Command): void {
           // Show stack trace if --stack or --verbose
           if (showStack && log.stackTrace && log.stackTrace.trim()) {
             if (!options.verbose) {
-              logger.info('');
               logger.info('Stack Trace:');
             }
             const stackLines = log.stackTrace.split('\n').filter(line => line.trim());

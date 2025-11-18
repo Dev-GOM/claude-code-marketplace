@@ -187,7 +187,6 @@ export function registerTransformHistoryCommand(program: Command): void {
           logger.info(`[${entry.transformId}] ${entry.recordedAt}`);
           logger.info(`   Position: (${entry.position.x.toFixed(3)}, ${entry.position.y.toFixed(3)}, ${entry.position.z.toFixed(3)})`);
           logger.info(`   Scale: (${entry.scale.x.toFixed(3)}, ${entry.scale.y.toFixed(3)}, ${entry.scale.z.toFixed(3)})`);
-          logger.info('');
         }
       } catch (error) {
         logger.error('Failed to list transform history', error);
@@ -308,13 +307,11 @@ export function registerTransformHistoryCommand(program: Command): void {
         logger.info(`  Recorded: ${result.transform1.recordedAt}`);
         logger.info(`  Position: (${result.transform1.position.x.toFixed(3)}, ${result.transform1.position.y.toFixed(3)}, ${result.transform1.position.z.toFixed(3)})`);
 
-        logger.info('');
 
         logger.info(`Transform 2 (ID: ${result.transform2.transformId}):`);
         logger.info(`  Recorded: ${result.transform2.recordedAt}`);
         logger.info(`  Position: (${result.transform2.position.x.toFixed(3)}, ${result.transform2.position.y.toFixed(3)}, ${result.transform2.position.z.toFixed(3)})`);
 
-        logger.info('');
         logger.info('Differences:');
         logger.info(`  Position Δ: (${result.positionDifference.x.toFixed(3)}, ${result.positionDifference.y.toFixed(3)}, ${result.positionDifference.z.toFixed(3)})`);
         logger.info(`  Rotation Δ: ${result.rotationAngleDifference.toFixed(2)}°`);

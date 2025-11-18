@@ -52,7 +52,6 @@ export function registerEditorCommand(program: Command): void {
           });
         } else {
           logger.info('✓ AssetDatabase refreshed');
-          logger.info('');
           logger.warn('⚠ Please check Unity Editor for compilation status');
         }
       } catch (error) {
@@ -102,7 +101,6 @@ export function registerEditorCommand(program: Command): void {
           });
         } else {
           logger.info('✓ Script recompilation requested');
-          logger.info('');
           logger.warn('⚠ Please check Unity Editor for compilation status');
         }
       } catch (error) {
@@ -154,7 +152,6 @@ export function registerEditorCommand(program: Command): void {
           });
         } else {
           logger.info('✓ Asset reimported');
-          logger.info('');
           logger.warn('⚠ Please check Unity Editor for compilation status');
         }
       } catch (error) {
@@ -261,7 +258,6 @@ export function registerEditorCommand(program: Command): void {
           outputJson(result);
         } else {
           logger.info(`✓ Found ${result.count} executable method(s):`);
-          logger.info('');
 
           for (const method of result.methods) {
             logger.info(`  ${method.commandName}`);
@@ -269,7 +265,6 @@ export function registerEditorCommand(program: Command): void {
               logger.info(`    ${method.description}`);
             }
             logger.info(`    ${method.className}.${method.methodName}`);
-            logger.info('');
           }
         }
       } catch (error) {

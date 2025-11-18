@@ -184,7 +184,6 @@ export function registerSnapshotCommand(program: Command): void {
           if (snapshot.description) {
             logger.info(`   Description: ${snapshot.description}`);
           }
-          logger.info('');
         }
       } catch (error) {
         logger.error('Failed to list snapshots', error);

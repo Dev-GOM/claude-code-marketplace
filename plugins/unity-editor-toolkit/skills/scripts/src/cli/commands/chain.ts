@@ -108,12 +108,10 @@ export function registerChainCommand(program: Command): void {
         if (options.json) {
           outputJson(result);
         } else {
-          logger.info('');
           logger.info(`✓ Chain execution completed`);
           logger.info(`  Total commands: ${result.totalCommands}`);
           logger.info(`  Executed: ${result.executedCommands}`);
           logger.info(`  Total time: ${result.totalElapsed.toFixed(3)}s`);
-          logger.info('');
 
           // Display results
           for (const cmdResult of result.results) {
@@ -228,12 +226,10 @@ export function registerChainCommand(program: Command): void {
         if (options.json) {
           outputJson(result);
         } else {
-          logger.info('');
           logger.info(`✓ Chain execution completed`);
           logger.info(`  Total commands: ${result.totalCommands}`);
           logger.info(`  Executed: ${result.executedCommands}`);
           logger.info(`  Total time: ${result.totalElapsed.toFixed(3)}s`);
-          logger.info('');
 
           // Display results
           for (const cmdResult of result.results) {
