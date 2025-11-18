@@ -1,6 +1,0 @@
-# Mixamo animation files (can be large)
-*.fbx
-*.dae
-
-# Keep this directory in Git
-!.gitignore
