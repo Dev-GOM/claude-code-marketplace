@@ -24,6 +24,8 @@ import { registerChainCommand } from './commands/chain';
 import { registerDatabaseCommand } from './commands/db';
 import { registerSnapshotCommand } from './commands/snapshot';
 import { registerTransformHistoryCommand } from './commands/transform-history';
+import { registerSyncCommand } from './commands/sync';
+import { registerAnalyticsCommand } from './commands/analytics';
 
 const program = new Command();
 
@@ -57,6 +59,8 @@ registerChainCommand(program);
 registerDatabaseCommand(program);
 registerSnapshotCommand(program);
 registerTransformHistoryCommand(program);
+registerSyncCommand(program);
+registerAnalyticsCommand(program);
 
 // Status command (built-in)
 program

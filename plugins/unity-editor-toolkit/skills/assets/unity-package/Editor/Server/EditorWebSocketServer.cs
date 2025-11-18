@@ -134,7 +134,9 @@ namespace UnityEditorToolkit.Editor.Server
                 { "Wait", new WaitHandler() },
                 { "Database", new DatabaseHandler() },
                 { "Snapshot", new SnapshotHandler() },
-                { "TransformHistory", new TransformHistoryHandler() }
+                { "TransformHistory", new TransformHistoryHandler() },
+                { "Sync", new SyncHandler() },
+                { "Analytics", new AnalyticsHandler() }
             };
 
             // Initialize ChainHandler with access to all handlers

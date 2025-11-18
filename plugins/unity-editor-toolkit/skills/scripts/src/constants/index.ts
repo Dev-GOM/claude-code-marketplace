@@ -142,6 +142,20 @@ export const COMMANDS = {
   TRANSFORM_HISTORY_RESTORE: 'TransformHistory.Restore',
   TRANSFORM_HISTORY_COMPARE: 'TransformHistory.Compare',
   TRANSFORM_HISTORY_CLEAR: 'TransformHistory.Clear',
+
+  // Sync commands
+  SYNC_SCENE: 'Sync.SyncScene',
+  SYNC_GAMEOBJECT: 'Sync.SyncGameObject',
+  SYNC_STATUS: 'Sync.GetSyncStatus',
+  SYNC_CLEAR: 'Sync.ClearSync',
+
+  // Analytics commands
+  ANALYTICS_PROJECT_STATS: 'Analytics.GetProjectStats',
+  ANALYTICS_SCENE_STATS: 'Analytics.GetSceneStats',
+  ANALYTICS_SET_CACHE: 'Analytics.SetCache',
+  ANALYTICS_GET_CACHE: 'Analytics.GetCache',
+  ANALYTICS_CLEAR_CACHE: 'Analytics.ClearCache',
+  ANALYTICS_LIST_CACHE: 'Analytics.ListCache',
 } as const;
 
 /**
