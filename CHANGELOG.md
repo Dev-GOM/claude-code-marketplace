@@ -2,7 +2,45 @@
 
 All notable changes to the Dev GOM Plugins marketplace will be documented in this file.
 
-> **Version**: 2.22.0 | **Last Updated**: 2025-11-13
+> **Version**: 2.23.0 | **Last Updated**: 2025-11-19
+
+---
+
+## [2.23.0] - 2025-11-19
+
+### Major Features
+- 🎮 **Unity Editor Toolkit v0.7.0**: SQLite Database Integration (Unity 6+ Required)
+  - **GUID-based GameObject Identification**: Persistent tracking across Unity sessions
+    - `GameObjectGuid` component with System.Guid for unique identification
+    - Prevents data corruption from instance ID reuse
+  - **Real-time Multi-scene Synchronization**: Auto-sync every 1 second
+    - Synchronizes all loaded scenes simultaneously
+    - Efficient batch operations (500 objects/batch)
+  - **Database Management**:
+    - SQLite-net ORM with UniTask async/await
+    - Auto migration system (Migration_001, Migration_002)
+    - WAL (Write-Ahead Logging) mode for concurrency
+  - **Command Pattern with Undo/Redo**: Full transaction support
+  - **CLI Commands**: `db`, `sync`, `analytics`, `snapshot`, `transform-history`
+  - **Unity Editor Window**: Database tab with connection status, sync controls, analytics
+  - **Documentation**: Complete DATABASE_GUIDE.md (693 lines)
+
+### Security Enhancements
+- 🔒 **Unity Editor Toolkit**: SQL Injection Prevention & Transaction Safety
+  - Parameterized queries for all database operations
+  - Temporary table pattern for large batches (>100 items)
+  - Nested transaction detection and prevention
+  - Domain Reload safety checks
+
+### Bug Fixes
+- **Unity Editor Toolkit**: Fixed 9 code review issues
+  - CRITICAL: GameObject instance_id reuse, SyncManager double initialization
+  - HIGH: SQL injection, transaction nesting, async/sync mixing
+  - MEDIUM: Null handling, boolean conversion, LINQ optimization
+  - Unity-specific: Domain Reload safety, multi-scene support
+
+### Changed
+- **Unity Editor Toolkit**: Now requires Unity 6+ for database features (embedded SQLite)
 
 ---
 

@@ -1,10 +1,11 @@
 # Unity Editor Toolkit
 
-> **⚠️ 상태**: 🧪 실험 단계 (v0.7.0)
+> **⚠️ 상태**: 🧪 실험 단계 (v0.7.0) - **Unity 6+ 필수**
 >
 > **이 플러그인은 현재 실험 단계입니다. API와 기능이 변경될 수 있습니다.**
+> **데이터베이스 기능은 Unity 6 이상이 필요합니다** (내장 SQLite, 별도 설치 불필요)
 
-Claude Code를 위한 완벽한 Unity Editor 제어 및 자동화 툴킷. 25개 카테고리에 걸쳐 500+ Unity Editor 기능을 명령 - GameObjects, 컴포넌트, 씬, Material, 물리, 애니메이션 등을 실시간 WebSocket 자동화로 제어하세요.
+SQLite 데이터베이스 통합이 포함된 Claude Code를 위한 완벽한 Unity Editor 제어 및 자동화 툴킷. 25개 카테고리에 걸쳐 500+ Unity Editor 기능을 명령 - GameObjects, 컴포넌트, 씬, Material, 물리, 애니메이션 등을 실시간 WebSocket 자동화로 제어하세요.
 
 ## 최근 업데이트
 
@@ -333,18 +334,16 @@ Apache License 2.0 - 자세한 내용은 [LICENSE](../../LICENSE)를 참조하�
 - [Blender Toolkit](../blender-toolkit) - Blender 3D 자동화 및 씬 관리
 - [Unity Dev Toolkit](../unity-dev-toolkit) - Unity 개발 유틸리티 및 컴파일 오류 수정
 
-## 기여
-
-기여를 환영합니다! 가이드라인은 [CONTRIBUTING.md](../../CONTRIBUTING.md)를 읽어주세요.
-
 ## 문서
 
 - [COMMANDS.md](./skills/references/COMMANDS.md) - 완전한 명령어 레퍼런스 (500+ 명령어)
 - [COMMANDS.ko.md](./skills/references/COMMANDS.ko.md) - 한국어 명령어 레퍼런스
+- [DATABASE_GUIDE.md](./skills/references/DATABASE_GUIDE.md) - 데이터베이스 사용 가이드
 
 ---
 
-**버전**: 0.5.0
-**마지막 업데이트**: 2025-11-13
+**버전**: 0.7.0
+**Unity 버전**: Unity 6+ (데이터베이스 기능은 내장 SQLite 지원 필요)
+**마지막 업데이트**: 2025-11-19
 **제작자**: Dev GOM
 **마켓플레이스**: [dev-gom-plugins](https://github.com/Dev-GOM/claude-code-marketplace)

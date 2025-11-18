@@ -1,10 +1,11 @@
 # Unity Editor Toolkit
 
-> **⚠️ Status**: 🧪 Experimental (v0.7.0)
+> **⚠️ Status**: 🧪 Experimental (v0.7.0) - **Unity 6+ Required**
 >
 > **This plugin is currently in experimental stage. APIs and features may change.**
+> **Database features require Unity 6 or higher** (embedded SQLite, no installation required)
 
-Complete Unity Editor control and automation toolkit for Claude Code. Command 500+ Unity Editor features across 25 categories - GameObjects, components, scenes, materials, physics, animation, and more through real-time WebSocket automation.
+Complete Unity Editor control and automation toolkit for Claude Code with SQLite database integration. Command 500+ Unity Editor features across 25 categories - GameObjects, components, scenes, materials, physics, animation, and more through real-time WebSocket automation.
 
 ## Recent Updates
 
@@ -356,18 +357,16 @@ Apache License 2.0 - See [LICENSE](../../LICENSE) for details
 - [Blender Toolkit](../blender-toolkit) - Blender 3D automation and scene management
 - [Unity Dev Toolkit](../unity-dev-toolkit) - Unity development utilities and compile error fixing
 
-## Contributing
-
-Contributions welcome! Please read [CONTRIBUTING.md](../../CONTRIBUTING.md) for guidelines.
-
 ## Documentation
 
 - [COMMANDS.md](./skills/references/COMMANDS.md) - Complete command reference (500+ commands)
 - [COMMANDS.ko.md](./skills/references/COMMANDS.ko.md) - Korean command reference
+- [DATABASE_GUIDE.md](./skills/references/DATABASE_GUIDE.md) - Database usage guide
 
 ---
 
 **Version**: 0.7.0
+**Unity Version**: Unity 6+ (Database features require embedded SQLite support)
 **Last Updated**: 2025-11-19
 **Author**: Dev GOM
 **Marketplace**: [dev-gom-plugins](https://github.com/Dev-GOM/claude-code-marketplace)
