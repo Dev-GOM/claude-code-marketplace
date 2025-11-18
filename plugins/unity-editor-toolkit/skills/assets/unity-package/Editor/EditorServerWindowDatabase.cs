@@ -1186,7 +1186,7 @@ namespace UnityEditorToolkit.Editor
         /// </summary>
         public bool IsSyncing
         {
-            get { return syncManager != null && syncManager.IsRunning; }
+            get { return DatabaseManager.Instance.SyncManager != null && DatabaseManager.Instance.SyncManager.IsRunning; }
         }
 
         /// <summary>
