@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
@@ -424,30 +425,35 @@ namespace UnityEditorToolkit.Editor.Database.Commands
 
                 int loadedCount = 0;
 
+                // DB 쿼리는 백그라운드 스레드에서 실행
+                List<CommandHistoryRecord> records = null;
                 await UniTask.RunOnThreadPool(() =>
                 {
                     var connection = databaseManager.Connector.Connection;
-                    var results = connection.Query<CommandHistoryRecord>(sql, since.ToString("o"));
-
-                    foreach (var record in results)
-                    {
-                        // CommandFactory를 사용하여 Command 복원
-                        var command = CommandFactory.CreateFromDatabase(record.command_type, record.command_data);
-
-                        if (command != null)
-                        {
-                            // Undo 스택에 추가 (실행 완료된 명령)
-                            undoStack.Push(command);
-                            loadedCount++;
-
-                            Debug.Log($"[CommandHistory] Command 복원: {command.CommandName} (Type: {record.command_type})");
-                        }
-                        else
-                        {
-                            Debug.LogWarning($"[CommandHistory] Command 복원 실패 - Type: {record.command_type}, ID: {record.command_id}");
-                        }
-                    }
+                    records = connection.Query<CommandHistoryRecord>(sql, since.ToString("o")).ToList();
                 });
+
+                // Command 복원은 메인 스레드에서 실행 (Unity API 호출 가능)
+                await UniTask.SwitchToMainThread();
+
+                foreach (var record in records)
+                {
+                    // CommandFactory를 사용하여 Command 복원
+                    var command = CommandFactory.CreateFromDatabase(record.command_type, record.command_data);
+
+                    if (command != null)
+                    {
+                        // Undo 스택에 추가 (실행 완료된 명령)
+                        undoStack.Push(command);
+                        loadedCount++;
+
+                        Debug.Log($"[CommandHistory] Command 복원: {command.CommandName} (Type: {record.command_type})");
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"[CommandHistory] Command 복원 실패 - Type: {record.command_type}, ID: {record.command_id}");
+                    }
+                }
 
                 Debug.Log($"[CommandHistory] 히스토리 로드 완료: {loadedCount}개");
                 return loadedCount;

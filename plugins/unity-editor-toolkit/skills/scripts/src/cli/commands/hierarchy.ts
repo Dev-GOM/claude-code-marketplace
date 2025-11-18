@@ -78,6 +78,8 @@ export function registerHierarchyCommand(program: Command): void {
     .option('-i, --include-inactive', 'Include inactive GameObjects')
     .option('-a, --active-only', 'Show only active GameObjects (opposite of -i)')
     .option('-d, --depth <n>', 'Limit hierarchy depth (e.g., 2 for 2 levels)')
+    .option('-l, --limit <n>', 'Limit number of root GameObjects to show')
+    .option('-n, --count <n>', 'Same as --limit (alternative alias)')
     .option('-f, --filter <name>', 'Filter GameObjects by name (case-insensitive)')
     .option('-c, --with-components', 'Include component information')
     .option('--json', 'Output in JSON format')
@@ -109,6 +111,15 @@ export function registerHierarchyCommand(program: Command): void {
         // Apply name filter if provided
         if (options.filter) {
           result = filterHierarchyByName(result, options.filter);
+        }
+
+        // Apply limit if provided (--limit or --count)
+        const limitValue = options.limit || options.count;
+        if (limitValue) {
+          const limit = parseInt(limitValue, 10);
+          if (!isNaN(limit) && limit > 0) {
+            result = result.slice(0, limit);
+          }
         }
 
         if (!result || result.length === 0) {

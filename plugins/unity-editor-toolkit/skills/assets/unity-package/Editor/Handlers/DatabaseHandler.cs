@@ -580,6 +580,23 @@ namespace UnityEditorToolkit.Handlers
             public string executed_by { get; set; }
         }
 
+        private class TransformQueryRecord
+        {
+            public int transform_id { get; set; }
+            public int object_id { get; set; }
+            public float position_x { get; set; }
+            public float position_y { get; set; }
+            public float position_z { get; set; }
+            public float rotation_x { get; set; }
+            public float rotation_y { get; set; }
+            public float rotation_z { get; set; }
+            public float rotation_w { get; set; }
+            public float scale_x { get; set; }
+            public float scale_y { get; set; }
+            public float scale_z { get; set; }
+            public string recorded_at { get; set; }
+        }
+
         private object HandleQuery(JsonRpcRequest request)
         {
             if (!DatabaseManager.Instance.IsConnected)
@@ -599,7 +616,7 @@ namespace UnityEditorToolkit.Handlers
                 return new QueryResult
                 {
                     success = false,
-                    message = "Table name is required. Supported: migrations, command_history",
+                    message = "Table name is required. Supported: migrations, command_history, transforms",
                     rows = new object[0],
                     columns = new string[0],
                     rowCount = 0
@@ -612,7 +629,7 @@ namespace UnityEditorToolkit.Handlers
                 return new QueryResult
                 {
                     success = false,
-                    message = "Table name is required. Supported: migrations, command_history",
+                    message = "Table name is required. Supported: migrations, command_history, transforms",
                     rows = new object[0],
                     columns = new string[0],
                     rowCount = 0
@@ -670,11 +687,40 @@ namespace UnityEditorToolkit.Handlers
                         }
                         break;
 
+                    case "transforms":
+                        {
+                            columnNames = new[] { "transform_id", "object_id", "position_x", "position_y", "position_z", "rotation_x", "rotation_y", "rotation_z", "rotation_w", "scale_x", "scale_y", "scale_z", "recorded_at" };
+                            string sql = $"SELECT transform_id, object_id, position_x, position_y, position_z, rotation_x, rotation_y, rotation_z, rotation_w, scale_x, scale_y, scale_z, recorded_at FROM transforms ORDER BY recorded_at DESC LIMIT {paramsObj.limit}";
+                            var records = connection.Query<TransformQueryRecord>(sql);
+
+                            foreach (var record in records)
+                            {
+                                var row = new System.Collections.Generic.Dictionary<string, object>
+                                {
+                                    ["transform_id"] = record.transform_id,
+                                    ["object_id"] = record.object_id,
+                                    ["position_x"] = record.position_x,
+                                    ["position_y"] = record.position_y,
+                                    ["position_z"] = record.position_z,
+                                    ["rotation_x"] = record.rotation_x,
+                                    ["rotation_y"] = record.rotation_y,
+                                    ["rotation_z"] = record.rotation_z,
+                                    ["rotation_w"] = record.rotation_w,
+                                    ["scale_x"] = record.scale_x,
+                                    ["scale_y"] = record.scale_y,
+                                    ["scale_z"] = record.scale_z,
+                                    ["recorded_at"] = record.recorded_at
+                                };
+                                results.Add(row);
+                            }
+                        }
+                        break;
+
                     default:
                         return new QueryResult
                         {
                             success = false,
-                            message = $"Unknown table: {paramsObj.table}. Supported: migrations, command_history",
+                            message = $"Unknown table: {paramsObj.table}. Supported: migrations, command_history, transforms",
                             rows = new object[0],
                             columns = new string[0],
                             rowCount = 0
