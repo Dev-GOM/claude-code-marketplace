@@ -47,7 +47,12 @@ function sanitizeMessage(message: string): string {
  * Format log message with timestamp and level
  */
 function formatMessage(level: LogLevel, message: string): string {
-  const timestamp = new Date().toISOString();
+  const now = new Date();
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const seconds = String(now.getSeconds()).padStart(2, '0');
+  const ms = String(now.getMilliseconds()).padStart(3, '0');
+  const timestamp = `${hours}:${minutes}:${seconds}.${ms}`;
   const levelName = LOG_LEVEL_NAMES[level];
   const sanitized = sanitizeMessage(message);
   return `[${timestamp}] [${levelName}] ${sanitized}`;

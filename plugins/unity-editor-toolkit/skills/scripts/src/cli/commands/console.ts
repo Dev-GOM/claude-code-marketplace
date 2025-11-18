@@ -150,7 +150,6 @@ export function registerConsoleCommand(program: Command): void {
 
         // Text output
         logger.info('✓ Unity Console Logs:');
-        logger.info('━'.repeat(80));
 
         const showStack = options.stack || options.verbose;
         const stackLineCount = options.verbose ? Infinity : parseInt(options.stackLines, 10);
@@ -195,11 +194,8 @@ export function registerConsoleCommand(program: Command): void {
               logger.info(`... (${stackLines.length - stackLineCount} more lines, use --verbose to see all)`);
             }
           }
-
-          logger.info('');
         }
 
-        logger.info('━'.repeat(80));
         logger.info(`Total: ${result.length} log(s)`);
       } catch (error) {
         logger.error('Failed to get console logs', error);
