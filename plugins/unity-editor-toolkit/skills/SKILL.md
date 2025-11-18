@@ -3,11 +3,11 @@ name: unity-editor-toolkit
 description: |
   Unity Editor control and automation, WebSocket-based real-time communication. 유니티에디터제어및자동화, WebSocket기반실시간통신.
 
-  Features/기능: GameObject control 게임오브젝트제어, Transform manipulation 트랜스폼조작, Component management 컴포넌트관리, Scene management 씬관리, Material/Rendering 머티리얼/렌더링, Prefab system 프리팹시스템, Asset Database 애셋데이터베이스, Animation 애니메이션, Physics 물리, Console logging 콘솔로깅, EditorPrefs management 에디터프리퍼런스관리, Editor automation 에디터자동화, Build pipeline 빌드파이프라인, Lighting 라이팅, Camera 카메라, Audio 오디오, Navigation 네비게이션, Particles 파티클, Timeline 타임라인, UI Toolkit, Profiler 프로파일러, Test Runner 테스트러너.
+  Features/기능: GameObject control 게임오브젝트제어, Transform manipulation 트랜스폼조작, Component management 컴포넌트관리, Scene management 씬관리, SQLite database integration SQLite데이터베이스통합, GUID-based persistence GUID기반영구식별, Multi-scene synchronization 멀티씬동기화, Command Pattern with Undo/Redo 명령패턴실행취소재실행, Material/Rendering 머티리얼/렌더링, Prefab system 프리팹시스템, Asset Database 애셋데이터베이스, Animation 애니메이션, Physics 물리, Console logging 콘솔로깅, EditorPrefs management 에디터프리퍼런스관리, Editor automation 에디터자동화, Build pipeline 빌드파이프라인, Lighting 라이팅, Camera 카메라, Audio 오디오, Navigation 네비게이션, Particles 파티클, Timeline 타임라인, UI Toolkit, Profiler 프로파일러, Test Runner 테스트러너.
 
   Protocol 프로토콜: JSON-RPC 2.0 over WebSocket (port 9500-9600). 500+ commands 명령어, 25 categories 카테고리. Real-time bidirectional communication 실시간양방향통신.
 
-  Security 보안: Defense-in-depth 심층방어 (path traversal protection 경로순회방지, command injection defense 명령어인젝션방어, JSON injection prevention JSON인젝션방지). Localhost-only connections 로컬호스트전용. Cross-platform 크로스플랫폼 (Windows, macOS, Linux).
+  Security 보안: Defense-in-depth 심층방어 (path traversal protection 경로순회방지, command injection defense 명령어인젝션방어, JSON injection prevention JSON인젝션방지, SQL injection prevention SQL인젝션방지, transaction safety 트랜잭션안전성). Localhost-only connections 로컬호스트전용. Cross-platform 크로스플랫폼 (Windows, macOS, Linux).
 ---
 
 ## Purpose
@@ -16,8 +16,14 @@ Unity Editor Toolkit enables comprehensive Unity Editor automation and control f
 
 - **Extensive Command Coverage**: 500+ commands spanning 25 Unity Editor categories
 - **Real-time Communication**: Instant bidirectional WebSocket connection (JSON-RPC 2.0)
+- **SQLite Database Integration**: Real-time GameObject synchronization with GUID-based persistence
+  - **GUID-based Identification**: Persistent GameObject tracking across Unity sessions
+  - **Multi-scene Support**: Synchronize all loaded scenes simultaneously (1s interval)
+  - **Command Pattern**: Undo/Redo support for database operations
+  - **Auto Migration**: Automatic schema migration system
+  - **Batch Operations**: Efficient bulk inserts, updates, and deletes (500 objects/batch)
 - **Deep Editor Integration**: GameObject/hierarchy, transforms, components, scenes, materials, prefabs, animation, physics, lighting, build pipeline, and more
-- **Security First**: Multi-layer defense against injection attacks and unauthorized access
+- **Security First**: Multi-layer defense against injection attacks (SQL, command, JSON, path traversal) and unauthorized access
 - **Production Ready**: Cross-platform support with robust error handling and logging
 
 **Always run scripts with `--help` first** to see usage. DO NOT read the source until you try running the script first and find that a customized solution is abslutely necessary. These scripts can be very large and thus pollute your context window. They exist to be called directly as black-box scripts rather than ingested into your context window.
@@ -44,7 +50,14 @@ Use Unity Editor Toolkit when you need to:
    - Setup scene hierarchies from specifications
    - Automate repetitive Editor tasks
 
-4. **CI/CD Integration**
+4. **Database-Driven Workflows** (NEW)
+   - Persistent GameObject tracking across Unity sessions with GUID-based identification
+   - Real-time synchronization of all loaded scenes to SQLite database
+   - Analytics and querying of GameObject hierarchies and properties
+   - Undo/Redo support for database operations via Command Pattern
+   - Efficient batch operations (500 objects/batch) for large scene management
+
+5. **CI/CD Integration**
    - Automated builds with platform-specific settings
    - Test Runner integration for unit/integration tests
    - Asset validation and integrity checks
@@ -65,14 +78,25 @@ Use Unity Editor Toolkit when you need to:
    - Click "Install CLI" to build WebSocket server (one-time setup)
    - Server starts automatically when Unity Editor opens
 
-3. **Server Status**
+3. **Database Setup** (Optional)
+   - In the Server window, switch to "Database" tab
+   - Click "Connect" to initialize SQLite database
+   - Database file location: `{ProjectRoot}/.unity-websocket/unity-editor.db`
+   - Click "Start Sync" to enable real-time GameObject synchronization (1s interval)
+   - **GUID Components**: GameObjects are automatically tagged with persistent GUIDs
+   - **Multi-scene**: All loaded scenes are synchronized automatically
+   - **Analytics**: View sync stats, database health, and Undo/Redo history
+
+4. **Server Status**
    - Port: Auto-assigned from range 9500-9600
    - Status file: `{ProjectRoot}/.unity-websocket/server-status.json`
    - CLI automatically detects correct port from this file
 
-4. **Dependencies**
+5. **Dependencies**
    - websocket-sharp (install via package installation scripts)
    - Newtonsoft.Json (Unity's built-in version)
+   - Cysharp.UniTask (for async/await database operations)
+   - SQLite-net (embedded SQLite database)
 
 ### Claude Code Plugin
 
