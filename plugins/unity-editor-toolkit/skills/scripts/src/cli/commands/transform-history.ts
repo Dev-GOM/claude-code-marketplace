@@ -182,7 +182,6 @@ export function registerTransformHistoryCommand(program: Command): void {
         }
 
         logger.info(`✓ Transform history for '${result.objectName}' (${result.count} entries)`);
-        logger.info('━'.repeat(80));
 
         for (const entry of result.history) {
           logger.info(`[${entry.transformId}] ${entry.recordedAt}`);
@@ -190,8 +189,6 @@ export function registerTransformHistoryCommand(program: Command): void {
           logger.info(`   Scale: (${entry.scale.x.toFixed(3)}, ${entry.scale.y.toFixed(3)}, ${entry.scale.z.toFixed(3)})`);
           logger.info('');
         }
-
-        logger.info('━'.repeat(80));
       } catch (error) {
         logger.error('Failed to list transform history', error);
         process.exit(1);
@@ -306,7 +303,6 @@ export function registerTransformHistoryCommand(program: Command): void {
         }
 
         logger.info('✓ Transform Comparison');
-        logger.info('━'.repeat(60));
 
         logger.info(`Transform 1 (ID: ${result.transform1.transformId}):`);
         logger.info(`  Recorded: ${result.transform1.recordedAt}`);
@@ -324,7 +320,6 @@ export function registerTransformHistoryCommand(program: Command): void {
         logger.info(`  Rotation Δ: ${result.rotationAngleDifference.toFixed(2)}°`);
         logger.info(`  Scale Δ: (${result.scaleDifference.x.toFixed(3)}, ${result.scaleDifference.y.toFixed(3)}, ${result.scaleDifference.z.toFixed(3)})`);
 
-        logger.info('━'.repeat(60));
       } catch (error) {
         logger.error('Failed to compare transforms', error);
         process.exit(1);

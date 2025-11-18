@@ -122,7 +122,6 @@ export function registerSceneCommand(program: Command): void {
 
         // Text output
         logger.info('✓ Loaded Scenes:');
-        logger.info('━'.repeat(60));
         for (const scene of result) {
           const loadedIcon = scene.isLoaded ? '●' : '○';
           const dirtyIcon = scene.isDirty ? '*' : ' ';
@@ -132,7 +131,6 @@ export function registerSceneCommand(program: Command): void {
           logger.info(`   Root GameObjects: ${scene.rootCount}`);
           logger.info('');
         }
-        logger.info('━'.repeat(60));
         logger.info(`Total: ${result.length} scene(s)`);
       } catch (error) {
         logger.error('Failed to list scenes', error);

@@ -150,11 +150,9 @@ export function registerHierarchyCommand(program: Command): void {
         const withComponents = options.withComponents || false;
 
         logger.info('Unity Hierarchy:');
-        logger.info('━'.repeat(60));
         for (const obj of result) {
           logger.info(formatHierarchy(obj, 0, maxDepth, withComponents));
         }
-        logger.info('━'.repeat(60));
         let summary = `Total: ${result.length} root GameObject(s)`;
         if (options.filter) summary += ` (filtered by: "${options.filter}")`;
         if (maxDepth) summary += ` (depth: ${maxDepth})`;

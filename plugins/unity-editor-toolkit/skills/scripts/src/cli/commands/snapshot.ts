@@ -176,7 +176,6 @@ export function registerSnapshotCommand(program: Command): void {
         }
 
         logger.info(`✓ Found ${result.count} snapshot(s)`);
-        logger.info('━'.repeat(70));
 
         for (const snapshot of result.snapshots) {
           logger.info(`[${snapshot.snapshotId}] ${snapshot.snapshotName}`);
@@ -187,8 +186,6 @@ export function registerSnapshotCommand(program: Command): void {
           }
           logger.info('');
         }
-
-        logger.info('━'.repeat(70));
       } catch (error) {
         logger.error('Failed to list snapshots', error);
         process.exit(1);
