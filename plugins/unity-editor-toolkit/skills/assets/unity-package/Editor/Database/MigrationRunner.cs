@@ -168,71 +168,83 @@ namespace UnityEditorToolkit.Editor.Database
                 {
                     var connection = databaseManager.Connector.Connection;
 
-                    // sqlite-net은 내부적으로 트랜잭션을 관리하므로 수동 트랜잭션 사용하지 않음
-                    // BeginTransaction()이 "not an error"를 유발할 수 있음
-
-                    // SQL을 완전한 문장 단위로 분리 (BEGIN...END 블록 고려)
-                    var sqlStatements = SplitSqlStatements(sql);
-                    int executedCount = 0;
-
-                    foreach (var statement in sqlStatements)
+                    // 트랜잭션으로 마이그레이션 원자성 보장
+                    // 마이그레이션 중 오류 발생 시 롤백으로 데이터베이스 일관성 유지
+                    connection.BeginTransaction();
+                    try
                     {
-                        var trimmedStatement = statement.Trim();
-                        if (string.IsNullOrWhiteSpace(trimmedStatement))
-                            continue;
+                        // SQL을 완전한 문장 단위로 분리 (BEGIN...END 블록 고려)
+                        var sqlStatements = SplitSqlStatements(sql);
+                        int executedCount = 0;
 
-                        // 주석만 있는 문장 스킵 (Execute()에 전달하면 "not an error" 발생)
-                        string withoutComments = RemoveSqlComments(trimmedStatement);
-                        if (string.IsNullOrWhiteSpace(withoutComments))
+                        foreach (var statement in sqlStatements)
                         {
-                            Debug.Log($"[MigrationRunner] 주석만 있는 문장 스킵 (RemoveSqlComments v2 적용됨)");
-                            continue;
+                            var trimmedStatement = statement.Trim();
+                            if (string.IsNullOrWhiteSpace(trimmedStatement))
+                                continue;
+
+                            // 주석만 있는 문장 스킵 (Execute()에 전달하면 "not an error" 발생)
+                            string withoutComments = RemoveSqlComments(trimmedStatement);
+                            if (string.IsNullOrWhiteSpace(withoutComments))
+                            {
+                                Debug.Log($"[MigrationRunner] 주석만 있는 문장 스킵 (RemoveSqlComments v2 적용됨)");
+                                continue;
+                            }
+
+                            // 주석이 제거된 SQL 사용 (Execute()가 주석을 처리하지 못할 수 있음)
+                            string cleanedSql = withoutComments.Trim();
+
+                            // SELECT 문 (결과 메시지용)은 스킵 - Execute()는 결과를 반환하지 않음
+                            if (cleanedSql.StartsWith("SELECT ", StringComparison.OrdinalIgnoreCase))
+                            {
+                                Debug.Log($"[MigrationRunner] SELECT 문 스킵");
+                                continue;
+                            }
+
+                            // PRAGMA 문은 스킵 (SQLiteConnector에서 이미 설정됨)
+                            if (cleanedSql.StartsWith("PRAGMA ", StringComparison.OrdinalIgnoreCase))
+                            {
+                                Debug.Log($"[MigrationRunner] PRAGMA 문 스킵: {cleanedSql}");
+                                continue;
+                            }
+
+                            // SQL 실행 (오류 발생 시 어떤 문에서 발생했는지 확인용)
+                            try
+                            {
+                                connection.Execute(cleanedSql);
+                                executedCount++;
+                            }
+                            catch (Exception sqlEx)
+                            {
+                                // SQL 문의 첫 100자만 출력 (너무 길면 로그가 지저분해짐)
+                                string sqlPreview = trimmedStatement.Length > 100
+                                    ? trimmedStatement.Substring(0, 100) + "..."
+                                    : trimmedStatement;
+                                Debug.LogError($"[MigrationRunner] SQL 실행 실패 ({executedCount + 1}번째): {sqlEx.Message}\nSQL: {sqlPreview}");
+                                throw;
+                            }
                         }
 
-                        // 주석이 제거된 SQL 사용 (Execute()가 주석을 처리하지 못할 수 있음)
-                        string cleanedSql = withoutComments.Trim();
+                        Debug.Log($"[MigrationRunner] SQL 문장 실행 완료: {executedCount}개");
 
-                        // SELECT 문 (결과 메시지용)은 스킵 - Execute()는 결과를 반환하지 않음
-                        if (cleanedSql.StartsWith("SELECT ", StringComparison.OrdinalIgnoreCase))
-                        {
-                            Debug.Log($"[MigrationRunner] SELECT 문 스킵");
-                            continue;
-                        }
+                        // migrations 테이블에 기록
+                        string insertSql = @"
+                            INSERT INTO migrations (migration_name, applied_at)
+                            VALUES (?, datetime('now'));";
 
-                        // PRAGMA 문은 스킵 (SQLiteConnector에서 이미 설정됨)
-                        if (cleanedSql.StartsWith("PRAGMA ", StringComparison.OrdinalIgnoreCase))
-                        {
-                            Debug.Log($"[MigrationRunner] PRAGMA 문 스킵: {cleanedSql}");
-                            continue;
-                        }
+                        connection.Execute(insertSql, migrationName);
 
-                        // SQL 실행 (오류 발생 시 어떤 문에서 발생했는지 확인용)
-                        try
-                        {
-                            connection.Execute(cleanedSql);
-                            executedCount++;
-                        }
-                        catch (Exception sqlEx)
-                        {
-                            // SQL 문의 첫 100자만 출력 (너무 길면 로그가 지저분해짐)
-                            string sqlPreview = trimmedStatement.Length > 100
-                                ? trimmedStatement.Substring(0, 100) + "..."
-                                : trimmedStatement;
-                            Debug.LogError($"[MigrationRunner] SQL 실행 실패 ({executedCount + 1}번째): {sqlEx.Message}\nSQL: {sqlPreview}");
-                            throw;
-                        }
+                        // 트랜잭션 커밋
+                        connection.Commit();
+                        Debug.Log($"[MigrationRunner] 마이그레이션 트랜잭션 커밋 완료: {migrationName}");
                     }
-
-                    Debug.Log($"[MigrationRunner] SQL 문장 실행 완료: {executedCount}개");
-
-                    // migrations 테이블에 기록
-                    string insertSql = @"
-                        INSERT INTO migrations (migration_name, applied_at)
-                        VALUES (?, datetime('now'));";
-
-                    connection.Execute(insertSql, migrationName);
-
-                    // sqlite-net 자동 커밋 (트랜잭션 없음, 수동 트랜잭션 제거됨)
+                    catch (Exception ex)
+                    {
+                        // 트랜잭션 롤백
+                        connection.Rollback();
+                        Debug.LogError($"[MigrationRunner] 마이그레이션 실패 - 롤백됨: {ex.Message}");
+                        throw;
+                    }
                 }, cancellationToken: cancellationToken);
 
                 return new MigrationResult { Success = true };

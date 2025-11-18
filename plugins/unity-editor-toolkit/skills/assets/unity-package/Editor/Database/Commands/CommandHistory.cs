@@ -168,11 +168,15 @@ namespace UnityEditorToolkit.Editor.Database.Commands
         }
 
         /// <summary>
-        /// Undo 실행 (동기)
+        /// Undo 실행 (에디터 메뉴/UI용)
         /// </summary>
-        public bool Undo()
+        /// <remarks>
+        /// Unity 에디터 메뉴 항목에서 호출하기 위한 래퍼 메서드입니다.
+        /// 비동기 작업을 UniTask.Void로 처리하여 fire-and-forget 방식으로 실행합니다.
+        /// </remarks>
+        public void Undo()
         {
-            return UndoAsync().AsTask().GetAwaiter().GetResult();
+            UndoAsync().Forget();
         }
 
         /// <summary>
@@ -210,11 +214,15 @@ namespace UnityEditorToolkit.Editor.Database.Commands
         }
 
         /// <summary>
-        /// Redo 실행 (동기)
+        /// Redo 실행 (에디터 메뉴/UI용)
         /// </summary>
-        public bool Redo()
+        /// <remarks>
+        /// Unity 에디터 메뉴 항목에서 호출하기 위한 래퍼 메서드입니다.
+        /// 비동기 작업을 UniTask.Void로 처리하여 fire-and-forget 방식으로 실행합니다.
+        /// </remarks>
+        public void Redo()
         {
-            return RedoAsync().AsTask().GetAwaiter().GetResult();
+            RedoAsync().Forget();
         }
 
         /// <summary>
@@ -306,23 +314,14 @@ namespace UnityEditorToolkit.Editor.Database.Commands
         {
             if (undoStack.Count > MaxHistorySize)
             {
-                // 가장 오래된 명령 제거 (Stack의 밑바닥)
-                var tempStack = new Stack<ICommand>();
-
-                // 상위 MaxHistorySize개만 유지
-                for (int i = 0; i < MaxHistorySize; i++)
-                {
-                    if (undoStack.Count > 0)
-                    {
-                        tempStack.Push(undoStack.Pop());
-                    }
-                }
+                // 성능 개선: 리스트로 변환 후 트림하고 스택 재구성
+                var list = undoStack.ToList();
+                list.RemoveRange(0, list.Count - MaxHistorySize);
 
                 undoStack.Clear();
-
-                while (tempStack.Count > 0)
+                for (int i = list.Count - 1; i >= 0; i--)
                 {
-                    undoStack.Push(tempStack.Pop());
+                    undoStack.Push(list[i]);
                 }
 
                 Debug.Log($"[CommandHistory] 히스토리 크기 제한 적용: {undoStack.Count}개 유지");
