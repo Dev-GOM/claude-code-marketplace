@@ -5,6 +5,7 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEditorToolkit.Runtime;
 
 namespace UnityEditorToolkit.Editor.Database
 {
@@ -181,7 +182,17 @@ namespace UnityEditorToolkit.Editor.Database
                 }
 
                 // 2. DB에서 현재 씬의 GameObject 목록 가져오기
-                var dbGameObjects = await GetDatabaseGameObjectsAsync(scene, cancellationToken);
+                Dictionary<string, DbGameObject> dbGameObjects;
+                try
+                {
+                    dbGameObjects = await GetDatabaseGameObjectsAsync(scene, cancellationToken);
+                }
+                catch (InvalidOperationException ex)
+                {
+                    Debug.LogError($"[SyncManager] DB 연결 실패로 동기화 건너뜀: {ex.Message}");
+                    FailedSyncCount++;
+                    return;
+                }
 
                 // 3. 변경 감지
                 var changes = DetectChanges(allGameObjects, dbGameObjects);
@@ -306,6 +317,8 @@ namespace UnityEditorToolkit.Editor.Database
                     {
                         foreach (var obj in batch)
                         {
+                            var guidComp = EnsureGameObjectGuid(obj);
+                            string guid = guidComp.Guid;
                             int instanceId = obj.GetInstanceID();
                             int? parentId = obj.transform.parent != null ? obj.transform.parent.gameObject.GetInstanceID() : (int?)null;
 
@@ -317,11 +330,12 @@ namespace UnityEditorToolkit.Editor.Database
                                     layer = ?,
                                     is_active = ?,
                                     is_static = ?,
+                                    instance_id = ?,
                                     updated_at = datetime('now', 'localtime')
-                                WHERE instance_id = ?
+                                WHERE guid = ?
                             ";
 
-                            connection.Execute(sql, obj.name, parentId, obj.tag, obj.layer, obj.activeSelf ? 1 : 0, obj.isStatic ? 1 : 0, instanceId);
+                            connection.Execute(sql, obj.name, parentId, obj.tag, obj.layer, obj.activeSelf, obj.isStatic, instanceId, guid);
                         }
 
                         connection.Commit();
@@ -343,7 +357,11 @@ namespace UnityEditorToolkit.Editor.Database
             }
             finally
             {
-                await UniTask.SwitchToMainThread();
+                // 메인 스레드가 살아있는지 확인
+                if (!isDisposed)
+                {
+                    await UniTask.SwitchToMainThread();
+                }
             }
         }
 
@@ -396,9 +414,9 @@ namespace UnityEditorToolkit.Editor.Database
         }
 
         /// <summary>
-        /// DB에서 현재 씬의 GameObject 목록 가져오기
+        /// DB에서 현재 씬의 GameObject 목록 가져오기 (GUID 기반)
         /// </summary>
-        private async UniTask<Dictionary<int, DbGameObject>> GetDatabaseGameObjectsAsync(Scene scene, CancellationToken cancellationToken)
+        private async UniTask<Dictionary<string, DbGameObject>> GetDatabaseGameObjectsAsync(Scene scene, CancellationToken cancellationToken)
         {
             await UniTask.SwitchToThreadPool();
 
@@ -408,7 +426,7 @@ namespace UnityEditorToolkit.Editor.Database
                 if (connection == null)
                 {
                     Debug.LogError("[SyncManager] Database connection is null");
-                    return new Dictionary<int, DbGameObject>();
+                    throw new InvalidOperationException("Database connection is not available");
                 }
 
                 // 1. scene_id 가져오기
@@ -417,33 +435,39 @@ namespace UnityEditorToolkit.Editor.Database
 
                 if (sceneIds.Count() == 0)
                 {
-                    // Scene이 DB에 없으면 빈 딕셔너리 반환
-                    return new Dictionary<int, DbGameObject>();
+                    // Scene이 DB에 없는 것은 정상 (첫 동기화)
+                    Debug.Log($"[SyncManager] Scene '{scene.name}'이 DB에 없습니다 (첫 동기화).");
+                    return new Dictionary<string, DbGameObject>();
                 }
 
                 int sceneId = sceneIds.First().scene_id;
 
-                // 2. GameObject 목록 가져오기
+                // 2. GameObject 목록 가져오기 (guid 포함)
                 var sql = @"
-                    SELECT object_id, instance_id, object_name, parent_id, tag, layer, is_active, is_static, is_deleted
+                    SELECT object_id, instance_id, guid, object_name, parent_id, tag, layer, is_active, is_static, is_deleted
                     FROM gameobjects
                     WHERE scene_id = ? AND is_deleted = 0
                 ";
 
                 var dbObjects = connection.Query<DbGameObject>(sql, sceneId);
 
-                // Dictionary로 변환 (instance_id를 키로 사용)
-                var result = new Dictionary<int, DbGameObject>();
+                // Dictionary로 변환 (guid를 키로 사용, guid가 null인 경우 instance_id를 fallback으로 사용)
+                var result = new Dictionary<string, DbGameObject>();
                 foreach (var obj in dbObjects)
                 {
-                    result[obj.instance_id] = obj;
+                    string key = !string.IsNullOrEmpty(obj.guid) ? obj.guid : $"instance_{obj.instance_id}";
+                    result[key] = obj;
                 }
 
                 return result;
             }
             finally
             {
-                await UniTask.SwitchToMainThread();
+                // 메인 스레드가 살아있는지 확인
+                if (!isDisposed)
+                {
+                    await UniTask.SwitchToMainThread();
+                }
             }
         }
 
@@ -458,9 +482,22 @@ namespace UnityEditorToolkit.Editor.Database
 
         #region Change Detection (Phase 2)
         /// <summary>
-        /// Unity GameObject와 DB GameObject 비교하여 변경사항 감지
+        /// GameObject에 GameObjectGuid 컴포넌트 확보 (없으면 추가)
         /// </summary>
-        private GameObjectChangeSet DetectChanges(List<GameObject> unityObjects, Dictionary<int, DbGameObject> dbObjects)
+        private GameObjectGuid EnsureGameObjectGuid(GameObject obj)
+        {
+            var guidComp = obj.GetComponent<GameObjectGuid>();
+            if (guidComp == null)
+            {
+                guidComp = obj.AddComponent<GameObjectGuid>();
+            }
+            return guidComp;
+        }
+
+        /// <summary>
+        /// Unity GameObject와 DB GameObject 비교하여 변경사항 감지 (GUID 기반)
+        /// </summary>
+        private GameObjectChangeSet DetectChanges(List<GameObject> unityObjects, Dictionary<string, DbGameObject> dbObjects)
         {
             var changeSet = new GameObjectChangeSet
             {
@@ -469,15 +506,18 @@ namespace UnityEditorToolkit.Editor.Database
                 Deleted = new List<int>()
             };
 
-            // Unity에 있는 객체 확인
-            var processedInstanceIds = new HashSet<int>();
+            // Unity에 있는 객체 확인 (GUID 기반)
+            var processedGuids = new HashSet<string>();
 
             foreach (var obj in unityObjects)
             {
-                int instanceId = obj.GetInstanceID();
-                processedInstanceIds.Add(instanceId);
+                // GameObjectGuid 컴포넌트 확보
+                var guidComp = EnsureGameObjectGuid(obj);
+                string guid = guidComp.Guid;
 
-                if (dbObjects.TryGetValue(instanceId, out var dbObj))
+                processedGuids.Add(guid);
+
+                if (dbObjects.TryGetValue(guid, out var dbObj))
                 {
                     // DB에 존재: 변경 여부 확인
                     if (HasChanged(obj, dbObj))
@@ -495,7 +535,7 @@ namespace UnityEditorToolkit.Editor.Database
             // DB에만 있고 Unity에 없는 객체 확인 (삭제된 객체)
             foreach (var kvp in dbObjects)
             {
-                if (!processedInstanceIds.Contains(kvp.Key))
+                if (!processedGuids.Contains(kvp.Key))
                 {
                     changeSet.Deleted.Add(kvp.Value.object_id);
                 }
@@ -572,15 +612,17 @@ namespace UnityEditorToolkit.Editor.Database
                     {
                         foreach (var obj in batch)
                         {
+                            var guidComp = EnsureGameObjectGuid(obj);
+                            string guid = guidComp.Guid;
                             int instanceId = obj.GetInstanceID();
                             int? parentId = obj.transform.parent != null ? obj.transform.parent.gameObject.GetInstanceID() : (int?)null;
 
                             var sql = @"
-                                INSERT INTO gameobjects (instance_id, scene_id, object_name, parent_id, tag, layer, is_active, is_static, is_deleted, created_at, updated_at)
-                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, datetime('now', 'localtime'), datetime('now', 'localtime'))
+                                INSERT INTO gameobjects (guid, instance_id, scene_id, object_name, parent_id, tag, layer, is_active, is_static, is_deleted, created_at, updated_at)
+                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, datetime('now', 'localtime'), datetime('now', 'localtime'))
                             ";
 
-                            connection.Execute(sql, instanceId, sceneId, obj.name, parentId, obj.tag, obj.layer, obj.activeSelf ? 1 : 0, obj.isStatic ? 1 : 0);
+                            connection.Execute(sql, guid, instanceId, sceneId, obj.name, parentId, obj.tag, obj.layer, obj.activeSelf, obj.isStatic);
                         }
 
                         connection.Commit();
@@ -598,7 +640,11 @@ namespace UnityEditorToolkit.Editor.Database
             }
             finally
             {
-                await UniTask.SwitchToMainThread();
+                // 메인 스레드가 살아있는지 확인
+                if (!isDisposed)
+                {
+                    await UniTask.SwitchToMainThread();
+                }
             }
         }
 
@@ -656,7 +702,11 @@ namespace UnityEditorToolkit.Editor.Database
             }
             finally
             {
-                await UniTask.SwitchToMainThread();
+                // 메인 스레드가 살아있는지 확인
+                if (!isDisposed)
+                {
+                    await UniTask.SwitchToMainThread();
+                }
             }
         }
 
@@ -768,6 +818,7 @@ namespace UnityEditorToolkit.Editor.Database
     {
         public int object_id { get; set; }
         public int instance_id { get; set; }
+        public string guid { get; set; }
         public string object_name { get; set; }
         public int? parent_id { get; set; }
         public string tag { get; set; }

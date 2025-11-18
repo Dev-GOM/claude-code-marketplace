@@ -368,12 +368,21 @@ namespace UnityEditorToolkit.Editor.Database
 
             Debug.Log("[DatabaseManager] 서버 종료로 인한 연결 해제...");
 
-            // ShutdownAsync를 동기적으로 실행
-            ShutdownAsync().Forget();
-
-            // 상태 플래그 즉시 업데이트
-            isConnected = false;
-            isInitialized = false;
+            // UniTask를 동기적으로 대기 (Unity 메인 스레드에서만 호출)
+            try
+            {
+                ShutdownAsync().GetAwaiter().GetResult();
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[DatabaseManager] Disconnect 중 예외: {ex.Message}");
+            }
+            finally
+            {
+                // Shutdown 완료 후 상태 업데이트
+                isConnected = false;
+                isInitialized = false;
+            }
 
             Debug.Log("[DatabaseManager] 연결 해제 완료.");
         }

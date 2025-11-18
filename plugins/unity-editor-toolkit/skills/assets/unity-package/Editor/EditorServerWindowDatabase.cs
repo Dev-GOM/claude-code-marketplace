@@ -69,7 +69,6 @@ namespace UnityEditorToolkit.Editor
         #region Database State
         private DatabaseConfig currentDbConfig;
         private DatabaseSetupWizard setupWizard;
-        private SyncManager syncManager;
         private bool isLoadingConfig = false; // UI 로드 중 플래그
         private System.Threading.CancellationTokenSource migrationCheckCts; // Migration 버튼 업데이트 취소 토큰
         private bool lastConnectionState = false; // 마지막 연결 상태 (상태 변경 감지용)
@@ -557,10 +556,12 @@ namespace UnityEditorToolkit.Editor
 
             try
             {
-                // SyncManager 초기화 (처음 1회만)
+                // DatabaseManager의 SyncManager 사용 (단일 인스턴스)
+                var syncManager = DatabaseManager.Instance.SyncManager;
                 if (syncManager == null)
                 {
-                    syncManager = new SyncManager(DatabaseManager.Instance);
+                    ShowDatabaseError("⚠️ SyncManager가 초기화되지 않았습니다.");
+                    return;
                 }
 
                 // 토글 동작
@@ -803,7 +804,7 @@ namespace UnityEditorToolkit.Editor
             }
 
             // Update sync status
-            windowData.DbIsSyncing = syncManager != null && syncManager.IsRunning;
+            windowData.DbIsSyncing = DatabaseManager.Instance.SyncManager?.IsRunning ?? false;
 
             // Update button visibility and states (not bound to data)
             dbConnectButton?.SetEnabled(!isConnected && (dbEnableToggle?.value ?? false));
@@ -947,12 +948,8 @@ namespace UnityEditorToolkit.Editor
         #region Database Cleanup
         private void CleanupDatabaseUI()
         {
-            // Dispose SyncManager
-            if (syncManager != null)
-            {
-                syncManager.Dispose();
-                syncManager = null;
-            }
+            // SyncManager는 DatabaseManager가 소유하므로 여기서 Dispose 하지 않음
+            // DatabaseManager.CleanupAsync()에서 처리됨
 
             // Cancel any pending migration check
             migrationCheckCts?.Cancel();
