@@ -168,15 +168,15 @@ namespace UnityEditorToolkit.Editor.Database.Commands
         }
 
         /// <summary>
-        /// Undo 실행 (에디터 메뉴/UI용)
+        /// Undo 실행 (동기 - WebSocket 핸들러용)
         /// </summary>
         /// <remarks>
-        /// Unity 에디터 메뉴 항목에서 호출하기 위한 래퍼 메서드입니다.
-        /// 비동기 작업을 UniTask.Void로 처리하여 fire-and-forget 방식으로 실행합니다.
+        /// WebSocket 핸들러에서 결과를 반환받기 위한 동기 메서드입니다.
+        /// 내부적으로 UndoAsync()를 동기 호출합니다.
         /// </remarks>
-        public void Undo()
+        public bool Undo()
         {
-            UndoAsync().Forget();
+            return UndoAsync().GetAwaiter().GetResult();
         }
 
         /// <summary>
@@ -214,15 +214,15 @@ namespace UnityEditorToolkit.Editor.Database.Commands
         }
 
         /// <summary>
-        /// Redo 실행 (에디터 메뉴/UI용)
+        /// Redo 실행 (동기 - WebSocket 핸들러용)
         /// </summary>
         /// <remarks>
-        /// Unity 에디터 메뉴 항목에서 호출하기 위한 래퍼 메서드입니다.
-        /// 비동기 작업을 UniTask.Void로 처리하여 fire-and-forget 방식으로 실행합니다.
+        /// WebSocket 핸들러에서 결과를 반환받기 위한 동기 메서드입니다.
+        /// 내부적으로 RedoAsync()를 동기 호출합니다.
         /// </remarks>
-        public void Redo()
+        public bool Redo()
         {
-            RedoAsync().Forget();
+            return RedoAsync().GetAwaiter().GetResult();
         }
 
         /// <summary>
