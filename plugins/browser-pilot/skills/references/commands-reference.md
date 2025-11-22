@@ -133,9 +133,62 @@ node .browser-pilot/bp extract -s "<selector>"
 node .browser-pilot/bp content
 ```
 
-**console** - Get console messages
+**console** - Get console messages with powerful filtering and formatting
 ```bash
-node .browser-pilot/bp console
+node .browser-pilot/bp console [options]
+
+Options:
+  -u, --url <url>           Navigate to URL before getting console messages
+
+  Level Filtering:
+  -e, --errors-only         Show only error messages
+  -l, --level <level>       Filter by level: error, warning, log, info, verbose
+  --warnings                Show only warning messages
+  --logs                    Show only log messages
+
+  Message Limiting:
+  --limit <number>          Maximum number of messages to display
+  --skip <number>           Skip first N messages
+
+  Text Filtering:
+  -f, --filter <pattern>    Show only messages matching regex pattern
+  -x, --exclude <pattern>   Exclude messages matching regex pattern
+
+  Output Format:
+  -j, --json                Output in JSON format
+  -t, --timestamp           Show timestamps
+  --no-color                Disable colored output
+
+  File Output:
+  -o, --output <file>       Save output to file
+
+  Source Filtering:
+  --url-filter <pattern>    Filter by source URL (regex)
+
+Examples:
+  # Get all console messages
+  node .browser-pilot/bp console
+
+  # Get only errors with timestamps
+  node .browser-pilot/bp console -e -t
+
+  # Filter messages containing "API"
+  node .browser-pilot/bp console -f "API"
+
+  # Get warnings and exclude messages containing "deprecated"
+  node .browser-pilot/bp console --warnings -x "deprecated"
+
+  # Get first 10 log messages in JSON format
+  node .browser-pilot/bp console --logs --limit 10 -j
+
+  # Save all console messages to file
+  node .browser-pilot/bp console -o console-output.txt
+
+  # Get errors from specific source file
+  node .browser-pilot/bp console -e --url-filter "app.js"
+
+  # Navigate and get console errors
+  node .browser-pilot/bp console -u "http://localhost:3000" -e
 ```
 
 **cookies** - Get page cookies

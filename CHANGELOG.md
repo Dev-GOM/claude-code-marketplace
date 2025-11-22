@@ -2,7 +2,35 @@
 
 All notable changes to the Dev GOM Plugins marketplace will be documented in this file.
 
-> **Version**: 2.23.0 | **Last Updated**: 2025-11-19
+> **Version**: 2.24.0 | **Last Updated**: 2025-11-23
+
+---
+
+## [2.24.0] - 2025-11-23
+
+### Enhanced Features
+- 🌐 **Browser Pilot v1.10.0**: Console Command Enhancements
+  - **Level Filtering**:
+    - `--errors-only`: Show only error messages
+    - `--level <level>`: Filter by error, warning, log, info, verbose
+    - `--warnings`: Show only warning messages
+    - `--logs`: Show only log messages
+  - **Message Limiting**:
+    - `--limit <number>`: Maximum number of messages to display
+    - `--skip <number>`: Skip first N messages
+  - **Text Filtering**:
+    - `-f, --filter <pattern>`: Filter messages by regex pattern
+    - `-x, --exclude <pattern>`: Exclude messages by regex pattern
+  - **Output Formats**:
+    - `-j, --json`: JSON format output
+    - `-t, --timestamp`: Show timestamps
+    - `--no-color`: Disable colored output
+    - Color-coded levels (error=red, warning=yellow, log=cyan, info=blue, verbose=gray)
+  - **File Output**:
+    - `-o, --output <file>`: Save console output to file
+  - **Source Filtering**:
+    - `--url-filter <pattern>`: Filter by source URL (regex)
+  - **Documentation**: Updated commands-reference.md with comprehensive examples
 
 ---
 
