@@ -2,7 +2,35 @@
 
 Dev GOM Plugins 마켓플레이스의 모든 주요 변경사항이 이 파일에 문서화됩니다.
 
-> **버전**: 2.23.0 | **최종 업데이트**: 2025-11-19
+> **버전**: 2.24.0 | **최종 업데이트**: 2025-11-23
+
+---
+
+## [2.24.0] - 2025-11-23
+
+### 기능 강화
+- 🌐 **Browser Pilot v1.10.0**: 콘솔 명령어 개선
+  - **레벨별 필터링**:
+    - `--errors-only`: 에러 메시지만 표시
+    - `--level <level>`: error, warning, log, info, verbose로 필터링
+    - `--warnings`: 경고 메시지만 표시
+    - `--logs`: 로그 메시지만 표시
+  - **메시지 제한**:
+    - `--limit <number>`: 표시할 최대 메시지 수
+    - `--skip <number>`: 처음 N개 메시지 건너뛰기
+  - **텍스트 필터링**:
+    - `-f, --filter <pattern>`: 정규식 패턴으로 메시지 필터링
+    - `-x, --exclude <pattern>`: 정규식 패턴으로 메시지 제외
+  - **출력 형식**:
+    - `-j, --json`: JSON 형식 출력
+    - `-t, --timestamp`: 타임스탬프 표시
+    - `--no-color`: 색상 출력 비활성화
+    - 레벨별 색상 코딩 (error=빨강, warning=노랑, log=청록, info=파랑, verbose=회색)
+  - **파일 출력**:
+    - `-o, --output <file>`: 콘솔 출력을 파일로 저장
+  - **소스 필터링**:
+    - `--url-filter <pattern>`: 소스 URL로 필터링 (정규식)
+  - **문서화**: 포괄적인 예제와 함께 commands-reference.md 업데이트
 
 ---
 
