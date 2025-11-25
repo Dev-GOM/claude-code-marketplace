@@ -357,7 +357,7 @@ namespace UnityEditorToolkit.Editor.Database
 
         #region Connection Management
         /// <summary>
-        /// 데이터베이스 연결 해제 (동기 방식 - 서버 종료 시 사용)
+        /// 데이터베이스 연결 해제 (동기 방식 - 서버 종료/Assembly Reload 시 사용)
         /// </summary>
         public void Disconnect()
         {
@@ -368,10 +368,32 @@ namespace UnityEditorToolkit.Editor.Database
 
             Debug.Log("[DatabaseManager] 서버 종료로 인한 연결 해제...");
 
-            // UniTask를 동기적으로 대기 (Unity 메인 스레드에서만 호출)
             try
             {
-                ShutdownAsync().GetAwaiter().GetResult();
+                // CancellationToken 취소
+                lifecycleCts?.Cancel();
+
+                // SyncManager 정리
+                if (syncManager != null)
+                {
+                    syncManager.Dispose();
+                    syncManager = null;
+                }
+
+                // Command History 정리
+                if (commandHistory != null)
+                {
+                    commandHistory.Clear();
+                    commandHistory = null;
+                }
+
+                // 커넥터 정리 (동기 방식)
+                connector?.Disconnect();
+                connector = null;
+
+                // CancellationTokenSource 정리
+                lifecycleCts?.Dispose();
+                lifecycleCts = null;
             }
             catch (Exception ex)
             {
@@ -379,7 +401,7 @@ namespace UnityEditorToolkit.Editor.Database
             }
             finally
             {
-                // Shutdown 완료 후 상태 업데이트
+                // 상태 업데이트
                 isConnected = false;
                 isInitialized = false;
             }

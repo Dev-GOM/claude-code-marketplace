@@ -1,6 +1,6 @@
 # Unity Editor Toolkit
 
-> **⚠️ Status**: 🧪 Experimental (v0.7.0) - **Unity 6+ Required**
+> **⚠️ Status**: 🧪 Experimental (v0.8.0) - **Unity 6+ Required**
 >
 > **This plugin is currently in experimental stage. APIs and features may change.**
 > **Database features require Unity 6 or higher** (embedded SQLite, no installation required)

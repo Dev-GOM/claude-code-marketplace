@@ -159,6 +159,21 @@ export const COMMANDS = {
   ANALYTICS_GET_CACHE: 'Analytics.GetCache',
   ANALYTICS_CLEAR_CACHE: 'Analytics.ClearCache',
   ANALYTICS_LIST_CACHE: 'Analytics.ListCache',
+
+  // Menu commands
+  MENU_RUN: 'Menu.Run',
+  MENU_LIST: 'Menu.List',
+
+  // Asset commands
+  ASSET_LIST_SO_TYPES: 'Asset.ListScriptableObjectTypes',
+  ASSET_CREATE_SO: 'Asset.CreateScriptableObject',
+  ASSET_GET_FIELDS: 'Asset.GetFields',
+  ASSET_SET_FIELD: 'Asset.SetField',
+  ASSET_INSPECT: 'Asset.Inspect',
+  ASSET_ADD_ARRAY_ELEMENT: 'Asset.AddArrayElement',
+  ASSET_REMOVE_ARRAY_ELEMENT: 'Asset.RemoveArrayElement',
+  ASSET_GET_ARRAY_ELEMENT: 'Asset.GetArrayElement',
+  ASSET_CLEAR_ARRAY: 'Asset.ClearArray',
 } as const;
 
 /**

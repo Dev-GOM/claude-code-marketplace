@@ -26,6 +26,8 @@ import { registerSnapshotCommand } from './commands/snapshot';
 import { registerTransformHistoryCommand } from './commands/transform-history';
 import { registerSyncCommand } from './commands/sync';
 import { registerAnalyticsCommand } from './commands/analytics';
+import { registerMenuCommand } from './commands/menu';
+import { registerAssetCommand } from './commands/asset';
 
 const program = new Command();
 
@@ -61,6 +63,8 @@ registerSnapshotCommand(program);
 registerTransformHistoryCommand(program);
 registerSyncCommand(program);
 registerAnalyticsCommand(program);
+registerMenuCommand(program);
+registerAssetCommand(program);
 
 // Status command (built-in)
 program

@@ -32,6 +32,8 @@ cd <unity-project-root> && node .unity-websocket/uw <command> --help
 | **EditorPrefs Management** | 6 commands | [COMMANDS_PREFS.md](./COMMANDS_PREFS.md) |
 | **Wait Commands** | 4 commands | [COMMANDS_WAIT.md](./COMMANDS_WAIT.md) |
 | **Chain Commands** | 2 commands | [COMMANDS_CHAIN.md](./COMMANDS_CHAIN.md) |
+| **Menu Execution** | 2 commands | [COMMANDS_MENU.md](./COMMANDS_MENU.md) |
+| **Asset Management (ScriptableObject)** | 9 commands | [COMMANDS_ASSET.md](./COMMANDS_ASSET.md) |
 
 ### 🔄 Coming Soon (Phase 2+)
 

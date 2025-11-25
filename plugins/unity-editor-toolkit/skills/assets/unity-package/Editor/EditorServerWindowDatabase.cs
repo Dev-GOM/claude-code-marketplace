@@ -188,7 +188,6 @@ namespace UnityEditorToolkit.Editor
             {
                 DatabaseManager.Instance.CommandHistory.OnHistoryChanged -= UpdateCommandHistoryUI;
                 DatabaseManager.Instance.CommandHistory.OnHistoryChanged += UpdateCommandHistoryUI;
-                Debug.Log("[EditorServerWindow] CommandHistory 이벤트 재구독 완료 (도메인 리로드 후).");
 
                 // Reload history from database after domain reload
                 EditorApplication.delayCall += () => {

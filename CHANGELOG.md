@@ -2,7 +2,39 @@
 
 All notable changes to the Dev GOM Plugins marketplace will be documented in this file.
 
-> **Version**: 2.24.0 | **Last Updated**: 2025-11-23
+> **Version**: 2.25.0 | **Last Updated**: 2025-11-25
+
+---
+
+## [2.25.0] - 2025-11-25
+
+### Major Features
+- 🎮 **Unity Editor Toolkit v0.8.0**: Complete ScriptableObject & Menu Management
+  - **ScriptableObject Array/List Support**: Full manipulation of all field types
+    - `Asset.AddArrayElement`: Add elements with optional index and initial value
+    - `Asset.RemoveArrayElement`: Remove elements by index
+    - `Asset.GetArrayElement`: Query specific array elements with nested expansion
+    - `Asset.ClearArray`: Clear all array elements
+    - Array index notation: `items[0]`, `items[2].name` for nested access
+    - Expand arrays with `--expand` flag and `--depth` control
+  - **ScriptableObject Field Management**: Universal field type support
+    - All SerializedPropertyType values: Quaternion, Bounds, Vector2Int, Vector3Int, RectInt, BoundsInt
+    - AnimationCurve parsing: `time:value;time:value` format
+    - ObjectReference by asset path
+    - Nested property traversal with regex pattern matching
+  - **Menu Execution**: Run Unity Editor menu items programmatically
+    - `Menu.Run`: Execute any registered menu item by path
+    - `Menu.List`: Query available menu items with wildcard filtering
+  - **CLI Commands**:
+    - `uw asset add-element`, `remove-element`, `get-element`, `clear-array`
+    - `uw asset get-fields --expand --depth 3`
+    - `uw asset set-field <path> "items[0].value" "NewValue"`
+    - `uw menu run "Window/General/Console"`
+    - `uw menu list --filter "*Asset*"`
+  - **Bug Fixes**:
+    - Fixed UniTask synchronous await issue in `DatabaseManager.Disconnect()`
+    - Added synchronous `Disconnect()` method for Assembly Reload scenarios
+    - Proper cleanup during editor compilation
 
 ---
 

@@ -2,7 +2,39 @@
 
 Dev GOM Plugins 마켓플레이스의 모든 주요 변경사항이 이 파일에 문서화됩니다.
 
-> **버전**: 2.24.0 | **최종 업데이트**: 2025-11-23
+> **버전**: 2.25.0 | **최종 업데이트**: 2025-11-25
+
+---
+
+## [2.25.0] - 2025-11-25
+
+### 주요 기능
+- 🎮 **Unity Editor Toolkit v0.8.0**: 완전한 ScriptableObject 및 메뉴 관리
+  - **ScriptableObject 배열/리스트 지원**: 모든 필드 타입의 완전한 조작
+    - `Asset.AddArrayElement`: 선택적 인덱스 및 초기값으로 요소 추가
+    - `Asset.RemoveArrayElement`: 인덱스로 요소 제거
+    - `Asset.GetArrayElement`: 중첩 확장으로 특정 배열 요소 조회
+    - `Asset.ClearArray`: 모든 배열 요소 초기화
+    - 배열 인덱스 표기법: `items[0]`, `items[2].name`으로 중첩 접근
+    - `--expand` 플래그와 `--depth`로 배열 확장 제어
+  - **ScriptableObject 필드 관리**: 범용 필드 타입 지원
+    - 모든 SerializedPropertyType 값: Quaternion, Bounds, Vector2Int, Vector3Int, RectInt, BoundsInt
+    - AnimationCurve 파싱: `time:value;time:value` 형식
+    - 에셋 경로로 ObjectReference 설정
+    - 정규식 패턴 매칭으로 중첩 속성 순회
+  - **메뉴 실행**: Unity 에디터 메뉴 항목을 프로그래밍 방식으로 실행
+    - `Menu.Run`: 경로로 등록된 메뉴 항목 실행
+    - `Menu.List`: 와일드카드 필터링으로 사용 가능한 메뉴 항목 조회
+  - **CLI 명령어**:
+    - `uw asset add-element`, `remove-element`, `get-element`, `clear-array`
+    - `uw asset get-fields --expand --depth 3`
+    - `uw asset set-field <path> "items[0].value" "NewValue"`
+    - `uw menu run "Window/General/Console"`
+    - `uw menu list --filter "*Asset*"`
+  - **버그 수정**:
+    - `DatabaseManager.Disconnect()`의 UniTask 동기 대기 문제 해결
+    - Assembly Reload 시나리오를 위한 동기 `Disconnect()` 메서드 추가
+    - 에디터 컴파일 중 적절한 정리
 
 ---
 

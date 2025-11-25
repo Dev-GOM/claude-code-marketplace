@@ -3,7 +3,7 @@ name: unity-editor-toolkit
 description: |
   Unity Editor control and automation, WebSocket-based real-time communication. 유니티에디터제어및자동화, WebSocket기반실시간통신.
 
-  Features/기능: GameObject control 게임오브젝트제어, Transform manipulation 트랜스폼조작, Component management 컴포넌트관리, Scene management 씬관리, SQLite database integration SQLite데이터베이스통합, GUID-based persistence GUID기반영구식별, Multi-scene synchronization 멀티씬동기화, Command Pattern with Undo/Redo 명령패턴실행취소재실행, Material/Rendering 머티리얼/렌더링, Prefab system 프리팹시스템, Asset Database 애셋데이터베이스, Animation 애니메이션, Physics 물리, Console logging 콘솔로깅, EditorPrefs management 에디터프리퍼런스관리, Editor automation 에디터자동화, Build pipeline 빌드파이프라인, Lighting 라이팅, Camera 카메라, Audio 오디오, Navigation 네비게이션, Particles 파티클, Timeline 타임라인, UI Toolkit, Profiler 프로파일러, Test Runner 테스트러너.
+  Features/기능: GameObject control 게임오브젝트제어, Transform manipulation 트랜스폼조작, Component management 컴포넌트관리, Scene management 씬관리, SQLite database integration SQLite데이터베이스통합, GUID-based persistence GUID기반영구식별, Multi-scene synchronization 멀티씬동기화, Command Pattern with Undo/Redo 명령패턴실행취소재실행, Menu execution 메뉴실행, ScriptableObject management 스크립터블오브젝트관리, Array/List manipulation 배열리스트조작, All field types support 모든필드타입지원, Material/Rendering 머티리얼/렌더링, Prefab system 프리팹시스템, Asset Database 애셋데이터베이스, Animation 애니메이션, Physics 물리, Console logging 콘솔로깅, EditorPrefs management 에디터프리퍼런스관리, Editor automation 에디터자동화, Build pipeline 빌드파이프라인, Lighting 라이팅, Camera 카메라, Audio 오디오, Navigation 네비게이션, Particles 파티클, Timeline 타임라인, UI Toolkit, Profiler 프로파일러, Test Runner 테스트러너.
 
   Protocol 프로토콜: JSON-RPC 2.0 over WebSocket (port 9500-9600). 500+ commands 명령어, 25 categories 카테고리. Real-time bidirectional communication 실시간양방향통신.
 
@@ -22,6 +22,11 @@ Unity Editor Toolkit enables comprehensive Unity Editor automation and control f
   - **Command Pattern**: Undo/Redo support for database operations
   - **Auto Migration**: Automatic schema migration system
   - **Batch Operations**: Efficient bulk inserts, updates, and deletes (500 objects/batch)
+- **Menu Execution**: Run Unity Editor menu items programmatically (Window, Assets, Edit, GameObject menus)
+- **ScriptableObject Management**: Complete CRUD operations with array/list support and all field types
+  - **Array/List Operations**: Add, remove, get, clear elements with nested access (`items[0].name`)
+  - **All Field Types**: Integer, Float, String, Boolean, Vector*, Color, Quaternion, Bounds, AnimationCurve, ObjectReference, and more
+  - **Nested Property Traversal**: Access deeply nested fields with dot notation and array indices
 - **Deep Editor Integration**: GameObject/hierarchy, transforms, components, scenes, materials, prefabs, animation, physics, lighting, build pipeline, and more
 - **Security First**: Multi-layer defense against injection attacks (SQL, command, JSON, path traversal) and unauthorized access
 - **Production Ready**: Cross-platform support with robust error handling and logging
@@ -50,14 +55,27 @@ Use Unity Editor Toolkit when you need to:
    - Setup scene hierarchies from specifications
    - Automate repetitive Editor tasks
 
-4. **Database-Driven Workflows** (NEW)
+4. **Menu and Editor Automation**
+   - Execute Unity Editor menu items programmatically (`menu run "Window/General/Console"`)
+   - Open editor windows and tools via command line
+   - Automate asset refresh, reimport, and build operations
+   - Query available menu items with wildcard filtering
+
+5. **ScriptableObject Management**
+   - Create and configure ScriptableObject assets programmatically
+   - Read and modify all field types (Vector, Color, Quaternion, AnimationCurve, etc.)
+   - Manipulate arrays/lists with full CRUD operations
+   - Access nested properties with array index notation (`items[0].stats.health`)
+   - Query ScriptableObject types and inspect asset metadata
+
+6. **Database-Driven Workflows**
    - Persistent GameObject tracking across Unity sessions with GUID-based identification
    - Real-time synchronization of all loaded scenes to SQLite database
    - Analytics and querying of GameObject hierarchies and properties
    - Undo/Redo support for database operations via Command Pattern
    - Efficient batch operations (500 objects/batch) for large scene management
 
-5. **CI/CD Integration**
+7. **CI/CD Integration**
    - Automated builds with platform-specific settings
    - Test Runner integration for unit/integration tests
    - Asset validation and integrity checks
