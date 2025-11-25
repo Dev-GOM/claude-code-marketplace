@@ -781,6 +781,35 @@ namespace UnityEditorToolkit.Handlers
                 return;
             }
 
+            // Check for "GameObject:Component" format (e.g., "GameHUD:UIDocument")
+            if (value.Contains(":"))
+            {
+                var parts = value.Split(':');
+                if (parts.Length == 2)
+                {
+                    var goName = parts[0].Trim();
+                    var compTypeName = parts[1].Trim();
+
+                    var targetGo = FindGameObject(goName);
+                    if (targetGo != null)
+                    {
+                        var compType = FindComponentType(compTypeName);
+                        if (compType != null)
+                        {
+                            var comp = targetGo.GetComponent(compType);
+                            if (comp != null)
+                            {
+                                prop.objectReferenceValue = comp;
+                                return;
+                            }
+                            throw new Exception($"Component '{compTypeName}' not found on GameObject '{goName}'");
+                        }
+                        throw new Exception($"Component type not found: '{compTypeName}'");
+                    }
+                    throw new Exception($"GameObject not found: '{goName}'");
+                }
+            }
+
             // Try to find GameObject by name
             var foundGameObject = GameObject.Find(value);
             if (foundGameObject != null)
@@ -811,7 +840,7 @@ namespace UnityEditorToolkit.Handlers
             #endif
 
             // If nothing found, throw error with suggestions
-            throw new Exception($"ObjectReference not found: '{value}'. Try GameObject name, path, or asset path.");
+            throw new Exception($"ObjectReference not found: '{value}'. Try GameObject name, 'GameObject:Component' format, or asset path.");
         }
 
         #region Parameter Classes
