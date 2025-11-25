@@ -702,6 +702,9 @@ namespace UnityEditorToolkit.Handlers
                     case SerializedPropertyType.RectInt:
                         ParseRectInt(prop, value);
                         break;
+                    case SerializedPropertyType.ObjectReference:
+                        ParseObjectReference(prop, value);
+                        break;
                     default:
                         throw new Exception($"Unsupported property type: {prop.propertyType}");
                 }
@@ -767,6 +770,48 @@ namespace UnityEditorToolkit.Handlers
             var parts = value.Split(',');
             if (parts.Length != 4) throw new Exception("RectInt requires 4 values");
             prop.rectIntValue = new RectInt(int.Parse(parts[0]), int.Parse(parts[1]), int.Parse(parts[2]), int.Parse(parts[3]));
+        }
+
+        private void ParseObjectReference(SerializedProperty prop, string value)
+        {
+            // Handle null/empty values
+            if (string.IsNullOrEmpty(value) || value.ToLower() == "null")
+            {
+                prop.objectReferenceValue = null;
+                return;
+            }
+
+            // Try to find GameObject by name
+            var foundGameObject = GameObject.Find(value);
+            if (foundGameObject != null)
+            {
+                prop.objectReferenceValue = foundGameObject;
+                return;
+            }
+
+            // Try to find in all scene objects
+            var allObjects = Resources.FindObjectsOfTypeAll<GameObject>();
+            foreach (var obj in allObjects)
+            {
+                if (obj.name == value && obj.scene.IsValid())
+                {
+                    prop.objectReferenceValue = obj;
+                    return;
+                }
+            }
+
+            // Try to load as asset
+            #if UNITY_EDITOR
+            var asset = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(value);
+            if (asset != null)
+            {
+                prop.objectReferenceValue = asset;
+                return;
+            }
+            #endif
+
+            // If nothing found, throw error with suggestions
+            throw new Exception($"ObjectReference not found: '{value}'. Try GameObject name, path, or asset path.");
         }
 
         #region Parameter Classes
