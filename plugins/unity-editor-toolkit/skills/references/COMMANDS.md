@@ -2,7 +2,7 @@
 
 Unity Editor를 제어할 수 있는 500+ 명령어 로드맵입니다.
 
-**Current Status**: Phase 1 - 26 commands implemented
+**Current Status**: Phase 1 - 30 commands implemented
 
 ## Quick Reference
 
@@ -26,7 +26,7 @@ cd <unity-project-root> && node .unity-websocket/uw <command> --help
 | **Connection & Status** | 1 command | [COMMANDS_CONNECTION_STATUS.md](./COMMANDS_CONNECTION_STATUS.md) |
 | **GameObject & Hierarchy** | 8 commands | [COMMANDS_GAMEOBJECT_HIERARCHY.md](./COMMANDS_GAMEOBJECT_HIERARCHY.md) |
 | **Transform** | 4 commands | [COMMANDS_TRANSFORM.md](./COMMANDS_TRANSFORM.md) |
-| **Scene Management** | 3 commands | [COMMANDS_SCENE.md](./COMMANDS_SCENE.md) |
+| **Scene Management** | 7 commands | [COMMANDS_SCENE.md](./COMMANDS_SCENE.md) |
 | **Asset Database & Editor** | 3 commands | [COMMANDS_EDITOR.md](./COMMANDS_EDITOR.md) |
 | **Console & Logging** | 2 commands | [COMMANDS_CONSOLE.md](./COMMANDS_CONSOLE.md) |
 | **EditorPrefs Management** | 6 commands | [COMMANDS_PREFS.md](./COMMANDS_PREFS.md) |
@@ -122,6 +122,18 @@ cd <unity-project-root> && node .unity-websocket/uw scene list [--json]
 
 # Load scene
 cd <unity-project-root> && node .unity-websocket/uw scene load <name> [--additive] [--json]
+
+# Create new scene
+cd <unity-project-root> && node .unity-websocket/uw scene new [--empty] [--additive] [--json]
+
+# Save scene
+cd <unity-project-root> && node .unity-websocket/uw scene save [path] [--scene <name>] [--json]
+
+# Unload scene
+cd <unity-project-root> && node .unity-websocket/uw scene unload <name> [--remove] [--json]
+
+# Set active scene (multi-scene editing)
+cd <unity-project-root> && node .unity-websocket/uw scene set-active <name> [--json]
 ```
 
 ### Asset Database & Editor
@@ -201,7 +213,7 @@ cd <unity-project-root> && node .unity-websocket/uw chain exec \
 ## Development Roadmap
 
 ### Phase 1 (Current) - Core Foundation ✅
-- **26 commands** across 8 categories
+- **30 commands** across 8 categories
 - GameObject manipulation, Transform control, Scene management
 - Console logging, Editor utilities, EditorPrefs
 - Wait conditions, Command chaining
