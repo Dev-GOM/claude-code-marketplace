@@ -2,7 +2,8 @@
 
 Complete reference for scene management commands.
 
-**Last Updated**: 2025-01-13
+**Last Updated**: 2025-01-25
+**Commands**: 7 commands
 
 ---
 
@@ -93,6 +94,149 @@ cd <unity-project-root> && node .unity-websocket/uw scene load "UIOverlay" --add
 # Load scene by path
 cd <unity-project-root> && node .unity-websocket/uw scene load "Assets/Scenes/Level1"
 ```
+
+---
+
+## cd <unity-project-root> && node .unity-websocket/uw scene new
+
+Create a new scene.
+
+**Usage:**
+```bash
+cd <unity-project-root> && node .unity-websocket/uw scene new [options]
+```
+
+**Options:**
+```
+-e, --empty            Create empty scene (no default camera/light)
+-a, --additive         Add new scene without replacing current scenes
+--json                 Output in JSON format
+--timeout <ms>         Connection timeout in milliseconds (default: 30000)
+-h, --help             Display help for command
+```
+
+**Examples:**
+```bash
+# Create new scene with default objects (Main Camera, Directional Light)
+cd <unity-project-root> && node .unity-websocket/uw scene new
+
+# Create empty scene
+cd <unity-project-root> && node .unity-websocket/uw scene new --empty
+
+# Create new scene additively (keep current scenes)
+cd <unity-project-root> && node .unity-websocket/uw scene new --additive
+
+# Create empty scene additively
+cd <unity-project-root> && node .unity-websocket/uw scene new -e -a
+```
+
+---
+
+## cd <unity-project-root> && node .unity-websocket/uw scene save
+
+Save scene to disk.
+
+**Usage:**
+```bash
+cd <unity-project-root> && node .unity-websocket/uw scene save [path] [options]
+```
+
+**Arguments:**
+```
+[path]                 Optional path for Save As (e.g., "Assets/Scenes/NewScene.unity")
+```
+
+**Options:**
+```
+-s, --scene <name>     Specific scene name to save (default: active scene)
+--json                 Output in JSON format
+--timeout <ms>         Connection timeout in milliseconds (default: 30000)
+-h, --help             Display help for command
+```
+
+**Examples:**
+```bash
+# Save active scene
+cd <unity-project-root> && node .unity-websocket/uw scene save
+
+# Save As - save to new location
+cd <unity-project-root> && node .unity-websocket/uw scene save "Assets/Scenes/Level2.unity"
+
+# Save specific scene (multi-scene editing)
+cd <unity-project-root> && node .unity-websocket/uw scene save --scene "UIScene"
+```
+
+---
+
+## cd <unity-project-root> && node .unity-websocket/uw scene unload
+
+Unload a scene from the editor.
+
+**Usage:**
+```bash
+cd <unity-project-root> && node .unity-websocket/uw scene unload <name> [options]
+```
+
+**Arguments:**
+```
+<name>                 Scene name or path to unload
+```
+
+**Options:**
+```
+-r, --remove           Remove scene completely (default: just unload/close)
+--json                 Output in JSON format
+--timeout <ms>         Connection timeout in milliseconds (default: 30000)
+-h, --help             Display help for command
+```
+
+**Examples:**
+```bash
+# Unload scene by name
+cd <unity-project-root> && node .unity-websocket/uw scene unload "UIOverlay"
+
+# Unload scene by path
+cd <unity-project-root> && node .unity-websocket/uw scene unload "Assets/Scenes/Level1.unity"
+
+# Remove scene completely
+cd <unity-project-root> && node .unity-websocket/uw scene unload "TempScene" --remove
+```
+
+**Note:** Cannot unload the last remaining scene. At least one scene must always be loaded.
+
+---
+
+## cd <unity-project-root> && node .unity-websocket/uw scene set-active
+
+Set a scene as the active scene (for multi-scene editing).
+
+**Usage:**
+```bash
+cd <unity-project-root> && node .unity-websocket/uw scene set-active <name> [options]
+```
+
+**Arguments:**
+```
+<name>                 Scene name or path to set as active
+```
+
+**Options:**
+```
+--json                 Output in JSON format
+--timeout <ms>         Connection timeout in milliseconds (default: 30000)
+-h, --help             Display help for command
+```
+
+**Examples:**
+```bash
+# Set active scene by name
+cd <unity-project-root> && node .unity-websocket/uw scene set-active "MainScene"
+
+# Set active scene by path
+cd <unity-project-root> && node .unity-websocket/uw scene set-active "Assets/Scenes/Level1.unity"
+```
+
+**Note:** The target scene must be loaded before it can be set as active.
 
 ---
 
