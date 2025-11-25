@@ -29,6 +29,7 @@ import { registerSyncCommand } from './commands/sync';
 import { registerAnalyticsCommand } from './commands/analytics';
 import { registerMenuCommand } from './commands/menu';
 import { registerAssetCommand } from './commands/asset';
+import { registerPrefabCommand } from './commands/prefab';
 
 const program = new Command();
 
@@ -67,6 +68,7 @@ registerSyncCommand(program);
 registerAnalyticsCommand(program);
 registerMenuCommand(program);
 registerAssetCommand(program);
+registerPrefabCommand(program);
 
 // Status command (built-in)
 program

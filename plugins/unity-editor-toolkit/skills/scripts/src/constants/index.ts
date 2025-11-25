@@ -185,6 +185,20 @@ export const COMMANDS = {
   ASSET_REMOVE_ARRAY_ELEMENT: 'Asset.RemoveArrayElement',
   ASSET_GET_ARRAY_ELEMENT: 'Asset.GetArrayElement',
   ASSET_CLEAR_ARRAY: 'Asset.ClearArray',
+
+  // Prefab commands
+  PREFAB_INSTANTIATE: 'Prefab.Instantiate',
+  PREFAB_CREATE: 'Prefab.Create',
+  PREFAB_UNPACK: 'Prefab.Unpack',
+  PREFAB_APPLY: 'Prefab.Apply',
+  PREFAB_REVERT: 'Prefab.Revert',
+  PREFAB_VARIANT: 'Prefab.Variant',
+  PREFAB_GET_OVERRIDES: 'Prefab.GetOverrides',
+  PREFAB_GET_SOURCE: 'Prefab.GetSource',
+  PREFAB_IS_INSTANCE: 'Prefab.IsInstance',
+  PREFAB_OPEN: 'Prefab.Open',
+  PREFAB_CLOSE: 'Prefab.Close',
+  PREFAB_LIST: 'Prefab.List',
 } as const;
 
 /**
