@@ -203,4 +203,242 @@ export function registerSceneCommand(program: Command): void {
         }
       }
     });
+
+  // Create new scene
+  sceneCmd
+    .command('new')
+    .description('Create a new scene')
+    .option('-e, --empty', 'Create empty scene (no default objects)')
+    .option('-a, --additive', 'Add new scene without replacing current')
+    .option('--json', 'Output in JSON format')
+    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '300000')
+    .action(async (options) => {
+      let client = null;
+      try {
+        const projectRoot = config.getProjectRoot();
+        const port = program.opts().port || config.getUnityPort(projectRoot);
+
+        if (!port) {
+          logger.error('Unity server not running. Start Unity Editor with WebSocket server enabled.');
+          process.exit(1);
+        }
+
+        client = createUnityClient(port);
+
+        logger.info('Connecting to Unity Editor...');
+        await client.connect();
+
+        logger.info(`Creating new scene${options.empty ? ' (empty)' : ''}${options.additive ? ' (additive)' : ''}...`);
+        const result = await client.sendRequest<{ success: boolean; scene: SceneInfo }>(
+          COMMANDS.SCENE_NEW,
+          {
+            empty: options.empty || false,
+            additive: options.additive || false,
+          }
+        );
+
+        // JSON output
+        if (options.json) {
+          outputJson(result);
+          return;
+        }
+
+        // Text output
+        logger.info('✓ New scene created');
+        if (result.scene) {
+          logger.info(`  Name: ${result.scene.name || '(Untitled)'}`);
+        }
+      } catch (error) {
+        logger.error('Failed to create new scene', error);
+        process.exit(1);
+      } finally {
+        if (client) {
+          try {
+            client.disconnect();
+          } catch (disconnectError) {
+            logger.debug(`Error during disconnect: ${disconnectError instanceof Error ? disconnectError.message : String(disconnectError)}`);
+          }
+        }
+      }
+    });
+
+  // Save scene
+  sceneCmd
+    .command('save')
+    .description('Save scene')
+    .argument('[path]', 'Path to save scene (optional, for Save As)')
+    .option('-s, --scene <name>', 'Specific scene name to save (default: active scene)')
+    .option('--json', 'Output in JSON format')
+    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '300000')
+    .action(async (path, options) => {
+      let client = null;
+      try {
+        const projectRoot = config.getProjectRoot();
+        const port = program.opts().port || config.getUnityPort(projectRoot);
+
+        if (!port) {
+          logger.error('Unity server not running. Start Unity Editor with WebSocket server enabled.');
+          process.exit(1);
+        }
+
+        client = createUnityClient(port);
+
+        logger.info('Connecting to Unity Editor...');
+        await client.connect();
+
+        logger.info(`Saving scene${path ? ` to ${path}` : ''}...`);
+        const result = await client.sendRequest<{ success: boolean; scene: SceneInfo }>(
+          COMMANDS.SCENE_SAVE,
+          {
+            sceneName: options.scene || '',
+            path: path || '',
+          }
+        );
+
+        // JSON output
+        if (options.json) {
+          outputJson(result);
+          return;
+        }
+
+        // Text output
+        if (result.success) {
+          logger.info('✓ Scene saved');
+          if (result.scene) {
+            logger.info(`  Path: ${result.scene.path}`);
+          }
+        } else {
+          logger.error('Failed to save scene');
+        }
+      } catch (error) {
+        logger.error('Failed to save scene', error);
+        process.exit(1);
+      } finally {
+        if (client) {
+          try {
+            client.disconnect();
+          } catch (disconnectError) {
+            logger.debug(`Error during disconnect: ${disconnectError instanceof Error ? disconnectError.message : String(disconnectError)}`);
+          }
+        }
+      }
+    });
+
+  // Unload scene
+  sceneCmd
+    .command('unload')
+    .description('Unload a scene')
+    .argument('<name>', 'Scene name or path to unload')
+    .option('-r, --remove', 'Remove scene completely (default: just unload)')
+    .option('--json', 'Output in JSON format')
+    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '300000')
+    .action(async (name, options) => {
+      let client = null;
+      try {
+        const projectRoot = config.getProjectRoot();
+        const port = program.opts().port || config.getUnityPort(projectRoot);
+
+        if (!port) {
+          logger.error('Unity server not running. Start Unity Editor with WebSocket server enabled.');
+          process.exit(1);
+        }
+
+        client = createUnityClient(port);
+
+        logger.info('Connecting to Unity Editor...');
+        await client.connect();
+
+        logger.info(`Unloading scene: ${name}...`);
+        const result = await client.sendRequest<{ success: boolean }>(
+          COMMANDS.SCENE_UNLOAD,
+          {
+            name,
+            removeScene: options.remove || false,
+          }
+        );
+
+        // JSON output
+        if (options.json) {
+          outputJson({ success: result.success, scene: name });
+          return;
+        }
+
+        // Text output
+        if (result.success) {
+          logger.info('✓ Scene unloaded');
+        } else {
+          logger.error('Failed to unload scene');
+        }
+      } catch (error) {
+        logger.error('Failed to unload scene', error);
+        process.exit(1);
+      } finally {
+        if (client) {
+          try {
+            client.disconnect();
+          } catch (disconnectError) {
+            logger.debug(`Error during disconnect: ${disconnectError instanceof Error ? disconnectError.message : String(disconnectError)}`);
+          }
+        }
+      }
+    });
+
+  // Set active scene
+  sceneCmd
+    .command('set-active')
+    .description('Set the active scene')
+    .argument('<name>', 'Scene name or path to set as active')
+    .option('--json', 'Output in JSON format')
+    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '300000')
+    .action(async (name, options) => {
+      let client = null;
+      try {
+        const projectRoot = config.getProjectRoot();
+        const port = program.opts().port || config.getUnityPort(projectRoot);
+
+        if (!port) {
+          logger.error('Unity server not running. Start Unity Editor with WebSocket server enabled.');
+          process.exit(1);
+        }
+
+        client = createUnityClient(port);
+
+        logger.info('Connecting to Unity Editor...');
+        await client.connect();
+
+        logger.info(`Setting active scene: ${name}...`);
+        const result = await client.sendRequest<{ success: boolean; scene: SceneInfo }>(
+          COMMANDS.SCENE_SET_ACTIVE,
+          { name }
+        );
+
+        // JSON output
+        if (options.json) {
+          outputJson(result);
+          return;
+        }
+
+        // Text output
+        if (result.success) {
+          logger.info('✓ Active scene changed');
+          if (result.scene) {
+            logger.info(`  Name: ${result.scene.name}`);
+            logger.info(`  Path: ${result.scene.path}`);
+          }
+        } else {
+          logger.error('Failed to set active scene');
+        }
+      } catch (error) {
+        logger.error('Failed to set active scene', error);
+        process.exit(1);
+      } finally {
+        if (client) {
+          try {
+            client.disconnect();
+          } catch (disconnectError) {
+            logger.debug(`Error during disconnect: ${disconnectError instanceof Error ? disconnectError.message : String(disconnectError)}`);
+          }
+        }
+      }
+    });
 }

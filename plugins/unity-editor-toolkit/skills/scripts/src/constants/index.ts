@@ -89,6 +89,10 @@ export const COMMANDS = {
   SCENE_GET_CURRENT: 'Scene.GetCurrent',
   SCENE_LOAD: 'Scene.Load',
   SCENE_GET_ALL: 'Scene.GetAll',
+  SCENE_NEW: 'Scene.New',
+  SCENE_SAVE: 'Scene.Save',
+  SCENE_UNLOAD: 'Scene.Unload',
+  SCENE_SET_ACTIVE: 'Scene.SetActive',
 
   // Console commands
   CONSOLE_GET_LOGS: 'Console.GetLogs',
