@@ -135,7 +135,7 @@ namespace UnityEditorToolkit.Editor.Database
         }
 
         /// <summary>
-        /// 데이터베이스 연결 해제
+        /// 데이터베이스 연결 해제 (비동기)
         /// </summary>
         public async UniTask DisconnectAsync()
         {
@@ -150,23 +150,7 @@ namespace UnityEditorToolkit.Editor.Database
 
                 await UniTask.RunOnThreadPool(() =>
                 {
-                    // WAL 체크포인트 수행 (파일 잠금 해제를 위해)
-                    if (config.EnableWAL && connection != null)
-                    {
-                        try
-                        {
-                            connection.Execute("PRAGMA wal_checkpoint(TRUNCATE);");
-                            Debug.Log("[SQLiteConnector] WAL checkpoint completed.");
-                        }
-                        catch (Exception walEx)
-                        {
-                            Debug.LogWarning($"[SQLiteConnector] WAL checkpoint failed: {walEx.Message}");
-                        }
-                    }
-
-                    connection?.Close();
-                    connection?.Dispose();
-                    connection = null;
+                    DisconnectInternal();
                 });
 
                 isConnected = false;
@@ -181,6 +165,56 @@ namespace UnityEditorToolkit.Editor.Database
             {
                 Debug.LogError($"[SQLiteConnector] Disconnect error: {ex.Message}");
             }
+        }
+
+        /// <summary>
+        /// 데이터베이스 연결 해제 (동기 - Assembly Reload/서버 종료 시 사용)
+        /// </summary>
+        public void Disconnect()
+        {
+            try
+            {
+                if (!isConnected)
+                {
+                    return;
+                }
+
+                Debug.Log("[SQLiteConnector] Disconnecting (sync)...");
+
+                DisconnectInternal();
+
+                isConnected = false;
+
+                Debug.Log("[SQLiteConnector] Disconnected (sync).");
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[SQLiteConnector] Disconnect error: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 내부 연결 해제 로직
+        /// </summary>
+        private void DisconnectInternal()
+        {
+            // WAL 체크포인트 수행 (파일 잠금 해제를 위해)
+            if (config.EnableWAL && connection != null)
+            {
+                try
+                {
+                    connection.Execute("PRAGMA wal_checkpoint(TRUNCATE);");
+                    Debug.Log("[SQLiteConnector] WAL checkpoint completed.");
+                }
+                catch (Exception walEx)
+                {
+                    Debug.LogWarning($"[SQLiteConnector] WAL checkpoint failed: {walEx.Message}");
+                }
+            }
+
+            connection?.Close();
+            connection?.Dispose();
+            connection = null;
         }
 
         /// <summary>

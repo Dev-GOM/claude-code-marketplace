@@ -136,7 +136,9 @@ namespace UnityEditorToolkit.Editor.Server
                 { "Snapshot", new SnapshotHandler() },
                 { "TransformHistory", new TransformHistoryHandler() },
                 { "Sync", new SyncHandler() },
-                { "Analytics", new AnalyticsHandler() }
+                { "Analytics", new AnalyticsHandler() },
+                { "Menu", new MenuHandler() },
+                { "Asset", new AssetHandler() }
             };
 
             // Initialize ChainHandler with access to all handlers
