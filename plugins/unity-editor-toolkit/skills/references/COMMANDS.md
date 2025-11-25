@@ -2,7 +2,7 @@
 
 Unity Editor를 제어할 수 있는 500+ 명령어 로드맵입니다.
 
-**Current Status**: Phase 1 - 30 commands implemented
+**Current Status**: Phase 2 - 42 commands implemented
 
 ## Quick Reference
 
@@ -35,13 +35,13 @@ cd <unity-project-root> && node .unity-websocket/uw <command> --help
 | **Chain Commands** | 2 commands | [COMMANDS_CHAIN.md](./COMMANDS_CHAIN.md) |
 | **Menu Execution** | 2 commands | [COMMANDS_MENU.md](./COMMANDS_MENU.md) |
 | **Asset Management (ScriptableObject)** | 9 commands | [COMMANDS_ASSET.md](./COMMANDS_ASSET.md) |
+| **Prefab** | 12 commands | [COMMANDS_PREFAB.md](./COMMANDS_PREFAB.md) |
 
 ### 🔄 Coming Soon (Phase 2+)
 
 | Category | Status |
 |----------|--------|
 | **Material & Rendering** | 🔄 25+ commands planned |
-| **Prefab** | 🔄 15+ commands planned |
 | **Animation** | 🔄 20+ commands planned |
 | **Physics** | 🔄 20+ commands planned |
 | **Lighting** | 🔄 15+ commands planned |
@@ -238,6 +238,41 @@ cd <unity-project-root> && node .unity-websocket/uw chain exec \
   "GameObject.Create:name=Player" \
   "GameObject.SetActive:instanceId=123,active=true" \
   --continue-on-error
+```
+
+### Prefab Management
+```bash
+# Instantiate prefab
+cd <unity-project-root> && node .unity-websocket/uw prefab instantiate <path> [--name <name>] [--position <x,y,z>] [--json]
+
+# Create prefab from scene object
+cd <unity-project-root> && node .unity-websocket/uw prefab create <gameobject> <path> [--overwrite] [--json]
+
+# Unpack prefab instance
+cd <unity-project-root> && node .unity-websocket/uw prefab unpack <gameobject> [--completely] [--json]
+
+# Apply/Revert prefab overrides
+cd <unity-project-root> && node .unity-websocket/uw prefab apply <gameobject> [--json]
+cd <unity-project-root> && node .unity-websocket/uw prefab revert <gameobject> [--json]
+
+# Create prefab variant
+cd <unity-project-root> && node .unity-websocket/uw prefab variant <sourcePath> <variantPath> [--json]
+
+# Get prefab overrides
+cd <unity-project-root> && node .unity-websocket/uw prefab overrides <gameobject> [--json]
+
+# Get source prefab info
+cd <unity-project-root> && node .unity-websocket/uw prefab source <gameobject> [--json]
+
+# Check if prefab instance
+cd <unity-project-root> && node .unity-websocket/uw prefab is-instance <gameobject> [--json]
+
+# Open/Close prefab edit mode
+cd <unity-project-root> && node .unity-websocket/uw prefab open <path> [--json]
+cd <unity-project-root> && node .unity-websocket/uw prefab close [--json]
+
+# List prefabs in folder
+cd <unity-project-root> && node .unity-websocket/uw prefab list [--path <path>] [--json]
 ```
 
 ---
