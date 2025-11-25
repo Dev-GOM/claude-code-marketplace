@@ -301,6 +301,21 @@ String:               "Hello World" 또는 HelloWorld
 Vector3:              "1,2,3" (공백 없이)
 Color:                "1,0,0,1" (R,G,B,A)
 Enum:                 열거형 이름 (예: "Linear")
+ObjectReference:      "GameObjectName" 또는 "GameObject:Component" 또는 "Assets/path/to/asset.ext"
+```
+
+**ObjectReference Formats (컴포넌트/에셋 참조):**
+| 형식 | 예시 | 설명 |
+|------|------|------|
+| `null` | `"null"` | 참조 해제 |
+| `GameObject` | `"Player"` | GameObject 참조 |
+| `GameObject:Component` | `"GameHUD:UnityEngine.UIElements.UIDocument"` | 컴포넌트 참조 |
+| `Asset Path` | `"Assets/Materials/Red.mat"` | 에셋 참조 |
+
+**⚠️ 중요: 컴포넌트 참조 시 전체 네임스페이스 필요**
+```
+✅ "GameHUD:UnityEngine.UIElements.UIDocument"   (전체 네임스페이스)
+❌ "GameHUD:UIDocument"                           (작동 안함)
 ```
 
 **Examples:**
@@ -322,6 +337,18 @@ cd <unity-project-root> && node .unity-websocket/uw comp set "Material" SpriteRe
 
 # Enum 값 설정
 cd <unity-project-root> && node .unity-websocket/uw comp set "Collider" Rigidbody constraints "FreezeRotationZ"
+
+# ObjectReference 설정 - GameObject 참조
+cd <unity-project-root> && node .unity-websocket/uw comp set "Enemy" AIController target "Player"
+
+# ObjectReference 설정 - 컴포넌트 참조 (전체 네임스페이스 필수)
+cd <unity-project-root> && node .unity-websocket/uw comp set "HUD" GameView uiDocument "GameHUD:UnityEngine.UIElements.UIDocument"
+
+# ObjectReference 설정 - 에셋 참조
+cd <unity-project-root> && node .unity-websocket/uw comp set "Enemy" SpriteRenderer sprite "Assets/Sprites/Enemy.png"
+
+# ObjectReference 설정 - 참조 해제
+cd <unity-project-root> && node .unity-websocket/uw comp set "Item" Pickup targetObject "null"
 ```
 
 **Important:**
@@ -577,6 +604,20 @@ done
 **해결**:
 - Transform은 필수 컴포넌트이므로 제거 불가
 - 일부 컴포넌트는 RequireComponent로 인해 제거 불가능할 수 있음
+
+### ObjectReference를 찾을 수 없음
+**문제**: `ObjectReference not found: 'GameHUD:UIDocument'`
+
+**해결**:
+- **컴포넌트 참조 시 전체 네임스페이스 필수**
+  - ✅ `"GameHUD:UnityEngine.UIElements.UIDocument"`
+  - ❌ `"GameHUD:UIDocument"`
+- 일반적인 Unity 네임스페이스:
+  - `UnityEngine.` - 기본 컴포넌트 (Rigidbody, Collider 등)
+  - `UnityEngine.UI.` - uGUI 컴포넌트 (Image, Text 등)
+  - `UnityEngine.UIElements.` - UI Toolkit 컴포넌트 (UIDocument 등)
+- GameObject 이름이 정확한지 확인
+- 비활성 GameObject는 GameObject.Find로 찾을 수 없음
 
 ---
 
