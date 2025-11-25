@@ -126,6 +126,7 @@ namespace UnityEditorToolkit.Editor.Server
             {
                 { "GameObject", new GameObjectHandler() },
                 { "Transform", new TransformHandler() },
+                { "Component", new ComponentHandler() },
                 { "Scene", new SceneHandler() },
                 { "Console", new ConsoleHandler() },
                 { "Hierarchy", new HierarchyHandler() },

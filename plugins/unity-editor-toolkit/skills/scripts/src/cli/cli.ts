@@ -15,6 +15,7 @@ import { createUnityClient } from '@/unity/client';
 import { registerHierarchyCommand } from './commands/hierarchy';
 import { registerGameObjectCommand } from './commands/gameobject';
 import { registerTransformCommand } from './commands/transform';
+import { registerComponentCommand } from './commands/component';
 import { registerSceneCommand } from './commands/scene';
 import { registerConsoleCommand } from './commands/console';
 import { registerEditorCommand } from './commands/editor';
@@ -52,6 +53,7 @@ program
 registerHierarchyCommand(program);
 registerGameObjectCommand(program);
 registerTransformCommand(program);
+registerComponentCommand(program);
 registerSceneCommand(program);
 registerConsoleCommand(program);
 registerEditorCommand(program);

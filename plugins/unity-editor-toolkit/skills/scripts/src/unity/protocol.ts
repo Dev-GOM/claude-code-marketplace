@@ -99,8 +99,57 @@ export interface Vector3 {
  */
 export interface ComponentInfo {
   type: string;
+  fullTypeName: string;
   enabled: boolean;
+  isMonoBehaviour: boolean;
   properties?: Record<string, unknown>;
+}
+
+/**
+ * Component list result
+ */
+export interface ComponentListResult {
+  count: number;
+  components: ComponentInfo[];
+}
+
+/**
+ * Component property information
+ */
+export interface PropertyInfo {
+  name: string;
+  type: string;
+  value: unknown;
+}
+
+/**
+ * Get component result
+ */
+export interface GetComponentResult {
+  componentType: string;
+  properties: PropertyInfo[];
+}
+
+/**
+ * Set property result
+ */
+export interface SetPropertyResult {
+  success: boolean;
+  property: string;
+  oldValue: unknown;
+  newValue: unknown;
+}
+
+/**
+ * Inspect component result
+ */
+export interface InspectComponentResult {
+  componentType: string;
+  fullTypeName: string;
+  enabled: boolean;
+  isMonoBehaviour: boolean;
+  properties: PropertyInfo[];
+  propertyCount: number;
 }
 
 /**

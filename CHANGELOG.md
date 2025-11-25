@@ -2,7 +2,7 @@
 
 All notable changes to the Dev GOM Plugins marketplace will be documented in this file.
 
-> **Version**: 2.26.0 | **Last Updated**: 2025-11-25
+> **Version**: 2.27.0 | **Last Updated**: 2025-11-25
 
 ---
 

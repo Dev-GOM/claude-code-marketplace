@@ -19,13 +19,14 @@ cd <unity-project-root> && node .unity-websocket/uw <command> --help
 
 ## 📖 Documentation by Category
 
-### ✅ Implemented (Phase 1)
+### ✅ Implemented (Phase 1+)
 
 | Category | Commands | Documentation |
 |----------|----------|---------------|
 | **Connection & Status** | 1 command | [COMMANDS_CONNECTION_STATUS.md](./COMMANDS_CONNECTION_STATUS.md) |
 | **GameObject & Hierarchy** | 8 commands | [COMMANDS_GAMEOBJECT_HIERARCHY.md](./COMMANDS_GAMEOBJECT_HIERARCHY.md) |
 | **Transform** | 4 commands | [COMMANDS_TRANSFORM.md](./COMMANDS_TRANSFORM.md) |
+| **Component** | 10 commands | [COMMANDS_COMPONENT.md](./COMMANDS_COMPONENT.md) |
 | **Scene Management** | 7 commands | [COMMANDS_SCENE.md](./COMMANDS_SCENE.md) |
 | **Asset Database & Editor** | 3 commands | [COMMANDS_EDITOR.md](./COMMANDS_EDITOR.md) |
 | **Console & Logging** | 2 commands | [COMMANDS_CONSOLE.md](./COMMANDS_CONSOLE.md) |
@@ -39,7 +40,6 @@ cd <unity-project-root> && node .unity-websocket/uw <command> --help
 
 | Category | Status |
 |----------|--------|
-| **Component** | 🔄 20+ commands planned |
 | **Material & Rendering** | 🔄 25+ commands planned |
 | **Prefab** | 🔄 15+ commands planned |
 | **Animation** | 🔄 20+ commands planned |
@@ -110,6 +110,38 @@ cd <unity-project-root> && node .unity-websocket/uw tf set-rotation <name> <x,y,
 
 # Set scale
 cd <unity-project-root> && node .unity-websocket/uw tf set-scale <name> <x,y,z> [--json]
+```
+
+### Component Management
+```bash
+# List components on GameObject
+cd <unity-project-root> && node .unity-websocket/uw comp list <gameobject> [--include-disabled] [--json]
+
+# Add component to GameObject
+cd <unity-project-root> && node .unity-websocket/uw comp add <gameobject> <component-type> [--json]
+
+# Remove component from GameObject
+cd <unity-project-root> && node .unity-websocket/uw comp remove <gameobject> <component-type> [--json]
+
+# Enable/Disable component
+cd <unity-project-root> && node .unity-websocket/uw comp enable <gameobject> <component-type> [--json]
+cd <unity-project-root> && node .unity-websocket/uw comp disable <gameobject> <component-type> [--json]
+
+# Get component properties
+cd <unity-project-root> && node .unity-websocket/uw comp get <gameobject> <component-type> [property] [--json]
+
+# Set component property
+cd <unity-project-root> && node .unity-websocket/uw comp set <gameobject> <component-type> <property> <value> [--json]
+
+# Inspect component (show all properties)
+cd <unity-project-root> && node .unity-websocket/uw comp inspect <gameobject> <component-type> [--json]
+
+# Move component order
+cd <unity-project-root> && node .unity-websocket/uw comp move-up <gameobject> <component-type> [--json]
+cd <unity-project-root> && node .unity-websocket/uw comp move-down <gameobject> <component-type> [--json]
+
+# Copy component between GameObjects
+cd <unity-project-root> && node .unity-websocket/uw comp copy <source> <component-type> <target> [--json]
 ```
 
 ### Scene Management
