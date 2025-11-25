@@ -125,6 +125,7 @@ namespace UnityEditorToolkit.Editor.Database
         private bool isConnected = false;
         private CancellationTokenSource lifecycleCts;
         private static bool isInitializing = false; // Race condition prevention
+        private static UniTaskCompletionSource<InitializationResult> initializationTcs; // Wait-based: 초기화 결과 공유
         private bool isMigrationRunning = false; // Migration in progress flag
         #endregion
 
@@ -172,22 +173,20 @@ namespace UnityEditorToolkit.Editor.Database
         /// <param name="config">데이터베이스 설정</param>
         public async UniTask<InitializationResult> InitializeAsync(DatabaseConfig config)
         {
+            // Wait-based: 이미 진행 중인 초기화가 있으면 완료 대기
+            UniTaskCompletionSource<InitializationResult> existingTcs = null;
+
             // Race condition prevention: 이미 초기화 진행 중인 경우
             lock (@lock)
             {
                 if (isInitializing)
                 {
-                    Debug.LogWarning("[DatabaseManager] 이미 초기화가 진행 중입니다.");
-                    return new InitializationResult
-                    {
-                        Success = false,
-                        ErrorMessage = "Initialization already in progress."
-                    };
+                    // 진행 중인 초기화가 있으면 TCS 참조 저장 (lock 밖에서 대기)
+                    existingTcs = initializationTcs;
                 }
-
-                // 이미 초기화된 경우
-                if (isInitialized)
+                else if (isInitialized)
                 {
+                    // 이미 초기화된 경우
                     Debug.LogWarning("[DatabaseManager] 이미 초기화되었습니다. Shutdown 후 재초기화하세요.");
                     return new InitializationResult
                     {
@@ -195,10 +194,23 @@ namespace UnityEditorToolkit.Editor.Database
                         ErrorMessage = "Already initialized. Call Shutdown() first."
                     };
                 }
-
-                // 초기화 시작 표시
-                isInitializing = true;
+                else
+                {
+                    // 새로운 초기화 시작
+                    isInitializing = true;
+                    initializationTcs = new UniTaskCompletionSource<InitializationResult>();
+                }
             }
+
+            // 진행 중인 초기화가 있으면 완료될 때까지 대기 후 결과 공유
+            if (existingTcs != null)
+            {
+                Debug.Log("[DatabaseManager] 다른 초기화가 진행 중입니다. 완료를 대기합니다...");
+                return await existingTcs.Task;
+            }
+
+            // 새로운 초기화 시작
+            InitializationResult result = default;
 
             try
             {
@@ -206,11 +218,12 @@ namespace UnityEditorToolkit.Editor.Database
                 if (!config.EnableDatabase)
                 {
                     Debug.Log("[DatabaseManager] 데이터베이스 기능이 비활성화되어 있습니다.");
-                    return new InitializationResult
+                    result = new InitializationResult
                     {
                         Success = true,
                         Message = "Database feature is disabled."
                     };
+                    return result;
                 }
 
                 // 설정 유효성 검증
@@ -218,11 +231,12 @@ namespace UnityEditorToolkit.Editor.Database
                 if (!validation.IsValid)
                 {
                     Debug.LogError($"[DatabaseManager] 설정 유효성 검증 실패: {validation.ErrorMessage}");
-                    return new InitializationResult
+                    result = new InitializationResult
                     {
                         Success = false,
                         ErrorMessage = validation.ErrorMessage
                     };
+                    return result;
                 }
 
                 // 설정 저장
@@ -243,11 +257,12 @@ namespace UnityEditorToolkit.Editor.Database
                 {
                     Debug.LogError($"[DatabaseManager] 연결 실패: {connectResult.ErrorMessage}");
                     await CleanupAsync();
-                    return new InitializationResult
+                    result = new InitializationResult
                     {
                         Success = false,
                         ErrorMessage = connectResult.ErrorMessage
                     };
+                    return result;
                 }
 
                 isConnected = true;
@@ -261,26 +276,34 @@ namespace UnityEditorToolkit.Editor.Database
                 Debug.Log("[DatabaseManager] SyncManager initialized.");
 
                 Debug.Log($"[DatabaseManager] 초기화 완료: {this.config.DatabaseFilePath}");
-                return new InitializationResult
+                result = new InitializationResult
                 {
                     Success = true,
                     Message = "Initialization successful."
                 };
+                return result;
             }
             catch (Exception ex)
             {
                 Debug.LogError($"[DatabaseManager] 초기화 중 예외 발생: {ex.Message}\n{ex.StackTrace}");
                 await CleanupAsync();
-                return new InitializationResult
+                result = new InitializationResult
                 {
                     Success = false,
                     ErrorMessage = ex.Message
                 };
+                return result;
             }
             finally
             {
-                // 초기화 완료 표시 (성공/실패 모두)
-                isInitializing = false;
+                // TCS에 결과 설정하여 대기 중인 호출자들에게 결과 전달
+                lock (@lock)
+                {
+                    isInitializing = false;
+                    var tcs = initializationTcs;
+                    initializationTcs = null;
+                    tcs?.TrySetResult(result);
+                }
             }
         }
 
