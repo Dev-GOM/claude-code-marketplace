@@ -75,9 +75,16 @@ export const COMMANDS = {
   TRANSFORM_SET_SCALE: 'Transform.SetScale',
 
   // Component commands
-  COMPONENT_GET: 'Component.Get',
+  COMPONENT_LIST: 'Component.List',
   COMPONENT_ADD: 'Component.Add',
   COMPONENT_REMOVE: 'Component.Remove',
+  COMPONENT_SET_ENABLED: 'Component.SetEnabled',
+  COMPONENT_GET: 'Component.Get',
+  COMPONENT_SET: 'Component.Set',
+  COMPONENT_INSPECT: 'Component.Inspect',
+  COMPONENT_MOVE_UP: 'Component.MoveUp',
+  COMPONENT_MOVE_DOWN: 'Component.MoveDown',
+  COMPONENT_COPY: 'Component.Copy',
 
   // Material commands
   MATERIAL_GET_PROPERTY: 'Material.GetProperty',

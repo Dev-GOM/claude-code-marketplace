@@ -33,6 +33,47 @@ Unity Editor Toolkit enables comprehensive Unity Editor automation and control f
 
 **Always run scripts with `--help` first** to see usage. DO NOT read the source until you try running the script first and find that a customized solution is abslutely necessary. These scripts can be very large and thus pollute your context window. They exist to be called directly as black-box scripts rather than ingested into your context window.
 
+---
+
+## 📚 문서 우선 원칙 (필수)
+
+**⚠️ CRITICAL**: Unity Editor Toolkit skill을 사용할 때는 **반드시 다음 순서를 따르세요:**
+
+### 1️⃣ Reference 문서 확인 (필수)
+명령어를 사용하기 전에 **반드시** `skills/references/` 폴더의 해당 문서를 읽으세요:
+- **[COMMANDS.md](./references/COMMANDS.md)** - 모든 명령어의 카테고리 및 개요
+- **Category-specific docs** - 사용할 명령어의 카테고리 문서:
+  - [Component Commands](./references/COMMANDS_COMPONENT.md) - comp list/add/remove/enable/disable/get/set/inspect/move-up/move-down/copy
+  - [GameObject Commands](./references/COMMANDS_GAMEOBJECT_HIERARCHY.md) - go find/create/destroy/set-active/set-parent/get-parent/get-children
+  - [Transform Commands](./references/COMMANDS_TRANSFORM.md) - tf get/set-position/set-rotation/set-scale
+  - [Scene Commands](./references/COMMANDS_SCENE.md) - scene current/list/load/new/save/unload/set-active
+  - [Console Commands](./references/COMMANDS_CONSOLE.md) - console logs/clear
+  - [EditorPrefs Commands](./references/COMMANDS_PREFS.md) - prefs get/set/delete/list/clear/import
+  - [Other Categories](./references/COMMANDS.md) - 추가 명령어 카테고리
+
+### 2️⃣ `--help` 실행
+```bash
+# 모든 명령어 확인
+cd <unity-project-root> && node .unity-websocket/uw --help
+
+# 특정 명령어의 옵션 확인
+cd <unity-project-root> && node .unity-websocket/uw <command> --help
+```
+
+### 3️⃣ 예제 실행
+reference 문서의 **Examples 섹션**을 참고하여 명령어를 실행하세요.
+
+### 4️⃣ 소스 코드 읽기 (최후의 수단)
+- reference 문서와 --help만으로는 해결 안 될 때만 소스 코드를 읽으세요
+- 소스 코드는 컨텍스트 윈도우를 많이 차지하므로 가능하면 피하세요
+
+**이 순서를 무시하면:**
+- ❌ 명령어 사용법을 잘못 이해할 수 있음
+- ❌ 옵션을 놓쳐서 원하지 않는 결과가 나올 수 있음
+- ❌ 컨텍스트 윈도우를 낭비할 수 있음
+
+---
+
 ## When to Use
 
 Use Unity Editor Toolkit when you need to:
@@ -132,23 +173,30 @@ Unity Editor Toolkit CLI automatically:
 
 ### 2. Execute Commands
 
-Unity Editor Toolkit provides 26 commands across 8 categories. All commands run from the Unity project root:
+⚠️ **Before executing ANY command, check the reference documentation for your command category** (see "📚 문서 우선 원칙" section above).
+
+Unity Editor Toolkit provides 40+ commands across 12+ categories. All commands run from the Unity project root:
 
 ```bash
 cd <unity-project-root> && node .unity-websocket/uw <command> [options]
 ```
 
-**Available Categories** (Phase 1 - Currently Implemented):
+**Available Categories** (Implemented):
 
-1. **Connection & Status** - Check server connection and port status
-2. **GameObject & Hierarchy** - Find, create, destroy, activate GameObjects and query hierarchy
-3. **Transform** - Get/set position, rotation, scale
-4. **Scene Management** - Query current scene, list scenes, load scenes
-5. **Asset Database & Editor** - Refresh AssetDatabase, recompile scripts, reimport assets
-6. **Console & Logging** - Get logs with filtering, clear console
-7. **EditorPrefs Management** - Get/set editor preferences, manage persistent settings
-8. **Wait Commands** - Wait for compilation, play mode changes, scene loading, and sleep
-9. **Chain Commands** - Execute multiple commands sequentially with error handling
+| # | Category | Commands | Reference |
+|---|----------|----------|-----------|
+| 1 | Connection & Status | 1 | [COMMANDS_CONNECTION_STATUS.md](./references/COMMANDS_CONNECTION_STATUS.md) |
+| 2 | GameObject & Hierarchy | 8 | [COMMANDS_GAMEOBJECT_HIERARCHY.md](./references/COMMANDS_GAMEOBJECT_HIERARCHY.md) |
+| 3 | Transform | 4 | [COMMANDS_TRANSFORM.md](./references/COMMANDS_TRANSFORM.md) |
+| 4 | **Component** ✨ | 10 | [COMMANDS_COMPONENT.md](./references/COMMANDS_COMPONENT.md) |
+| 5 | Scene Management | 7 | [COMMANDS_SCENE.md](./references/COMMANDS_SCENE.md) |
+| 6 | Asset Database & Editor | 3 | [COMMANDS_EDITOR.md](./references/COMMANDS_EDITOR.md) |
+| 7 | Console & Logging | 2 | [COMMANDS_CONSOLE.md](./references/COMMANDS_CONSOLE.md) |
+| 8 | EditorPrefs Management | 6 | [COMMANDS_PREFS.md](./references/COMMANDS_PREFS.md) |
+| 9 | Wait Commands | 4 | [COMMANDS_WAIT.md](./references/COMMANDS_WAIT.md) |
+| 10 | Chain Commands | 2 | [COMMANDS_CHAIN.md](./references/COMMANDS_CHAIN.md) |
+| 11 | Menu Execution | 2 | [COMMANDS_MENU.md](./references/COMMANDS_MENU.md) |
+| 12 | Asset Management | 9 | [COMMANDS_ASSET.md](./references/COMMANDS_ASSET.md) |
 
 **Usage:**
 
@@ -156,28 +204,31 @@ cd <unity-project-root> && node .unity-websocket/uw <command> [options]
 cd <unity-project-root> && node .unity-websocket/uw <command> [options]
 ```
 
-**Get Help:**
+**Required: Check Documentation**
 
 ```bash
-# Show all available commands
-cd <unity-project-root> && node .unity-websocket/uw --help
+# 1. 먼저 명령어 카테고리의 reference 문서를 읽으세요
+# 예: Component 명령어 사용 → skills/references/COMMANDS_COMPONENT.md 읽기
 
-# Show help for specific command
+# 2. --help로 명령어 옵션 확인
+cd <unity-project-root> && node .unity-websocket/uw --help
 cd <unity-project-root> && node .unity-websocket/uw <command> --help
+
+# 3. reference 문서의 예제를 참고하여 실행
 ```
 
-**Detailed Documentation:**
+**📖 Complete Documentation by Category**
 
-For complete command reference with all options, see:
-- [Connection & Status Commands](./references/COMMANDS_CONNECTION_STATUS.md)
-- [GameObject & Hierarchy Commands](./references/COMMANDS_GAMEOBJECT_HIERARCHY.md)
-- [Transform Commands](./references/COMMANDS_TRANSFORM.md)
-- [Scene Management Commands](./references/COMMANDS_SCENE.md)
-- [Asset Database & Editor Commands](./references/COMMANDS_EDITOR.md)
-- [Console & Logging Commands](./references/COMMANDS_CONSOLE.md)
-- [EditorPrefs Management Commands](./references/COMMANDS_PREFS.md)
-- [Wait Commands](./references/COMMANDS_WAIT.md)
-- [Chain Commands](./references/COMMANDS_CHAIN.md)
+**Required Reading**: Before using any command, read the **Category-specific reference document**:
+- 🔴 **MUST READ FIRST** - [COMMANDS.md](./references/COMMANDS.md) - Overview and command roadmap
+- 🔴 **MUST READ** - Category-specific docs (links in the table above)
+  - [Component Commands](./references/COMMANDS_COMPONENT.md) - **NEW**: comp list/add/remove/enable/disable/get/set/inspect/move-up/move-down/copy
+  - [GameObject Commands](./references/COMMANDS_GAMEOBJECT_HIERARCHY.md) - go find/create/destroy/set-active/set-parent/get-parent/get-children
+  - [Transform Commands](./references/COMMANDS_TRANSFORM.md) - tf get/set-position/set-rotation/set-scale
+  - [Scene Commands](./references/COMMANDS_SCENE.md) - scene current/list/load/new/save/unload/set-active
+  - [Console Commands](./references/COMMANDS_CONSOLE.md) - console logs/clear
+  - [EditorPrefs Commands](./references/COMMANDS_PREFS.md) - prefs get/set/delete/list/clear/import
+  - [Other Categories](./references/COMMANDS.md) - Full list with all categories
 
 ### 3. Check Connection Status
 
