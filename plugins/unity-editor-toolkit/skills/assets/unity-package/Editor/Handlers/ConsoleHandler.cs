@@ -145,7 +145,7 @@ namespace UnityEditorToolkit.Handlers
                                     message = message,
                                     stackTrace = stackTrace,
                                     type = (int)logType,
-                                    timestamp = DateTime.Now.ToString("HH:mm:ss.fff")
+                                    timestamp = "" // Editor 로그는 실제 발생 시간을 알 수 없음
                                 });
                             }
                         }

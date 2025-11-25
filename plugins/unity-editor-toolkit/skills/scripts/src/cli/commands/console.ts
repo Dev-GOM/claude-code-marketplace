@@ -162,16 +162,19 @@ export function registerConsoleCommand(program: Command): void {
           const messageLines = log.message.split('\n');
           const title = messageLines[0];
 
+          // 타임스탬프가 있으면 표시, 없으면 생략
+          const timestampPart = log.timestamp ? `[${log.timestamp}] ` : '';
+
           if (options.verbose) {
             // Show full message
-            logger.info(`${icon} [${log.timestamp}] [${typeName}]`);
+            logger.info(`${icon} ${timestampPart}[${typeName}]`);
             logger.info('Stack Trace:');
             for (const line of messageLines) {
               logger.info(line);
             }
           } else {
             // Show title only (first line) - single line format
-            logger.info(`${icon} [${log.timestamp}] [${typeName}] ${title}`);
+            logger.info(`${icon} ${timestampPart}[${typeName}] ${title}`);
           }
 
           // Show stack trace if --stack or --verbose
