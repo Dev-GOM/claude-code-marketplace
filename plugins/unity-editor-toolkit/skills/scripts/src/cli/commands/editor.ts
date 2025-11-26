@@ -218,6 +218,210 @@ export function registerEditorCommand(program: Command): void {
       }
     });
 
+  // Get current selection
+  editorCmd
+    .command('get-selection')
+    .alias('selection')
+    .description('Get currently selected objects in Unity Editor')
+    .option('--json', 'Output in JSON format')
+    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '30000')
+    .action(async (options) => {
+      let client = null;
+      try {
+        const projectRoot = config.getProjectRoot();
+        const port = program.opts().port || config.getUnityPort(projectRoot);
+
+        if (!port) {
+          logger.error('Unity server not running. Start Unity Editor with WebSocket server enabled.');
+          process.exit(1);
+        }
+
+        client = createUnityClient(port);
+        await client.connect();
+
+        interface SelectionResult {
+          success: boolean;
+          count: number;
+          activeObject: { name: string; instanceId: number; type: string } | null;
+          selection: Array<{ name: string; instanceId: number; type: string }>;
+        }
+
+        const result = await client.sendRequest<SelectionResult>(COMMANDS.EDITOR_GET_SELECTION);
+
+        if (options.json) {
+          outputJson(result);
+        } else {
+          if (result.count === 0) {
+            logger.info('No objects selected');
+          } else {
+            logger.info(`✓ ${result.count} object(s) selected:`);
+            if (result.activeObject) {
+              logger.info(`  ★ ${result.activeObject.name} (${result.activeObject.type}) [Active]`);
+            }
+            for (const obj of result.selection) {
+              if (!result.activeObject || obj.instanceId !== result.activeObject.instanceId) {
+                logger.info(`  ● ${obj.name} (${obj.type})`);
+              }
+            }
+          }
+        }
+      } catch (error) {
+        logger.error('Failed to get selection', error);
+        process.exit(1);
+      } finally {
+        if (client) {
+          try {
+            client.disconnect();
+          } catch (disconnectError) {
+            logger.debug(`Error during disconnect: ${disconnectError instanceof Error ? disconnectError.message : String(disconnectError)}`);
+          }
+        }
+      }
+    });
+
+  // Set selection
+  editorCmd
+    .command('set-selection')
+    .alias('select')
+    .description('Select objects in Unity Editor')
+    .argument('<objects...>', 'GameObject names or paths to select')
+    .option('--json', 'Output in JSON format')
+    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '30000')
+    .action(async (objects, options) => {
+      let client = null;
+      try {
+        const projectRoot = config.getProjectRoot();
+        const port = program.opts().port || config.getUnityPort(projectRoot);
+
+        if (!port) {
+          logger.error('Unity server not running. Start Unity Editor with WebSocket server enabled.');
+          process.exit(1);
+        }
+
+        client = createUnityClient(port);
+        await client.connect();
+
+        interface SetSelectionResult {
+          success: boolean;
+          selectedCount: number;
+          selectedNames: string[];
+        }
+
+        const result = await client.sendRequest<SetSelectionResult>(
+          COMMANDS.EDITOR_SET_SELECTION,
+          { names: objects }
+        );
+
+        if (options.json) {
+          outputJson(result);
+        } else {
+          if (result.selectedCount === 0) {
+            logger.warn('No objects were selected (not found)');
+          } else {
+            logger.info(`✓ Selected ${result.selectedCount} object(s):`);
+            for (const name of result.selectedNames) {
+              logger.info(`  ● ${name}`);
+            }
+          }
+        }
+      } catch (error) {
+        logger.error('Failed to set selection', error);
+        process.exit(1);
+      } finally {
+        if (client) {
+          try {
+            client.disconnect();
+          } catch (disconnectError) {
+            logger.debug(`Error during disconnect: ${disconnectError instanceof Error ? disconnectError.message : String(disconnectError)}`);
+          }
+        }
+      }
+    });
+
+  // Focus Game View
+  editorCmd
+    .command('focus-game')
+    .alias('game')
+    .description('Focus on Unity Game View')
+    .option('--json', 'Output in JSON format')
+    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '30000')
+    .action(async (options) => {
+      let client = null;
+      try {
+        const projectRoot = config.getProjectRoot();
+        const port = program.opts().port || config.getUnityPort(projectRoot);
+
+        if (!port) {
+          logger.error('Unity server not running. Start Unity Editor with WebSocket server enabled.');
+          process.exit(1);
+        }
+
+        client = createUnityClient(port);
+        await client.connect();
+
+        await client.sendRequest(COMMANDS.EDITOR_FOCUS_GAME_VIEW);
+
+        if (options.json) {
+          outputJson({ success: true, message: 'Focused on Game View' });
+        } else {
+          logger.info('✓ Focused on Game View');
+        }
+      } catch (error) {
+        logger.error('Failed to focus Game View', error);
+        process.exit(1);
+      } finally {
+        if (client) {
+          try {
+            client.disconnect();
+          } catch (disconnectError) {
+            logger.debug(`Error during disconnect: ${disconnectError instanceof Error ? disconnectError.message : String(disconnectError)}`);
+          }
+        }
+      }
+    });
+
+  // Focus Scene View
+  editorCmd
+    .command('focus-scene')
+    .alias('scene')
+    .description('Focus on Unity Scene View')
+    .option('--json', 'Output in JSON format')
+    .option('--timeout <ms>', 'WebSocket connection timeout in milliseconds', '30000')
+    .action(async (options) => {
+      let client = null;
+      try {
+        const projectRoot = config.getProjectRoot();
+        const port = program.opts().port || config.getUnityPort(projectRoot);
+
+        if (!port) {
+          logger.error('Unity server not running. Start Unity Editor with WebSocket server enabled.');
+          process.exit(1);
+        }
+
+        client = createUnityClient(port);
+        await client.connect();
+
+        await client.sendRequest(COMMANDS.EDITOR_FOCUS_SCENE_VIEW);
+
+        if (options.json) {
+          outputJson({ success: true, message: 'Focused on Scene View' });
+        } else {
+          logger.info('✓ Focused on Scene View');
+        }
+      } catch (error) {
+        logger.error('Failed to focus Scene View', error);
+        process.exit(1);
+      } finally {
+        if (client) {
+          try {
+            client.disconnect();
+          } catch (disconnectError) {
+            logger.debug(`Error during disconnect: ${disconnectError instanceof Error ? disconnectError.message : String(disconnectError)}`);
+          }
+        }
+      }
+    });
+
   // List executable methods
   editorCmd
     .command('list')

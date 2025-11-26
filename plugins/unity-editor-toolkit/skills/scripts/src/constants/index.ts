@@ -91,6 +91,11 @@ export const COMMANDS = {
   MATERIAL_SET_PROPERTY: 'Material.SetProperty',
   MATERIAL_GET_COLOR: 'Material.GetColor',
   MATERIAL_SET_COLOR: 'Material.SetColor',
+  MATERIAL_LIST: 'Material.List',
+  MATERIAL_GET_SHADER: 'Material.GetShader',
+  MATERIAL_SET_SHADER: 'Material.SetShader',
+  MATERIAL_GET_TEXTURE: 'Material.GetTexture',
+  MATERIAL_SET_TEXTURE: 'Material.SetTexture',
 
   // Scene commands
   SCENE_GET_CURRENT: 'Scene.GetCurrent',
@@ -126,6 +131,12 @@ export const COMMANDS = {
   ANIMATION_PLAY: 'Animation.Play',
   ANIMATION_STOP: 'Animation.Stop',
   ANIMATION_GET_STATE: 'Animation.GetState',
+  ANIMATION_SET_PARAMETER: 'Animation.SetParameter',
+  ANIMATION_GET_PARAMETER: 'Animation.GetParameter',
+  ANIMATION_GET_PARAMETERS: 'Animation.GetParameters',
+  ANIMATION_SET_TRIGGER: 'Animation.SetTrigger',
+  ANIMATION_RESET_TRIGGER: 'Animation.ResetTrigger',
+  ANIMATION_CROSSFADE: 'Animation.CrossFade',
 
   // Database commands
   DATABASE_STATUS: 'Database.Status',

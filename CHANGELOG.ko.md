@@ -2,7 +2,36 @@
 
 Dev GOM Plugins 마켓플레이스의 모든 주요 변경사항이 이 파일에 문서화됩니다.
 
-> **버전**: 2.27.0 | **최종 업데이트**: 2025-11-25
+> **버전**: 2.29.0 | **최종 업데이트**: 2025-11-26
+
+---
+
+## [2.29.0] - 2025-11-26
+
+### 주요 기능
+- 🎮 **Unity Editor Toolkit v0.12.0**: Material, Animation, Editor 명령어 대폭 확장
+  - **Material 명령어** (9개): 머티리얼 속성 완전 제어
+    - `material list`: GameObject의 모든 머티리얼 조회
+    - `material get/set`: 머티리얼 속성(float/int) 조회/설정
+    - `material get-color/set-color`: 색상 속성 조회/설정 (RGBA, Hex 지원)
+    - `material get-shader/set-shader`: 셰이더 조회/변경
+    - `material get-texture/set-texture`: 텍스처 조회/설정 (scale, offset 포함)
+  - **Animation 명령어** (9개): Animator 및 레거시 Animation 완전 제어
+    - `animation play/stop`: 애니메이션 재생/정지
+    - `animation state`: 현재 애니메이션 상태 조회
+    - `animation params`: 모든 Animator 파라미터 조회
+    - `animation get-param/set-param`: 파라미터 값 조회/설정
+    - `animation trigger/reset-trigger`: 트리거 설정/리셋
+    - `animation crossfade`: 상태 간 CrossFade 전환
+  - **Editor 추가 기능** (4개): 에디터 선택 및 뷰 제어
+    - `editor get-selection`: 현재 선택된 객체 조회
+    - `editor set-selection`: 이름/경로로 객체 선택
+    - `editor focus-game`: Game View 포커스
+    - `editor focus-scene`: Scene View 포커스
+  - **로그 레벨 필터링 수정**: 중앙 집중식 Logger 유틸리티
+    - 모든 핸들러가 Logger 클래스를 통해 로깅
+    - 로그 레벨 설정이 모든 메시지에 일관되게 적용
+    - Debug.Log 직접 호출을 Logger.Log/LogWarning/LogError로 대체
 
 ---
 

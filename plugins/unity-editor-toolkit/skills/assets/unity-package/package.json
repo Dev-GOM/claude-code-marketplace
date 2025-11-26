@@ -1,6 +1,6 @@
 {
   "name": "com.devgom.unity-editor-toolkit",
-  "version": "0.10.0",
+  "version": "0.12.0",
   "displayName": "Unity Editor Toolkit",
   "description": "Real-time Unity Editor control and automation via WebSocket for Claude Code integration. Provides 500+ commands for GameObject, Transform, Scene, Component, Material, and more. Database features require Unity 6+ only (embedded SQLite, no installation required).",
   "unity": "6.0",

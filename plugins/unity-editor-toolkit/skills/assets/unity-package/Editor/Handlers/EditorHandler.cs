@@ -5,6 +5,7 @@ using System.Reflection;
 using UnityEngine;
 using UnityEditorToolkit.Protocol;
 using UnityEditorToolkit.Editor.Attributes;
+using UnityEditorToolkit.Editor.Utils;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -118,18 +119,38 @@ namespace UnityEditorToolkit.Handlers
         private object HandleGetSelection(JsonRpcRequest request)
         {
             #if UNITY_EDITOR
-            var selection = Selection.activeGameObject;
-            if (selection == null)
+            var activeObject = Selection.activeGameObject;
+            var selectedObjects = Selection.gameObjects;
+
+            if (selectedObjects == null || selectedObjects.Length == 0)
             {
-                return new { selected = false };
+                return new
+                {
+                    success = true,
+                    count = 0,
+                    activeObject = (object)null,
+                    selection = new object[0]
+                };
             }
+
+            var selectionList = selectedObjects.Select(obj => new
+            {
+                name = obj.name,
+                instanceId = obj.GetInstanceID(),
+                type = obj.GetType().Name
+            }).ToList();
 
             return new
             {
-                selected = true,
-                name = selection.name,
-                instanceId = selection.GetInstanceID(),
-                path = GetGameObjectPath(selection)
+                success = true,
+                count = selectedObjects.Length,
+                activeObject = activeObject != null ? new
+                {
+                    name = activeObject.name,
+                    instanceId = activeObject.GetInstanceID(),
+                    type = activeObject.GetType().Name
+                } : null,
+                selection = selectionList
             };
             #else
             throw new Exception("GetSelection is only available in Unity Editor");
@@ -139,18 +160,52 @@ namespace UnityEditorToolkit.Handlers
         private object HandleSetSelection(JsonRpcRequest request)
         {
             #if UNITY_EDITOR
-            var param = ValidateParam<SelectionParams>(request, "instanceId");
+            var param = ValidateParam<SetSelectionParams>(request, "names");
 
             try
             {
-                var obj = EditorUtility.InstanceIDToObject(param.instanceId) as GameObject;
-                if (obj == null)
+                var selectedObjects = new List<GameObject>();
+                var selectedNames = new List<string>();
+
+                foreach (var nameOrPath in param.names)
                 {
-                    throw new Exception($"GameObject with instanceId {param.instanceId} not found");
+                    GameObject obj = null;
+
+                    // Try finding by path first (e.g., "Parent/Child/Target")
+                    if (nameOrPath.Contains("/"))
+                    {
+                        obj = GameObject.Find(nameOrPath);
+                    }
+
+                    // Try finding by name in all scene objects
+                    if (obj == null)
+                    {
+                        var allObjects = UnityEngine.Object.FindObjectsByType<GameObject>(FindObjectsSortMode.None);
+                        obj = allObjects.FirstOrDefault(go => go.name == nameOrPath);
+                    }
+
+                    if (obj != null)
+                    {
+                        selectedObjects.Add(obj);
+                        selectedNames.Add(obj.name);
+                    }
                 }
 
-                Selection.activeGameObject = obj;
-                return new { success = true, name = obj.name };
+                if (selectedObjects.Count > 0)
+                {
+                    Selection.objects = selectedObjects.ToArray();
+                }
+                else
+                {
+                    Selection.objects = new UnityEngine.Object[0];
+                }
+
+                return new
+                {
+                    success = true,
+                    selectedCount = selectedObjects.Count,
+                    selectedNames = selectedNames
+                };
             }
             catch (Exception ex)
             {
@@ -239,45 +294,45 @@ namespace UnityEditorToolkit.Handlers
                                 {
                                     if (!method.IsStatic)
                                     {
-                                        Debug.LogWarning($"[EditorHandler] Method {type.FullName}.{method.Name} has [ExecutableMethod] but is not static. Skipping.");
+                                        Logger.LogWarning("EditorHandler", $"Method {type.FullName}.{method.Name} has [ExecutableMethod] but is not static. Skipping.");
                                         continue;
                                     }
 
                                     if (method.ReturnType != typeof(void))
                                     {
-                                        Debug.LogWarning($"[EditorHandler] Method {type.FullName}.{method.Name} has [ExecutableMethod] but does not return void. Skipping.");
+                                        Logger.LogWarning("EditorHandler", $"Method {type.FullName}.{method.Name} has [ExecutableMethod] but does not return void. Skipping.");
                                         continue;
                                     }
 
                                     if (method.GetParameters().Length > 0)
                                     {
-                                        Debug.LogWarning($"[EditorHandler] Method {type.FullName}.{method.Name} has [ExecutableMethod] but has parameters. Skipping.");
+                                        Logger.LogWarning("EditorHandler", $"Method {type.FullName}.{method.Name} has [ExecutableMethod] but has parameters. Skipping.");
                                         continue;
                                     }
 
                                     if (executableMethods.ContainsKey(attribute.CommandName))
                                     {
-                                        Debug.LogWarning($"[EditorHandler] Duplicate command name '{attribute.CommandName}'. Method {type.FullName}.{method.Name} will override previous registration.");
+                                        Logger.LogWarning("EditorHandler", $"Duplicate command name '{attribute.CommandName}'. Method {type.FullName}.{method.Name} will override previous registration.");
                                     }
 
                                     executableMethods[attribute.CommandName] = method;
-                                    Debug.Log($"[EditorHandler] Registered executable method: '{attribute.CommandName}' -> {type.FullName}.{method.Name}");
+                                    Logger.LogDebug("EditorHandler", $"Registered executable method: '{attribute.CommandName}' -> {type.FullName}.{method.Name}");
                                 }
                             }
                         }
                     }
                     catch (Exception ex)
                     {
-                        Debug.LogWarning($"[EditorHandler] Failed to scan assembly {assembly.FullName}: {ex.Message}");
+                        Logger.LogWarning("EditorHandler", $"Failed to scan assembly {assembly.FullName}: {ex.Message}");
                     }
                 }
 
-                Debug.Log($"[EditorHandler] Initialized with {executableMethods.Count} executable methods");
+                Logger.LogDebug("EditorHandler", $"Initialized with {executableMethods.Count} executable methods");
                 isInitialized = true;
             }
             catch (Exception ex)
             {
-                Debug.LogError($"[EditorHandler] Failed to initialize executable methods: {ex.Message}");
+                Logger.LogError("EditorHandler", $"Failed to initialize executable methods: {ex.Message}");
                 executableMethods = new Dictionary<string, MethodInfo>();
                 isInitialized = true;
             }
@@ -301,7 +356,7 @@ namespace UnityEditorToolkit.Handlers
 
             try
             {
-                Debug.Log($"[EditorHandler] Executing command: '{param.commandName}'");
+                Logger.Log("EditorHandler", $"Executing command: '{param.commandName}'");
                 methodInfo.Invoke(null, null);
 
                 return new
@@ -314,12 +369,12 @@ namespace UnityEditorToolkit.Handlers
             catch (TargetInvocationException ex)
             {
                 var innerException = ex.InnerException ?? ex;
-                Debug.LogError($"[EditorHandler] Failed to execute '{param.commandName}': {innerException.Message}\n{innerException.StackTrace}");
+                Logger.LogError("EditorHandler", $"Failed to execute '{param.commandName}': {innerException.Message}\n{innerException.StackTrace}");
                 throw new Exception($"Failed to execute '{param.commandName}': {innerException.Message}");
             }
             catch (Exception ex)
             {
-                Debug.LogError($"[EditorHandler] Failed to execute '{param.commandName}': {ex.Message}\n{ex.StackTrace}");
+                Logger.LogError("EditorHandler", $"Failed to execute '{param.commandName}': {ex.Message}\n{ex.StackTrace}");
                 throw new Exception($"Failed to execute '{param.commandName}': {ex.Message}");
             }
         }
@@ -358,9 +413,9 @@ namespace UnityEditorToolkit.Handlers
         }
 
         [Serializable]
-        public class SelectionParams
+        public class SetSelectionParams
         {
-            public int instanceId;
+            public string[] names;
         }
 
         [Serializable]

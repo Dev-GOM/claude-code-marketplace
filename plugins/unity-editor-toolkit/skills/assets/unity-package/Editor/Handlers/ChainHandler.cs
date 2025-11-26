@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditorToolkit.Protocol;
+using UnityEditorToolkit.Editor.Utils;
 using Newtonsoft.Json.Linq;
 
 namespace UnityEditorToolkit.Handlers
@@ -41,7 +42,7 @@ namespace UnityEditorToolkit.Handlers
                 throw new Exception("Commands array is required and cannot be empty");
             }
 
-            Debug.Log($"[ChainHandler] Executing {param.commands.Length} command(s) sequentially...");
+            Logger.Log("ChainHandler", $"Executing {param.commands.Length} command(s) sequentially...");
 
             var results = new List<object>();
             double totalElapsed = 0;
@@ -53,7 +54,7 @@ namespace UnityEditorToolkit.Handlers
 
                 try
                 {
-                    Debug.Log($"[ChainHandler] [{i + 1}/{param.commands.Length}] Executing: {cmd.method}");
+                    Logger.LogDebug("ChainHandler", $"[{i + 1}/{param.commands.Length}] Executing: {cmd.method}");
 
                     // Parse method to get category
                     string category = GetCategory(cmd.method);
@@ -93,14 +94,14 @@ namespace UnityEditorToolkit.Handlers
                         elapsed = elapsed
                     });
 
-                    Debug.Log($"[ChainHandler] [{i + 1}/{param.commands.Length}] Success: {cmd.method} ({elapsed:F3}s)");
+                    Logger.LogDebug("ChainHandler", $"[{i + 1}/{param.commands.Length}] Success: {cmd.method} ({elapsed:F3}s)");
                 }
                 catch (Exception ex)
                 {
                     double elapsed = UnityEditor.EditorApplication.timeSinceStartup - startTime;
                     totalElapsed += elapsed;
 
-                    Debug.LogError($"[ChainHandler] [{i + 1}/{param.commands.Length}] Failed: {cmd.method} - {ex.Message}");
+                    Logger.LogError("ChainHandler", $"[{i + 1}/{param.commands.Length}] Failed: {cmd.method} - {ex.Message}");
 
                     // Add error result
                     results.Add(new
@@ -115,7 +116,7 @@ namespace UnityEditorToolkit.Handlers
                     // If stopOnError is true, stop execution
                     if (param.stopOnError)
                     {
-                        Debug.LogWarning($"[ChainHandler] Stopping chain execution due to error (stopOnError=true)");
+                        Logger.LogWarning("ChainHandler", "Stopping chain execution due to error (stopOnError=true)");
                         break;
                     }
                 }
