@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
+using UnityEditorToolkit.Editor.Utils;
 
 namespace UnityEditorToolkit.Editor.Database
 {
@@ -37,7 +38,7 @@ namespace UnityEditorToolkit.Editor.Database
                 this.migrationsPath = migrationsPath;
             }
 
-            Debug.Log($"[MigrationRunner] 생성 완료. Migrations Path: {this.migrationsPath}");
+            ToolkitLogger.LogDebug("MigrationRunner", $" 생성 완료. Migrations Path: {this.migrationsPath}");
         }
         #endregion
 
@@ -58,20 +59,20 @@ namespace UnityEditorToolkit.Editor.Database
 
             try
             {
-                Debug.Log("[MigrationRunner] 마이그레이션 시작...");
+                ToolkitLogger.LogDebug("MigrationRunner", 마이그레이션 시작...");
 
                 // 1. migrations 테이블 생성 (존재하지 않으면)
                 await EnsureMigrationTableExistsAsync(cancellationToken);
 
                 // 2. 실행된 마이그레이션 목록 조회
                 var appliedMigrations = await GetAppliedMigrationsAsync(cancellationToken);
-                Debug.Log($"[MigrationRunner] 이미 실행된 마이그레이션: {appliedMigrations.Count}개");
+                ToolkitLogger.LogDebug("MigrationRunner", $" 이미 실행된 마이그레이션: {appliedMigrations.Count}개");
 
                 // 3. 마이그레이션 파일 목록 조회
                 var migrationFiles = GetMigrationFiles();
                 if (migrationFiles.Count == 0)
                 {
-                    Debug.LogWarning($"[MigrationRunner] 마이그레이션 파일이 없습니다: {migrationsPath}");
+                    ToolkitLogger.LogWarning("MigrationRunner", $" 마이그레이션 파일이 없습니다: {migrationsPath}");
                     return new MigrationResult
                     {
                         Success = true,
@@ -80,7 +81,7 @@ namespace UnityEditorToolkit.Editor.Database
                     };
                 }
 
-                Debug.Log($"[MigrationRunner] 발견된 마이그레이션 파일: {migrationFiles.Count}개");
+                ToolkitLogger.LogDebug("MigrationRunner", $" 발견된 마이그레이션 파일: {migrationFiles.Count}개");
 
                 // 4. 미실행 마이그레이션 필터링
                 var pendingMigrations = migrationFiles
@@ -90,7 +91,7 @@ namespace UnityEditorToolkit.Editor.Database
 
                 if (pendingMigrations.Count == 0)
                 {
-                    Debug.Log("[MigrationRunner] 실행할 마이그레이션이 없습니다.");
+                    ToolkitLogger.LogDebug("MigrationRunner", 실행할 마이그레이션이 없습니다.");
                     return new MigrationResult
                     {
                         Success = true,
@@ -99,19 +100,19 @@ namespace UnityEditorToolkit.Editor.Database
                     };
                 }
 
-                Debug.Log($"[MigrationRunner] 실행할 마이그레이션: {pendingMigrations.Count}개");
+                ToolkitLogger.LogDebug("MigrationRunner", $" 실행할 마이그레이션: {pendingMigrations.Count}개");
 
                 // 5. 마이그레이션 실행
                 int appliedCount = 0;
                 foreach (var migrationFile in pendingMigrations)
                 {
                     string migrationName = Path.GetFileNameWithoutExtension(migrationFile);
-                    Debug.Log($"[MigrationRunner] 실행 중: {migrationName}");
+                    ToolkitLogger.LogDebug("MigrationRunner", $" 실행 중: {migrationName}");
 
                     var result = await ApplyMigrationAsync(migrationFile, cancellationToken);
                     if (!result.Success)
                     {
-                        Debug.LogError($"[MigrationRunner] 마이그레이션 실패: {migrationName}\n{result.ErrorMessage}");
+                        ToolkitLogger.LogError("MigrationRunner", $" 마이그레이션 실패: {migrationName}\n{result.ErrorMessage}");
                         return new MigrationResult
                         {
                             Success = false,
@@ -121,10 +122,10 @@ namespace UnityEditorToolkit.Editor.Database
                     }
 
                     appliedCount++;
-                    Debug.Log($"[MigrationRunner] 완료: {migrationName}");
+                    ToolkitLogger.LogDebug("MigrationRunner", $" 완료: {migrationName}");
                 }
 
-                Debug.Log($"[MigrationRunner] 마이그레이션 완료: {appliedCount}개 적용됨");
+                ToolkitLogger.LogDebug("MigrationRunner", $" 마이그레이션 완료: {appliedCount}개 적용됨");
                 return new MigrationResult
                 {
                     Success = true,
@@ -134,7 +135,7 @@ namespace UnityEditorToolkit.Editor.Database
             }
             catch (Exception ex)
             {
-                Debug.LogError($"[MigrationRunner] 마이그레이션 중 예외 발생: {ex.Message}\n{ex.StackTrace}");
+                ToolkitLogger.LogError("MigrationRunner", $" 마이그레이션 중 예외 발생: {ex.Message}\n{ex.StackTrace}");
                 return new MigrationResult
                 {
                     Success = false,
@@ -187,7 +188,7 @@ namespace UnityEditorToolkit.Editor.Database
                             string withoutComments = RemoveSqlComments(trimmedStatement);
                             if (string.IsNullOrWhiteSpace(withoutComments))
                             {
-                                Debug.Log($"[MigrationRunner] 주석만 있는 문장 스킵 (RemoveSqlComments v2 적용됨)");
+                                ToolkitLogger.LogDebug("MigrationRunner", $" 주석만 있는 문장 스킵 (RemoveSqlComments v2 적용됨)");
                                 continue;
                             }
 
@@ -197,14 +198,14 @@ namespace UnityEditorToolkit.Editor.Database
                             // SELECT 문 (결과 메시지용)은 스킵 - Execute()는 결과를 반환하지 않음
                             if (cleanedSql.StartsWith("SELECT ", StringComparison.OrdinalIgnoreCase))
                             {
-                                Debug.Log($"[MigrationRunner] SELECT 문 스킵");
+                                ToolkitLogger.LogDebug("MigrationRunner", $" SELECT 문 스킵");
                                 continue;
                             }
 
                             // PRAGMA 문은 스킵 (SQLiteConnector에서 이미 설정됨)
                             if (cleanedSql.StartsWith("PRAGMA ", StringComparison.OrdinalIgnoreCase))
                             {
-                                Debug.Log($"[MigrationRunner] PRAGMA 문 스킵: {cleanedSql}");
+                                ToolkitLogger.LogDebug("MigrationRunner", $" PRAGMA 문 스킵: {cleanedSql}");
                                 continue;
                             }
 
@@ -220,12 +221,12 @@ namespace UnityEditorToolkit.Editor.Database
                                 string sqlPreview = trimmedStatement.Length > 100
                                     ? trimmedStatement.Substring(0, 100) + "..."
                                     : trimmedStatement;
-                                Debug.LogError($"[MigrationRunner] SQL 실행 실패 ({executedCount + 1}번째): {sqlEx.Message}\nSQL: {sqlPreview}");
+                                ToolkitLogger.LogError("MigrationRunner", $" SQL 실행 실패 ({executedCount + 1}번째): {sqlEx.Message}\nSQL: {sqlPreview}");
                                 throw;
                             }
                         }
 
-                        Debug.Log($"[MigrationRunner] SQL 문장 실행 완료: {executedCount}개");
+                        ToolkitLogger.LogDebug("MigrationRunner", $" SQL 문장 실행 완료: {executedCount}개");
 
                         // migrations 테이블에 기록
                         string insertSql = @"
@@ -236,13 +237,13 @@ namespace UnityEditorToolkit.Editor.Database
 
                         // 트랜잭션 커밋
                         connection.Commit();
-                        Debug.Log($"[MigrationRunner] 마이그레이션 트랜잭션 커밋 완료: {migrationName}");
+                        ToolkitLogger.LogDebug("MigrationRunner", $" 마이그레이션 트랜잭션 커밋 완료: {migrationName}");
                     }
                     catch (Exception ex)
                     {
                         // 트랜잭션 롤백
                         connection.Rollback();
-                        Debug.LogError($"[MigrationRunner] 마이그레이션 실패 - 롤백됨: {ex.Message}");
+                        ToolkitLogger.LogError("MigrationRunner", $" 마이그레이션 실패 - 롤백됨: {ex.Message}");
                         throw;
                     }
                 }, cancellationToken: cancellationToken);
@@ -282,7 +283,7 @@ namespace UnityEditorToolkit.Editor.Database
                 connection.Execute(createTableSql);
             }, cancellationToken: cancellationToken);
 
-            Debug.Log("[MigrationRunner] migrations 테이블 확인 완료.");
+            ToolkitLogger.LogDebug("MigrationRunner", migrations 테이블 확인 완료.");
         }
 
         /// <summary>
@@ -348,7 +349,7 @@ namespace UnityEditorToolkit.Editor.Database
             }
             catch (Exception ex)
             {
-                Debug.LogWarning($"[MigrationRunner] 펜딩 마이그레이션 확인 실패: {ex.Message}");
+                ToolkitLogger.LogWarning("MigrationRunner", $" 펜딩 마이그레이션 확인 실패: {ex.Message}");
                 return -1;
             }
         }
@@ -362,7 +363,7 @@ namespace UnityEditorToolkit.Editor.Database
         {
             if (!Directory.Exists(migrationsPath))
             {
-                Debug.LogWarning($"[MigrationRunner] Migrations 폴더가 존재하지 않습니다: {migrationsPath}");
+                ToolkitLogger.LogWarning("MigrationRunner", $" Migrations 폴더가 존재하지 않습니다: {migrationsPath}");
                 return new List<string>();
             }
 

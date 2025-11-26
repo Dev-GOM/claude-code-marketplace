@@ -66,7 +66,7 @@ namespace UnityEditorToolkit.Editor.Utils
             };
 
             pendingResponses.Add(response);
-            Debug.Log($"[ResponseQueue] Registered delayed response for request {requestId} (timeout: {timeoutSeconds}s)");
+            ToolkitLogger.Log("ResponseQueue", $" Registered delayed response for request {requestId} (timeout: {timeoutSeconds}s)");
         }
 
         /// <summary>
@@ -87,7 +87,7 @@ namespace UnityEditorToolkit.Editor.Utils
                     // Check timeout
                     if (response.IsTimedOut(currentTime))
                     {
-                        Debug.LogWarning($"[ResponseQueue] Request {response.requestId} timed out after {response.timeoutSeconds}s");
+                        ToolkitLogger.LogWarning("ResponseQueue", $" Request {response.requestId} timed out after {response.timeoutSeconds}s");
 
                         // Send timeout error
                         var errorResponse = new
@@ -108,7 +108,7 @@ namespace UnityEditorToolkit.Editor.Utils
                     // Check condition
                     if (response.condition())
                     {
-                        Debug.Log($"[ResponseQueue] Condition met for request {response.requestId}");
+                        ToolkitLogger.Log("ResponseQueue", $" Condition met for request {response.requestId}");
 
                         try
                         {
@@ -126,19 +126,19 @@ namespace UnityEditorToolkit.Editor.Utils
                         catch (System.InvalidOperationException ex)
                         {
                             // WebSocket already closed (client disconnected or timed out)
-                            Debug.LogWarning($"[ResponseQueue] WebSocket already closed for request {response.requestId}: {ex.Message}");
+                            ToolkitLogger.LogWarning("ResponseQueue", $" WebSocket already closed for request {response.requestId}: {ex.Message}");
                             toRemove.Add(response);
                         }
                         catch (System.Exception ex)
                         {
-                            Debug.LogError($"[ResponseQueue] Error sending success response for request {response.requestId}: {ex.Message}");
+                            ToolkitLogger.LogError("ResponseQueue", $" Error sending success response for request {response.requestId}: {ex.Message}");
                             toRemove.Add(response);
                         }
                     }
                 }
                 catch (Exception ex)
                 {
-                    Debug.LogError($"[ResponseQueue] Error processing response for request {response.requestId}: {ex.Message}");
+                    ToolkitLogger.LogError("ResponseQueue", $" Error processing response for request {response.requestId}: {ex.Message}");
 
                     // Send error response
                     var errorResponse = new
@@ -174,7 +174,7 @@ namespace UnityEditorToolkit.Editor.Utils
         public void Clear()
         {
             pendingResponses.Clear();
-            Debug.Log("[ResponseQueue] Cleared all pending responses");
+            ToolkitLogger.Log("ResponseQueue", Cleared all pending responses");
         }
 
         /// <summary>
@@ -186,7 +186,7 @@ namespace UnityEditorToolkit.Editor.Utils
             if (pendingResponses.Count == 0)
                 return;
 
-            Debug.Log($"[ResponseQueue] Cancelling {pendingResponses.Count} pending response(s): {reason}");
+            ToolkitLogger.Log("ResponseQueue", $" Cancelling {pendingResponses.Count} pending response(s): {reason}");
 
             foreach (var response in pendingResponses)
             {
@@ -207,11 +207,11 @@ namespace UnityEditorToolkit.Editor.Utils
                 catch (System.InvalidOperationException ex)
                 {
                     // WebSocket already closed
-                    Debug.LogWarning($"[ResponseQueue] WebSocket already closed for request {response.requestId}: {ex.Message}");
+                    ToolkitLogger.LogWarning("ResponseQueue", $" WebSocket already closed for request {response.requestId}: {ex.Message}");
                 }
                 catch (System.Exception ex)
                 {
-                    Debug.LogWarning($"[ResponseQueue] Failed to send cancellation to {response.requestId}: {ex.Message}");
+                    ToolkitLogger.LogWarning("ResponseQueue", $" Failed to send cancellation to {response.requestId}: {ex.Message}");
                 }
             }
 

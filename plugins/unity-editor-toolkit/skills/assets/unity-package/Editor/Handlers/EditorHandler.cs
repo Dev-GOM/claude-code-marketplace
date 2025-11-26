@@ -294,45 +294,45 @@ namespace UnityEditorToolkit.Handlers
                                 {
                                     if (!method.IsStatic)
                                     {
-                                        Logger.LogWarning("EditorHandler", $"Method {type.FullName}.{method.Name} has [ExecutableMethod] but is not static. Skipping.");
+                                        ToolkitLogger.LogWarning("EditorHandler", $"Method {type.FullName}.{method.Name} has [ExecutableMethod] but is not static. Skipping.");
                                         continue;
                                     }
 
                                     if (method.ReturnType != typeof(void))
                                     {
-                                        Logger.LogWarning("EditorHandler", $"Method {type.FullName}.{method.Name} has [ExecutableMethod] but does not return void. Skipping.");
+                                        ToolkitLogger.LogWarning("EditorHandler", $"Method {type.FullName}.{method.Name} has [ExecutableMethod] but does not return void. Skipping.");
                                         continue;
                                     }
 
                                     if (method.GetParameters().Length > 0)
                                     {
-                                        Logger.LogWarning("EditorHandler", $"Method {type.FullName}.{method.Name} has [ExecutableMethod] but has parameters. Skipping.");
+                                        ToolkitLogger.LogWarning("EditorHandler", $"Method {type.FullName}.{method.Name} has [ExecutableMethod] but has parameters. Skipping.");
                                         continue;
                                     }
 
                                     if (executableMethods.ContainsKey(attribute.CommandName))
                                     {
-                                        Logger.LogWarning("EditorHandler", $"Duplicate command name '{attribute.CommandName}'. Method {type.FullName}.{method.Name} will override previous registration.");
+                                        ToolkitLogger.LogWarning("EditorHandler", $"Duplicate command name '{attribute.CommandName}'. Method {type.FullName}.{method.Name} will override previous registration.");
                                     }
 
                                     executableMethods[attribute.CommandName] = method;
-                                    Logger.LogDebug("EditorHandler", $"Registered executable method: '{attribute.CommandName}' -> {type.FullName}.{method.Name}");
+                                    ToolkitLogger.LogDebug("EditorHandler", $"Registered executable method: '{attribute.CommandName}' -> {type.FullName}.{method.Name}");
                                 }
                             }
                         }
                     }
                     catch (Exception ex)
                     {
-                        Logger.LogWarning("EditorHandler", $"Failed to scan assembly {assembly.FullName}: {ex.Message}");
+                        ToolkitLogger.LogWarning("EditorHandler", $"Failed to scan assembly {assembly.FullName}: {ex.Message}");
                     }
                 }
 
-                Logger.LogDebug("EditorHandler", $"Initialized with {executableMethods.Count} executable methods");
+                ToolkitLogger.LogDebug("EditorHandler", $"Initialized with {executableMethods.Count} executable methods");
                 isInitialized = true;
             }
             catch (Exception ex)
             {
-                Logger.LogError("EditorHandler", $"Failed to initialize executable methods: {ex.Message}");
+                ToolkitLogger.LogError("EditorHandler", $"Failed to initialize executable methods: {ex.Message}");
                 executableMethods = new Dictionary<string, MethodInfo>();
                 isInitialized = true;
             }
@@ -356,7 +356,7 @@ namespace UnityEditorToolkit.Handlers
 
             try
             {
-                Logger.Log("EditorHandler", $"Executing command: '{param.commandName}'");
+                ToolkitLogger.Log("EditorHandler", $"Executing command: '{param.commandName}'");
                 methodInfo.Invoke(null, null);
 
                 return new
@@ -369,12 +369,12 @@ namespace UnityEditorToolkit.Handlers
             catch (TargetInvocationException ex)
             {
                 var innerException = ex.InnerException ?? ex;
-                Logger.LogError("EditorHandler", $"Failed to execute '{param.commandName}': {innerException.Message}\n{innerException.StackTrace}");
+                ToolkitLogger.LogError("EditorHandler", $"Failed to execute '{param.commandName}': {innerException.Message}\n{innerException.StackTrace}");
                 throw new Exception($"Failed to execute '{param.commandName}': {innerException.Message}");
             }
             catch (Exception ex)
             {
-                Logger.LogError("EditorHandler", $"Failed to execute '{param.commandName}': {ex.Message}\n{ex.StackTrace}");
+                ToolkitLogger.LogError("EditorHandler", $"Failed to execute '{param.commandName}': {ex.Message}\n{ex.StackTrace}");
                 throw new Exception($"Failed to execute '{param.commandName}': {ex.Message}");
             }
         }

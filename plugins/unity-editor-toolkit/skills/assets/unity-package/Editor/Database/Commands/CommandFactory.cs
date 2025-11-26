@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEditorToolkit.Editor.Utils;
 
 namespace UnityEditorToolkit.Editor.Database.Commands
 {
@@ -30,13 +31,13 @@ namespace UnityEditorToolkit.Editor.Database.Commands
                     // DeleteGameObjectCommand는 CanPersist = false이므로 데이터베이스에 저장되지 않음
 
                     default:
-                        Debug.LogWarning($"[CommandFactory] 알 수 없는 Command 타입: {commandType}");
+                        ToolkitLogger.LogWarning("CommandFactory", $" 알 수 없는 Command 타입: {commandType}");
                         return null;
                 }
             }
             catch (Exception ex)
             {
-                Debug.LogError($"[CommandFactory] Command 복원 실패 - Type: {commandType}, Error: {ex.Message}");
+                ToolkitLogger.LogError("CommandFactory", $" Command 복원 실패 - Type: {commandType}, Error: {ex.Message}");
                 return null;
             }
         }

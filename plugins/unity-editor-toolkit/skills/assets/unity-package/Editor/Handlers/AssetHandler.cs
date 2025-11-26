@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEditorToolkit.Protocol;
+using UnityEditorToolkit.Editor.Utils;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -676,7 +677,7 @@ namespace UnityEditorToolkit.Handlers
                     return exactMatch;
 
                 // Return first match with warning
-                Debug.LogWarning($"Multiple types match '{typeName}'. Using: {matchingTypes[0].FullName}");
+                ToolkitLogger.LogWarning("AssetHandler", $"Multiple types match '{typeName}'. Using: {matchingTypes[0].FullName}");
                 return matchingTypes[0];
             }
             #endif

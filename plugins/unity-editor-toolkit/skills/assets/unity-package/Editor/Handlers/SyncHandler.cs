@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEditorToolkit.Protocol;
 using UnityEditorToolkit.Editor.Database;
+using UnityEditorToolkit.Editor.Utils;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -352,7 +353,7 @@ namespace UnityEditorToolkit.Handlers
             }
             catch (Exception ex)
             {
-                Debug.LogError($"[SyncHandler] Failed to start auto-sync: {ex.Message}");
+                ToolkitLogger.LogError("SyncHandler", $"Failed to start auto-sync: {ex.Message}");
                 throw new Exception($"Failed to start auto-sync: {ex.Message}");
             }
         }
@@ -396,7 +397,7 @@ namespace UnityEditorToolkit.Handlers
             }
             catch (Exception ex)
             {
-                Debug.LogError($"[SyncHandler] Failed to stop auto-sync: {ex.Message}");
+                ToolkitLogger.LogError("SyncHandler", $"Failed to stop auto-sync: {ex.Message}");
                 throw new Exception($"Failed to stop auto-sync: {ex.Message}");
             }
         }
@@ -445,7 +446,7 @@ namespace UnityEditorToolkit.Handlers
             }
             catch (Exception ex)
             {
-                Debug.LogError($"[SyncHandler] Failed to get auto-sync status: {ex.Message}");
+                ToolkitLogger.LogError("SyncHandler", $"Failed to get auto-sync status: {ex.Message}");
                 throw new Exception($"Failed to get auto-sync status: {ex.Message}");
             }
         }

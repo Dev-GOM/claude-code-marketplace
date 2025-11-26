@@ -1,6 +1,7 @@
 using System;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
+using UnityEditorToolkit.Editor.Utils;
 
 namespace UnityEditorToolkit.Editor.Database.Commands
 {
@@ -48,24 +49,24 @@ namespace UnityEditorToolkit.Editor.Database.Commands
         {
             try
             {
-                Debug.Log($"[Command] Executing: {CommandName}");
+                ToolkitLogger.LogDebug("Command", $" Executing: {CommandName}");
                 ExecutedAt = DateTime.UtcNow;
                 bool result = await OnExecuteAsync();
 
                 if (result)
                 {
-                    Debug.Log($"[Command] Executed successfully: {CommandName}");
+                    ToolkitLogger.LogDebug("Command", $" Executed successfully: {CommandName}");
                 }
                 else
                 {
-                    Debug.LogWarning($"[Command] Execution failed: {CommandName}");
+                    ToolkitLogger.LogWarning("Command", $" Execution failed: {CommandName}");
                 }
 
                 return result;
             }
             catch (Exception ex)
             {
-                Debug.LogError($"[Command] Exception during execution: {CommandName}\n{ex.Message}");
+                ToolkitLogger.LogError("Command", $" Exception during execution: {CommandName}\n{ex.Message}");
                 return false;
             }
         }
@@ -74,23 +75,23 @@ namespace UnityEditorToolkit.Editor.Database.Commands
         {
             try
             {
-                Debug.Log($"[Command] Undoing: {CommandName}");
+                ToolkitLogger.LogDebug("Command", $" Undoing: {CommandName}");
                 bool result = await OnUndoAsync();
 
                 if (result)
                 {
-                    Debug.Log($"[Command] Undo successful: {CommandName}");
+                    ToolkitLogger.LogDebug("Command", $" Undo successful: {CommandName}");
                 }
                 else
                 {
-                    Debug.LogWarning($"[Command] Undo failed: {CommandName}");
+                    ToolkitLogger.LogWarning("Command", $" Undo failed: {CommandName}");
                 }
 
                 return result;
             }
             catch (Exception ex)
             {
-                Debug.LogError($"[Command] Exception during undo: {CommandName}\n{ex.Message}");
+                ToolkitLogger.LogError("Command", $" Exception during undo: {CommandName}\n{ex.Message}");
                 return false;
             }
         }
@@ -99,23 +100,23 @@ namespace UnityEditorToolkit.Editor.Database.Commands
         {
             try
             {
-                Debug.Log($"[Command] Redoing: {CommandName}");
+                ToolkitLogger.LogDebug("Command", $" Redoing: {CommandName}");
                 bool result = await OnRedoAsync();
 
                 if (result)
                 {
-                    Debug.Log($"[Command] Redo successful: {CommandName}");
+                    ToolkitLogger.LogDebug("Command", $" Redo successful: {CommandName}");
                 }
                 else
                 {
-                    Debug.LogWarning($"[Command] Redo failed: {CommandName}");
+                    ToolkitLogger.LogWarning("Command", $" Redo failed: {CommandName}");
                 }
 
                 return result;
             }
             catch (Exception ex)
             {
-                Debug.LogError($"[Command] Exception during redo: {CommandName}\n{ex.Message}");
+                ToolkitLogger.LogError("Command", $" Exception during redo: {CommandName}\n{ex.Message}");
                 return false;
             }
         }

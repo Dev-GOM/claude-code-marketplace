@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditorToolkit.Protocol;
+using UnityEditorToolkit.Editor.Utils;
 
 namespace UnityEditorToolkit.Handlers
 {
@@ -62,7 +63,7 @@ namespace UnityEditorToolkit.Handlers
             }
             catch (Exception ex)
             {
-                UnityEngine.Debug.LogError($"[{Category}] Handler error: {ex.Message}\n{ex.StackTrace}");
+                ToolkitLogger.LogError(Category, $"Handler error: {ex.Message}\n{ex.StackTrace}");
                 throw;
             }
         }

@@ -3,6 +3,7 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using SQLite;
 using UnityEngine;
+using UnityEditorToolkit.Editor.Utils;
 
 namespace UnityEditorToolkit.Editor.Database
 {
@@ -47,7 +48,7 @@ namespace UnityEditorToolkit.Editor.Database
             {
                 if (isConnected)
                 {
-                    Debug.LogWarning("[SQLiteConnector] Already connected.");
+                    ToolkitLogger.LogWarning("SQLiteConnector", "Already connected.");
                     return new ConnectionResult
                     {
                         Success = true,
@@ -55,7 +56,7 @@ namespace UnityEditorToolkit.Editor.Database
                     };
                 }
 
-                Debug.Log($"[SQLiteConnector] Connecting to: {config.DatabaseFilePath}");
+                ToolkitLogger.Log("SQLiteConnector", $" Connecting to: {config.DatabaseFilePath}");
 
                 // SQLite 연결 생성 (동기 작업이지만 UniTask로 래핑)
                 await UniTask.RunOnThreadPool(() =>
@@ -75,11 +76,11 @@ namespace UnityEditorToolkit.Editor.Database
                         try
                         {
                             connection.Execute("PRAGMA journal_mode=WAL;");
-                            Debug.Log("[SQLiteConnector] WAL mode enabled.");
+                            ToolkitLogger.Log("SQLiteConnector", "WAL mode enabled.");
                         }
                         catch (Exception walEx)
                         {
-                            Debug.LogWarning($"[SQLiteConnector] WAL mode failed (continuing without WAL): {walEx.Message}");
+                            ToolkitLogger.LogWarning("SQLiteConnector", $" WAL mode failed (continuing without WAL): {walEx.Message}");
                         }
                     }
 
@@ -90,7 +91,7 @@ namespace UnityEditorToolkit.Editor.Database
                     }
                     catch (Exception fkEx)
                     {
-                        Debug.LogWarning($"[SQLiteConnector] Foreign keys activation failed: {fkEx.Message}");
+                        ToolkitLogger.LogWarning("SQLiteConnector", $" Foreign keys activation failed: {fkEx.Message}");
                     }
 
                     // Synchronous 설정 (NORMAL = 안전하면서도 빠름)
@@ -100,14 +101,14 @@ namespace UnityEditorToolkit.Editor.Database
                     }
                     catch (Exception syncEx)
                     {
-                        Debug.LogWarning($"[SQLiteConnector] Synchronous setting failed: {syncEx.Message}");
+                        ToolkitLogger.LogWarning("SQLiteConnector", $" Synchronous setting failed: {syncEx.Message}");
                     }
 
                 }, cancellationToken: cancellationToken);
 
                 isConnected = true;
 
-                Debug.Log($"[SQLiteConnector] Connected successfully: {config.DatabaseFilePath}");
+                ToolkitLogger.Log("SQLiteConnector", $" Connected successfully: {config.DatabaseFilePath}");
                 return new ConnectionResult
                 {
                     Success = true,
@@ -116,7 +117,7 @@ namespace UnityEditorToolkit.Editor.Database
             }
             catch (OperationCanceledException)
             {
-                Debug.LogWarning("[SQLiteConnector] Connection cancelled.");
+                ToolkitLogger.LogWarning("SQLiteConnector", "Connection cancelled.");
                 return new ConnectionResult
                 {
                     Success = false,
@@ -125,7 +126,7 @@ namespace UnityEditorToolkit.Editor.Database
             }
             catch (Exception ex)
             {
-                Debug.LogError($"[SQLiteConnector] Connection failed: {ex.Message}\n{ex.StackTrace}");
+                ToolkitLogger.LogError("SQLiteConnector", $" Connection failed: {ex.Message}\n{ex.StackTrace}");
                 return new ConnectionResult
                 {
                     Success = false,
@@ -146,7 +147,7 @@ namespace UnityEditorToolkit.Editor.Database
                     return;
                 }
 
-                Debug.Log("[SQLiteConnector] Disconnecting...");
+                ToolkitLogger.Log("SQLiteConnector", "Disconnecting...");
 
                 await UniTask.RunOnThreadPool(() =>
                 {
@@ -159,11 +160,11 @@ namespace UnityEditorToolkit.Editor.Database
                 GC.Collect();
                 GC.WaitForPendingFinalizers();
 
-                Debug.Log("[SQLiteConnector] Disconnected.");
+                ToolkitLogger.Log("SQLiteConnector", "Disconnected.");
             }
             catch (Exception ex)
             {
-                Debug.LogError($"[SQLiteConnector] Disconnect error: {ex.Message}");
+                ToolkitLogger.LogError("SQLiteConnector", $" Disconnect error: {ex.Message}");
             }
         }
 
@@ -179,17 +180,17 @@ namespace UnityEditorToolkit.Editor.Database
                     return;
                 }
 
-                Debug.Log("[SQLiteConnector] Disconnecting (sync)...");
+                ToolkitLogger.Log("SQLiteConnector", "Disconnecting (sync)...");
 
                 DisconnectInternal();
 
                 isConnected = false;
 
-                Debug.Log("[SQLiteConnector] Disconnected (sync).");
+                ToolkitLogger.Log("SQLiteConnector", "Disconnected (sync).");
             }
             catch (Exception ex)
             {
-                Debug.LogError($"[SQLiteConnector] Disconnect error: {ex.Message}");
+                ToolkitLogger.LogError("SQLiteConnector", $" Disconnect error: {ex.Message}");
             }
         }
 
@@ -204,11 +205,11 @@ namespace UnityEditorToolkit.Editor.Database
                 try
                 {
                     connection.Execute("PRAGMA wal_checkpoint(TRUNCATE);");
-                    Debug.Log("[SQLiteConnector] WAL checkpoint completed.");
+                    ToolkitLogger.Log("SQLiteConnector", "WAL checkpoint completed.");
                 }
                 catch (Exception walEx)
                 {
-                    Debug.LogWarning($"[SQLiteConnector] WAL checkpoint failed: {walEx.Message}");
+                    ToolkitLogger.LogWarning("SQLiteConnector", $" WAL checkpoint failed: {walEx.Message}");
                 }
             }
 
@@ -239,7 +240,7 @@ namespace UnityEditorToolkit.Editor.Database
             }
             catch (Exception ex)
             {
-                Debug.LogError($"[SQLiteConnector] Connection test failed: {ex.Message}");
+                ToolkitLogger.LogError("SQLiteConnector", $" Connection test failed: {ex.Message}");
                 return false;
             }
         }
@@ -265,7 +266,7 @@ namespace UnityEditorToolkit.Editor.Database
             }
             catch (Exception ex)
             {
-                Debug.LogError($"[SQLiteConnector] Execute script failed: {ex.Message}\n{sql}");
+                ToolkitLogger.LogError("SQLiteConnector", $" Execute script failed: {ex.Message}\n{sql}");
                 throw;
             }
         }
@@ -289,7 +290,7 @@ namespace UnityEditorToolkit.Editor.Database
             }
             catch (Exception ex)
             {
-                Debug.LogError($"[SQLiteConnector] Execute scalar failed: {ex.Message}\n{sql}");
+                ToolkitLogger.LogError("SQLiteConnector", $" Execute scalar failed: {ex.Message}\n{sql}");
                 throw;
             }
         }
@@ -322,7 +323,7 @@ namespace UnityEditorToolkit.Editor.Database
             }
             catch (Exception ex)
             {
-                Debug.LogError($"[SQLiteConnector] Failed to get version: {ex.Message}");
+                ToolkitLogger.LogError("SQLiteConnector", $" Failed to get version: {ex.Message}");
                 return "Unknown";
             }
         }

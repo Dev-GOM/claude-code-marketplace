@@ -3,6 +3,8 @@ using System.IO;
 using System.Text;
 using UnityEngine;
 using Newtonsoft.Json;
+using UnityEditorToolkit.Editor.Utils;
+using static UnityEditorToolkit.Editor.Utils.ToolkitLogger;
 
 namespace UnityEditorToolkit.Editor.Server
 {
@@ -95,7 +97,7 @@ namespace UnityEditorToolkit.Editor.Server
             }
             catch (Exception e)
             {
-                Debug.LogError($"Unity Editor Toolkit: Failed to save server status: {e.Message}");
+                LogError("ServerStatus", $"Failed to save server status: {e.Message}");
                 return false;
             }
             finally
@@ -109,7 +111,7 @@ namespace UnityEditorToolkit.Editor.Server
                     }
                     catch (Exception cleanupEx)
                     {
-                        Debug.LogWarning($"Unity Editor Toolkit: Failed to cleanup temp file: {cleanupEx.Message}");
+                        LogWarning("ServerStatus", $"Failed to cleanup temp file: {cleanupEx.Message}");
                     }
                 }
             }
@@ -134,7 +136,7 @@ namespace UnityEditorToolkit.Editor.Server
             }
             catch (Exception e)
             {
-                Debug.LogWarning($"Unity Editor Toolkit: Failed to load server status: {e.Message}");
+                LogWarning("ServerStatus", $"Failed to load server status: {e.Message}");
                 return null;
             }
         }
@@ -166,7 +168,7 @@ namespace UnityEditorToolkit.Editor.Server
             }
             catch (Exception e)
             {
-                Debug.LogError($"Unity Editor Toolkit: Failed to mark server as stopped: {e.Message}");
+                LogError("ServerStatus", $"Failed to mark server as stopped: {e.Message}");
                 return false;
             }
         }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
+using UnityEditorToolkit.Editor.Utils;
 
 namespace UnityEditorToolkit.Editor.Database.Commands
 {
@@ -56,7 +57,7 @@ namespace UnityEditorToolkit.Editor.Database.Commands
             undoStack = new Stack<ICommand>();
             redoStack = new Stack<ICommand>();
 
-            Debug.Log("[CommandHistory] 생성 완료.");
+            ToolkitLogger.LogDebug("CommandHistory", 생성 완료.");
         }
         #endregion
 
@@ -94,7 +95,7 @@ namespace UnityEditorToolkit.Editor.Database.Commands
                 // 이벤트 발생
                 OnHistoryChanged?.Invoke();
 
-                Debug.Log($"[CommandHistory] 명령 실행 및 추가: {command.CommandName} (Undo: {UndoCount}, Redo: {RedoCount})");
+                ToolkitLogger.LogDebug("CommandHistory", $" 명령 실행 및 추가: {command.CommandName} (Undo: {UndoCount}, Redo: {RedoCount})");
             }
 
             return success;
@@ -128,7 +129,7 @@ namespace UnityEditorToolkit.Editor.Database.Commands
             // 이벤트 발생
             OnHistoryChanged?.Invoke();
 
-            Debug.Log($"[CommandHistory] 명령 기록: {command.CommandName} (Undo: {UndoCount}, Redo: {RedoCount})");
+            ToolkitLogger.LogDebug("CommandHistory", $" 명령 기록: {command.CommandName} (Undo: {UndoCount}, Redo: {RedoCount})");
         }
         #endregion
 
@@ -140,7 +141,7 @@ namespace UnityEditorToolkit.Editor.Database.Commands
         {
             if (!CanUndo)
             {
-                Debug.LogWarning("[CommandHistory] Undo 불가능 - 스택이 비어있습니다.");
+                ToolkitLogger.LogWarning("CommandHistory", Undo 불가능 - 스택이 비어있습니다.");
                 return false;
             }
 
@@ -155,13 +156,13 @@ namespace UnityEditorToolkit.Editor.Database.Commands
                 // 이벤트 발생
                 OnHistoryChanged?.Invoke();
 
-                Debug.Log($"[CommandHistory] Undo 완료: {command.CommandName} (Undo: {UndoCount}, Redo: {RedoCount})");
+                ToolkitLogger.LogDebug("CommandHistory", $" Undo 완료: {command.CommandName} (Undo: {UndoCount}, Redo: {RedoCount})");
             }
             else
             {
                 // 실패 시 다시 Undo 스택에 추가
                 undoStack.Push(command);
-                Debug.LogError($"[CommandHistory] Undo 실패: {command.CommandName}");
+                ToolkitLogger.LogError("CommandHistory", $" Undo 실패: {command.CommandName}");
             }
 
             return success;
@@ -186,7 +187,7 @@ namespace UnityEditorToolkit.Editor.Database.Commands
         {
             if (!CanRedo)
             {
-                Debug.LogWarning("[CommandHistory] Redo 불가능 - 스택이 비어있습니다.");
+                ToolkitLogger.LogWarning("CommandHistory", Redo 불가능 - 스택이 비어있습니다.");
                 return false;
             }
 
@@ -201,13 +202,13 @@ namespace UnityEditorToolkit.Editor.Database.Commands
                 // 이벤트 발생
                 OnHistoryChanged?.Invoke();
 
-                Debug.Log($"[CommandHistory] Redo 완료: {command.CommandName} (Undo: {UndoCount}, Redo: {RedoCount})");
+                ToolkitLogger.LogDebug("CommandHistory", $" Redo 완료: {command.CommandName} (Undo: {UndoCount}, Redo: {RedoCount})");
             }
             else
             {
                 // 실패 시 다시 Redo 스택에 추가
                 redoStack.Push(command);
-                Debug.LogError($"[CommandHistory] Redo 실패: {command.CommandName}");
+                ToolkitLogger.LogError("CommandHistory", $" Redo 실패: {command.CommandName}");
             }
 
             return success;
@@ -304,7 +305,7 @@ namespace UnityEditorToolkit.Editor.Database.Commands
             redoStack.Clear();
             OnHistoryChanged?.Invoke();
 
-            Debug.Log("[CommandHistory] 히스토리 초기화 완료.");
+            ToolkitLogger.LogDebug("CommandHistory", 히스토리 초기화 완료.");
         }
 
         /// <summary>
@@ -324,7 +325,7 @@ namespace UnityEditorToolkit.Editor.Database.Commands
                     undoStack.Push(list[i]);
                 }
 
-                Debug.Log($"[CommandHistory] 히스토리 크기 제한 적용: {undoStack.Count}개 유지");
+                ToolkitLogger.LogDebug("CommandHistory", $" 히스토리 크기 제한 적용: {undoStack.Count}개 유지");
             }
         }
 
@@ -393,11 +394,11 @@ namespace UnityEditorToolkit.Editor.Database.Commands
                     );
                 });
 
-                Debug.Log($"[CommandHistory] 명령 저장 완료: {command.CommandName}");
+                ToolkitLogger.LogDebug("CommandHistory", $" 명령 저장 완료: {command.CommandName}");
             }
             catch (Exception ex)
             {
-                Debug.LogError($"[CommandHistory] 명령 저장 실패: {ex.Message}");
+                ToolkitLogger.LogError("CommandHistory", $" 명령 저장 실패: {ex.Message}");
             }
         }
 
@@ -410,7 +411,7 @@ namespace UnityEditorToolkit.Editor.Database.Commands
             {
                 if (!databaseManager.IsConnected || databaseManager.Connector == null)
                 {
-                    Debug.LogWarning("[CommandHistory] 데이터베이스 연결되지 않음 - 히스토리 로드 불가.");
+                    ToolkitLogger.LogWarning("CommandHistory", 데이터베이스 연결되지 않음 - 히스토리 로드 불가.");
                     return 0;
                 }
 
@@ -446,20 +447,20 @@ namespace UnityEditorToolkit.Editor.Database.Commands
                         undoStack.Push(command);
                         loadedCount++;
 
-                        Debug.Log($"[CommandHistory] Command 복원: {command.CommandName} (Type: {record.command_type})");
+                        ToolkitLogger.LogDebug("CommandHistory", $" Command 복원: {command.CommandName} (Type: {record.command_type})");
                     }
                     else
                     {
-                        Debug.LogWarning($"[CommandHistory] Command 복원 실패 - Type: {record.command_type}, ID: {record.command_id}");
+                        ToolkitLogger.LogWarning("CommandHistory", $" Command 복원 실패 - Type: {record.command_type}, ID: {record.command_id}");
                     }
                 }
 
-                Debug.Log($"[CommandHistory] 히스토리 로드 완료: {loadedCount}개");
+                ToolkitLogger.LogDebug("CommandHistory", $" 히스토리 로드 완료: {loadedCount}개");
                 return loadedCount;
             }
             catch (Exception ex)
             {
-                Debug.LogError($"[CommandHistory] 히스토리 로드 실패: {ex.Message}");
+                ToolkitLogger.LogError("CommandHistory", $" 히스토리 로드 실패: {ex.Message}");
                 return 0;
             }
         }

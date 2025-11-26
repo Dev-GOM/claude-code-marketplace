@@ -1,6 +1,7 @@
 using System;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
+using UnityEditorToolkit.Editor.Utils;
 
 namespace UnityEditorToolkit.Editor.Database.Commands
 {
@@ -45,7 +46,7 @@ namespace UnityEditorToolkit.Editor.Database.Commands
                 var go = UnityEditor.EditorUtility.InstanceIDToObject(gameObjectInstanceId) as GameObject;
                 if (go == null)
                 {
-                    Debug.LogWarning($"[DeleteGameObjectCommand] GameObject를 찾을 수 없음: {gameObjectName}");
+                    ToolkitLogger.LogWarning("DeleteGameObjectCommand", $" GameObject를 찾을 수 없음: {gameObjectName}");
                     return false;
                 }
 
@@ -54,14 +55,14 @@ namespace UnityEditorToolkit.Editor.Database.Commands
                 go.SetActive(false);
                 go.hideFlags = HideFlags.HideInHierarchy;
 
-                Debug.Log($"[DeleteGameObjectCommand] GameObject 삭제: {gameObjectName}");
+                ToolkitLogger.LogDebug("DeleteGameObjectCommand", $" GameObject 삭제: {gameObjectName}");
 
                 await UniTask.Yield();
                 return true;
             }
             catch (Exception ex)
             {
-                Debug.LogError($"[DeleteGameObjectCommand] 삭제 실패: {ex.Message}");
+                ToolkitLogger.LogError("DeleteGameObjectCommand", $" 삭제 실패: {ex.Message}");
                 return false;
             }
         }
@@ -72,7 +73,7 @@ namespace UnityEditorToolkit.Editor.Database.Commands
             {
                 if (deletedGameObject == null)
                 {
-                    Debug.LogWarning($"[DeleteGameObjectCommand] 복원할 GameObject 참조가 없음: {gameObjectName}");
+                    ToolkitLogger.LogWarning("DeleteGameObjectCommand", $" 복원할 GameObject 참조가 없음: {gameObjectName}");
                     return false;
                 }
 
@@ -95,14 +96,14 @@ namespace UnityEditorToolkit.Editor.Database.Commands
                 deletedGameObject.transform.rotation = rotation;
                 deletedGameObject.transform.localScale = scale;
 
-                Debug.Log($"[DeleteGameObjectCommand] GameObject 복원 (Undo): {gameObjectName}");
+                ToolkitLogger.LogDebug("DeleteGameObjectCommand", $" GameObject 복원 (Undo): {gameObjectName}");
 
                 await UniTask.Yield();
                 return true;
             }
             catch (Exception ex)
             {
-                Debug.LogError($"[DeleteGameObjectCommand] Undo 실패: {ex.Message}");
+                ToolkitLogger.LogError("DeleteGameObjectCommand", $" Undo 실패: {ex.Message}");
                 return false;
             }
         }

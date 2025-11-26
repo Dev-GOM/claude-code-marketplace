@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEditor;
 using UnityEditor.Compilation;
 using UnityEditorToolkit.Editor.Database.Commands;
+using UnityEditorToolkit.Editor.Utils;
 
 namespace UnityEditorToolkit.Editor.Database
 {
@@ -34,7 +35,7 @@ namespace UnityEditorToolkit.Editor.Database
         {
             if (instance != null && instance.IsConnected)
             {
-                Debug.Log("[DatabaseManager] Domain Reload 감지 - 연결 상태 저장 및 정리 중...");
+                ToolkitLogger.Log("DatabaseManager", Domain Reload 감지 - 연결 상태 저장 및 정리 중...");
 
                 // 연결 상태 저장
                 EditorPrefs.SetBool(PREF_KEY_DB_WAS_CONNECTED, true);
@@ -51,7 +52,7 @@ namespace UnityEditorToolkit.Editor.Database
                 }
                 catch (Exception ex)
                 {
-                    Debug.LogError($"[DatabaseManager] Shutdown 중 예외: {ex.Message}");
+                    ToolkitLogger.LogError("DatabaseManager", $" Shutdown 중 예외: {ex.Message}");
                 }
             }
         }
@@ -63,7 +64,7 @@ namespace UnityEditorToolkit.Editor.Database
 
             if (wasConnected)
             {
-                Debug.Log("[DatabaseManager] Domain Reload 완료 - 자동 재연결 시도...");
+                ToolkitLogger.Log("DatabaseManager", Domain Reload 완료 - 자동 재연결 시도...");
 
                 // 연결 상태 플래그 클리어
                 EditorPrefs.DeleteKey(PREF_KEY_DB_WAS_CONNECTED);
@@ -82,7 +83,7 @@ namespace UnityEditorToolkit.Editor.Database
 
                     // 비동기 재연결
                     Instance.InitializeAsync(config).Forget();
-                    Debug.Log("[DatabaseManager] 자동 재연결 완료.");
+                    ToolkitLogger.Log("DatabaseManager", 자동 재연결 완료.");
                 }
             }
         }
@@ -187,7 +188,7 @@ namespace UnityEditorToolkit.Editor.Database
                 else if (isInitialized)
                 {
                     // 이미 초기화된 경우
-                    Debug.LogWarning("[DatabaseManager] 이미 초기화되었습니다. Shutdown 후 재초기화하세요.");
+                    ToolkitLogger.LogWarning("DatabaseManager", 이미 초기화되었습니다. Shutdown 후 재초기화하세요.");
                     return new InitializationResult
                     {
                         Success = false,
@@ -205,7 +206,7 @@ namespace UnityEditorToolkit.Editor.Database
             // 진행 중인 초기화가 있으면 완료될 때까지 대기 후 결과 공유
             if (existingTcs != null)
             {
-                Debug.Log("[DatabaseManager] 다른 초기화가 진행 중입니다. 완료를 대기합니다...");
+                ToolkitLogger.Log("DatabaseManager", 다른 초기화가 진행 중입니다. 완료를 대기합니다...");
                 return await existingTcs.Task;
             }
 
@@ -217,7 +218,7 @@ namespace UnityEditorToolkit.Editor.Database
                 // 데이터베이스 비활성화 시
                 if (!config.EnableDatabase)
                 {
-                    Debug.Log("[DatabaseManager] 데이터베이스 기능이 비활성화되어 있습니다.");
+                    ToolkitLogger.Log("DatabaseManager", 데이터베이스 기능이 비활성화되어 있습니다.");
                     result = new InitializationResult
                     {
                         Success = true,
@@ -230,7 +231,7 @@ namespace UnityEditorToolkit.Editor.Database
                 var validation = config.Validate();
                 if (!validation.IsValid)
                 {
-                    Debug.LogError($"[DatabaseManager] 설정 유효성 검증 실패: {validation.ErrorMessage}");
+                    ToolkitLogger.LogError("DatabaseManager", $" 설정 유효성 검증 실패: {validation.ErrorMessage}");
                     result = new InitializationResult
                     {
                         Success = false,
@@ -255,7 +256,7 @@ namespace UnityEditorToolkit.Editor.Database
                 var connectResult = await connector.ConnectAsync(lifecycleCts.Token);
                 if (!connectResult.Success)
                 {
-                    Debug.LogError($"[DatabaseManager] 연결 실패: {connectResult.ErrorMessage}");
+                    ToolkitLogger.LogError("DatabaseManager", $" 연결 실패: {connectResult.ErrorMessage}");
                     await CleanupAsync();
                     result = new InitializationResult
                     {
@@ -273,9 +274,9 @@ namespace UnityEditorToolkit.Editor.Database
 
                 // SyncManager 초기화
                 syncManager = new SyncManager(this);
-                Debug.Log("[DatabaseManager] SyncManager initialized.");
+                ToolkitLogger.Log("DatabaseManager", SyncManager initialized.");
 
-                Debug.Log($"[DatabaseManager] 초기화 완료: {this.config.DatabaseFilePath}");
+                ToolkitLogger.Log("DatabaseManager", $" 초기화 완료: {this.config.DatabaseFilePath}");
                 result = new InitializationResult
                 {
                     Success = true,
@@ -285,7 +286,7 @@ namespace UnityEditorToolkit.Editor.Database
             }
             catch (Exception ex)
             {
-                Debug.LogError($"[DatabaseManager] 초기화 중 예외 발생: {ex.Message}\n{ex.StackTrace}");
+                ToolkitLogger.LogError("DatabaseManager", $" 초기화 중 예외 발생: {ex.Message}\n{ex.StackTrace}");
                 await CleanupAsync();
                 result = new InitializationResult
                 {
@@ -317,7 +318,7 @@ namespace UnityEditorToolkit.Editor.Database
                 return;
             }
 
-            Debug.Log("[DatabaseManager] Shutting down...");
+            ToolkitLogger.Log("DatabaseManager", Shutting down...");
 
             try
             {
@@ -330,11 +331,11 @@ namespace UnityEditorToolkit.Editor.Database
                 isInitialized = false;
                 isConnected = false;
 
-                Debug.Log("[DatabaseManager] Shutdown 완료.");
+                ToolkitLogger.Log("DatabaseManager", Shutdown 완료.");
             }
             catch (Exception ex)
             {
-                Debug.LogError($"[DatabaseManager] Shutdown 중 예외 발생: {ex.Message}");
+                ToolkitLogger.LogError("DatabaseManager", $" Shutdown 중 예외 발생: {ex.Message}");
             }
         }
 
@@ -350,7 +351,7 @@ namespace UnityEditorToolkit.Editor.Database
                 {
                     syncManager.Dispose();
                     syncManager = null;
-                    Debug.Log("[DatabaseManager] SyncManager disposed.");
+                    ToolkitLogger.Log("DatabaseManager", SyncManager disposed.");
                 }
 
                 // Command History 정리
@@ -373,7 +374,7 @@ namespace UnityEditorToolkit.Editor.Database
             }
             catch (Exception ex)
             {
-                Debug.LogError($"[DatabaseManager] Cleanup 중 예외 발생: {ex.Message}");
+                ToolkitLogger.LogError("DatabaseManager", $" Cleanup 중 예외 발생: {ex.Message}");
             }
         }
         #endregion
@@ -389,7 +390,7 @@ namespace UnityEditorToolkit.Editor.Database
                 return;
             }
 
-            Debug.Log("[DatabaseManager] 서버 종료로 인한 연결 해제...");
+            ToolkitLogger.Log("DatabaseManager", 서버 종료로 인한 연결 해제...");
 
             try
             {
@@ -420,7 +421,7 @@ namespace UnityEditorToolkit.Editor.Database
             }
             catch (Exception ex)
             {
-                Debug.LogError($"[DatabaseManager] Disconnect 중 예외: {ex.Message}");
+                ToolkitLogger.LogError("DatabaseManager", $" Disconnect 중 예외: {ex.Message}");
             }
             finally
             {
@@ -429,7 +430,7 @@ namespace UnityEditorToolkit.Editor.Database
                 isInitialized = false;
             }
 
-            Debug.Log("[DatabaseManager] 연결 해제 완료.");
+            ToolkitLogger.Log("DatabaseManager", 연결 해제 완료.");
         }
 
         /// <summary>
@@ -448,7 +449,7 @@ namespace UnityEditorToolkit.Editor.Database
             }
             catch (Exception ex)
             {
-                Debug.LogError($"[DatabaseManager] 연결 테스트 실패: {ex.Message}");
+                ToolkitLogger.LogError("DatabaseManager", $" 연결 테스트 실패: {ex.Message}");
                 return false;
             }
         }
@@ -460,13 +461,13 @@ namespace UnityEditorToolkit.Editor.Database
         {
             if (!isInitialized || config == null)
             {
-                Debug.LogWarning("[DatabaseManager] 초기화되지 않았습니다.");
+                ToolkitLogger.LogWarning("DatabaseManager", 초기화되지 않았습니다.");
                 return false;
             }
 
             try
             {
-                Debug.Log("[DatabaseManager] 재연결 시도 중...");
+                ToolkitLogger.Log("DatabaseManager", 재연결 시도 중...");
 
                 // 기존 연결 종료
                 if (connector != null)
@@ -483,18 +484,18 @@ namespace UnityEditorToolkit.Editor.Database
 
                 if (isConnected)
                 {
-                    Debug.Log("[DatabaseManager] 재연결 성공.");
+                    ToolkitLogger.Log("DatabaseManager", 재연결 성공.");
                 }
                 else
                 {
-                    Debug.LogError($"[DatabaseManager] 재연결 실패: {result.ErrorMessage}");
+                    ToolkitLogger.LogError("DatabaseManager", $" 재연결 실패: {result.ErrorMessage}");
                 }
 
                 return isConnected;
             }
             catch (Exception ex)
             {
-                Debug.LogError($"[DatabaseManager] 재연결 중 예외 발생: {ex.Message}");
+                ToolkitLogger.LogError("DatabaseManager", $" 재연결 중 예외 발생: {ex.Message}");
                 isConnected = false;
                 return false;
             }
@@ -510,7 +511,7 @@ namespace UnityEditorToolkit.Editor.Database
             isMigrationRunning = true;
             try
             {
-                Debug.Log("[DatabaseManager] 자동 마이그레이션 확인 중...");
+                ToolkitLogger.Log("DatabaseManager", 자동 마이그레이션 확인 중...");
 
                 var migrationRunner = new MigrationRunner(this);
                 var result = await migrationRunner.RunMigrationsAsync(cancellationToken);
@@ -519,21 +520,21 @@ namespace UnityEditorToolkit.Editor.Database
                 {
                     if (result.MigrationsApplied > 0)
                     {
-                        Debug.Log($"[DatabaseManager] 자동 마이그레이션 완료: {result.MigrationsApplied}개 적용됨");
+                        ToolkitLogger.Log("DatabaseManager", $" 자동 마이그레이션 완료: {result.MigrationsApplied}개 적용됨");
                     }
                     else
                     {
-                        Debug.Log("[DatabaseManager] 마이그레이션이 최신 상태입니다.");
+                        ToolkitLogger.Log("DatabaseManager", 마이그레이션이 최신 상태입니다.");
                     }
                 }
                 else
                 {
-                    Debug.LogWarning($"[DatabaseManager] 자동 마이그레이션 실패: {result.ErrorMessage}");
+                    ToolkitLogger.LogWarning("DatabaseManager", $" 자동 마이그레이션 실패: {result.ErrorMessage}");
                 }
             }
             catch (Exception ex)
             {
-                Debug.LogWarning($"[DatabaseManager] 자동 마이그레이션 중 예외 발생: {ex.Message}");
+                ToolkitLogger.LogWarning("DatabaseManager", $" 자동 마이그레이션 중 예외 발생: {ex.Message}");
                 // 마이그레이션 실패해도 연결은 유지
             }
             finally

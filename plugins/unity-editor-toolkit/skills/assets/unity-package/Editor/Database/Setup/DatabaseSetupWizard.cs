@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
+using UnityEditorToolkit.Editor.Utils;
 
 namespace UnityEditorToolkit.Editor.Database.Setup
 {
@@ -86,7 +87,7 @@ namespace UnityEditorToolkit.Editor.Database.Setup
                 statusMessage = "데이터베이스 설치 완료!";
                 progress = 1f;
 
-                Debug.Log("[DatabaseSetupWizard] 설치 완료!");
+                ToolkitLogger.Log("DatabaseSetupWizard", 설치 완료!");
 
                 return new SetupResult
                 {
@@ -96,13 +97,13 @@ namespace UnityEditorToolkit.Editor.Database.Setup
             }
             catch (OperationCanceledException)
             {
-                Debug.LogWarning("[DatabaseSetupWizard] 설치가 취소되었습니다.");
+                ToolkitLogger.LogWarning("DatabaseSetupWizard", 설치가 취소되었습니다.");
                 currentStep = SetupStep.Failed;
                 return CreateFailureResult("설치가 취소되었습니다.");
             }
             catch (Exception ex)
             {
-                Debug.LogError($"[DatabaseSetupWizard] 설치 중 예외 발생: {ex.Message}");
+                ToolkitLogger.LogError("DatabaseSetupWizard", $" 설치 중 예외 발생: {ex.Message}");
                 currentStep = SetupStep.Failed;
                 return CreateFailureResult($"예외 발생: {ex.Message}");
             }
@@ -120,7 +121,7 @@ namespace UnityEditorToolkit.Editor.Database.Setup
             statusMessage = "데이터베이스 파일 준비 중...";
             progress = 0.3f;
 
-            Debug.Log("[DatabaseSetupWizard] 데이터베이스 파일 준비 중...");
+            ToolkitLogger.Log("DatabaseSetupWizard", 데이터베이스 파일 준비 중...");
 
             var result = await databaseCreator.CreateDatabaseAsync(config, cancellationToken);
 
@@ -128,18 +129,18 @@ namespace UnityEditorToolkit.Editor.Database.Setup
             {
                 if (result.AlreadyExists)
                 {
-                    Debug.Log($"[DatabaseSetupWizard] 데이터베이스 파일이 이미 존재합니다: {config.DatabaseFilePath}");
+                    ToolkitLogger.Log("DatabaseSetupWizard", $" 데이터베이스 파일이 이미 존재합니다: {config.DatabaseFilePath}");
                 }
                 else
                 {
-                    Debug.Log($"[DatabaseSetupWizard] 데이터베이스 파일 준비 완료: {config.DatabaseFilePath}");
+                    ToolkitLogger.Log("DatabaseSetupWizard", $" 데이터베이스 파일 준비 완료: {config.DatabaseFilePath}");
                 }
                 return true;
             }
             else
             {
                 errorMessage = $"데이터베이스 준비 실패: {result.ErrorMessage}";
-                Debug.LogError($"[DatabaseSetupWizard] {errorMessage}");
+                ToolkitLogger.LogError("DatabaseSetupWizard", $" {errorMessage}");
                 return false;
             }
         }
@@ -150,7 +151,7 @@ namespace UnityEditorToolkit.Editor.Database.Setup
             statusMessage = "마이그레이션 실행 중...";
             progress = 0.6f;
 
-            Debug.Log("[DatabaseSetupWizard] 마이그레이션 시작...");
+            ToolkitLogger.Log("DatabaseSetupWizard", 마이그레이션 시작...");
 
             try
             {
@@ -159,19 +160,19 @@ namespace UnityEditorToolkit.Editor.Database.Setup
                 if (!initResult.Success)
                 {
                     errorMessage = $"DatabaseManager 초기화 실패: {initResult.ErrorMessage}";
-                    Debug.LogError($"[DatabaseSetupWizard] {errorMessage}");
+                    ToolkitLogger.LogError("DatabaseSetupWizard", $" {errorMessage}");
                     return false;
                 }
 
                 // 마이그레이션은 InitializeAsync에서 자동으로 실행됨
                 // 중복 실행을 방지하기 위해 별도 호출하지 않음
-                Debug.Log("[DatabaseSetupWizard] 마이그레이션 완료 (DatabaseManager.InitializeAsync에서 실행됨)");
+                ToolkitLogger.Log("DatabaseSetupWizard", 마이그레이션 완료 (DatabaseManager.InitializeAsync에서 실행됨)");
                 return true;
             }
             catch (Exception ex)
             {
                 errorMessage = $"마이그레이션 중 예외 발생: {ex.Message}";
-                Debug.LogError($"[DatabaseSetupWizard] {errorMessage}");
+                ToolkitLogger.LogError("DatabaseSetupWizard", $" {errorMessage}");
                 return false;
             }
         }

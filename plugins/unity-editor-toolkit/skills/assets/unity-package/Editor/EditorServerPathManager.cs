@@ -2,6 +2,7 @@ using UnityEngine;
 using System;
 using System.IO;
 using System.Text.RegularExpressions;
+using UnityEditorToolkit.Editor.Utils;
 
 namespace UnityEditorToolkit.Editor
 {
@@ -35,7 +36,7 @@ namespace UnityEditorToolkit.Editor
 
                 if (!normalized.StartsWith(allowedPath, StringComparison.OrdinalIgnoreCase))
                 {
-                    UnityEngine.Debug.LogError($"Plugin path outside allowed directory: {customPath}");
+                    ToolkitLogger.LogError("PathManager", $"Plugin path outside allowed directory: {customPath}");
                     return null;
                 }
 
@@ -112,7 +113,7 @@ namespace UnityEditorToolkit.Editor
                 string packagePath = FindPackageJsonPath();
                 if (string.IsNullOrEmpty(packagePath) || !File.Exists(packagePath))
                 {
-                    UnityEngine.Debug.LogWarning("Unity Editor Toolkit: package.json not found");
+                    ToolkitLogger.LogWarning("PathManager", package.json not found");
                     return null;
                 }
 
@@ -121,7 +122,7 @@ namespace UnityEditorToolkit.Editor
             }
             catch (Exception e)
             {
-                UnityEngine.Debug.LogError($"Unity Editor Toolkit: Failed to read plugin version: {e.Message}");
+                ToolkitLogger.LogError("PathManager", $"Unity Editor Toolkit: Failed to read plugin version: {e.Message}");
                 return null;
             }
         }
@@ -220,7 +221,7 @@ namespace UnityEditorToolkit.Editor
                 // Validate filename (prevent null byte injection)
                 if (fileName.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0 || fileName.Contains('\0'))
                 {
-                    UnityEngine.Debug.LogWarning($"Skipping invalid file name: {fileName}");
+                    ToolkitLogger.LogWarning("PathManager", $"Skipping invalid file name: {fileName}");
                     continue;
                 }
 
@@ -230,7 +231,7 @@ namespace UnityEditorToolkit.Editor
                 string normalizedDestFile = Path.GetFullPath(destFile);
                 if (!normalizedDestFile.StartsWith(normalizedDest, StringComparison.OrdinalIgnoreCase))
                 {
-                    UnityEngine.Debug.LogWarning($"Skipping file outside destination: {fileName}");
+                    ToolkitLogger.LogWarning("PathManager", $"Skipping file outside destination: {fileName}");
                     continue;
                 }
 

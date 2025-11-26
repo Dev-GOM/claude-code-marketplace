@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
+using UnityEditorToolkit.Editor.Utils;
 
 namespace UnityEditorToolkit.Editor.Database.Setup
 {
@@ -19,13 +20,13 @@ namespace UnityEditorToolkit.Editor.Database.Setup
         {
             try
             {
-                Debug.Log($"[DatabaseCreator] 데이터베이스 확인 시작: {config.DatabaseFilePath}");
+                ToolkitLogger.Log("DatabaseCreator", $" 데이터베이스 확인 시작: {config.DatabaseFilePath}");
 
                 // 1. 데이터베이스 파일 존재 여부 확인
                 if (File.Exists(config.DatabaseFilePath))
                 {
                     long fileSize = new FileInfo(config.DatabaseFilePath).Length;
-                    Debug.Log($"[DatabaseCreator] 데이터베이스 파일이 이미 존재합니다: {config.DatabaseFilePath} ({fileSize} bytes)");
+                    ToolkitLogger.Log("DatabaseCreator", $" 데이터베이스 파일이 이미 존재합니다: {config.DatabaseFilePath} ({fileSize} bytes)");
 
                     return new DatabaseCreationResult
                     {
@@ -39,14 +40,14 @@ namespace UnityEditorToolkit.Editor.Database.Setup
                 string directory = Path.GetDirectoryName(config.DatabaseFilePath);
                 if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
                 {
-                    Debug.Log($"[DatabaseCreator] 디렉토리 생성: {directory}");
+                    ToolkitLogger.Log("DatabaseCreator", $" 디렉토리 생성: {directory}");
                     Directory.CreateDirectory(directory);
                 }
 
                 // 3. SQLite 파일은 첫 연결 시 자동 생성됨
                 // 여기서는 빈 파일을 생성하지 않고, 연결 시 자동 생성되도록 함
-                Debug.Log($"[DatabaseCreator] 데이터베이스 준비 완료: {config.DatabaseFilePath}");
-                Debug.Log("[DatabaseCreator] 첫 연결 시 자동으로 생성됩니다.");
+                ToolkitLogger.Log("DatabaseCreator", $" 데이터베이스 준비 완료: {config.DatabaseFilePath}");
+                ToolkitLogger.Log("DatabaseCreator", 첫 연결 시 자동으로 생성됩니다.");
 
                 await UniTask.Yield(cancellationToken);
 
@@ -59,7 +60,7 @@ namespace UnityEditorToolkit.Editor.Database.Setup
             }
             catch (Exception ex)
             {
-                Debug.LogError($"[DatabaseCreator] 예외 발생: {ex.Message}\n{ex.StackTrace}");
+                ToolkitLogger.LogError("DatabaseCreator", $" 예외 발생: {ex.Message}\n{ex.StackTrace}");
                 return new DatabaseCreationResult
                 {
                     Success = false,
@@ -78,11 +79,11 @@ namespace UnityEditorToolkit.Editor.Database.Setup
             {
                 if (!File.Exists(config.DatabaseFilePath))
                 {
-                    Debug.LogWarning($"[DatabaseCreator] 데이터베이스 파일이 존재하지 않습니다: {config.DatabaseFilePath}");
+                    ToolkitLogger.LogWarning("DatabaseCreator", $" 데이터베이스 파일이 존재하지 않습니다: {config.DatabaseFilePath}");
                     return true;
                 }
 
-                Debug.Log($"[DatabaseCreator] 데이터베이스 삭제: {config.DatabaseFilePath}");
+                ToolkitLogger.Log("DatabaseCreator", $" 데이터베이스 삭제: {config.DatabaseFilePath}");
                 File.Delete(config.DatabaseFilePath);
 
                 // WAL 파일도 삭제 (있으면)
@@ -92,23 +93,23 @@ namespace UnityEditorToolkit.Editor.Database.Setup
                 if (File.Exists(walFile))
                 {
                     File.Delete(walFile);
-                    Debug.Log($"[DatabaseCreator] WAL 파일 삭제: {walFile}");
+                    ToolkitLogger.Log("DatabaseCreator", $" WAL 파일 삭제: {walFile}");
                 }
 
                 if (File.Exists(shmFile))
                 {
                     File.Delete(shmFile);
-                    Debug.Log($"[DatabaseCreator] SHM 파일 삭제: {shmFile}");
+                    ToolkitLogger.Log("DatabaseCreator", $" SHM 파일 삭제: {shmFile}");
                 }
 
                 await UniTask.Yield(cancellationToken);
 
-                Debug.Log("[DatabaseCreator] 데이터베이스 삭제 완료.");
+                ToolkitLogger.Log("DatabaseCreator", 데이터베이스 삭제 완료.");
                 return true;
             }
             catch (Exception ex)
             {
-                Debug.LogError($"[DatabaseCreator] 삭제 실패: {ex.Message}");
+                ToolkitLogger.LogError("DatabaseCreator", $" 삭제 실패: {ex.Message}");
                 return false;
             }
         }

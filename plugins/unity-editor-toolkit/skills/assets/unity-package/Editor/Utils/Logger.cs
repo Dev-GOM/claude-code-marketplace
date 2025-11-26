@@ -7,7 +7,7 @@ namespace UnityEditorToolkit.Editor.Utils
     /// Centralized logging utility with log level filtering
     /// All handlers should use this instead of Debug.Log directly
     /// </summary>
-    public static class Logger
+    public static class ToolkitLogger
     {
         public enum LogLevel
         {

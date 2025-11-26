@@ -4,6 +4,7 @@ using System;
 using System.IO;
 using System.Diagnostics;
 using System.Text;
+using UnityEditorToolkit.Editor.Utils;
 
 namespace UnityEditorToolkit.Editor
 {
@@ -86,14 +87,14 @@ namespace UnityEditorToolkit.Editor
             // Check if lock is stale
             if (IsLockStale(lockFile))
             {
-                UnityEngine.Debug.LogWarning("Unity Editor Toolkit: Removing stale installation lock");
+                ToolkitLogger.LogWarning("CLIInstaller", "Removing stale installation lock");
                 try
                 {
                     File.Delete(lockFile);
                 }
                 catch (Exception e)
                 {
-                    UnityEngine.Debug.LogError($"Unity Editor Toolkit: Failed to delete stale lock: {e.Message}");
+                    ToolkitLogger.LogError("CLIInstaller", $"Failed to delete stale lock: {e.Message}");
                 }
                 return false;
             }
@@ -114,12 +115,12 @@ namespace UnityEditorToolkit.Editor
                 try
                 {
                     File.Delete(lockFile);
-                    UnityEngine.Debug.Log("Unity Editor Toolkit: Installation lock cleared");
+                    ToolkitLogger.Log("CLIInstaller", "Installation lock cleared");
                     EditorUtility.DisplayDialog("Lock Cleared", "Installation lock has been cleared.\nYou can now retry installation.", "OK");
                 }
                 catch (Exception e)
                 {
-                    UnityEngine.Debug.LogError($"Unity Editor Toolkit: Failed to clear lock: {e.Message}");
+                    ToolkitLogger.LogError("CLIInstaller", $"Failed to clear lock: {e.Message}");
                     EditorUtility.DisplayDialog("Error", $"Failed to clear lock:\n{e.Message}", "OK");
                 }
             }
@@ -210,7 +211,7 @@ namespace UnityEditorToolkit.Editor
                 if (string.IsNullOrEmpty(pluginScriptsPath))
                 {
                     InstallLog += "❌ ERROR: Plugin scripts not found!\n";
-                    UnityEngine.Debug.LogError("Unity Editor Toolkit: Plugin scripts path not found");
+                    ToolkitLogger.LogError("CLIInstaller", "Plugin scripts path not found");
                     return;
                 }
 
@@ -233,7 +234,7 @@ namespace UnityEditorToolkit.Editor
                 CreateCLIWrapper(outputDir, skillsDir);
 
                 InstallLog += "\n✅ CLI installation completed successfully!\n";
-                UnityEngine.Debug.Log("Unity Editor Toolkit: CLI scripts installed successfully");
+                ToolkitLogger.Log("CLIInstaller", "CLI scripts installed successfully");
 
                 // Refresh version info
                 CheckVersion();
@@ -258,7 +259,7 @@ namespace UnityEditorToolkit.Editor
                     InstallLog += "   npm config set proxy http://proxy.company.com:8080\n";
                 }
 
-                UnityEngine.Debug.LogError($"Unity Editor Toolkit: CLI installation failed: {e.Message}");
+                ToolkitLogger.LogError("CLIInstaller", $"CLI installation failed: {e.Message}");
             }
             finally
             {
@@ -436,7 +437,7 @@ namespace UnityEditorToolkit.Editor
             }
             catch (Exception e)
             {
-                UnityEngine.Debug.LogWarning($"Unity Editor Toolkit: Failed to release lock: {e.Message}");
+                ToolkitLogger.LogWarning("CLIInstaller", $"Failed to release lock: {e.Message}");
             }
         }
 
@@ -447,7 +448,7 @@ namespace UnityEditorToolkit.Editor
                 string rootPath = Path.GetPathRoot(path);
                 if (string.IsNullOrEmpty(rootPath))
                 {
-                    UnityEngine.Debug.LogWarning("Unity Editor Toolkit: Could not determine drive root path");
+                    ToolkitLogger.LogWarning("CLIInstaller", "Could not determine drive root path");
                     return true; // Cannot check, assume OK
                 }
 
@@ -456,7 +457,7 @@ namespace UnityEditorToolkit.Editor
                 // Check if drive is ready (mounted and accessible)
                 if (!drive.IsReady)
                 {
-                    UnityEngine.Debug.LogWarning($"Unity Editor Toolkit: Drive {rootPath} is not ready");
+                    ToolkitLogger.LogWarning("CLIInstaller", $"Drive {rootPath} is not ready");
                     return true; // Cannot check, assume OK
                 }
 
@@ -473,12 +474,12 @@ namespace UnityEditorToolkit.Editor
             }
             catch (ArgumentException e)
             {
-                UnityEngine.Debug.LogWarning($"Unity Editor Toolkit: Invalid drive path: {e.Message}");
+                ToolkitLogger.LogWarning("CLIInstaller", $"Invalid drive path: {e.Message}");
                 return true; // Cannot check, assume OK
             }
             catch (Exception e)
             {
-                UnityEngine.Debug.LogWarning($"Unity Editor Toolkit: Could not check disk space: {e.Message}");
+                ToolkitLogger.LogWarning("CLIInstaller", $"Could not check disk space: {e.Message}");
                 return true; // Cannot check, assume OK
             }
         }
@@ -503,7 +504,7 @@ namespace UnityEditorToolkit.Editor
             }
             catch (Exception e)
             {
-                UnityEngine.Debug.LogWarning($"Unity Editor Toolkit: Write permission check failed: {e.Message}");
+                ToolkitLogger.LogWarning("CLIInstaller", $"Write permission check failed: {e.Message}");
                 return true;
             }
         }
