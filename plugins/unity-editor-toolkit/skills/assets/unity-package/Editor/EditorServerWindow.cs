@@ -222,7 +222,7 @@ namespace UnityEditorToolkit.Editor
             {
                 logLevelDropdown.Init(server.CurrentLogLevel);
                 logLevelDropdown.RegisterValueChangedCallback(evt => {
-                    server.CurrentLogLevel = (EditorWebSocketServer.LogLevel)evt.newValue;
+                    server.CurrentLogLevel = (ToolkitLogger.LogLevel)evt.newValue;
                 });
             }
 
