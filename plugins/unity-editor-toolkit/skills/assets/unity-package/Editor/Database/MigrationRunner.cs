@@ -59,7 +59,7 @@ namespace UnityEditorToolkit.Editor.Database
 
             try
             {
-                ToolkitLogger.LogDebug("MigrationRunner", 마이그레이션 시작...");
+                ToolkitLogger.LogDebug("MigrationRunner", "마이그레이션 시작...");
 
                 // 1. migrations 테이블 생성 (존재하지 않으면)
                 await EnsureMigrationTableExistsAsync(cancellationToken);
@@ -91,7 +91,7 @@ namespace UnityEditorToolkit.Editor.Database
 
                 if (pendingMigrations.Count == 0)
                 {
-                    ToolkitLogger.LogDebug("MigrationRunner", 실행할 마이그레이션이 없습니다.");
+                    ToolkitLogger.LogDebug("MigrationRunner", "실행할 마이그레이션이 없습니다.");
                     return new MigrationResult
                     {
                         Success = true,
@@ -283,7 +283,7 @@ namespace UnityEditorToolkit.Editor.Database
                 connection.Execute(createTableSql);
             }, cancellationToken: cancellationToken);
 
-            ToolkitLogger.LogDebug("MigrationRunner", migrations 테이블 확인 완료.");
+            ToolkitLogger.LogDebug("MigrationRunner", "migrations 테이블 확인 완료.");
         }
 
         /// <summary>

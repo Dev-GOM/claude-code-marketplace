@@ -106,7 +106,7 @@ namespace UnityEditorToolkit.Editor
                         EnableWAL = enableWAL
                     };
                     DatabaseManager.Instance.InitializeAsync(config).Forget();
-                    ToolkitLogger.Log("EditorServerWindow", 서버 시작 - 데이터베이스 자동 재연결");
+                    ToolkitLogger.Log("EditorServerWindow", "서버 시작 - 데이터베이스 자동 재연결");
                 }
             }
             UpdateUI();
@@ -595,17 +595,17 @@ namespace UnityEditorToolkit.Editor
             var window = GetWindow<EditorServerWindow>("Unity Editor Toolkit");
             if (window == null)
             {
-                ToolkitLogger.LogError("EditorServerWindow", Failed to get window instance for CLI reinstall");
+                ToolkitLogger.LogError("EditorServerWindow", "Failed to get window instance for CLI reinstall");
                 throw new System.Exception("Failed to get Unity Editor Toolkit window instance");
             }
 
             if (window.cliInstaller == null)
             {
-                ToolkitLogger.LogError("EditorServerWindow", CLI installer is not initialized");
+                ToolkitLogger.LogError("EditorServerWindow", "CLI installer is not initialized");
                 throw new System.Exception("CLI installer is not initialized");
             }
 
-            ToolkitLogger.Log("EditorServerWindow", Reinstalling CLI via execute command...");
+            ToolkitLogger.Log("EditorServerWindow", "Reinstalling CLI via execute command...");
             window.cliInstaller.InstallOrUpdate();
         }
 

@@ -57,7 +57,7 @@ namespace UnityEditorToolkit.Editor.Database.Commands
             undoStack = new Stack<ICommand>();
             redoStack = new Stack<ICommand>();
 
-            ToolkitLogger.LogDebug("CommandHistory", 생성 완료.");
+            ToolkitLogger.LogDebug("CommandHistory", "생성 완료.");
         }
         #endregion
 
@@ -141,7 +141,7 @@ namespace UnityEditorToolkit.Editor.Database.Commands
         {
             if (!CanUndo)
             {
-                ToolkitLogger.LogWarning("CommandHistory", Undo 불가능 - 스택이 비어있습니다.");
+                ToolkitLogger.LogWarning("CommandHistory", "Undo 불가능 - 스택이 비어있습니다.");
                 return false;
             }
 
@@ -187,7 +187,7 @@ namespace UnityEditorToolkit.Editor.Database.Commands
         {
             if (!CanRedo)
             {
-                ToolkitLogger.LogWarning("CommandHistory", Redo 불가능 - 스택이 비어있습니다.");
+                ToolkitLogger.LogWarning("CommandHistory", "Redo 불가능 - 스택이 비어있습니다.");
                 return false;
             }
 
@@ -305,7 +305,7 @@ namespace UnityEditorToolkit.Editor.Database.Commands
             redoStack.Clear();
             OnHistoryChanged?.Invoke();
 
-            ToolkitLogger.LogDebug("CommandHistory", 히스토리 초기화 완료.");
+            ToolkitLogger.LogDebug("CommandHistory", "히스토리 초기화 완료.");
         }
 
         /// <summary>
@@ -411,7 +411,7 @@ namespace UnityEditorToolkit.Editor.Database.Commands
             {
                 if (!databaseManager.IsConnected || databaseManager.Connector == null)
                 {
-                    ToolkitLogger.LogWarning("CommandHistory", 데이터베이스 연결되지 않음 - 히스토리 로드 불가.");
+                    ToolkitLogger.LogWarning("CommandHistory", "데이터베이스 연결되지 않음 - 히스토리 로드 불가.");
                     return 0;
                 }
 

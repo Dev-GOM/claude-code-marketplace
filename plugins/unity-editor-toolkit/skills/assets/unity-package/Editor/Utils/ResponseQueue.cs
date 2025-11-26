@@ -174,7 +174,7 @@ namespace UnityEditorToolkit.Editor.Utils
         public void Clear()
         {
             pendingResponses.Clear();
-            ToolkitLogger.Log("ResponseQueue", Cleared all pending responses");
+            ToolkitLogger.Log("ResponseQueue", "Cleared all pending responses");
         }
 
         /// <summary>
