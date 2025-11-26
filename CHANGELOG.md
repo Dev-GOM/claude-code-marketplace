@@ -2,7 +2,36 @@
 
 All notable changes to the Dev GOM Plugins marketplace will be documented in this file.
 
-> **Version**: 2.27.0 | **Last Updated**: 2025-11-25
+> **Version**: 2.29.0 | **Last Updated**: 2025-11-26
+
+---
+
+## [2.29.0] - 2025-11-26
+
+### Major Features
+- 🎮 **Unity Editor Toolkit v0.12.0**: Material, Animation, Editor Commands Expansion
+  - **Material Commands** (9 commands): Complete material property control
+    - `material list`: List all materials on a GameObject
+    - `material get/set`: Get/set material properties (float/int)
+    - `material get-color/set-color`: Get/set color properties (RGBA, Hex support)
+    - `material get-shader/set-shader`: Get/change shader
+    - `material get-texture/set-texture`: Get/set textures (with scale, offset)
+  - **Animation Commands** (9 commands): Complete Animator & legacy Animation control
+    - `animation play/stop`: Play/stop animations
+    - `animation state`: Get current animation state
+    - `animation params`: List all Animator parameters
+    - `animation get-param/set-param`: Get/set parameter values
+    - `animation trigger/reset-trigger`: Set/reset triggers
+    - `animation crossfade`: CrossFade between states
+  - **Editor Additional Features** (4 commands): Editor selection and view control
+    - `editor get-selection`: Get currently selected objects
+    - `editor set-selection`: Select objects by name/path
+    - `editor focus-game`: Focus Game View
+    - `editor focus-scene`: Focus Scene View
+  - **Log Level Filtering Fix**: Centralized Logger utility
+    - All handlers now log through Logger class
+    - Log level settings consistently applied to all messages
+    - Replaced direct Debug.Log calls with Logger.Log/LogWarning/LogError
 
 ---
 

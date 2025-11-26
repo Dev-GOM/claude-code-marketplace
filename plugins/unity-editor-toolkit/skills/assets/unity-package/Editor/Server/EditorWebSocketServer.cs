@@ -9,6 +9,7 @@ using UnityEditorToolkit.Editor.Utils;
 using Newtonsoft.Json;
 using WebSocketSharp;
 using WebSocketSharp.Server;
+using LogLevel = UnityEditorToolkit.Editor.Utils.Logger.LogLevel;
 
 namespace UnityEditorToolkit.Editor.Server
 {
@@ -20,14 +21,7 @@ namespace UnityEditorToolkit.Editor.Server
     [InitializeOnLoad]
     public class EditorWebSocketServer
     {
-        public enum LogLevel
-        {
-            None = 0,
-            Error = 1,
-            Warning = 2,
-            Info = 3,
-            Debug = 4
-        }
+        // LogLevel is now imported from Logger class
 
         // Singleton instance
         private static EditorWebSocketServer instance;
@@ -76,8 +70,8 @@ namespace UnityEditorToolkit.Editor.Server
 
         public LogLevel CurrentLogLevel
         {
-            get => (LogLevel)EditorPrefs.GetInt(PREF_LOG_LEVEL, (int)LogLevel.Info);
-            set => EditorPrefs.SetInt(PREF_LOG_LEVEL, (int)value);
+            get => Logger.CurrentLogLevel;
+            set => Logger.CurrentLogLevel = value;
         }
 
         // Server state
@@ -139,7 +133,10 @@ namespace UnityEditorToolkit.Editor.Server
                 { "Sync", new SyncHandler() },
                 { "Analytics", new AnalyticsHandler() },
                 { "Menu", new MenuHandler() },
-                { "Asset", new AssetHandler() }
+                { "Asset", new AssetHandler() },
+                { "Prefab", new PrefabHandler() },
+                { "Material", new MaterialHandler() },
+                { "Animation", new AnimationHandler() }
             };
 
             // Initialize ChainHandler with access to all handlers
@@ -389,26 +386,24 @@ namespace UnityEditorToolkit.Editor.Server
         }
 
         /// <summary>
-        /// Logging method
+        /// Logging method (delegates to centralized Logger)
         /// </summary>
         private void Log(string message, LogLevel level)
         {
-            if (level <= CurrentLogLevel)
+            switch (level)
             {
-                string prefix = "[UnityEditorToolkit]";
-                switch (level)
-                {
-                    case LogLevel.Error:
-                        Debug.LogError($"{prefix} {message}");
-                        break;
-                    case LogLevel.Warning:
-                        Debug.LogWarning($"{prefix} {message}");
-                        break;
-                    case LogLevel.Info:
-                    case LogLevel.Debug:
-                        Debug.Log($"{prefix} {message}");
-                        break;
-                }
+                case LogLevel.Error:
+                    Logger.LogError("Server", message);
+                    break;
+                case LogLevel.Warning:
+                    Logger.LogWarning("Server", message);
+                    break;
+                case LogLevel.Info:
+                    Logger.Log("Server", message);
+                    break;
+                case LogLevel.Debug:
+                    Logger.LogDebug("Server", message);
+                    break;
             }
         }
 

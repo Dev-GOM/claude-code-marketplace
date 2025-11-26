@@ -76,7 +76,7 @@ namespace UnityEditorToolkit.Handlers
         #if UNITY_EDITOR
         private object HandleWaitCompile(string requestId, Action<string> sendCallback, double timeout)
         {
-            Debug.Log($"[WaitHandler] Waiting for compilation to complete...");
+            Logger.Log("WaitHandler", "Waiting for compilation to complete...");
 
             ResponseQueue.Instance.Register(
                 requestId,
@@ -125,7 +125,7 @@ namespace UnityEditorToolkit.Handlers
                     throw new Exception($"Invalid playmode state: {targetState}. Use 'enter', 'exit', or 'pause'");
             }
 
-            Debug.Log($"[WaitHandler] Waiting for play mode to {stateDescription}...");
+            Logger.Log("WaitHandler", $"Waiting for play mode to {stateDescription}...");
 
             ResponseQueue.Instance.Register(
                 requestId,
@@ -163,7 +163,7 @@ namespace UnityEditorToolkit.Handlers
                 throw new Exception($"Sleep duration ({seconds}s) exceeds timeout ({timeout}s)");
             }
 
-            Debug.Log($"[WaitHandler] Sleeping for {seconds} seconds...");
+            Logger.Log("WaitHandler", $"Sleeping for {seconds} seconds...");
 
             double wakeTime = EditorApplication.timeSinceStartup + seconds;
 
@@ -186,7 +186,7 @@ namespace UnityEditorToolkit.Handlers
 
         private object HandleWaitScene(string requestId, Action<string> sendCallback, double timeout)
         {
-            Debug.Log($"[WaitHandler] Waiting for scene to finish loading...");
+            Logger.Log("WaitHandler", "Waiting for scene to finish loading...");
 
             // Check if in play mode
             if (!EditorApplication.isPlaying)
@@ -199,7 +199,7 @@ namespace UnityEditorToolkit.Handlers
             var initialSceneCount = UnityEngine.SceneManagement.SceneManager.sceneCount;
             var startTime = EditorApplication.timeSinceStartup;
 
-            Debug.Log($"[WaitHandler] Initial scene: {initialSceneName}, scene count: {initialSceneCount}");
+            Logger.LogDebug("WaitHandler", $"Initial scene: {initialSceneName}, scene count: {initialSceneCount}");
 
             ResponseQueue.Instance.Register(
                 requestId,
