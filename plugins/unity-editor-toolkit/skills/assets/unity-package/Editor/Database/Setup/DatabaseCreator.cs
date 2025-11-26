@@ -47,7 +47,7 @@ namespace UnityEditorToolkit.Editor.Database.Setup
                 // 3. SQLite 파일은 첫 연결 시 자동 생성됨
                 // 여기서는 빈 파일을 생성하지 않고, 연결 시 자동 생성되도록 함
                 ToolkitLogger.Log("DatabaseCreator", $" 데이터베이스 준비 완료: {config.DatabaseFilePath}");
-                ToolkitLogger.Log("DatabaseCreator", 첫 연결 시 자동으로 생성됩니다.");
+                ToolkitLogger.Log("DatabaseCreator", "첫 연결 시 자동으로 생성됩니다.");
 
                 await UniTask.Yield(cancellationToken);
 
@@ -104,7 +104,7 @@ namespace UnityEditorToolkit.Editor.Database.Setup
 
                 await UniTask.Yield(cancellationToken);
 
-                ToolkitLogger.Log("DatabaseCreator", 데이터베이스 삭제 완료.");
+                ToolkitLogger.Log("DatabaseCreator", "데이터베이스 삭제 완료.");
                 return true;
             }
             catch (Exception ex)

@@ -87,7 +87,7 @@ namespace UnityEditorToolkit.Editor.Database.Setup
                 statusMessage = "데이터베이스 설치 완료!";
                 progress = 1f;
 
-                ToolkitLogger.Log("DatabaseSetupWizard", 설치 완료!");
+                ToolkitLogger.Log("DatabaseSetupWizard", "설치 완료!");
 
                 return new SetupResult
                 {
@@ -97,7 +97,7 @@ namespace UnityEditorToolkit.Editor.Database.Setup
             }
             catch (OperationCanceledException)
             {
-                ToolkitLogger.LogWarning("DatabaseSetupWizard", 설치가 취소되었습니다.");
+                ToolkitLogger.LogWarning("DatabaseSetupWizard", "설치가 취소되었습니다.");
                 currentStep = SetupStep.Failed;
                 return CreateFailureResult("설치가 취소되었습니다.");
             }
@@ -121,7 +121,7 @@ namespace UnityEditorToolkit.Editor.Database.Setup
             statusMessage = "데이터베이스 파일 준비 중...";
             progress = 0.3f;
 
-            ToolkitLogger.Log("DatabaseSetupWizard", 데이터베이스 파일 준비 중...");
+            ToolkitLogger.Log("DatabaseSetupWizard", "데이터베이스 파일 준비 중...");
 
             var result = await databaseCreator.CreateDatabaseAsync(config, cancellationToken);
 
@@ -151,7 +151,7 @@ namespace UnityEditorToolkit.Editor.Database.Setup
             statusMessage = "마이그레이션 실행 중...";
             progress = 0.6f;
 
-            ToolkitLogger.Log("DatabaseSetupWizard", 마이그레이션 시작...");
+            ToolkitLogger.Log("DatabaseSetupWizard", "마이그레이션 시작...");
 
             try
             {
@@ -166,7 +166,7 @@ namespace UnityEditorToolkit.Editor.Database.Setup
 
                 // 마이그레이션은 InitializeAsync에서 자동으로 실행됨
                 // 중복 실행을 방지하기 위해 별도 호출하지 않음
-                ToolkitLogger.Log("DatabaseSetupWizard", 마이그레이션 완료 (DatabaseManager.InitializeAsync에서 실행됨)");
+                ToolkitLogger.Log("DatabaseSetupWizard", "마이그레이션 완료 (DatabaseManager.InitializeAsync에서 실행됨)");
                 return true;
             }
             catch (Exception ex)

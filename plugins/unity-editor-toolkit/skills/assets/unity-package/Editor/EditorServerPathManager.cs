@@ -113,7 +113,7 @@ namespace UnityEditorToolkit.Editor
                 string packagePath = FindPackageJsonPath();
                 if (string.IsNullOrEmpty(packagePath) || !File.Exists(packagePath))
                 {
-                    ToolkitLogger.LogWarning("PathManager", package.json not found");
+                    ToolkitLogger.LogWarning("PathManager", "package.json not found");
                     return null;
                 }
 

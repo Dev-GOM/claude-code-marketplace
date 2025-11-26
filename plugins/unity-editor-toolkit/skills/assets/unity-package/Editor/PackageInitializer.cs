@@ -29,7 +29,7 @@ namespace UnityEditorToolkit.Editor
             string packageVersion = GetPackageVersion();
             if (string.IsNullOrEmpty(packageVersion))
             {
-                ToolkitLogger.LogWarning("PackageInitializer", Could not determine package version. Initialization skipped.");
+                ToolkitLogger.LogWarning("PackageInitializer", "Could not determine package version. Initialization skipped.");
                 return;
             }
 
@@ -61,14 +61,14 @@ namespace UnityEditorToolkit.Editor
                 EditorApplication.delayCall += () =>
                 {
                     EditorWindow.GetWindow<EditorServerWindow>("Unity Editor Toolkit");
-                    ToolkitLogger.Log("PackageInitializer", Welcome! Server Window opened. Configure your plugin scripts path and install CLI to get started.");
+                    ToolkitLogger.Log("PackageInitializer", "Welcome! Server Window opened. Configure your plugin scripts path and install CLI to get started.");
                 };
             }
             else if (isVersionUpgrade)
             {
                 // Version upgrade - just update version number
                 WriteInitializationFile(packageVersion, "Failed to update version file");
-                ToolkitLogger.Log("PackageInitializer", $" Updated to version {packageVersion}");
+                ToolkitLogger.Log("PackageInitializer", $"Updated to version {packageVersion}");
             }
         }
 
@@ -143,11 +143,11 @@ namespace UnityEditorToolkit.Editor
             if (File.Exists(InitializationFilePath))
             {
                 File.Delete(InitializationFilePath);
-                ToolkitLogger.Log("PackageInitializer", Package initialization reset. Restart Unity to trigger first-install behavior.");
+                ToolkitLogger.Log("PackageInitializer", "Package initialization reset. Restart Unity to trigger first-install behavior.");
             }
             else
             {
-                ToolkitLogger.Log("PackageInitializer", No initialization file found - already in fresh state.");
+                ToolkitLogger.Log("PackageInitializer", "No initialization file found - already in fresh state.");
             }
         }
     }

@@ -58,7 +58,7 @@ namespace UnityEditorToolkit.Editor.Database
             SuccessfulSyncCount = 0;
             FailedSyncCount = 0;
 
-            ToolkitLogger.Log("SyncManager", 생성 완료.");
+            ToolkitLogger.Log("SyncManager", "생성 완료.");
         }
         #endregion
 
@@ -72,17 +72,17 @@ namespace UnityEditorToolkit.Editor.Database
 
             if (isRunning)
             {
-                ToolkitLogger.LogWarning("SyncManager", 이미 동기화가 실행 중입니다.");
+                ToolkitLogger.LogWarning("SyncManager", "이미 동기화가 실행 중입니다.");
                 return;
             }
 
             if (!databaseManager.IsInitialized || !databaseManager.IsConnected)
             {
-                ToolkitLogger.LogError("SyncManager", DatabaseManager가 초기화되지 않았거나 연결되지 않았습니다.");
+                ToolkitLogger.LogError("SyncManager", "DatabaseManager가 초기화되지 않았거나 연결되지 않았습니다.");
                 return;
             }
 
-            ToolkitLogger.Log("SyncManager", 동기화 시작...");
+            ToolkitLogger.Log("SyncManager", "동기화 시작...");
 
             syncCts = new CancellationTokenSource();
             isRunning = true;
@@ -103,7 +103,7 @@ namespace UnityEditorToolkit.Editor.Database
                 return;
             }
 
-            ToolkitLogger.Log("SyncManager", 동기화 중지 중...");
+            ToolkitLogger.Log("SyncManager", "동기화 중지 중...");
 
             syncCts?.Cancel();
             syncCts?.Dispose();
@@ -111,7 +111,7 @@ namespace UnityEditorToolkit.Editor.Database
 
             isRunning = false;
 
-            ToolkitLogger.Log("SyncManager", 동기화 중지 완료.");
+            ToolkitLogger.Log("SyncManager", "동기화 중지 완료.");
         }
         #endregion
 
@@ -121,7 +121,7 @@ namespace UnityEditorToolkit.Editor.Database
         /// </summary>
         private async UniTaskVoid RunSyncLoopAsync(CancellationToken cancellationToken)
         {
-            ToolkitLogger.Log("SyncManager", 동기화 루프 시작.");
+            ToolkitLogger.Log("SyncManager", "동기화 루프 시작.");
 
             try
             {
@@ -136,7 +136,7 @@ namespace UnityEditorToolkit.Editor.Database
             }
             catch (OperationCanceledException)
             {
-                ToolkitLogger.Log("SyncManager", 동기화 루프가 취소되었습니다.");
+                ToolkitLogger.Log("SyncManager", "동기화 루프가 취소되었습니다.");
             }
             catch (Exception ex)
             {
@@ -144,7 +144,7 @@ namespace UnityEditorToolkit.Editor.Database
                 isRunning = false;
             }
 
-            ToolkitLogger.Log("SyncManager", 동기화 루프 종료.");
+            ToolkitLogger.Log("SyncManager", "동기화 루프 종료.");
         }
 
         /// <summary>
@@ -160,7 +160,7 @@ namespace UnityEditorToolkit.Editor.Database
                 bool isConnected = await databaseManager.TestConnectionAsync();
                 if (!isConnected)
                 {
-                    ToolkitLogger.LogWarning("SyncManager", 데이터베이스 연결이 끊어졌습니다.");
+                    ToolkitLogger.LogWarning("SyncManager", "데이터베이스 연결이 끊어졌습니다.");
                     FailedSyncCount++;
                     return;
                 }
@@ -169,7 +169,7 @@ namespace UnityEditorToolkit.Editor.Database
                 int sceneCount = SceneManager.sceneCount;
                 if (sceneCount == 0)
                 {
-                    ToolkitLogger.LogWarning("SyncManager", 로드된 씬이 없습니다.");
+                    ToolkitLogger.LogWarning("SyncManager", "로드된 씬이 없습니다.");
                     return;
                 }
 
@@ -260,11 +260,11 @@ namespace UnityEditorToolkit.Editor.Database
 
             try
             {
-                ToolkitLogger.Log("SyncManager", 수동 동기화 시작...");
+                ToolkitLogger.Log("SyncManager", "수동 동기화 시작...");
 
                 await PerformSyncAsync(cancellationToken);
 
-                ToolkitLogger.Log("SyncManager", 수동 동기화 완료.");
+                ToolkitLogger.Log("SyncManager", "수동 동기화 완료.");
                 return new SyncResult
                 {
                     Success = true,
@@ -273,7 +273,7 @@ namespace UnityEditorToolkit.Editor.Database
             }
             catch (OperationCanceledException)
             {
-                ToolkitLogger.LogWarning("SyncManager", 수동 동기화가 취소되었습니다.");
+                ToolkitLogger.LogWarning("SyncManager", "수동 동기화가 취소되었습니다.");
                 return new SyncResult
                 {
                     Success = false,
@@ -313,7 +313,7 @@ namespace UnityEditorToolkit.Editor.Database
                 var connection = databaseManager.Connector?.Connection;
                 if (connection == null)
                 {
-                    ToolkitLogger.LogError("SyncManager", Database connection is null");
+                    ToolkitLogger.LogError("SyncManager", "Database connection is null");
                     return 0;
                 }
 
@@ -466,7 +466,7 @@ namespace UnityEditorToolkit.Editor.Database
                 var connection = databaseManager.Connector?.Connection;
                 if (connection == null)
                 {
-                    ToolkitLogger.LogError("SyncManager", Database connection is null");
+                    ToolkitLogger.LogError("SyncManager", "Database connection is null");
                     throw new InvalidOperationException("Database connection is not available");
                 }
 
@@ -635,7 +635,7 @@ namespace UnityEditorToolkit.Editor.Database
                 var connection = databaseManager.Connector?.Connection;
                 if (connection == null)
                 {
-                    ToolkitLogger.LogError("SyncManager", Database connection is null");
+                    ToolkitLogger.LogError("SyncManager", "Database connection is null");
                     return;
                 }
 
@@ -696,7 +696,7 @@ namespace UnityEditorToolkit.Editor.Database
                 var connection = databaseManager.Connector?.Connection;
                 if (connection == null)
                 {
-                    ToolkitLogger.LogError("SyncManager", Database connection is null");
+                    ToolkitLogger.LogError("SyncManager", "Database connection is null");
                     return;
                 }
 
@@ -790,7 +790,7 @@ namespace UnityEditorToolkit.Editor.Database
             StopSync();
             isDisposed = true;
 
-            ToolkitLogger.Log("SyncManager", Disposed.");
+            ToolkitLogger.Log("SyncManager", "Disposed.");
         }
 
         private void ThrowIfDisposed()
