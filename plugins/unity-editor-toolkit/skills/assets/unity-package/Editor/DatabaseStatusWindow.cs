@@ -1,6 +1,7 @@
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
+using UnityEditorToolkit.Editor.Utils;
 
 namespace UnityEditorToolkit.Editor
 {
@@ -46,21 +47,21 @@ namespace UnityEditorToolkit.Editor
         /// </summary>
         public static DatabaseStatusWindow Open(EditorServerWindow parentWindow)
         {
-            Debug.Log($"[DatabaseStatusWindow.Open] 시작, parentWindow: {(parentWindow != null ? "존재" : "null")}");
+            ToolkitLogger.LogDebug("DatabaseStatusWindow", $"Open 시작, parentWindow: {(parentWindow != null ? "존재" : "null")}");
 
             var window = GetWindow<DatabaseStatusWindow>("Database Status & Controls");
             window.minSize = new Vector2(400, 500);
 
-            Debug.Log($"[DatabaseStatusWindow.Open] GetWindow 완료, parentWindow 설정 전: {(window.parentWindow != null ? "존재" : "null")}");
+            ToolkitLogger.LogDebug("DatabaseStatusWindow", $"GetWindow 완료, parentWindow 설정 전: {(window.parentWindow != null ? "존재" : "null")}");
 
             window.parentWindow = parentWindow;
 
-            Debug.Log($"[DatabaseStatusWindow.Open] parentWindow 설정 완료: {(window.parentWindow != null ? "존재" : "null")}");
+            ToolkitLogger.LogDebug("DatabaseStatusWindow", $"parentWindow 설정 완료: {(window.parentWindow != null ? "존재" : "null")}");
 
             window.Show();
 
             // CreateGUI()가 parentWindow 설정 전에 실행되었을 수 있으므로 다시 업데이트
-            Debug.Log("[DatabaseStatusWindow.Open] UpdateUI() 호출");
+            ToolkitLogger.LogDebug("DatabaseStatusWindow", "Open에서 UpdateUI() 호출");
             window.UpdateUI();
 
             return window;
@@ -70,7 +71,7 @@ namespace UnityEditorToolkit.Editor
         #region Unity Lifecycle
         private void CreateGUI()
         {
-            Debug.Log($"[DatabaseStatusWindow.CreateGUI] 시작, parentWindow: {(parentWindow != null ? "존재" : "null")}");
+            ToolkitLogger.LogDebug("DatabaseStatusWindow", $"CreateGUI 시작, parentWindow: {(parentWindow != null ? "존재" : "null")}");
 
             // Load UXML
             var visualTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(
@@ -78,7 +79,7 @@ namespace UnityEditorToolkit.Editor
 
             if (visualTree == null)
             {
-                Debug.LogError("[DatabaseStatusWindow] UXML file not found!");
+                ToolkitLogger.LogError("DatabaseStatusWindow", "UXML file not found!");
                 return;
             }
 
@@ -103,7 +104,7 @@ namespace UnityEditorToolkit.Editor
             RegisterEvents();
 
             // Initial UI update
-            Debug.Log("[DatabaseStatusWindow.CreateGUI] UpdateUI() 호출");
+            ToolkitLogger.LogDebug("DatabaseStatusWindow", "CreateGUI에서 UpdateUI() 호출");
             UpdateUI();
         }
 
@@ -255,22 +256,22 @@ namespace UnityEditorToolkit.Editor
         /// </summary>
         public void UpdateUI()
         {
-            Debug.Log($"[DatabaseStatusWindow.UpdateUI] 시작, parentWindow: {(parentWindow != null ? "존재" : "null")}");
+            ToolkitLogger.LogDebug("DatabaseStatusWindow", $"UpdateUI 시작, parentWindow: {(parentWindow != null ? "존재" : "null")}");
 
             if (parentWindow == null)
             {
-                Debug.LogWarning("[DatabaseStatusWindow.UpdateUI] parentWindow가 null이므로 업데이트 중단");
+                ToolkitLogger.LogWarning("DatabaseStatusWindow", "parentWindow가 null이므로 업데이트 중단");
                 return;
             }
 
             // Status
-            Debug.Log("[DatabaseStatusWindow.UpdateUI] 상태 업데이트 시작");
+            ToolkitLogger.LogDebug("DatabaseStatusWindow", "상태 업데이트 시작");
             UpdateConnectionStatus();
             UpdateDatabaseFileStatus();
             UpdateSyncStatus();
             UpdateCommandHistory();
             UpdateMessages();
-            Debug.Log("[DatabaseStatusWindow.UpdateUI] 상태 업데이트 완료");
+            ToolkitLogger.LogDebug("DatabaseStatusWindow", "상태 업데이트 완료");
         }
 
         private void UpdateConnectionStatus()

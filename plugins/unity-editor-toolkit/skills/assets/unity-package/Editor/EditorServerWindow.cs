@@ -4,6 +4,7 @@ using UnityEngine.UIElements;
 using UnityEditorToolkit.Editor.Server;
 using UnityEditorToolkit.Editor.Attributes;
 using UnityEditorToolkit.Editor.Database;
+using UnityEditorToolkit.Editor.Utils;
 using Cysharp.Threading.Tasks;
 using System.IO;
 using UnityEditor.Callbacks;
@@ -105,7 +106,7 @@ namespace UnityEditorToolkit.Editor
                         EnableWAL = enableWAL
                     };
                     DatabaseManager.Instance.InitializeAsync(config).Forget();
-                    Debug.Log("[EditorServerWindow] 서버 시작 - 데이터베이스 자동 재연결");
+                    ToolkitLogger.Log("EditorServerWindow", 서버 시작 - 데이터베이스 자동 재연결");
                 }
             }
             UpdateUI();
@@ -580,7 +581,7 @@ namespace UnityEditorToolkit.Editor
 
             sb.AppendLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 
-            Debug.Log(sb.ToString());
+            ToolkitLogger.Log("EditorServerWindow", sb.ToString());
         }
 
         #region Executable Methods (CLI)
@@ -594,17 +595,17 @@ namespace UnityEditorToolkit.Editor
             var window = GetWindow<EditorServerWindow>("Unity Editor Toolkit");
             if (window == null)
             {
-                Debug.LogError("[EditorServerWindow] Failed to get window instance for CLI reinstall");
+                ToolkitLogger.LogError("EditorServerWindow", Failed to get window instance for CLI reinstall");
                 throw new System.Exception("Failed to get Unity Editor Toolkit window instance");
             }
 
             if (window.cliInstaller == null)
             {
-                Debug.LogError("[EditorServerWindow] CLI installer is not initialized");
+                ToolkitLogger.LogError("EditorServerWindow", CLI installer is not initialized");
                 throw new System.Exception("CLI installer is not initialized");
             }
 
-            Debug.Log("[EditorServerWindow] Reinstalling CLI via execute command...");
+            ToolkitLogger.Log("EditorServerWindow", Reinstalling CLI via execute command...");
             window.cliInstaller.InstallOrUpdate();
         }
 

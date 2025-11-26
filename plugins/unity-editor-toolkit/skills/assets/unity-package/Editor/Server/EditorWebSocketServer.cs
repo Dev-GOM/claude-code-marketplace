@@ -9,7 +9,7 @@ using UnityEditorToolkit.Editor.Utils;
 using Newtonsoft.Json;
 using WebSocketSharp;
 using WebSocketSharp.Server;
-using LogLevel = UnityEditorToolkit.Editor.Utils.Logger.LogLevel;
+using LogLevel = UnityEditorToolkit.Editor.Utils.ToolkitLogger.LogLevel;
 
 namespace UnityEditorToolkit.Editor.Server
 {
@@ -70,8 +70,8 @@ namespace UnityEditorToolkit.Editor.Server
 
         public LogLevel CurrentLogLevel
         {
-            get => Logger.CurrentLogLevel;
-            set => Logger.CurrentLogLevel = value;
+            get => ToolkitLogger.CurrentLogLevel;
+            set => ToolkitLogger.CurrentLogLevel = value;
         }
 
         // Server state
@@ -393,16 +393,16 @@ namespace UnityEditorToolkit.Editor.Server
             switch (level)
             {
                 case LogLevel.Error:
-                    Logger.LogError("Server", message);
+                    ToolkitLogger.LogError("Server", message);
                     break;
                 case LogLevel.Warning:
-                    Logger.LogWarning("Server", message);
+                    ToolkitLogger.LogWarning("Server", message);
                     break;
                 case LogLevel.Info:
-                    Logger.Log("Server", message);
+                    ToolkitLogger.Log("Server", message);
                     break;
                 case LogLevel.Debug:
-                    Logger.LogDebug("Server", message);
+                    ToolkitLogger.LogDebug("Server", message);
                     break;
             }
         }

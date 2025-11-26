@@ -1,6 +1,7 @@
 using System;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
+using UnityEditorToolkit.Editor.Utils;
 
 namespace UnityEditorToolkit.Editor.Database.Commands
 {
@@ -83,7 +84,7 @@ namespace UnityEditorToolkit.Editor.Database.Commands
             var go = UnityEditor.EditorUtility.InstanceIDToObject(gameObjectInstanceId) as GameObject;
             if (go == null)
             {
-                Debug.LogWarning($"[TransformChangeCommand] GameObject not found: {gameObjectName} (ID: {gameObjectInstanceId})");
+                ToolkitLogger.LogWarning("TransformChangeCommand", $"GameObject not found: {gameObjectName} (ID: {gameObjectInstanceId})");
             }
             return go;
         }
@@ -119,7 +120,7 @@ namespace UnityEditorToolkit.Editor.Database.Commands
             var go = UnityEditor.EditorUtility.InstanceIDToObject(data.gameObjectInstanceId) as GameObject;
             if (go == null)
             {
-                Debug.LogWarning($"[TransformChangeCommand.FromJson] GameObject not found: {data.gameObjectName} (ID: {data.gameObjectInstanceId})");
+                ToolkitLogger.LogWarning("TransformChangeCommand", $"GameObject not found (FromJson): {data.gameObjectName} (ID: {data.gameObjectInstanceId})");
                 // GameObject가 없어도 Command는 생성 (히스토리 기록용)
                 go = new GameObject(data.gameObjectName);
             }

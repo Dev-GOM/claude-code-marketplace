@@ -2,6 +2,7 @@ using UnityEngine;
 using System;
 using System.Diagnostics;
 using System.Text;
+using UnityEditorToolkit.Editor.Utils;
 
 namespace UnityEditorToolkit.Editor
 {
@@ -150,7 +151,7 @@ namespace UnityEditorToolkit.Editor
 
                 if (!exited)
                 {
-                    UnityEngine.Debug.LogWarning($"Process timeout after {timeoutSeconds}s, killing: {command} {arguments}");
+                    ToolkitLogger.LogWarning("CommandRunner", $"Process timeout after {timeoutSeconds}s, killing: {command} {arguments}");
 
                     try
                     {
@@ -162,13 +163,13 @@ namespace UnityEditorToolkit.Editor
 
                             if (!killed)
                             {
-                                UnityEngine.Debug.LogError($"Process did not terminate after kill signal");
+                                ToolkitLogger.LogError("CommandRunner", "Process did not terminate after kill signal");
                             }
                         }
                     }
                     catch (Exception killEx)
                     {
-                        UnityEngine.Debug.LogError($"Failed to kill process: {killEx.Message}");
+                        ToolkitLogger.LogError("CommandRunner", $"Failed to kill process: {killEx.Message}");
                     }
 
                     throw new Exception($"{command} timed out after {timeoutSeconds} seconds. Check network connection or increase timeout.");
@@ -203,7 +204,7 @@ namespace UnityEditorToolkit.Editor
                     }
                     catch (Exception ex)
                     {
-                        UnityEngine.Debug.LogError($"Error disposing process: {ex.Message}");
+                        ToolkitLogger.LogError("CommandRunner", $"Error disposing process: {ex.Message}");
                     }
                 }
             }

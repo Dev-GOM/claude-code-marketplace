@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using UnityEngine;
 using UnityEditor;
+using UnityEditorToolkit.Editor.Utils;
 
 namespace UnityEditorToolkit.Editor.Database
 {
@@ -254,7 +255,7 @@ namespace UnityEditorToolkit.Editor.Database
             if (savedVersion == -1)
             {
                 // 첫 실행: 기본값 사용 (저장하지 않음)
-                Debug.Log("[DatabaseConfig] 첫 실행 감지 - 기본값 사용");
+                ToolkitLogger.Log("DatabaseConfig", "첫 실행 감지 - 기본값 사용");
                 config.Reset();
                 return config;
             }
@@ -270,7 +271,7 @@ namespace UnityEditorToolkit.Editor.Database
             // 마이그레이션 필요 여부 확인
             if (config.configVersion < CURRENT_VERSION)
             {
-                Debug.Log($"[DatabaseConfig] 마이그레이션: v{config.configVersion} → v{CURRENT_VERSION}");
+                ToolkitLogger.Log("DatabaseConfig", $"마이그레이션: v{config.configVersion} → v{CURRENT_VERSION}");
                 MigrateConfig(config);
                 config.SaveToEditorPrefs(); // 마이그레이션 후 저장
             }
@@ -289,7 +290,7 @@ namespace UnityEditorToolkit.Editor.Database
             EditorPrefs.DeleteKey(PREF_KEY_ENABLE_WAL);
             EditorPrefs.DeleteKey(PREF_KEY_ENABLE_ENCRYPTION);
             EditorPrefs.DeleteKey(PREF_KEY_ENCRYPTION_KEY);
-            Debug.Log("[DatabaseConfig] EditorPrefs 초기화 완료");
+            ToolkitLogger.Log("DatabaseConfig", "EditorPrefs 초기화 완료");
         }
 
         /// <summary>
@@ -305,21 +306,21 @@ namespace UnityEditorToolkit.Editor.Database
 
                 if (!config.enableWAL)
                 {
-                    Debug.Log("[DatabaseConfig] 마이그레이션: EnableWAL을 true로 변경 (v0 → v1)");
+                    ToolkitLogger.Log("DatabaseConfig", "마이그레이션: EnableWAL을 true로 변경 (v0 → v1)");
                     config.enableWAL = true;
                     changed = true;
                 }
 
                 if (!config.enableDatabase)
                 {
-                    Debug.Log("[DatabaseConfig] 마이그레이션: EnableDatabase를 true로 변경 (v0 → v1)");
+                    ToolkitLogger.Log("DatabaseConfig", "마이그레이션: EnableDatabase를 true로 변경 (v0 → v1)");
                     config.enableDatabase = true;
                     changed = true;
                 }
 
                 if (changed)
                 {
-                    Debug.Log("[DatabaseConfig] SQLite는 설치가 필요없으므로 Database 기능이 기본 활성화됩니다.");
+                    ToolkitLogger.Log("DatabaseConfig", "SQLite는 설치가 필요없으므로 Database 기능이 기본 활성화됩니다.");
                 }
 
                 config.configVersion = 1;

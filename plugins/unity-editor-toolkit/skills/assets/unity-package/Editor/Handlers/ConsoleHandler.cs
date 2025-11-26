@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 using UnityEditorToolkit.Protocol;
+using UnityEditorToolkit.Editor.Utils;
 
 namespace UnityEditorToolkit.Handlers
 {
@@ -154,7 +155,7 @@ namespace UnityEditorToolkit.Handlers
             }
             catch (Exception ex)
             {
-                Debug.LogWarning($"Failed to get Editor console logs: {ex.Message}");
+                ToolkitLogger.LogWarning("ConsoleHandler", $"Failed to get Editor console logs: {ex.Message}");
 
                 // Fallback to runtime logs
                 lock (logLock)
@@ -281,18 +282,18 @@ namespace UnityEditorToolkit.Handlers
                         }
                         else
                         {
-                            Debug.LogWarning("LogEntries.Clear method not found");
+                            ToolkitLogger.LogWarning("ConsoleHandler", "LogEntries.Clear method not found");
                         }
                     }
                     else
                     {
-                        Debug.LogWarning("UnityEditor.LogEntries type not found");
+                        ToolkitLogger.LogWarning("ConsoleHandler", "UnityEditor.LogEntries type not found");
                     }
                 }
             }
             catch (Exception ex)
             {
-                Debug.LogWarning($"Failed to clear Editor console: {ex.Message}");
+                ToolkitLogger.LogWarning("ConsoleHandler", $"Failed to clear Editor console: {ex.Message}");
             }
             #endif
 

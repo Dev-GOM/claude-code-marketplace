@@ -5,6 +5,7 @@ using UnityEngine.UIElements;
 using Cysharp.Threading.Tasks;
 using UnityEditorToolkit.Editor.Database;
 using UnityEditorToolkit.Editor.Database.Setup;
+using UnityEditorToolkit.Editor.Utils;
 
 namespace UnityEditorToolkit.Editor
 {
@@ -241,7 +242,7 @@ namespace UnityEditorToolkit.Editor
 
             if (currentDbConfig == null)
             {
-                Debug.LogWarning("[EditorServerWindow] SaveDatabaseConfig: currentDbConfig is null");
+                ToolkitLogger.LogWarning("EditorServerWindow", SaveDatabaseConfig: currentDbConfig is null");
                 return;
             }
 
@@ -256,7 +257,7 @@ namespace UnityEditorToolkit.Editor
                 currentDbConfig.EnableWAL = dbWalToggle.value;
 
             // Save to EditorPrefs (개별 키로 저장)
-            Debug.Log($"[EditorServerWindow] Saving DatabaseConfig: EnableWAL={currentDbConfig.EnableWAL}, EnableDatabase={currentDbConfig.EnableDatabase}");
+            ToolkitLogger.Log("EditorServerWindow", $" Saving DatabaseConfig: EnableWAL={currentDbConfig.EnableWAL}, EnableDatabase={currentDbConfig.EnableDatabase}");
             currentDbConfig.SaveToEditorPrefs();
         }
 
@@ -323,7 +324,7 @@ namespace UnityEditorToolkit.Editor
                     dbFilePathField.value = selectedPath;
                 }
                 SaveDatabaseConfig();
-                Debug.Log($"[EditorServerWindow] Database path updated: {selectedPath}");
+                ToolkitLogger.Log("EditorServerWindow", $" Database path updated: {selectedPath}");
             }
 
             await UniTask.Yield();
@@ -340,12 +341,12 @@ namespace UnityEditorToolkit.Editor
             if (System.IO.Directory.Exists(directory))
             {
                 EditorUtility.RevealInFinder(directory);
-                Debug.Log($"[EditorServerWindow] Opened folder: {directory}");
+                ToolkitLogger.Log("EditorServerWindow", $" Opened folder: {directory}");
             }
             else
             {
                 ShowDatabaseError($"❌ 폴더가 존재하지 않습니다:\n{directory}");
-                Debug.LogWarning($"[EditorServerWindow] Directory does not exist: {directory}");
+                ToolkitLogger.LogWarning("EditorServerWindow", $" Directory does not exist: {directory}");
             }
         }
 
@@ -363,7 +364,7 @@ namespace UnityEditorToolkit.Editor
 
             SaveDatabaseConfig();
             ShowDatabaseSuccess($"✅ 경로가 기본값으로 재설정되었습니다:\n{defaultPath}");
-            Debug.Log($"[EditorServerWindow] Database path reset to default: {defaultPath}");
+            ToolkitLogger.Log("EditorServerWindow", $" Database path reset to default: {defaultPath}");
         }
         #endregion
 
@@ -377,7 +378,7 @@ namespace UnityEditorToolkit.Editor
 
             try
             {
-                Debug.Log("[EditorServerWindow] 데이터베이스 연결 테스트 시작...");
+                ToolkitLogger.Log("EditorServerWindow", 데이터베이스 연결 테스트 시작...");
 
                 var connector = new SQLiteConnector(currentDbConfig);
                 var result = await connector.ConnectAsync();
@@ -388,18 +389,18 @@ namespace UnityEditorToolkit.Editor
                     await connector.DisconnectAsync();
 
                     ShowDatabaseSuccess($"✅ 연결 성공!\n\nSQLite Version:\n{version}\n\nDatabase File:\n{currentDbConfig.DatabaseFilePath}");
-                    Debug.Log($"[EditorServerWindow] 연결 테스트 성공: {version}");
+                    ToolkitLogger.Log("EditorServerWindow", $" 연결 테스트 성공: {version}");
                 }
                 else
                 {
                     ShowDatabaseError($"❌ 연결 실패:\n{result.ErrorMessage}");
-                    Debug.LogError($"[EditorServerWindow] 연결 테스트 실패: {result.ErrorMessage}");
+                    ToolkitLogger.LogError("EditorServerWindow", $" 연결 테스트 실패: {result.ErrorMessage}");
                 }
             }
             catch (System.Exception ex)
             {
                 ShowDatabaseError($"❌ 연결 테스트 중 오류:\n{ex.Message}");
-                Debug.LogError($"[EditorServerWindow] 연결 테스트 예외: {ex.Message}");
+                ToolkitLogger.LogError("EditorServerWindow", $" 연결 테스트 예외: {ex.Message}");
             }
         }
 
@@ -420,12 +421,12 @@ namespace UnityEditorToolkit.Editor
                     {
                         ShowDatabaseSuccess("✅ 이미 연결되어 있습니다!\n\nCommand History 활성화됨");
                     }
-                    Debug.Log("[EditorServerWindow] 이미 데이터베이스에 연결되어 있습니다.");
+                    ToolkitLogger.Log("EditorServerWindow", 이미 데이터베이스에 연결되어 있습니다.");
                     UpdateDatabaseUI();
                     return;
                 }
 
-                Debug.Log($"[EditorServerWindow] 데이터베이스 연결 중... (자동연결: {autoConnect})");
+                ToolkitLogger.Log("EditorServerWindow", $" 데이터베이스 연결 중... (자동연결: {autoConnect})");
 
                 // 데이터베이스 연결 (InitializeAsync에서 자동 마이그레이션 실행)
                 var result = await DatabaseManager.Instance.InitializeAsync(currentDbConfig);
@@ -436,12 +437,12 @@ namespace UnityEditorToolkit.Editor
                     {
                         ShowDatabaseError($"❌ 연결 실패:\n{result.ErrorMessage}");
                     }
-                    Debug.LogError($"[EditorServerWindow] 연결 실패: {result.ErrorMessage}");
+                    ToolkitLogger.LogError("EditorServerWindow", $" 연결 실패: {result.ErrorMessage}");
                     UpdateDatabaseUI();
                     return;
                 }
 
-                Debug.Log("[EditorServerWindow] 데이터베이스 연결 성공 (자동 마이그레이션 완료).");
+                ToolkitLogger.Log("EditorServerWindow", 데이터베이스 연결 성공 (자동 마이그레이션 완료).");
 
                 // Subscribe to CommandHistory events after successful connection
                 if (DatabaseManager.Instance.CommandHistory != null)
@@ -449,7 +450,7 @@ namespace UnityEditorToolkit.Editor
                     // Unsubscribe first to avoid duplicate subscriptions
                     DatabaseManager.Instance.CommandHistory.OnHistoryChanged -= UpdateCommandHistoryUI;
                     DatabaseManager.Instance.CommandHistory.OnHistoryChanged += UpdateCommandHistoryUI;
-                    Debug.Log("[EditorServerWindow] CommandHistory 이벤트 구독 완료.");
+                    ToolkitLogger.Log("EditorServerWindow", CommandHistory 이벤트 구독 완료.");
 
                     // Load history from database (restore from last session)
                     try
@@ -459,12 +460,12 @@ namespace UnityEditorToolkit.Editor
                         int loadedCount = await DatabaseManager.Instance.CommandHistory.LoadHistoryFromDatabaseAsync(since);
                         if (loadedCount > 0)
                         {
-                            Debug.Log($"[EditorServerWindow] DB에서 {loadedCount}개 명령 히스토리 복원 완료.");
+                            ToolkitLogger.Log("EditorServerWindow", $" DB에서 {loadedCount}개 명령 히스토리 복원 완료.");
                         }
                     }
                     catch (Exception loadEx)
                     {
-                        Debug.LogWarning($"[EditorServerWindow] 히스토리 로드 실패 (무시됨): {loadEx.Message}");
+                        ToolkitLogger.LogWarning("EditorServerWindow", $" 히스토리 로드 실패 (무시됨): {loadEx.Message}");
                     }
                 }
 
@@ -479,7 +480,7 @@ namespace UnityEditorToolkit.Editor
                 {
                     ShowDatabaseError($"❌ 연결 중 오류:\n{ex.Message}");
                 }
-                Debug.LogError($"[EditorServerWindow] 연결 예외: {ex.Message}");
+                ToolkitLogger.LogError("EditorServerWindow", $" 연결 예외: {ex.Message}");
             }
 
             UpdateDatabaseUI();
@@ -491,17 +492,17 @@ namespace UnityEditorToolkit.Editor
 
             try
             {
-                Debug.Log("[EditorServerWindow] 데이터베이스 연결 해제 중...");
+                ToolkitLogger.Log("EditorServerWindow", 데이터베이스 연결 해제 중...");
 
                 await DatabaseManager.Instance.ShutdownAsync();
 
                 ShowDatabaseSuccess("✅ 데이터베이스 연결 해제 완료.");
-                Debug.Log("[EditorServerWindow] 연결 해제 성공.");
+                ToolkitLogger.Log("EditorServerWindow", 연결 해제 성공.");
             }
             catch (System.Exception ex)
             {
                 ShowDatabaseError($"❌ 연결 해제 중 오류:\n{ex.Message}");
-                Debug.LogError($"[EditorServerWindow] 연결 해제 예외: {ex.Message}");
+                ToolkitLogger.LogError("EditorServerWindow", $" 연결 해제 예외: {ex.Message}");
             }
 
             UpdateDatabaseUI();
@@ -519,7 +520,7 @@ namespace UnityEditorToolkit.Editor
 
             try
             {
-                Debug.Log("[EditorServerWindow] 마이그레이션 실행 중...");
+                ToolkitLogger.Log("EditorServerWindow", 마이그레이션 실행 중...");
 
                 var runner = new MigrationRunner(DatabaseManager.Instance);
                 var result = await runner.RunMigrationsAsync();
@@ -527,7 +528,7 @@ namespace UnityEditorToolkit.Editor
                 if (result.Success)
                 {
                     ShowDatabaseSuccess($"✅ 마이그레이션 완료!\n{result.MigrationsApplied}개 적용됨.");
-                    Debug.Log($"[EditorServerWindow] 마이그레이션 성공: {result.MigrationsApplied}개");
+                    ToolkitLogger.Log("EditorServerWindow", $" 마이그레이션 성공: {result.MigrationsApplied}개");
 
                     // Update migration button text after successful migration
                     UpdateMigrationButtonTextAsync().Forget();
@@ -535,13 +536,13 @@ namespace UnityEditorToolkit.Editor
                 else
                 {
                     ShowDatabaseError($"❌ 마이그레이션 실패:\n{result.ErrorMessage}");
-                    Debug.LogError($"[EditorServerWindow] 마이그레이션 실패: {result.ErrorMessage}");
+                    ToolkitLogger.LogError("EditorServerWindow", $" 마이그레이션 실패: {result.ErrorMessage}");
                 }
             }
             catch (System.Exception ex)
             {
                 ShowDatabaseError($"❌ 마이그레이션 중 오류:\n{ex.Message}");
-                Debug.LogError($"[EditorServerWindow] 마이그레이션 예외: {ex.Message}");
+                ToolkitLogger.LogError("EditorServerWindow", $" 마이그레이션 예외: {ex.Message}");
             }
         }
 
@@ -583,7 +584,7 @@ namespace UnityEditorToolkit.Editor
             }
             catch (Exception ex)
             {
-                Debug.LogError($"[EditorServerWindow] 동기화 토글 실패: {ex.Message}");
+                ToolkitLogger.LogError("EditorServerWindow", $" 동기화 토글 실패: {ex.Message}");
                 ShowDatabaseError($"⚠️ 동기화 토글 실패: {ex.Message}");
             }
         }
@@ -612,25 +613,25 @@ namespace UnityEditorToolkit.Editor
 
             try
             {
-                Debug.Log("[EditorServerWindow] Undo 실행 중...");
+                ToolkitLogger.Log("EditorServerWindow", Undo 실행 중...");
 
                 bool success = await history.UndoAsync();
 
                 if (success)
                 {
                     ShowDatabaseSuccess("✅ ⟲ Undo 완료!");
-                    Debug.Log("[EditorServerWindow] Undo 성공.");
+                    ToolkitLogger.Log("EditorServerWindow", Undo 성공.");
                 }
                 else
                 {
                     ShowDatabaseError("❌ Undo 실패.");
-                    Debug.LogError("[EditorServerWindow] Undo 실패.");
+                    ToolkitLogger.LogError("EditorServerWindow", Undo 실패.");
                 }
             }
             catch (System.Exception ex)
             {
                 ShowDatabaseError($"❌ Undo 중 오류:\n{ex.Message}");
-                Debug.LogError($"[EditorServerWindow] Undo 예외: {ex.Message}");
+                ToolkitLogger.LogError("EditorServerWindow", $" Undo 예외: {ex.Message}");
             }
 
             UpdateCommandHistoryUI();
@@ -658,25 +659,25 @@ namespace UnityEditorToolkit.Editor
 
             try
             {
-                Debug.Log("[EditorServerWindow] Redo 실행 중...");
+                ToolkitLogger.Log("EditorServerWindow", Redo 실행 중...");
 
                 bool success = await history.RedoAsync();
 
                 if (success)
                 {
                     ShowDatabaseSuccess("✅ ⟳ Redo 완료!");
-                    Debug.Log("[EditorServerWindow] Redo 성공.");
+                    ToolkitLogger.Log("EditorServerWindow", Redo 성공.");
                 }
                 else
                 {
                     ShowDatabaseError("❌ Redo 실패.");
-                    Debug.LogError("[EditorServerWindow] Redo 실패.");
+                    ToolkitLogger.LogError("EditorServerWindow", Redo 실패.");
                 }
             }
             catch (System.Exception ex)
             {
                 ShowDatabaseError($"❌ Redo 중 오류:\n{ex.Message}");
-                Debug.LogError($"[EditorServerWindow] Redo 예외: {ex.Message}");
+                ToolkitLogger.LogError("EditorServerWindow", $" Redo 예외: {ex.Message}");
             }
 
             UpdateCommandHistoryUI();
@@ -697,17 +698,17 @@ namespace UnityEditorToolkit.Editor
 
             try
             {
-                Debug.Log("[EditorServerWindow] Command History 초기화 중...");
+                ToolkitLogger.Log("EditorServerWindow", Command History 초기화 중...");
 
                 history.Clear();
 
                 ShowDatabaseSuccess("✅ 🗑️ Command History가 초기화되었습니다.");
-                Debug.Log("[EditorServerWindow] Command History 초기화 완료.");
+                ToolkitLogger.Log("EditorServerWindow", Command History 초기화 완료.");
             }
             catch (System.Exception ex)
             {
                 ShowDatabaseError($"❌ 초기화 중 오류:\n{ex.Message}");
-                Debug.LogError($"[EditorServerWindow] History 초기화 예외: {ex.Message}");
+                ToolkitLogger.LogError("EditorServerWindow", $" History 초기화 예외: {ex.Message}");
             }
 
             await UniTask.Yield();
@@ -733,7 +734,7 @@ namespace UnityEditorToolkit.Editor
 
                 if (loadedCount > 0)
                 {
-                    Debug.Log($"[EditorServerWindow] DB에서 {loadedCount}개 명령 히스토리 복원 완료 (도메인 리로드 후).");
+                    ToolkitLogger.Log("EditorServerWindow", $" DB에서 {loadedCount}개 명령 히스토리 복원 완료 (도메인 리로드 후).");
                 }
 
                 // Update UI
@@ -741,7 +742,7 @@ namespace UnityEditorToolkit.Editor
             }
             catch (Exception ex)
             {
-                Debug.LogWarning($"[EditorServerWindow] 히스토리 리로드 실패 (무시됨): {ex.Message}");
+                ToolkitLogger.LogWarning("EditorServerWindow", $" 히스토리 리로드 실패 (무시됨): {ex.Message}");
             }
         }
 
@@ -905,7 +906,7 @@ namespace UnityEditorToolkit.Editor
             catch (Exception ex)
             {
                 // 비동기 작업 중 예외 발생 시 (컴파일, 도메인 리로드 등)
-                Debug.LogWarning($"[EditorServerWindow] Migration 상태 확인 실패: {ex.Message}");
+                ToolkitLogger.LogWarning("EditorServerWindow", $" Migration 상태 확인 실패: {ex.Message}");
 
                 // UI 요소가 여전히 유효한지 확인
                 if (dbMigrateButton != null)
@@ -1036,7 +1037,7 @@ namespace UnityEditorToolkit.Editor
             }
             catch (Exception ex)
             {
-                Debug.LogError($"[EditorServerWindow] Setup Status 확인 실패: {ex.Message}");
+                ToolkitLogger.LogError("EditorServerWindow", $" Setup Status 확인 실패: {ex.Message}");
             }
         }
 
@@ -1059,7 +1060,7 @@ namespace UnityEditorToolkit.Editor
                 try
                 {
                     System.IO.File.Delete(currentDbConfig.DatabaseFilePath);
-                    Debug.Log($"[EditorServerWindow] 기존 DB 파일 삭제: {currentDbConfig.DatabaseFilePath}");
+                    ToolkitLogger.Log("EditorServerWindow", $" 기존 DB 파일 삭제: {currentDbConfig.DatabaseFilePath}");
                 }
                 catch (Exception ex)
                 {
@@ -1074,14 +1075,14 @@ namespace UnityEditorToolkit.Editor
 
             try
             {
-                Debug.Log("[EditorServerWindow] Setup Wizard 시작 (재설치)...");
+                ToolkitLogger.Log("EditorServerWindow", Setup Wizard 시작 (재설치)...");
 
                 var result = await setupWizard.RunSetupAsync(currentDbConfig);
 
                 if (result.Success)
                 {
                     ShowSetupSuccess("✅ 데이터베이스 재설치 완료!\n\n모든 과정이 성공적으로 완료되었습니다.");
-                    Debug.Log("[EditorServerWindow] Setup Wizard 완료 (재설치).");
+                    ToolkitLogger.Log("EditorServerWindow", Setup Wizard 완료 (재설치).");
 
                     // Setup Status 재확인
                     await UniTask.Delay(1000);
@@ -1096,13 +1097,13 @@ namespace UnityEditorToolkit.Editor
                 else
                 {
                     ShowSetupError($"❌ 재설치 실패:\n\n{result.ErrorMessage}");
-                    Debug.LogError($"[EditorServerWindow] Setup Wizard 실패: {result.ErrorMessage}");
+                    ToolkitLogger.LogError("EditorServerWindow", $" Setup Wizard 실패: {result.ErrorMessage}");
                 }
             }
             catch (Exception ex)
             {
                 ShowSetupError($"❌ 재설치 중 예외:\n\n{ex.Message}");
-                Debug.LogError($"[EditorServerWindow] Setup Wizard 예외: {ex.Message}");
+                ToolkitLogger.LogError("EditorServerWindow", $" Setup Wizard 예외: {ex.Message}");
             }
             finally
             {

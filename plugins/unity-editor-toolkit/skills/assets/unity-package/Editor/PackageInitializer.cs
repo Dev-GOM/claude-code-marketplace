@@ -2,6 +2,7 @@ using System.IO;
 using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEngine;
+using UnityEditorToolkit.Editor.Utils;
 
 namespace UnityEditorToolkit.Editor
 {
@@ -28,7 +29,7 @@ namespace UnityEditorToolkit.Editor
             string packageVersion = GetPackageVersion();
             if (string.IsNullOrEmpty(packageVersion))
             {
-                Debug.LogWarning("[Unity Editor Toolkit] Could not determine package version. Initialization skipped.");
+                ToolkitLogger.LogWarning("PackageInitializer", Could not determine package version. Initialization skipped.");
                 return;
             }
 
@@ -44,7 +45,7 @@ namespace UnityEditorToolkit.Editor
                 }
                 catch (System.Exception e)
                 {
-                    Debug.LogWarning($"[Unity Editor Toolkit] Failed to read initialization file: {e.Message}");
+                    ToolkitLogger.LogWarning("PackageInitializer", $" Failed to read initialization file: {e.Message}");
                     installedVersion = "";
                 }
             }
@@ -60,14 +61,14 @@ namespace UnityEditorToolkit.Editor
                 EditorApplication.delayCall += () =>
                 {
                     EditorWindow.GetWindow<EditorServerWindow>("Unity Editor Toolkit");
-                    Debug.Log("[Unity Editor Toolkit] Welcome! Server Window opened. Configure your plugin scripts path and install CLI to get started.");
+                    ToolkitLogger.Log("PackageInitializer", Welcome! Server Window opened. Configure your plugin scripts path and install CLI to get started.");
                 };
             }
             else if (isVersionUpgrade)
             {
                 // Version upgrade - just update version number
                 WriteInitializationFile(packageVersion, "Failed to update version file");
-                Debug.Log($"[Unity Editor Toolkit] Updated to version {packageVersion}");
+                ToolkitLogger.Log("PackageInitializer", $" Updated to version {packageVersion}");
             }
         }
 
@@ -79,7 +80,7 @@ namespace UnityEditorToolkit.Editor
             }
             catch (System.Exception e)
             {
-                Debug.LogWarning($"[Unity Editor Toolkit] {failureMessage}: {e.Message}");
+                ToolkitLogger.LogWarning("PackageInitializer", $" {failureMessage}: {e.Message}");
             }
         }
 
@@ -98,7 +99,7 @@ namespace UnityEditorToolkit.Editor
             }
             catch (System.Exception e)
             {
-                Debug.LogWarning($"[Unity Editor Toolkit] Failed to read package version: {e.Message}");
+                ToolkitLogger.LogWarning("PackageInitializer", $" Failed to read package version: {e.Message}");
                 return null;
             }
         }
@@ -142,11 +143,11 @@ namespace UnityEditorToolkit.Editor
             if (File.Exists(InitializationFilePath))
             {
                 File.Delete(InitializationFilePath);
-                Debug.Log("[Unity Editor Toolkit] Package initialization reset. Restart Unity to trigger first-install behavior.");
+                ToolkitLogger.Log("PackageInitializer", Package initialization reset. Restart Unity to trigger first-install behavior.");
             }
             else
             {
-                Debug.Log("[Unity Editor Toolkit] No initialization file found - already in fresh state.");
+                ToolkitLogger.Log("PackageInitializer", No initialization file found - already in fresh state.");
             }
         }
     }

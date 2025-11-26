@@ -191,20 +191,20 @@ namespace UnityEditorToolkit.Handlers
                 var config = DatabaseConfig.LoadFromEditorPrefs();
                 string dbPath = config.DatabaseFilePath;
 
-                Logger.Log("DatabaseHandler", "Starting database reset...");
+                ToolkitLogger.Log("DatabaseHandler", "Starting database reset...");
 
                 // Shutdown first (check IsInitialized, not just IsConnected)
                 if (DatabaseManager.Instance.IsInitialized)
                 {
                     try
                     {
-                        Logger.Log("DatabaseHandler", "Shutting down database...");
+                        ToolkitLogger.Log("DatabaseHandler", "Shutting down database...");
                         await DatabaseManager.Instance.ShutdownAsync();
-                        Logger.Log("DatabaseHandler", "Database shutdown complete.");
+                        ToolkitLogger.Log("DatabaseHandler", "Database shutdown complete.");
                     }
                     catch (Exception ex)
                     {
-                        Logger.LogWarning("DatabaseHandler", $"Shutdown warning: {ex.Message}");
+                        ToolkitLogger.LogWarning("DatabaseHandler", $"Shutdown warning: {ex.Message}");
                     }
                 }
 
@@ -216,7 +216,7 @@ namespace UnityEditorToolkit.Handlers
                     {
                         File.Delete(dbPath);
                         fileDeleted = true;
-                        Logger.Log("DatabaseHandler", $"Database file deleted: {dbPath}");
+                        ToolkitLogger.Log("DatabaseHandler", $"Database file deleted: {dbPath}");
                     }
                     catch (Exception ex)
                     {
@@ -231,7 +231,7 @@ namespace UnityEditorToolkit.Handlers
                 }
 
                 // Reconnect (will run migrations automatically)
-                Logger.Log("DatabaseHandler", "Reconnecting to database...");
+                ToolkitLogger.Log("DatabaseHandler", "Reconnecting to database...");
                 var result = await DatabaseManager.Instance.InitializeAsync(config);
 
                 resetResult = new OperationResult
@@ -242,11 +242,11 @@ namespace UnityEditorToolkit.Handlers
                         : $"Reset failed: {result.ErrorMessage}"
                 };
 
-                Logger.Log("DatabaseHandler", $"Reset complete: {resetResult.message}");
+                ToolkitLogger.Log("DatabaseHandler", $"Reset complete: {resetResult.message}");
             }
             catch (Exception ex)
             {
-                Logger.LogError("DatabaseHandler", $"Reset exception: {ex.Message}");
+                ToolkitLogger.LogError("DatabaseHandler", $"Reset exception: {ex.Message}");
                 resetResult = new OperationResult
                 {
                     success = false,

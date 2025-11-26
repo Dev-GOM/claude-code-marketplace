@@ -5,6 +5,7 @@ using UnityEditorToolkit.Protocol;
 using UnityEditorToolkit.Editor.Database;
 using UnityEditorToolkit.Editor.Database.Commands;
 using Cysharp.Threading.Tasks;
+using UnityEditorToolkit.Editor.Utils;
 
 namespace UnityEditorToolkit.Handlers
 {
@@ -132,7 +133,7 @@ namespace UnityEditorToolkit.Handlers
             }
             catch (Exception ex)
             {
-                Debug.LogWarning($"[GameObjectHandler] Command recording failed: {ex.Message}");
+                ToolkitLogger.LogWarning("GameObjectHandler", $"Command recording failed: {ex.Message}");
             }
         }
 
@@ -188,7 +189,7 @@ namespace UnityEditorToolkit.Handlers
             }
             catch (Exception ex)
             {
-                Debug.LogWarning($"[GameObjectHandler] Command execution failed: {ex.Message}");
+                ToolkitLogger.LogWarning("GameObjectHandler", $"Command execution failed: {ex.Message}");
             }
         }
 

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using UnityEditorToolkit.Editor.Utils;
 
 namespace UnityEditorToolkit.Protocol
 {
@@ -46,13 +47,13 @@ namespace UnityEditorToolkit.Protocol
             catch (Newtonsoft.Json.JsonException ex)
             {
                 // JSON 역직렬화 실패 시 예외를 다시 던져서 호출자가 처리하도록
-                UnityEngine.Debug.LogError($"Failed to deserialize params to {typeof(T).Name}: {ex.Message}");
+                ToolkitLogger.LogError("JsonRpcRequest", $"Failed to deserialize params to {typeof(T).Name}: {ex.Message}");
                 throw new ArgumentException($"Invalid parameter format for {typeof(T).Name}: {ex.Message}", ex);
             }
             catch (Exception ex)
             {
                 // 기타 예외도 동일하게 처리
-                UnityEngine.Debug.LogError($"Unexpected error deserializing params: {ex.Message}");
+                ToolkitLogger.LogError("JsonRpcRequest", $"Unexpected error deserializing params: {ex.Message}");
                 throw new ArgumentException($"Failed to deserialize parameters: {ex.Message}", ex);
             }
         }

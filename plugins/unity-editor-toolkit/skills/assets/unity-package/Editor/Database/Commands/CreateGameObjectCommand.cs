@@ -1,6 +1,7 @@
 using System;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
+using UnityEditorToolkit.Editor.Utils;
 
 namespace UnityEditorToolkit.Editor.Database.Commands
 {
@@ -77,14 +78,14 @@ namespace UnityEditorToolkit.Editor.Database.Commands
                 // 생성된 GameObject ID 저장
                 createdInstanceId = go.GetInstanceID();
 
-                Debug.Log($"[CreateGameObjectCommand] GameObject 생성: {gameObjectName} (ID: {createdInstanceId})");
+                ToolkitLogger.LogDebug("CreateGameObjectCommand", $" GameObject 생성: {gameObjectName} (ID: {createdInstanceId})");
 
                 await UniTask.Yield();
                 return true;
             }
             catch (Exception ex)
             {
-                Debug.LogError($"[CreateGameObjectCommand] 생성 실패: {ex.Message}");
+                ToolkitLogger.LogError("CreateGameObjectCommand", $" 생성 실패: {ex.Message}");
                 return false;
             }
         }
@@ -98,11 +99,11 @@ namespace UnityEditorToolkit.Editor.Database.Commands
                 if (go != null)
                 {
                     UnityEngine.Object.DestroyImmediate(go);
-                    Debug.Log($"[CreateGameObjectCommand] GameObject 삭제 (Undo): {gameObjectName}");
+                    ToolkitLogger.LogDebug("CreateGameObjectCommand", $" GameObject 삭제 (Undo): {gameObjectName}");
                 }
                 else
                 {
-                    Debug.LogWarning($"[CreateGameObjectCommand] GameObject를 찾을 수 없음: {gameObjectName}");
+                    ToolkitLogger.LogWarning("CreateGameObjectCommand", $" GameObject를 찾을 수 없음: {gameObjectName}");
                 }
 
                 await UniTask.Yield();
@@ -110,7 +111,7 @@ namespace UnityEditorToolkit.Editor.Database.Commands
             }
             catch (Exception ex)
             {
-                Debug.LogError($"[CreateGameObjectCommand] Undo 실패: {ex.Message}");
+                ToolkitLogger.LogError("CreateGameObjectCommand", $" Undo 실패: {ex.Message}");
                 return false;
             }
         }

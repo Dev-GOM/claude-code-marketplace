@@ -95,7 +95,7 @@ namespace UnityEditorToolkit.Editor.Utils
                     }
                     catch (Exception ex)
                     {
-                        UnityEngine.Debug.LogError($"[EditorMainThreadDispatcher] Error executing action: {ex.Message}\n{ex.StackTrace}");
+                        ToolkitLogger.LogError("EditorMainThreadDispatcher", $"Error executing action: {ex.Message}\n{ex.StackTrace}");
                     }
                 }
             }
