@@ -284,11 +284,12 @@ namespace UnityEditorToolkit.Handlers
 
                 foreach (var keyword in globalKeywords)
                 {
+                    // GlobalKeyword only has 'name' property
+                    // Use Shader.IsKeywordEnabled to check if enabled
                     keywordList.Add(new
                     {
                         name = keyword.name,
-                        type = keyword.type.ToString(),
-                        isValid = keyword.isValid
+                        isEnabled = Shader.IsKeywordEnabled(keyword)
                     });
                 }
 
