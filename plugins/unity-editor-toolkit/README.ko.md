@@ -1,6 +1,6 @@
 # Unity Editor Toolkit
 
-> **⚠️ 상태**: 🧪 실험 단계 (v0.8.0) - **Unity 6+ 필수**
+> **⚠️ 상태**: 🧪 실험 단계 (v0.13.0) - **Unity 6+ 필수**
 >
 > **이 플러그인은 현재 실험 단계입니다. API와 기능이 변경될 수 있습니다.**
 > **데이터베이스 기능은 Unity 6 이상이 필요합니다** (내장 SQLite, 별도 설치 불필요)
@@ -93,7 +93,7 @@ cd <unity-project-root> && node .unity-websocket/uw --help
 cd <unity-project-root> && node .unity-websocket/uw <command> --help
 ```
 
-**현재 구현됨**: 8개 카테고리에 26개 명령어
+**현재 구현됨**: 15개 카테고리에 86개 명령어
 
 전체 명령어 레퍼런스는 [COMMANDS.md](./skills/references/COMMANDS.md) 또는 [COMMANDS.ko.md](./skills/references/COMMANDS.ko.md)를 참조하세요.
 
@@ -278,8 +278,7 @@ npm run build
 
 ## 개발 로드맵
 
-**Phase 1 (현재)**: GameObject, Transform, Scene, Console, Wait, Chain - 26개 명령어
-**Phase 2**: Component, Material, Prefab - 100+ 명령어
+**Phase 2 (현재)**: 15개 카테고리 86개 명령어 (GameObject, Transform, Component, Scene, Prefab, Material, Shader, Asset 등)
 **Phase 3**: Animation, Physics, Lighting - 150+ 명령어
 **Phase 4**: Build, Profiler, Test Runner - 100+ 명령어
 **Phase 5**: 고급 기능 (Timeline, UI Toolkit, VCS) - 150+ 명령어
@@ -342,8 +341,8 @@ Apache License 2.0 - 자세한 내용은 [LICENSE](../../LICENSE)를 참조하�
 
 ---
 
-**버전**: 0.7.0
+**버전**: 0.13.0
 **Unity 버전**: Unity 6+ (데이터베이스 기능은 내장 SQLite 지원 필요)
-**마지막 업데이트**: 2025-11-19
+**마지막 업데이트**: 2025-12-02
 **제작자**: Dev GOM
 **마켓플레이스**: [dev-gom-plugins](https://github.com/Dev-GOM/claude-code-marketplace)

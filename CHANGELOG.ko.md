@@ -2,7 +2,29 @@
 
 Dev GOM Plugins 마켓플레이스의 모든 주요 변경사항이 이 파일에 문서화됩니다.
 
-> **버전**: 2.29.1 | **최종 업데이트**: 2025-11-26
+> **버전**: 2.30.0 | **최종 업데이트**: 2025-12-02
+
+---
+
+## [2.30.0] - 2025-12-02
+
+### 주요 기능
+- 🎮 **Unity Editor Toolkit v0.13.0**: Shader 명령어 및 버그 수정
+  - **Shader 명령어** (7개): 완전한 셰이더 관리
+    - `shader list`: 프로젝트 내 모든 셰이더 목록 (필터링 지원)
+    - `shader find`: 이름으로 셰이더 검색
+    - `shader properties`: 셰이더 속성 목록 조회
+    - `shader keywords`: 전역/셰이더 키워드 목록
+    - `shader keyword-enable/disable`: 전역 키워드 활성화/비활성화
+    - `shader keyword-status`: 키워드 활성화 상태 확인
+  - **버그 수정**:
+    - Console: Warning 로그가 기본적으로 표시됨 (`includeWarnings` 기본값 `true`로 변경)
+    - Database: 클리어 시 SQLite에서 커맨드 히스토리 정상 삭제
+    - Database: 각 Unity 프로젝트가 `Library/UnityEditorToolkit/`에 개별 데이터베이스 파일 사용
+  - **문서**:
+    - `COMMANDS_MATERIAL.md` 추가 (9개 Material 명령어 레퍼런스)
+    - `COMMANDS_SHADER.md` 추가 (7개 Shader 명령어 레퍼런스)
+  - **상태**: 15개 카테고리 86개 명령어 (Phase 2)
 
 ---
 

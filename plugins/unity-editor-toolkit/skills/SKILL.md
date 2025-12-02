@@ -175,7 +175,7 @@ Unity Editor Toolkit CLI automatically:
 
 ⚠️ **Before executing ANY command, check the reference documentation for your command category** (see "📚 문서 우선 원칙" section above).
 
-Unity Editor Toolkit provides 40+ commands across 12+ categories. All commands run from the Unity project root:
+Unity Editor Toolkit provides 86+ commands across 15 categories. All commands run from the Unity project root:
 
 ```bash
 cd <unity-project-root> && node .unity-websocket/uw <command> [options]
@@ -197,6 +197,9 @@ cd <unity-project-root> && node .unity-websocket/uw <command> [options]
 | 10 | Chain Commands | 2 | [COMMANDS_CHAIN.md](./references/COMMANDS_CHAIN.md) |
 | 11 | Menu Execution | 2 | [COMMANDS_MENU.md](./references/COMMANDS_MENU.md) |
 | 12 | Asset Management | 9 | [COMMANDS_ASSET.md](./references/COMMANDS_ASSET.md) |
+| 13 | Prefab | 12 | [COMMANDS_PREFAB.md](./references/COMMANDS_PREFAB.md) |
+| 14 | Material | 9 | [COMMANDS_MATERIAL.md](./references/COMMANDS_MATERIAL.md) |
+| 15 | Shader | 7 | [COMMANDS_SHADER.md](./references/COMMANDS_SHADER.md) |
 
 **Usage:**
 
@@ -352,8 +355,8 @@ node .unity-websocket/uw.js chain exec \
    - Use inline exec for quick command sequences
 
 10. **Development Roadmap Awareness**
-   - **Phase 1 (Current)**: GameObject, Transform, Scene, Console, Wait, Chain - 26 commands
-   - **Phase 2+**: Component, Material, Prefab, Animation, Physics, Build - 474+ commands coming soon
+   - **Phase 2 (Current)**: 86 commands implemented across 15 categories
+   - **Phase 3+**: Animation, Physics, Lighting, Camera, Audio, Navigation - 400+ commands planned
    - See full roadmap in [COMMANDS.md](./references/COMMANDS.md)
 
 ## References
@@ -367,12 +370,18 @@ Detailed documentation available in the `references/` folder:
   - [Connection & Status](./references/COMMANDS_CONNECTION_STATUS.md)
   - [GameObject & Hierarchy](./references/COMMANDS_GAMEOBJECT_HIERARCHY.md)
   - [Transform](./references/COMMANDS_TRANSFORM.md)
+  - [Component](./references/COMMANDS_COMPONENT.md)
   - [Scene Management](./references/COMMANDS_SCENE.md)
   - [Asset Database & Editor](./references/COMMANDS_EDITOR.md)
   - [Console & Logging](./references/COMMANDS_CONSOLE.md)
   - [EditorPrefs Management](./references/COMMANDS_PREFS.md)
   - [Wait Commands](./references/COMMANDS_WAIT.md)
   - [Chain Commands](./references/COMMANDS_CHAIN.md)
+  - [Menu Execution](./references/COMMANDS_MENU.md)
+  - [Asset Management](./references/COMMANDS_ASSET.md)
+  - [Prefab](./references/COMMANDS_PREFAB.md)
+  - [Material](./references/COMMANDS_MATERIAL.md)
+  - [Shader](./references/COMMANDS_SHADER.md)
 - **[API_COMPATIBILITY.md](../API_COMPATIBILITY.md)** - Unity version compatibility (2020.3 - Unity 6)
 - **[TEST_GUIDE.md](../TEST_GUIDE.md)** - Unity C# server testing guide (English)
 - **[TEST_GUIDE.ko.md](../TEST_GUIDE.ko.md)** - Unity C# server testing guide (Korean)
@@ -381,7 +390,7 @@ Unity C# server package available in `assets/unity-package/` - install via Unity
 
 ---
 
-**Status**: 🧪 Experimental - Phase 1 (26 commands implemented)
+**Status**: 🧪 Experimental - Phase 2 (86 commands implemented)
 **Unity Version Support**: 2020.3 - Unity 6
 **Protocol**: JSON-RPC 2.0 over WebSocket
 **Port Range**: 9500-9600 (auto-assigned)

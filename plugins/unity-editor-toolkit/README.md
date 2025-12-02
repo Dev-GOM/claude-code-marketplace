@@ -1,6 +1,6 @@
 # Unity Editor Toolkit
 
-> **⚠️ Status**: 🧪 Experimental (v0.8.0) - **Unity 6+ Required**
+> **⚠️ Status**: 🧪 Experimental (v0.13.0) - **Unity 6+ Required**
 >
 > **This plugin is currently in experimental stage. APIs and features may change.**
 > **Database features require Unity 6 or higher** (embedded SQLite, no installation required)
@@ -108,7 +108,7 @@ cd <unity-project-root> && node .unity-websocket/uw --help
 cd <unity-project-root> && node .unity-websocket/uw <command> --help
 ```
 
-**Currently Implemented**: 26 commands across 8 categories
+**Currently Implemented**: 86 commands across 15 categories
 
 See [COMMANDS.md](./skills/references/COMMANDS.md) for complete command reference.
 
@@ -290,8 +290,7 @@ Unity C# server implementation required for end-to-end testing. Unit tests comin
 
 ## Development Roadmap
 
-**Phase 1 (Current)**: GameObject, Transform, Scene, Console, Wait, Chain - 26 commands
-**Phase 2**: Component, Material, Prefab - 100+ commands
+**Phase 2 (Current)**: 86 commands across 15 categories (GameObject, Transform, Component, Scene, Prefab, Material, Shader, Asset, etc.)
 **Phase 3**: Animation, Physics, Lighting - 150+ commands
 **Phase 4**: Build, Profiler, Test Runner - 100+ commands
 **Phase 5**: Advanced features (Timeline, UI Toolkit, VCS) - 150+ commands
@@ -365,8 +364,8 @@ Apache License 2.0 - See [LICENSE](../../LICENSE) for details
 
 ---
 
-**Version**: 0.7.0
+**Version**: 0.13.0
 **Unity Version**: Unity 6+ (Database features require embedded SQLite support)
-**Last Updated**: 2025-11-19
+**Last Updated**: 2025-12-02
 **Author**: Dev GOM
 **Marketplace**: [dev-gom-plugins](https://github.com/Dev-GOM/claude-code-marketplace)

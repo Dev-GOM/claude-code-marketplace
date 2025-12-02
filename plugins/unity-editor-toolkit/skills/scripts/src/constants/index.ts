@@ -210,6 +210,15 @@ export const COMMANDS = {
   PREFAB_OPEN: 'Prefab.Open',
   PREFAB_CLOSE: 'Prefab.Close',
   PREFAB_LIST: 'Prefab.List',
+
+  // Shader commands
+  SHADER_LIST: 'Shader.List',
+  SHADER_FIND: 'Shader.Find',
+  SHADER_GET_PROPERTIES: 'Shader.GetProperties',
+  SHADER_GET_KEYWORDS: 'Shader.GetKeywords',
+  SHADER_ENABLE_KEYWORD: 'Shader.EnableKeyword',
+  SHADER_DISABLE_KEYWORD: 'Shader.DisableKeyword',
+  SHADER_IS_KEYWORD_ENABLED: 'Shader.IsKeywordEnabled',
 } as const;
 
 /**

@@ -2,7 +2,29 @@
 
 All notable changes to the Dev GOM Plugins marketplace will be documented in this file.
 
-> **Version**: 2.29.1 | **Last Updated**: 2025-11-26
+> **Version**: 2.30.0 | **Last Updated**: 2025-12-02
+
+---
+
+## [2.30.0] - 2025-12-02
+
+### Major Features
+- 🎮 **Unity Editor Toolkit v0.13.0**: Shader Commands & Bug Fixes
+  - **Shader Commands** (7 commands): Complete shader management
+    - `shader list`: List all shaders in project with filtering
+    - `shader find`: Find shader by name
+    - `shader properties`: Get shader properties list
+    - `shader keywords`: List global/shader keywords
+    - `shader keyword-enable/disable`: Enable/disable global keywords
+    - `shader keyword-status`: Check keyword enabled status
+  - **Bug Fixes**:
+    - Console: Warning logs now display by default (`includeWarnings` default changed to `true`)
+    - Database: Command history properly deleted from SQLite when cleared
+    - Database: Each Unity project now uses separate database file in `Library/UnityEditorToolkit/`
+  - **Documentation**:
+    - Added `COMMANDS_MATERIAL.md` (9 material commands reference)
+    - Added `COMMANDS_SHADER.md` (7 shader commands reference)
+  - **Status**: 86 commands across 15 categories (Phase 2)
 
 ---
 
