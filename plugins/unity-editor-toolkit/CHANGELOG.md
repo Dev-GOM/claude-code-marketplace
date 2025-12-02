@@ -5,6 +5,21 @@ All notable changes to Unity Editor Toolkit will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.15.1] - 2025-12-02
+
+### Added
+- **Version Check Feature**: Check for updates from Unity Editor window
+  - "Check for Updates" button to fetch latest version from GitHub
+  - "Open GitHub Releases" button for quick access to releases page
+  - Local vs latest version comparison with update status display
+  - Real-time version check with async HTTP request to GitHub raw URL
+
+### Changed
+- **Documentation**: Updated Unity package installation guide
+  - Added dependency package installation steps (UniTask, unity-sqlite-net)
+  - Added package update instructions
+  - Removed root CHANGELOG files (release notes now in GitHub Releases)
+
 ## [0.13.0] - 2025-12-02
 
 ### Added

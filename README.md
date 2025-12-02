@@ -2,11 +2,9 @@
 
 **[Website →](https://dev-gom.github.io/claude-code-marketplace/)**
 
-> **Version**: 2.30.0 | **Last Updated**: 2025-12-02
+> **Version**: 2.31.0 | **Last Updated**: 2025-12-02
 >
 > **Language**: [English](README.md) | [한국어](README.ko.md)
->
-> **📋 Changelog**: [English](CHANGELOG.md) | [한국어](CHANGELOG.ko.md)
 
 > **⚠️ Important Notice (>= v2.0.17)**
 > There is a known issue where hook logs stack in the chat window. Until this is resolved, PostToolUse hook outputs are hidden using `suppressOutput: true` in hooks.json. Stop hook messages can be controlled via `.plugin-config/[plugin-name].json` with `"showLogs": false` (default). Set to `true` to enable. See [Configuration](#configuration) for details.
