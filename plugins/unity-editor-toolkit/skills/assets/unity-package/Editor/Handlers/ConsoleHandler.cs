@@ -306,7 +306,7 @@ namespace UnityEditorToolkit.Handlers
         {
             public int count = 50;
             public bool errorsOnly = false;
-            public bool includeWarnings = false;
+            public bool includeWarnings = true;
         }
 
         [Serializable]

@@ -5,7 +5,7 @@
   },
   "metadata": {
     "description": "Productivity plugins for Claude Code to automate development workflows",
-    "version": "2.29.1",
+    "version": "2.30.0",
     "homepage": "https://github.com/Dev-GOM/claude-code-marketplace"
   },
   "plugins": [
@@ -280,8 +280,8 @@
     {
       "name": "unity-editor-toolkit",
       "source": "./plugins/unity-editor-toolkit",
-      "description": "🧪 Experimental - Real-time Unity Editor control via WebSocket with SQLite database integration, GUID-based persistence, and 66 automated tests (Unity 2020.3 - Unity 6+)",
-      "version": "0.12.1",
+      "description": "🧪 Experimental - Real-time Unity Editor control via WebSocket with SQLite database integration, GUID-based persistence, and 86 commands (Unity 2020.3 - Unity 6+)",
+      "version": "0.13.0",
       "author": {
         "name": "Dev GOM"
       },
@@ -306,5 +306,5 @@
       ]
     }
   ],
-  "version": "2.29.1"
+  "version": "2.30.0"
 }

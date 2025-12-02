@@ -297,15 +297,43 @@ namespace UnityEditorToolkit.Editor.Database.Commands
 
         #region History Management
         /// <summary>
-        /// 전체 히스토리 초기화
+        /// 전체 히스토리 초기화 (메모리 + DB)
         /// </summary>
         public void Clear()
         {
+            // 메모리 스택 초기화
             undoStack.Clear();
             redoStack.Clear();
+
+            // DB의 command_history 테이블도 삭제
+            ClearDatabaseHistory();
+
             OnHistoryChanged?.Invoke();
 
-            ToolkitLogger.LogDebug("CommandHistory", "히스토리 초기화 완료.");
+            ToolkitLogger.LogDebug("CommandHistory", "히스토리 초기화 완료 (메모리 + DB).");
+        }
+
+        /// <summary>
+        /// 데이터베이스의 command_history 테이블 삭제
+        /// </summary>
+        private void ClearDatabaseHistory()
+        {
+            try
+            {
+                if (!databaseManager.IsConnected || databaseManager.Connector == null)
+                {
+                    ToolkitLogger.LogDebug("CommandHistory", "DB 연결 없음 - DB 히스토리 삭제 건너뜀");
+                    return;
+                }
+
+                var connection = databaseManager.Connector.Connection;
+                int deleted = connection.Execute("DELETE FROM command_history");
+                ToolkitLogger.Log("CommandHistory", $"DB 히스토리 삭제 완료: {deleted}개 레코드 삭제됨");
+            }
+            catch (Exception ex)
+            {
+                ToolkitLogger.LogError("CommandHistory", $"DB 히스토리 삭제 실패: {ex.Message}");
+            }
         }
 
         /// <summary>

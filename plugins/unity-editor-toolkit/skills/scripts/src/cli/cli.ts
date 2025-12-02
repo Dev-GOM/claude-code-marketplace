@@ -31,6 +31,7 @@ import { registerMenuCommand } from './commands/menu';
 import { registerAssetCommand } from './commands/asset';
 import { registerPrefabCommand } from './commands/prefab';
 import { registerMaterialCommand } from './commands/material';
+import { registerShaderCommand } from './commands/shader';
 import { registerAnimationCommand } from './commands/animation';
 
 const program = new Command();
@@ -72,6 +73,7 @@ registerMenuCommand(program);
 registerAssetCommand(program);
 registerPrefabCommand(program);
 registerMaterialCommand(program);
+registerShaderCommand(program);
 registerAnimationCommand(program);
 
 // Status command (built-in)

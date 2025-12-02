@@ -144,15 +144,68 @@ namespace UnityEditorToolkit.Editor.Database
         #region Static Methods
         /// <summary>
         /// 기본 데이터베이스 파일 경로 가져오기
+        /// 프로젝트별로 고유한 DB 파일 생성 (Library 폴더에 저장)
         /// </summary>
         /// <returns>기본 경로</returns>
         public static string GetDefaultDatabasePath()
         {
-            // Unity persistentDataPath 사용 (플랫폼별 자동 선택)
-            // Windows: %USERPROFILE%\AppData\LocalLow\CompanyName\ProductName
-            // macOS: ~/Library/Application Support/CompanyName/ProductName
-            // Linux: ~/.config/unity3d/CompanyName/ProductName
-            return Path.Combine(Application.persistentDataPath, "unity_editor_toolkit.db");
+            // 프로젝트 Library 폴더에 저장 (프로젝트별 분리, .gitignore 자동 적용)
+            // Application.dataPath = "프로젝트경로/Assets"
+            // Library 폴더 = "프로젝트경로/Library"
+            string projectPath = Directory.GetParent(Application.dataPath)?.FullName;
+
+            if (!string.IsNullOrEmpty(projectPath))
+            {
+                string libraryPath = Path.Combine(projectPath, "Library", "UnityEditorToolkit");
+
+                // Library/UnityEditorToolkit 폴더가 없으면 생성
+                if (!Directory.Exists(libraryPath))
+                {
+                    try
+                    {
+                        Directory.CreateDirectory(libraryPath);
+                    }
+                    catch (Exception ex)
+                    {
+                        ToolkitLogger.LogWarning("DatabaseConfig", $"Library 폴더 생성 실패, 대체 경로 사용: {ex.Message}");
+                        return GetFallbackDatabasePath();
+                    }
+                }
+
+                return Path.Combine(libraryPath, "unity_editor_toolkit.db");
+            }
+
+            // 프로젝트 경로를 가져올 수 없는 경우 대체 경로 사용
+            return GetFallbackDatabasePath();
+        }
+
+        /// <summary>
+        /// 대체 데이터베이스 파일 경로 (프로젝트 Library 폴더 사용 불가 시)
+        /// 프로젝트 경로 해시를 사용하여 고유한 파일명 생성
+        /// </summary>
+        /// <returns>대체 경로</returns>
+        private static string GetFallbackDatabasePath()
+        {
+            // 프로젝트별 고유 해시 생성 (프로젝트 경로 기반)
+            string projectPath = Application.dataPath;
+            string hash = GetStableHash(projectPath);
+
+            // persistentDataPath에 프로젝트별 파일 생성
+            return Path.Combine(Application.persistentDataPath, $"unity_editor_toolkit_{hash}.db");
+        }
+
+        /// <summary>
+        /// 문자열의 안정적인 해시값 생성 (프로젝트 식별용)
+        /// </summary>
+        private static string GetStableHash(string input)
+        {
+            using (var sha256 = System.Security.Cryptography.SHA256.Create())
+            {
+                byte[] bytes = System.Text.Encoding.UTF8.GetBytes(input.ToLowerInvariant());
+                byte[] hash = sha256.ComputeHash(bytes);
+                // 처음 8바이트만 사용 (16자리 hex)
+                return BitConverter.ToString(hash, 0, 8).Replace("-", "").ToLower();
+            }
         }
         #endregion
 

@@ -2,7 +2,7 @@
 
 Unity Editor를 제어할 수 있는 500+ 명령어 로드맵입니다.
 
-**Current Status**: Phase 2 - 42 commands implemented
+**Current Status**: Phase 2 - 58 commands implemented
 
 ## Quick Reference
 
@@ -36,6 +36,8 @@ cd <unity-project-root> && node .unity-websocket/uw <command> --help
 | **Menu Execution** | 2 commands | [COMMANDS_MENU.md](./COMMANDS_MENU.md) |
 | **Asset Management (ScriptableObject)** | 9 commands | [COMMANDS_ASSET.md](./COMMANDS_ASSET.md) |
 | **Prefab** | 12 commands | [COMMANDS_PREFAB.md](./COMMANDS_PREFAB.md) |
+| **Material** | 9 commands | [COMMANDS_MATERIAL.md](./COMMANDS_MATERIAL.md) |
+| **Shader** | 7 commands | [COMMANDS_SHADER.md](./COMMANDS_SHADER.md) |
 
 ### 🔄 Coming Soon (Phase 2+)
 
@@ -273,6 +275,46 @@ cd <unity-project-root> && node .unity-websocket/uw prefab close [--json]
 
 # List prefabs in folder
 cd <unity-project-root> && node .unity-websocket/uw prefab list [--path <path>] [--json]
+```
+
+### Material Management
+```bash
+# List materials on GameObject
+cd <unity-project-root> && node .unity-websocket/uw material list <gameobject> [--shared] [--json]
+
+# Get/Set material property
+cd <unity-project-root> && node .unity-websocket/uw material get <gameobject> <property> [--json]
+cd <unity-project-root> && node .unity-websocket/uw material set <gameobject> <property> <value> [--json]
+
+# Get/Set material color
+cd <unity-project-root> && node .unity-websocket/uw material get-color <gameobject> [-p <property>] [--json]
+cd <unity-project-root> && node .unity-websocket/uw material set-color <gameobject> --hex "#FF0000" [--json]
+
+# Get/Set shader
+cd <unity-project-root> && node .unity-websocket/uw material get-shader <gameobject> [--json]
+cd <unity-project-root> && node .unity-websocket/uw material set-shader <gameobject> <shaderName> [--json]
+
+# Get/Set texture
+cd <unity-project-root> && node .unity-websocket/uw material get-texture <gameobject> [--json]
+cd <unity-project-root> && node .unity-websocket/uw material set-texture <gameobject> <texturePath> [--json]
+```
+
+### Shader Management
+```bash
+# List all shaders
+cd <unity-project-root> && node .unity-websocket/uw shader list [-f <filter>] [--builtin] [--json]
+
+# Find shader by name
+cd <unity-project-root> && node .unity-websocket/uw shader find <name> [--json]
+
+# Get shader properties
+cd <unity-project-root> && node .unity-websocket/uw shader properties <shaderName> [--json]
+
+# Get/Enable/Disable shader keywords
+cd <unity-project-root> && node .unity-websocket/uw shader keywords --global [--json]
+cd <unity-project-root> && node .unity-websocket/uw shader keyword-enable <keyword> [--json]
+cd <unity-project-root> && node .unity-websocket/uw shader keyword-disable <keyword> [--json]
+cd <unity-project-root> && node .unity-websocket/uw shader keyword-status <keyword> [--json]
 ```
 
 ---
