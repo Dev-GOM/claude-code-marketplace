@@ -5,6 +5,49 @@
             <ui:Tab label="🖥️ Server &amp; CLI" name="server-cli-tab">
                 <ui:ScrollView mode="Vertical" class="scroll-container">
                     <ui:VisualElement style="padding: 10px;">
+                        <!-- Version Check Section -->
+                        <ui:VisualElement name="version-section" class="section">
+                            <ui:Label text="🔄 Version Check" class="section-title" />
+
+                            <ui:VisualElement class="status-row">
+                                <ui:Label text="📦 Local Version:" class="label-key" />
+                                <ui:Label name="local-version-label" class="label-value">
+                                    <Bindings>
+                                        <ui:DataBinding property="text" data-source-path="LocalVersionText" binding-mode="ToTarget" />
+                                    </Bindings>
+                                </ui:Label>
+                            </ui:VisualElement>
+
+                            <ui:VisualElement class="status-row">
+                                <ui:Label text="🌐 Latest Version:" class="label-key" />
+                                <ui:Label name="latest-version-label" class="label-value">
+                                    <Bindings>
+                                        <ui:DataBinding property="text" data-source-path="LatestVersionText" binding-mode="ToTarget" />
+                                    </Bindings>
+                                </ui:Label>
+                            </ui:VisualElement>
+
+                            <ui:VisualElement class="status-row">
+                                <ui:Label text="🕐 Last Checked:" class="label-key" />
+                                <ui:Label name="last-checked-label" class="label-value">
+                                    <Bindings>
+                                        <ui:DataBinding property="text" data-source-path="LastCheckedText" binding-mode="ToTarget" />
+                                    </Bindings>
+                                </ui:Label>
+                            </ui:VisualElement>
+
+                            <ui:HelpBox name="version-update-help" text="Update available! Click 'Open GitHub Releases' to download." message-type="Warning" class="hidden" />
+                            <ui:HelpBox name="version-uptodate-help" text="You are using the latest version." message-type="Info" class="hidden" />
+                            <ui:HelpBox name="version-error-help" text="" message-type="Error" class="hidden" />
+
+                            <ui:VisualElement class="button-row">
+                                <ui:Button name="check-version-button" text="🔍 Check for Updates" class="primary-button" />
+                                <ui:Button name="open-releases-button" text="📥 Open GitHub Releases" class="secondary-button" />
+                            </ui:VisualElement>
+
+                            <ui:HelpBox text="Checks the latest version from GitHub repository.&#10;Update via Unity Package Manager (Window > Package Manager > Update)." message-type="None" />
+                        </ui:VisualElement>
+
                         <!-- Server Status Section -->
                         <ui:VisualElement name="server-section" class="section">
                             <ui:Label text="🖥️ Server Status" class="section-title" />

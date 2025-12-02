@@ -18,6 +18,7 @@ namespace UnityEditorToolkit.Editor
     {
         private EditorWebSocketServer server => EditorWebSocketServer.Instance;
         private EditorServerCLIInstaller cliInstaller;
+        private VersionChecker versionChecker;
 
         // Data binding source
         private EditorServerWindowData windowData = new EditorServerWindowData();
@@ -63,6 +64,13 @@ namespace UnityEditorToolkit.Editor
         private TextField installLogField;
         private TextField pluginPathField;
 
+        // Version check
+        private Button checkVersionButton;
+        private Button openReleasesButton;
+        private HelpBox versionUpdateHelp;
+        private HelpBox versionUpToDateHelp;
+        private HelpBox versionErrorHelp;
+
         [MenuItem("Tools/Unity Editor Toolkit/Server Window")]
         public static void ShowWindow()
         {
@@ -76,6 +84,11 @@ namespace UnityEditorToolkit.Editor
             // Initialize CLI installer
             string pathOverride = EditorPrefs.GetString(PREF_KEY_PLUGIN_PATH, null);
             cliInstaller = new EditorServerCLIInstaller(pathOverride);
+
+            // Initialize version checker
+            versionChecker = new VersionChecker();
+            versionChecker.OnVersionCheckComplete += OnVersionCheckComplete;
+            versionChecker.GetLocalVersion();
 
             // Check Node.js installation
             hasNodeJS = EditorServerCommandRunner.CheckNodeInstallation();
@@ -206,6 +219,13 @@ namespace UnityEditorToolkit.Editor
             installLogField = rootVisualElement.Q<TextField>("install-log");
             pluginPathField = rootVisualElement.Q<TextField>("plugin-path");
 
+            // Version check section
+            checkVersionButton = rootVisualElement.Q<Button>("check-version-button");
+            openReleasesButton = rootVisualElement.Q<Button>("open-releases-button");
+            versionUpdateHelp = rootVisualElement.Q<HelpBox>("version-update-help");
+            versionUpToDateHelp = rootVisualElement.Q<HelpBox>("version-uptodate-help");
+            versionErrorHelp = rootVisualElement.Q<HelpBox>("version-error-help");
+
             // Database section
             QueryDatabaseUIElements();
         }
@@ -313,6 +333,12 @@ namespace UnityEditorToolkit.Editor
                 Application.OpenURL("https://github.com/Dev-GOM/claude-code-marketplace/tree/main/plugins/unity-editor-toolkit");
             });
 
+            // Version check
+            checkVersionButton?.RegisterCallback<ClickEvent>(evt => CheckForUpdates());
+            openReleasesButton?.RegisterCallback<ClickEvent>(evt => {
+                Application.OpenURL("https://github.com/Dev-GOM/claude-code-marketplace/releases");
+            });
+
             // Database section
             BindDatabaseEvents();
         }
@@ -327,6 +353,9 @@ namespace UnityEditorToolkit.Editor
         {
             if (rootVisualElement == null || serverStatusLabel == null) return;
 
+            // Update version status
+            UpdateVersionStatus();
+
             // Update server status
             UpdateServerStatus();
 
@@ -335,6 +364,73 @@ namespace UnityEditorToolkit.Editor
 
             // Update database status
             UpdateDatabaseUI();
+        }
+
+        private void UpdateVersionStatus()
+        {
+            if (versionChecker == null) return;
+
+            // Update data properties
+            windowData.LocalVersion = versionChecker.LocalVersion ?? "Unknown";
+            windowData.LatestVersion = versionChecker.LatestVersion ?? "Not checked";
+            windowData.IsCheckingVersion = versionChecker.IsChecking;
+            windowData.UpdateAvailable = versionChecker.UpdateAvailable;
+
+            if (versionChecker.LastChecked != default)
+            {
+                windowData.LastChecked = versionChecker.LastChecked.ToString("yyyy-MM-dd HH:mm:ss");
+            }
+
+            // Update help boxes
+            versionUpdateHelp?.AddToClassList("hidden");
+            versionUpToDateHelp?.AddToClassList("hidden");
+            versionErrorHelp?.AddToClassList("hidden");
+
+            if (!string.IsNullOrEmpty(versionChecker.ErrorMessage))
+            {
+                if (versionErrorHelp != null)
+                {
+                    versionErrorHelp.text = versionChecker.ErrorMessage;
+                    versionErrorHelp.RemoveFromClassList("hidden");
+                }
+            }
+            else if (versionChecker.LatestVersion != null && versionChecker.LatestVersion != "Not checked")
+            {
+                if (versionChecker.UpdateAvailable)
+                {
+                    if (versionUpdateHelp != null)
+                    {
+                        versionUpdateHelp.text = $"Update available: v{versionChecker.LocalVersion} -> v{versionChecker.LatestVersion}\nClick 'Open GitHub Releases' to download.";
+                        versionUpdateHelp.RemoveFromClassList("hidden");
+                    }
+                }
+                else
+                {
+                    versionUpToDateHelp?.RemoveFromClassList("hidden");
+                }
+            }
+
+            // Update button state
+            checkVersionButton?.SetEnabled(!versionChecker.IsChecking);
+        }
+
+        private async void CheckForUpdates()
+        {
+            if (versionChecker == null || versionChecker.IsChecking) return;
+
+            windowData.IsCheckingVersion = true;
+            UpdateVersionStatus();
+
+            await versionChecker.CheckForUpdatesAsync();
+        }
+
+        private void OnVersionCheckComplete()
+        {
+            // Schedule UI update on main thread
+            EditorApplication.delayCall += () =>
+            {
+                UpdateVersionStatus();
+            };
         }
 
         private void UpdateServerStatus()
@@ -620,6 +716,12 @@ namespace UnityEditorToolkit.Editor
                 server.OnServerStopped -= OnServerStoppedHandler;
             }
 
+            // Unsubscribe from version checker events
+            if (versionChecker != null)
+            {
+                versionChecker.OnVersionCheckComplete -= OnVersionCheckComplete;
+            }
+
             // UI Toolkit automatically cleans up event handlers when the window closes
             // Clear any references to prevent potential memory leaks
             statusIndicator = null;
@@ -646,6 +748,13 @@ namespace UnityEditorToolkit.Editor
             installLogContainer = null;
             installLogField = null;
             pluginPathField = null;
+
+            // Version check section cleanup
+            checkVersionButton = null;
+            openReleasesButton = null;
+            versionUpdateHelp = null;
+            versionUpToDateHelp = null;
+            versionErrorHelp = null;
 
             // Database section cleanup
             CleanupDatabaseUI();

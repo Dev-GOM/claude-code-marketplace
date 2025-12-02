@@ -216,5 +216,87 @@ namespace UnityEditorToolkit.Editor
         [CreateProperty]
         public string DbRedoCountText => $"🔢 {DbRedoCount}";
         #endregion
+
+        #region Version Check Data
+        private string localVersion = "Unknown";
+        private string latestVersion = "Not checked";
+        private string lastChecked = "Never";
+        private bool updateAvailable = false;
+        private bool isCheckingVersion = false;
+
+        [CreateProperty]
+        public string LocalVersion
+        {
+            get => localVersion;
+            set
+            {
+                if (localVersion == value) return;
+                localVersion = value;
+                Notify();
+                Notify(nameof(LocalVersionText));
+            }
+        }
+
+        [CreateProperty]
+        public string LocalVersionText => $"v{LocalVersion}";
+
+        [CreateProperty]
+        public string LatestVersion
+        {
+            get => latestVersion;
+            set
+            {
+                if (latestVersion == value) return;
+                latestVersion = value;
+                Notify();
+                Notify(nameof(LatestVersionText));
+            }
+        }
+
+        [CreateProperty]
+        public string LatestVersionText => IsCheckingVersion ? "Checking..." :
+            (LatestVersion == "Not checked" ? "Not checked" : $"v{LatestVersion}");
+
+        [CreateProperty]
+        public string LastChecked
+        {
+            get => lastChecked;
+            set
+            {
+                if (lastChecked == value) return;
+                lastChecked = value;
+                Notify();
+                Notify(nameof(LastCheckedText));
+            }
+        }
+
+        [CreateProperty]
+        public string LastCheckedText => LastChecked;
+
+        [CreateProperty]
+        public bool UpdateAvailable
+        {
+            get => updateAvailable;
+            set
+            {
+                if (updateAvailable == value) return;
+                updateAvailable = value;
+                Notify();
+            }
+        }
+
+        [CreateProperty]
+        public bool IsCheckingVersion
+        {
+            get => isCheckingVersion;
+            set
+            {
+                if (isCheckingVersion == value) return;
+                isCheckingVersion = value;
+                Notify();
+                Notify(nameof(LatestVersionText));
+            }
+        }
+        #endregion
     }
 }

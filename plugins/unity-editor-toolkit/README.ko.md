@@ -1,6 +1,6 @@
 # Unity Editor Toolkit
 
-> **⚠️ 상태**: 🧪 실험 단계 (v0.13.0) - **Unity 6+ 필수**
+> **⚠️ 상태**: 🧪 실험 단계 (v0.15.1) - **Unity 6+ 필수**
 >
 > **이 플러그인은 현재 실험 단계입니다. API와 기능이 변경될 수 있습니다.**
 > **데이터베이스 기능은 Unity 6 이상이 필요합니다** (내장 SQLite, 별도 설치 불필요)
@@ -58,12 +58,27 @@ SQLite 데이터베이스 통합이 포함된 Claude Code를 위한 완벽한 Un
 
 1. **Unity 패키지 설치**:
 
-   **권장: Unity Package Manager (Git URL)**
+   의존성 패키지를 먼저 수동 설치한 후, 메인 패키지를 설치하세요:
+
+   **1단계: 의존성 설치**
    - Unity Editor 열기
    - Window → Package Manager
-   - `+` 클릭 → Add package from git URL
-   - 입력: `https://github.com/Dev-GOM/claude-code-marketplace.git?path=/plugins/unity-editor-toolkit/skills/assets/unity-package`
-   - Add 클릭
+   - `+` 버튼 → Add package from git URL... 클릭 후 다음을 순서대로 추가:
+
+   ```
+   https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask
+   ```
+
+   ```
+   https://github.com/gilzoide/unity-sqlite-net.git#1.3.2
+   ```
+
+   **2단계: Unity Editor Toolkit 설치**
+   - 두 패키지 설치 완료 후, 메인 패키지를 추가:
+
+   ```
+   https://github.com/Dev-GOM/claude-code-marketplace.git?path=/plugins/unity-editor-toolkit/skills/assets/unity-package
+   ```
 
    **대안 방법:**
    - `skills/assets/unity-package`에서 Package Manager를 통해 Unity 패키지 추가 (Add package from disk)
@@ -79,6 +94,23 @@ SQLite 데이터베이스 통합이 포함된 Claude Code를 위한 완벽한 Un
    - 포트: 자동 할당 (9500-9600 범위)
    - Status 파일: `{ProjectRoot}/.unity-websocket/server-status.json`
    - CLI가 이 파일에서 올바른 포트를 자동으로 감지합니다
+
+### 패키지 업데이트
+
+Unity Editor Toolkit을 최신 버전으로 업데이트하려면:
+
+1. Unity Editor 열기
+2. Window → Package Manager
+3. `+` 버튼 → Add package from git URL... 클릭
+4. 다음을 입력:
+
+   ```
+   https://github.com/Dev-GOM/claude-code-marketplace.git?path=/plugins/unity-editor-toolkit/skills/assets/unity-package
+   ```
+
+5. Add 클릭 (기존 패키지가 업데이트됨)
+
+**참고:** 의존성 패키지(UniTask, unity-sqlite-net)는 릴리즈 노트에 명시되지 않는 한 일반적으로 업데이트가 필요하지 않습니다.
 
 ### CLI 명령어
 
@@ -341,7 +373,7 @@ Apache License 2.0 - 자세한 내용은 [LICENSE](../../LICENSE)를 참조하�
 
 ---
 
-**버전**: 0.13.0
+**버전**: 0.15.1
 **Unity 버전**: Unity 6+ (데이터베이스 기능은 내장 SQLite 지원 필요)
 **마지막 업데이트**: 2025-12-02
 **제작자**: Dev GOM

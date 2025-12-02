@@ -1,6 +1,6 @@
 # Unity Editor Toolkit
 
-> **⚠️ Status**: 🧪 Experimental (v0.13.0) - **Unity 6+ Required**
+> **⚠️ Status**: 🧪 Experimental (v0.15.1) - **Unity 6+ Required**
 >
 > **This plugin is currently in experimental stage. APIs and features may change.**
 > **Database features require Unity 6 or higher** (embedded SQLite, no installation required)
@@ -64,12 +64,28 @@ This plugin is part of the [Dev GOM Plugins](https://github.com/Dev-GOM/claude-c
 
 1. **Install Unity Package**:
 
-   **Recommended: Unity Package Manager (Git URL)**
+   Install dependency packages first, then install the main package:
+
+   **Step 1: Install Dependencies**
    - Open Unity Editor
    - Window → Package Manager
-   - Click `+` → Add package from git URL
-   - Enter: `https://github.com/Dev-GOM/claude-code-marketplace.git?path=/plugins/unity-editor-toolkit/skills/assets/unity-package`
-   - Click Add
+   - Click `+` → Add package from git URL...
+   - Add the following packages in order:
+
+   ```
+   https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask
+   ```
+
+   ```
+   https://github.com/gilzoide/unity-sqlite-net.git#1.3.2
+   ```
+
+   **Step 2: Install Unity Editor Toolkit**
+   - After both dependency packages are installed, add the main package:
+
+   ```
+   https://github.com/Dev-GOM/claude-code-marketplace.git?path=/plugins/unity-editor-toolkit/skills/assets/unity-package
+   ```
 
    **Alternative Methods:**
    - Add Unity package from `skills/assets/unity-package` via Package Manager (Add package from disk)
@@ -94,6 +110,23 @@ This plugin is part of the [Dev GOM Plugins](https://github.com/Dev-GOM/claude-c
    - Port: Auto-assigned (9500-9600 range)
    - Status file: `{ProjectRoot}/.unity-websocket/server-status.json`
    - CLI automatically detects the correct port from this file
+
+### Updating the Package
+
+To update Unity Editor Toolkit to the latest version:
+
+1. Open Unity Editor
+2. Window → Package Manager
+3. Click `+` → Add package from git URL...
+4. Enter:
+
+   ```
+   https://github.com/Dev-GOM/claude-code-marketplace.git?path=/plugins/unity-editor-toolkit/skills/assets/unity-package
+   ```
+
+5. Click Add (this will update the existing package)
+
+**Note:** Dependency packages (UniTask, unity-sqlite-net) typically don't need updating unless specified in release notes.
 
 ### CLI Commands
 
@@ -364,7 +397,7 @@ Apache License 2.0 - See [LICENSE](../../LICENSE) for details
 
 ---
 
-**Version**: 0.13.0
+**Version**: 0.15.1
 **Unity Version**: Unity 6+ (Database features require embedded SQLite support)
 **Last Updated**: 2025-12-02
 **Author**: Dev GOM

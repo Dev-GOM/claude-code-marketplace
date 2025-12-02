@@ -5,6 +5,21 @@ Unity Editor Toolkit의 모든 주요 변경 사항을 이 파일에 기록합�
 이 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.0.0/)를 기반으로 하며,
 이 프로젝트는 [Semantic Versioning](https://semver.org/lang/ko/)을 따릅니다.
 
+## [0.15.1] - 2025-12-02
+
+### 추가
+- **버전 체크 기능**: Unity Editor 창에서 업데이트 확인
+  - "Check for Updates" 버튼으로 GitHub에서 최신 버전 확인
+  - "Open GitHub Releases" 버튼으로 릴리즈 페이지 빠른 접근
+  - 로컬 버전 vs 최신 버전 비교 및 업데이트 상태 표시
+  - GitHub raw URL에 비동기 HTTP 요청으로 실시간 버전 확인
+
+### 변경
+- **문서**: Unity 패키지 설치 가이드 업데이트
+  - 의존성 패키지 설치 단계 추가 (UniTask, unity-sqlite-net)
+  - 패키지 업데이트 안내 추가
+  - 루트 CHANGELOG 파일 제거 (릴리즈 노트는 GitHub Releases에서 확인)
+
 ## [0.13.0] - 2025-12-02
 
 ### 추가

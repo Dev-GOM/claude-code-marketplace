@@ -2,11 +2,9 @@
 
 **[Website →](https://dev-gom.github.io/claude-code-marketplace/)**
 
-> **버전**: 2.30.0 | **최종 업데이트**: 2025-12-02
+> **버전**: 2.31.0 | **최종 업데이트**: 2025-12-02
 >
 > **언어**: [English](README.md) | [한국어](README.ko.md)
->
-> **📋 변경 이력**: [English](CHANGELOG.md) | [한국어](CHANGELOG.ko.md)
 
 > **⚠️ 중요 공지 (>= v2.0.17)**
 > 채팅창에 훅 로그가 계속 쌓이는 이슈가 있습니다. 이 문제가 해결될 때까지 hooks.json에서 `suppressOutput: true`를 사용하여 PostToolUse 훅 출력을 숨겼습니다. Stop 훅 메시지는 `.plugin-config/[plugin-name].json`의 `"showLogs": false`(기본값)로 제어됩니다. `true`로 설정하면 활성화됩니다. 자세한 내용은 [설정](#설정)을 참조하세요.
