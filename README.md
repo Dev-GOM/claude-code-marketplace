@@ -1,5 +1,8 @@
 # Claude Code Plugins
 
+[![Run in Smithery](https://smithery.ai/badge/skills/dev-gom)](https://smithery.ai/skills?ns=dev-gom&utm_source=github&utm_medium=badge)
+
+
 **[Website →](https://dev-gom.github.io/claude-code-marketplace/)**
 
 > **Version**: 2.31.0 | **Last Updated**: 2025-12-02
