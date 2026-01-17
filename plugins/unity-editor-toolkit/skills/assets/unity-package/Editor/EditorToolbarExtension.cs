@@ -8,9 +8,12 @@ using UnityEditorToolkit.Editor.Database;
 namespace UnityEditorToolkit.Editor
 {
     /// <summary>
-    /// Unity Editor Toolbar에 서버 및 DB 연결 상태를 표시 (Reflection 기반)
+    /// Displays server and DB connection status on Unity Editor Toolbar (Reflection-based)
+    /// NOTE: Currently disabled due to Unity version-specific Toolbar API differences
     /// </summary>
+#if false // Disabled: Toolbar Reflection API is unstable across Unity versions
     [InitializeOnLoad]
+#endif
     public static class EditorToolbarExtension
     {
         private static VisualElement toolbarRoot;
