@@ -216,6 +216,21 @@ Claude Code를 위한 Chrome DevTools Protocol (CDP) 기반 브라우저 자동�
 
 </details>
 
+---
+
+### 15. 🐦 [Hermes Tweet](plugins/hermes-tweet/README.ko.md)
+
+<details>
+<summary><strong>📖 플러그인 상세</strong> (펼치기)</summary>
+
+Xquik을 통해 읽기 우선 소셜 워크플로우와 승인 기반 액션을 제공하는 네이티브 Hermes Agent X/Twitter 플러그인 안내입니다.
+
+**요약:** Hermes Agent에 Hermes Tweet 설치 | 읽기와 액션 분리 | `tweet_explore`, `tweet_read`, 제한된 `tweet_action` 사용 | **Skill:** Hermes Tweet 설치 및 운영 안내
+
+**[전체 문서 보기 →](plugins/hermes-tweet/README.ko.md)**
+
+</details>
+
 ## 설치
 
 ### 빠른 시작 (권장)
@@ -265,6 +280,9 @@ Claude Code를 위한 Chrome DevTools Protocol (CDP) 기반 브라우저 자동�
    ```bash
    /plugin install unity-editor-toolkit@dev-gom-plugins
    ```
+   ```bash
+   /plugin install hermes-tweet@dev-gom-plugins
+   ```
 
 3. 플러그인을 로드하기 위해 Claude Code 재시작:
    ```bash
@@ -303,6 +321,7 @@ Claude Code를 위한 Chrome DevTools Protocol (CDP) 기반 브라우저 자동�
 - **Unity Dev Toolkit**: `/unity:*` 커맨드 사용, `@unity-*`로 전문 에이전트 호출, Agent Skills를 통한 자동 스크립트 검증
 - **Claude Dev Helper**: Git diff 자동 리뷰, 변경사항 스테이징, 피드백 수집; VS Code Extension 통합으로 향상된 기능
 - **Auto Release Manager**: Claude에게 "버전 업데이트" 또는 "릴리즈 생성" 요청으로 자동 버전 관리 및 릴리즈 워크플로우
+- **Hermes Tweet**: 읽기 우선 X/Twitter 워크플로우와 명시적으로 제한된 계정 액션을 위한 Hermes Agent 설정 안내
 
 ## 설정
 

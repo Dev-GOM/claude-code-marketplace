@@ -231,6 +231,21 @@ Chrome DevTools Protocol (CDP) based browser automation, web scraping, and crawl
 
 </details>
 
+---
+
+### 16. 🐦 [Hermes Tweet](plugins/hermes-tweet/README.md)
+
+<details>
+<summary><strong>📖 Plugin Details</strong> (Click to expand)</summary>
+
+Native Hermes Agent X/Twitter plugin guide for read-first social workflows and approval-gated actions through Xquik.
+
+**Quick Info:** Installs Hermes Tweet into Hermes Agent | Keeps reads and actions separated | Uses `tweet_explore`, `tweet_read`, and gated `tweet_action` | **Skill:** Hermes Tweet install and operation guidance
+
+**[Read Full Documentation →](plugins/hermes-tweet/README.md)**
+
+</details>
+
 ## Installation
 
 ### Quick Start (Recommended)
@@ -280,6 +295,9 @@ Chrome DevTools Protocol (CDP) based browser automation, web scraping, and crawl
    ```bash
    /plugin install unity-editor-toolkit@dev-gom-plugins
    ```
+   ```bash
+   /plugin install hermes-tweet@dev-gom-plugins
+   ```
 
 3. Restart Claude Code to load the plugins:
    ```bash
@@ -318,6 +336,7 @@ Once installed, the plugins work automatically:
 - **Unity Dev Toolkit**: Use `/unity:*` commands, invoke expert agents with `@unity-*`, and get automatic script validation through Agent Skills
 - **Claude Dev Helper**: Automatically reviews git diffs, stages changes, and collects feedback; enhanced with VS Code Extension integration
 - **Auto Release Manager**: Ask Claude to "update version" or "create release" for automated version management and release workflow
+- **Hermes Tweet**: Guides Hermes Agent setup for read-first X/Twitter workflows and explicitly gated account actions
 
 ## Configuration
 
