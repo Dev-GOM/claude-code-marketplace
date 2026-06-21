@@ -4,7 +4,7 @@ Xquik을 통해 X/Twitter 워크플로우를 제공하는 네이티브 Hermes Ag
 
 ## 개요
 
-Hermes Tweet는 Claude Code 사용자가 [Xquik-dev/hermes-tweet](https://github.com/Xquik-dev/hermes-tweet) 업스트림 Hermes Agent 플러그인을 설치하고 설정하며 운영하도록 돕습니다. 읽기 우선 소셜 워크플로우, 카탈로그 탐색, 계정 읽기, 트렌드, 모니터, 미디어, 추첨, 승인 기반 액션에 초점을 맞춥니다.
+Hermes Tweet은 Claude Code 사용자가 [Xquik-dev/hermes-tweet](https://github.com/Xquik-dev/hermes-tweet) 업스트림 Hermes Agent 플러그인을 설치하고 설정하며 운영하도록 돕습니다. 읽기 우선 소셜 워크플로우, 카탈로그 탐색, 계정 읽기, 트렌드, 모니터, 미디어, 추첨, 승인 기반 액션에 초점을 맞춥니다.
 
 이 마켓플레이스 항목은 Claude Code Skill 래퍼입니다. Hermes 런타임 플러그인은 업스트림 Python 패키지와 Hermes 플러그인에 남아 있습니다.
 

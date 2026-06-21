@@ -34,7 +34,7 @@ hermes plugins list
 For a published-package install into the Hermes Python environment:
 
 ```bash
-uv pip install --python ~/.hermes/hermes-agent/venv/bin/python hermes-tweet
+~/.hermes/hermes-agent/venv/bin/python -m pip install hermes-tweet
 hermes plugins enable hermes-tweet
 ```
 
