@@ -231,9 +231,6 @@ Chrome DevTools Protocol (CDP) based browser automation, web scraping, and crawl
 
 </details>
 
-## Community Tools
-
-- [ForgeDock](https://github.com/RapierCraftStudios/ForgeDock) — `npx forgedock` — Autonomous AI dev pipeline for Claude Code. GitHub-as-knowledge-graph keeps agents context-aware across investigate → build → review → merge cycles.
 
 ## Installation
 
@@ -466,6 +463,11 @@ Feel free to customize these plugins for your needs:
 2. Modify plugin scripts in `plugins/[plugin-name]/`
 3. Update `plugin.json` if changing hook behavior
 4. Test with `/plugin validate .claude-plugin`
+
+
+## Community Tools
+
+- [ForgeDock](https://github.com/RapierCraftStudios/ForgeDock) — `npx forgedock` — Autonomous AI dev pipeline for Claude Code. GitHub-as-knowledge-graph keeps agents context-aware across investigate → build → review → merge cycles.
 
 ## License
 
