@@ -30,13 +30,14 @@ export XQUIK_API_KEY="xq_..."
 export HERMES_TWEET_ENABLE_ACTIONS="false"
 ```
 
-게시, 답글, 좋아요, 리트윗, 팔로우, DM, 미디어 변경, 웹훅, 모니터가 필요한 세션이 아니라면 `HERMES_TWEET_ENABLE_ACTIONS=false`를 유지하세요.
+운영자가 정확한 비공개 읽기, 추출 작업, 추첨, 모니터, 웹훅, 미디어 또는 쓰기 유형 작업을 승인하지 않았다면 `HERMES_TWEET_ENABLE_ACTIONS=false`를 유지하세요.
 
 ## 사용법
 
 - 먼저 `tweet_explore`로 지원되는 `/api/v1/...` 경로를 찾습니다.
-- 카탈로그에 있는 읽기 전용 요청에는 `tweet_read`를 사용합니다.
-- 계정 변경 작업이 필요한 세션에서만 `tweet_action`을 활성화합니다.
+- 카탈로그에 있는 공개 읽기 전용 요청에만 `tweet_read`를 사용합니다.
+- 비공개 읽기, 추출 작업, 추첨, 모니터, 웹훅, 미디어, 쓰기 유형 요청은 `tweet_action`으로 처리합니다.
+- 정확한 작업에 대한 운영자 승인을 받은 후에만 `tweet_action`을 활성화하고 호출합니다.
 - API 키를 채팅에 붙여넣지 마세요. Hermes 런타임 환경에서 secret을 설정하세요.
 
 ## 링크

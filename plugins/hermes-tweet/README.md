@@ -30,13 +30,14 @@ export XQUIK_API_KEY="xq_..."
 export HERMES_TWEET_ENABLE_ACTIONS="false"
 ```
 
-Keep `HERMES_TWEET_ENABLE_ACTIONS=false` unless the session explicitly needs posting, replies, likes, retweets, follows, DMs, media changes, webhooks, or monitors.
+Keep `HERMES_TWEET_ENABLE_ACTIONS=false` unless the operator approves an exact private read, extraction job, draw, monitor, webhook, media, or write-like operation.
 
 ## Usage
 
 - Use `tweet_explore` first to find supported `/api/v1/...` routes.
-- Use `tweet_read` for catalog-listed read-only requests.
-- Enable `tweet_action` only for sessions that require account-changing operations.
+- Use `tweet_read` only for catalog-listed public read-only requests.
+- Route private reads, extraction jobs, draws, monitors, webhooks, media operations, and write-like requests through `tweet_action`.
+- Ask for exact operator approval before enabling or calling `tweet_action` for the named operation.
 - Do not paste API keys into chat. Configure secrets through the Hermes runtime environment.
 
 ## Links

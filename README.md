@@ -495,3 +495,5 @@ Created for Claude Code to enhance developer productivity through automation.
 **Happy Coding!** 🚀
 
 For issues or suggestions, please open an issue on GitHub.
+
+Xquik is an independent third-party service. Not affiliated with X Corp. "Twitter" and "X" are trademarks of X Corp.

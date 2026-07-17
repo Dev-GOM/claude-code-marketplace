@@ -1,6 +1,6 @@
 ---
 name: hermes-tweet
-description: Install, configure, and operate Hermes Tweet, the native Hermes Agent X/Twitter plugin for read-first social workflows and approval-gated actions.
+description: Install, configure, and operate Hermes Tweet, the native Hermes Agent X/Twitter plugin for read-first social workflows and approval-gated actions. Not affiliated with X Corp.
 allowed-tools: Bash, Read
 ---
 
@@ -12,9 +12,11 @@ Use this skill when a user wants Hermes Agent to search X/Twitter, inspect accou
 
 - Keep API keys out of chat, prompts, docs, issue text, and command output.
 - Configure `XQUIK_API_KEY` in the Hermes runtime environment or `~/.hermes/.env`.
-- Keep `HERMES_TWEET_ENABLE_ACTIONS=false` unless the operator explicitly asks for posting, replies, likes, retweets, follows, DMs, media changes, webhooks, or monitors.
+- Keep `HERMES_TWEET_ENABLE_ACTIONS=false` unless the operator approves the exact private read, extraction job, draw, monitor, webhook, media, or write-like operation.
 - Use `tweet_explore` before `tweet_read` or `tweet_action`.
 - Treat copied endpoint URLs as route hints only. Call only catalog-listed `/api/v1/...` paths.
+- Use `tweet_read` only for public read-only requests.
+- Use `tweet_action` for private reads, extraction jobs, draws, monitors, webhooks, media operations, and write-like requests only after exact operator approval.
 
 ## Install
 
@@ -58,9 +60,10 @@ If you edit `~/.hermes/.env` during an active Hermes session, use `/reload` in t
 ## Tool Flow
 
 1. Call `tweet_explore` with the workflow goal.
-2. Choose a catalog-listed read route.
-3. Call `tweet_read` with the concrete `/api/v1/...` path and required parameters.
-4. Ask for explicit operator approval before enabling or calling `tweet_action`.
+2. Choose a catalog-listed route and classify it as public read-only or action-gated.
+3. Call `tweet_read` only when the route is public and read-only.
+4. Describe the exact private read, extraction job, draw, monitor, webhook, media, or write-like operation and request approval.
+5. Enable and call `tweet_action` only after the operator approves that exact operation.
 
 ## References
 

@@ -227,7 +227,7 @@ Claude Code를 위한 Chrome DevTools Protocol (CDP) 기반 브라우저 자동�
 
 **요약:** WebSocket 기반 Unity Editor 제어 (자동 할당 포트 9500-9600) | GUID 기반 GameObject 추적 SQLite 데이터베이스 | 멀티 씬 동기화 | Command Pattern 실행취소/재실행 | Unity Test Framework로 66개 자동화 테스트 | **상태:** 🧪 실험 단계 (v0.7.0) | **Unity 호환성:** Unity 6+ (내장 SQLite) | **설정:** Editor Window 기반 (`Tools > Unity Editor Toolkit > Server Window`)에서 자동 시작 및 선택적 데이터베이스 동기화 | **보안:** SQL 인젝션 방어, Path traversal 방어, 트랜잭션 안전성, 강화된 입력 검증 | **기능:** 실시간 에디터 통신, JSON-RPC 2.0 프로토콜, 영구 GameObject 추적, 자동 마이그레이션, 배치 작업 (500개/배치), 스레드 안전 작업 | **API:** GameObject.Find/Create/Destroy/SetActive, Transform.Get/SetPosition/Rotation/Scale, Scene.GetCurrent/GetAll/Load, Console.GetLogs/Clear, Hierarchy.Get, Database.Connect/Sync/Analytics
 
-**[전체 문서 보기 →](plugins/unity-editor-toolkit/README.md)**
+**[전체 문서 보기 →](plugins/unity-editor-toolkit/README.ko.md)**
 
 </details>
 
@@ -495,3 +495,5 @@ Apache License 2.0 - 자세한 내용은 [LICENSE](LICENSE)와 [NOTICE](NOTICE)�
 **즐거운 코딩 되세요!** 🚀
 
 문제나 제안사항이 있으면 GitHub에서 이슈를 열어주세요.
+
+Xquik is an independent third-party service. Not affiliated with X Corp. "Twitter" and "X" are trademarks of X Corp.
