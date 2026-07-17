@@ -203,7 +203,22 @@ Claude Code를 위한 Chrome DevTools Protocol (CDP) 기반 브라우저 자동�
 
 ---
 
-### 14. 🎮 [Unity Editor Toolkit](plugins/unity-editor-toolkit/README.md)
+### 13. 🎨 [Blender Toolkit](plugins/blender-toolkit/README.ko.md)
+
+<details>
+<summary><strong>📖 플러그인 상세</strong> (펼치기)</summary>
+
+**⚠️ 실험 단계 플러그인** - CLI 기반 기하 생성, 재질, 변형자, 컬렉션, 애니메이션 리타겟팅, WebSocket 기반 실시간 제어를 제공하는 Blender 자동화 툴킷입니다.
+
+**요약:** 기하, 재질, 변형자, 컬렉션용 CLI 명령 | WebSocket 제어 (9400-9500 포트) | 퍼지 본 매칭 (60개 이상) | 버텍스 편집 | **상태:** 🧪 실험 단계
+
+**[전체 문서 보기 →](plugins/blender-toolkit/README.ko.md)**
+
+</details>
+
+---
+
+### 14. 🎮 [Unity Editor Toolkit](plugins/unity-editor-toolkit/README.ko.md)
 
 <details>
 <summary><strong>📖 플러그인 상세</strong> (펼치기)</summary>

@@ -67,3 +67,5 @@ If you edit `~/.hermes/.env` during an active Hermes session, use `/reload` in t
 - Hermes Tweet: https://github.com/Xquik-dev/hermes-tweet
 - PyPI: https://pypi.org/project/hermes-tweet/
 - Hermes Agent: https://github.com/NousResearch/hermes-agent
+
+Xquik is an independent third-party service. Not affiliated with X Corp. "Twitter" and "X" are trademarks of X Corp.

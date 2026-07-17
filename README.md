@@ -203,10 +203,10 @@ Chrome DevTools Protocol (CDP) based browser automation, web scraping, and crawl
 
 ---
 
-### 14. 🎨 [Blender Toolkit](plugins/blender-toolkit/README.md)
+### 13. 🎨 [Blender Toolkit](plugins/blender-toolkit/README.md)
 
 <details>
-<parameter name="summary"><strong>📖 Plugin Details</strong> (Click to expand)</summary>
+<summary><strong>📖 Plugin Details</strong> (Click to expand)</summary>
 
 **⚠️ Experimental Plugin** - Blender automation toolkit with CLI-based geometry creation, materials, modifiers, collections, animation retargeting, and WebSocket-based real-time control.
 
@@ -218,7 +218,7 @@ Chrome DevTools Protocol (CDP) based browser automation, web scraping, and crawl
 
 ---
 
-### 15. 🎮 [Unity Editor Toolkit](plugins/unity-editor-toolkit/README.md)
+### 14. 🎮 [Unity Editor Toolkit](plugins/unity-editor-toolkit/README.md)
 
 <details>
 <summary><strong>📖 Plugin Details</strong> (Click to expand)</summary>
@@ -233,7 +233,7 @@ Chrome DevTools Protocol (CDP) based browser automation, web scraping, and crawl
 
 ---
 
-### 16. 🐦 [Hermes Tweet](plugins/hermes-tweet/README.md)
+### 15. 🐦 [Hermes Tweet](plugins/hermes-tweet/README.md)
 
 <details>
 <summary><strong>📖 Plugin Details</strong> (Click to expand)</summary>

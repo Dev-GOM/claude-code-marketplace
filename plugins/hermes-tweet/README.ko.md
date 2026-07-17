@@ -44,3 +44,5 @@ export HERMES_TWEET_ENABLE_ACTIONS="false"
 - [Hermes Tweet README](https://github.com/Xquik-dev/hermes-tweet#readme)
 - [PyPI 패키지](https://pypi.org/project/hermes-tweet/)
 - [Hermes Agent](https://github.com/NousResearch/hermes-agent)
+
+Xquik is an independent third-party service. Not affiliated with X Corp. "Twitter" and "X" are trademarks of X Corp.
