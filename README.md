@@ -2,7 +2,7 @@
 
 **[Website →](https://dev-gom.github.io/claude-code-marketplace/)**
 
-> **Version**: 2.31.0 | **Last Updated**: 2025-12-02
+> **Version**: 2.32.0 | **Last Updated**: 2026-07-19
 >
 > **Language**: [English](README.md) | [한국어](README.ko.md)
 
