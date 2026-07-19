@@ -2,7 +2,7 @@
 
 **[Website →](https://dev-gom.github.io/claude-code-marketplace/)**
 
-> **Version**: 2.31.0 | **Last Updated**: 2025-12-02
+> **Version**: 2.32.0 | **Last Updated**: 2026-07-19
 >
 > **Language**: [English](README.md) | [한국어](README.ko.md)
 
@@ -203,10 +203,10 @@ Chrome DevTools Protocol (CDP) based browser automation, web scraping, and crawl
 
 ---
 
-### 14. 🎨 [Blender Toolkit](plugins/blender-toolkit/README.md)
+### 13. 🎨 [Blender Toolkit](plugins/blender-toolkit/README.md)
 
 <details>
-<parameter name="summary"><strong>📖 Plugin Details</strong> (Click to expand)</summary>
+<summary><strong>📖 Plugin Details</strong> (Click to expand)</summary>
 
 **⚠️ Experimental Plugin** - Blender automation toolkit with CLI-based geometry creation, materials, modifiers, collections, animation retargeting, and WebSocket-based real-time control.
 
@@ -218,7 +218,7 @@ Chrome DevTools Protocol (CDP) based browser automation, web scraping, and crawl
 
 ---
 
-### 15. 🎮 [Unity Editor Toolkit](plugins/unity-editor-toolkit/README.md)
+### 14. 🎮 [Unity Editor Toolkit](plugins/unity-editor-toolkit/README.md)
 
 <details>
 <summary><strong>📖 Plugin Details</strong> (Click to expand)</summary>
@@ -228,6 +228,21 @@ Chrome DevTools Protocol (CDP) based browser automation, web scraping, and crawl
 **Quick Info:** WebSocket-based Unity Editor control (auto-assigned port 9500-9600) | SQLite database with GUID-based GameObject tracking | Multi-scene synchronization | Command Pattern Undo/Redo | 66 automated tests with Unity Test Framework | **Status:** 🧪 Experimental (v0.7.0) | **Unity Compatibility:** Unity 6+ (embedded SQLite) | **Setup:** Editor Window-based (`Tools > Unity Editor Toolkit > Server Window`) with auto-start and optional database sync | **Security:** SQL injection prevention, path traversal protection, transaction safety, enhanced input validation | **Features:** Real-time editor communication, JSON-RPC 2.0 protocol, Persistent GameObject tracking, Auto migration, Batch operations (500/batch), Thread-safe operations | **APIs:** GameObject.Find/Create/Destroy/SetActive, Transform.Get/SetPosition/Rotation/Scale, Scene.GetCurrent/GetAll/Load, Console.GetLogs/Clear, Hierarchy.Get, Database.Connect/Sync/Analytics
 
 **[Read Full Documentation →](plugins/unity-editor-toolkit/README.md)**
+
+</details>
+
+---
+
+### 15. 🐦 [Hermes Tweet](plugins/hermes-tweet/README.md)
+
+<details>
+<summary><strong>📖 Plugin Details</strong> (Click to expand)</summary>
+
+Native Hermes Agent X/Twitter plugin guide for read-first social workflows and approval-gated actions through Xquik.
+
+**Quick Info:** Installs Hermes Tweet into Hermes Agent | Keeps reads and actions separated | Uses `tweet_explore`, `tweet_read`, and gated `tweet_action` | **Skill:** Hermes Tweet install and operation guidance
+
+**[Read Full Documentation →](plugins/hermes-tweet/README.md)**
 
 </details>
 
@@ -280,6 +295,9 @@ Chrome DevTools Protocol (CDP) based browser automation, web scraping, and crawl
    ```bash
    /plugin install unity-editor-toolkit@dev-gom-plugins
    ```
+   ```bash
+   /plugin install hermes-tweet@dev-gom-plugins
+   ```
 
 3. Restart Claude Code to load the plugins:
    ```bash
@@ -318,6 +336,7 @@ Once installed, the plugins work automatically:
 - **Unity Dev Toolkit**: Use `/unity:*` commands, invoke expert agents with `@unity-*`, and get automatic script validation through Agent Skills
 - **Claude Dev Helper**: Automatically reviews git diffs, stages changes, and collects feedback; enhanced with VS Code Extension integration
 - **Auto Release Manager**: Ask Claude to "update version" or "create release" for automated version management and release workflow
+- **Hermes Tweet**: Guides Hermes Agent setup for read-first X/Twitter workflows and explicitly gated account actions
 
 ## Configuration
 
@@ -476,3 +495,5 @@ Created for Claude Code to enhance developer productivity through automation.
 **Happy Coding!** 🚀
 
 For issues or suggestions, please open an issue on GitHub.
+
+Xquik is an independent third-party service. Not affiliated with X Corp. "Twitter" and "X" are trademarks of X Corp.

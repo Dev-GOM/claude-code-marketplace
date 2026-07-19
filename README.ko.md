@@ -2,7 +2,7 @@
 
 **[Website →](https://dev-gom.github.io/claude-code-marketplace/)**
 
-> **버전**: 2.31.0 | **최종 업데이트**: 2025-12-02
+> **버전**: 2.32.0 | **최종 업데이트**: 2026-07-19
 >
 > **언어**: [English](README.md) | [한국어](README.ko.md)
 
@@ -203,7 +203,22 @@ Claude Code를 위한 Chrome DevTools Protocol (CDP) 기반 브라우저 자동�
 
 ---
 
-### 14. 🎮 [Unity Editor Toolkit](plugins/unity-editor-toolkit/README.md)
+### 13. 🎨 [Blender Toolkit](plugins/blender-toolkit/README.ko.md)
+
+<details>
+<summary><strong>📖 플러그인 상세</strong> (펼치기)</summary>
+
+**⚠️ 실험 단계 플러그인** - CLI 기반 기하 생성, 재질, 변형자, 컬렉션, 애니메이션 리타겟팅, WebSocket 기반 실시간 제어를 제공하는 Blender 자동화 툴킷입니다.
+
+**요약:** 기하, 재질, 변형자, 컬렉션용 CLI 명령 | WebSocket 제어 (9400-9500 포트) | 퍼지 본 매칭 (60개 이상) | 버텍스 편집 | **상태:** 🧪 실험 단계
+
+**[전체 문서 보기 →](plugins/blender-toolkit/README.ko.md)**
+
+</details>
+
+---
+
+### 14. 🎮 [Unity Editor Toolkit](plugins/unity-editor-toolkit/README.ko.md)
 
 <details>
 <summary><strong>📖 플러그인 상세</strong> (펼치기)</summary>
@@ -212,7 +227,22 @@ Claude Code를 위한 Chrome DevTools Protocol (CDP) 기반 브라우저 자동�
 
 **요약:** WebSocket 기반 Unity Editor 제어 (자동 할당 포트 9500-9600) | GUID 기반 GameObject 추적 SQLite 데이터베이스 | 멀티 씬 동기화 | Command Pattern 실행취소/재실행 | Unity Test Framework로 66개 자동화 테스트 | **상태:** 🧪 실험 단계 (v0.7.0) | **Unity 호환성:** Unity 6+ (내장 SQLite) | **설정:** Editor Window 기반 (`Tools > Unity Editor Toolkit > Server Window`)에서 자동 시작 및 선택적 데이터베이스 동기화 | **보안:** SQL 인젝션 방어, Path traversal 방어, 트랜잭션 안전성, 강화된 입력 검증 | **기능:** 실시간 에디터 통신, JSON-RPC 2.0 프로토콜, 영구 GameObject 추적, 자동 마이그레이션, 배치 작업 (500개/배치), 스레드 안전 작업 | **API:** GameObject.Find/Create/Destroy/SetActive, Transform.Get/SetPosition/Rotation/Scale, Scene.GetCurrent/GetAll/Load, Console.GetLogs/Clear, Hierarchy.Get, Database.Connect/Sync/Analytics
 
-**[전체 문서 보기 →](plugins/unity-editor-toolkit/README.md)**
+**[전체 문서 보기 →](plugins/unity-editor-toolkit/README.ko.md)**
+
+</details>
+
+---
+
+### 15. 🐦 [Hermes Tweet](plugins/hermes-tweet/README.ko.md)
+
+<details>
+<summary><strong>📖 플러그인 상세</strong> (펼치기)</summary>
+
+Xquik을 통해 읽기 우선 소셜 워크플로우와 승인 기반 액션을 제공하는 네이티브 Hermes Agent X/Twitter 플러그인 안내입니다.
+
+**요약:** Hermes Agent에 Hermes Tweet 설치 | 읽기와 액션 분리 | `tweet_explore`, `tweet_read`, 제한된 `tweet_action` 사용 | **Skill:** Hermes Tweet 설치 및 운영 안내
+
+**[전체 문서 보기 →](plugins/hermes-tweet/README.ko.md)**
 
 </details>
 
@@ -265,6 +295,9 @@ Claude Code를 위한 Chrome DevTools Protocol (CDP) 기반 브라우저 자동�
    ```bash
    /plugin install unity-editor-toolkit@dev-gom-plugins
    ```
+   ```bash
+   /plugin install hermes-tweet@dev-gom-plugins
+   ```
 
 3. 플러그인을 로드하기 위해 Claude Code 재시작:
    ```bash
@@ -303,6 +336,7 @@ Claude Code를 위한 Chrome DevTools Protocol (CDP) 기반 브라우저 자동�
 - **Unity Dev Toolkit**: `/unity:*` 커맨드 사용, `@unity-*`로 전문 에이전트 호출, Agent Skills를 통한 자동 스크립트 검증
 - **Claude Dev Helper**: Git diff 자동 리뷰, 변경사항 스테이징, 피드백 수집; VS Code Extension 통합으로 향상된 기능
 - **Auto Release Manager**: Claude에게 "버전 업데이트" 또는 "릴리즈 생성" 요청으로 자동 버전 관리 및 릴리즈 워크플로우
+- **Hermes Tweet**: 읽기 우선 X/Twitter 워크플로우와 명시적으로 제한된 계정 액션을 위한 Hermes Agent 설정 안내
 
 ## 설정
 
@@ -461,3 +495,5 @@ Apache License 2.0 - 자세한 내용은 [LICENSE](LICENSE)와 [NOTICE](NOTICE)�
 **즐거운 코딩 되세요!** 🚀
 
 문제나 제안사항이 있으면 GitHub에서 이슈를 열어주세요.
+
+Xquik is an independent third-party service. Not affiliated with X Corp. "Twitter" and "X" are trademarks of X Corp.

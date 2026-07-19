@@ -5,7 +5,7 @@
   },
   "metadata": {
     "description": "Productivity plugins for Claude Code to automate development workflows",
-    "version": "2.31.0",
+    "version": "2.32.0",
     "homepage": "https://github.com/Dev-GOM/claude-code-marketplace"
   },
   "plugins": [
@@ -304,7 +304,28 @@
         "experimental",
         "skills"
       ]
+    },
+    {
+      "name": "hermes-tweet",
+      "source": "./plugins/hermes-tweet",
+      "description": "Native Hermes Agent X/Twitter plugin guide for read-first social workflows and approval-gated actions through Xquik. Not affiliated with X Corp.",
+      "version": "0.1.8",
+      "author": {
+        "name": "Xquik"
+      },
+      "category": "productivity",
+      "homepage": "https://github.com/Xquik-dev/hermes-tweet",
+      "keywords": [
+        "hermes-agent",
+        "hermes-plugin",
+        "xquik",
+        "twitter",
+        "x",
+        "social-media",
+        "automation",
+        "skills"
+      ]
     }
   ],
-  "version": "2.31.0"
+  "version": "2.32.0"
 }
