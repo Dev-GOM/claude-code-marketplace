@@ -711,8 +711,13 @@ function detectAndConfigureBlender(sharedConfig) {
 
 /**
  * Install Blender addon in background
+ *
+ * `addonZipPath` should be the packaged zip produced by buildAddonZip() —
+ * installing the raw skills/addon/__init__.py file instead registers Blender's
+ * addon under the module name "__init__" (the filename Blender copies it as),
+ * which never matches what install_addon.py tries to enable afterward.
  */
-function installBlenderAddonBackground(sharedConfig, projectRoot) {
+function installBlenderAddonBackground(sharedConfig, projectRoot, addonZipPath) {
   if (!sharedConfig.blenderExecutable) {
     logger.log('[Addon Installation] Skipped - No Blender executable configured');
     sharedConfig.addonInstalled = false;
@@ -727,8 +732,12 @@ function installBlenderAddonBackground(sharedConfig, projectRoot) {
     return;
   }
 
-  const addonPath = path.join(pluginRoot, 'skills', 'addon', '__init__.py');
+  const addonPath = addonZipPath || path.join(pluginRoot, 'skills', 'addon', '__init__.py');
   const installScriptPath = path.join(pluginRoot, 'scripts', 'install_addon.py');
+
+  if (!addonZipPath) {
+    logger.warn('[Addon Installation] No addon ZIP available - falling back to raw __init__.py, which will fail to enable');
+  }
 
   if (!fs.existsSync(addonPath)) {
     logger.error(`[Addon Installation] Addon not found: ${addonPath}`);
@@ -799,8 +808,9 @@ async function initializeProject(hookInput) {
   createWrapperScript(projectRoot);
 
   // Build addon ZIP for distribution
+  let addonZipPath = null;
   try {
-    buildAddonZip(projectRoot);
+    addonZipPath = buildAddonZip(projectRoot);
   } catch (error) {
     logger.warn('Failed to build addon ZIP: ' + error.message);
   }
@@ -810,7 +820,7 @@ async function initializeProject(hookInput) {
 
   // Attempt addon installation in background if Blender detected
   if (blenderDetected) {
-    installBlenderAddonBackground(sharedConfig, projectRoot);
+    installBlenderAddonBackground(sharedConfig, projectRoot, addonZipPath);
   }
 
   // Normalize project root path for consistent comparison
