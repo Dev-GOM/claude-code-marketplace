@@ -37,7 +37,7 @@ export class BlenderClient extends EventEmitter {
   constructor(port: number = BLENDER.DEFAULT_PORT) {
     super();
     this.port = port;
-    this.wsUrl = `ws://${BLENDER.LOCALHOST}:${port}`;
+    this.wsUrl = `ws://${BLENDER.LOCALHOST}:${port}/ws`;
   }
 
   /**
@@ -47,7 +47,7 @@ export class BlenderClient extends EventEmitter {
     // port가 제공되면 업데이트
     if (port !== undefined) {
       this.port = port;
-      this.wsUrl = `ws://${BLENDER.LOCALHOST}:${port}`;
+      this.wsUrl = `ws://${BLENDER.LOCALHOST}:${port}/ws`;
     }
 
     log.info(`Connecting to Blender WebSocket: ${this.wsUrl}`);

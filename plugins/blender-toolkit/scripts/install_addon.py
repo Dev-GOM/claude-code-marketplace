@@ -10,7 +10,35 @@ Usage:
 
 import sys
 import os
+import zipfile
 import bpy
+
+
+def get_addon_module_name(addon_path):
+    """
+    Derive the module name Blender will register the addon under.
+
+    For a zip install, Blender registers the module under the zip's
+    top-level folder name. For a single-file install, it's the filename
+    (without extension) Blender copies the file as. Deriving this from the
+    actual artifact avoids hardcoding a name that silently drifts out of
+    sync with the addon package (its bl_info["name"] is a display string,
+    not the importable module name).
+
+    Args:
+        addon_path (str): Path to the addon .zip or a single .py file
+
+    Returns:
+        str: The module name to pass to bpy.ops.preferences.addon_enable()
+    """
+    if addon_path.lower().endswith(".zip"):
+        with zipfile.ZipFile(addon_path) as zf:
+            names = zf.namelist()
+            if not names:
+                raise ValueError(f"Addon zip is empty: {addon_path}")
+            return names[0].split("/")[0]
+
+    return os.path.splitext(os.path.basename(addon_path))[0]
 
 
 def check_addon_installed(addon_module):
@@ -82,9 +110,6 @@ def main():
     """
     Main entry point for addon installation
     """
-    # Addon module name (must match bl_info in addon __init__.py)
-    addon_module = "blender_toolkit_websocket_server"
-
     # Get addon path from command line arguments
     # Arguments after '--' are passed to the script
     argv = sys.argv
@@ -92,10 +117,16 @@ def main():
 
     if not argv:
         print("ERROR: No addon path provided")
-        print("Usage: blender --background --python install_addon.py -- /path/to/addon/__init__.py")
+        print("Usage: blender --background --python install_addon.py -- /path/to/addon.zip")
         sys.exit(1)
 
     addon_path = argv[0]
+
+    try:
+        addon_module = get_addon_module_name(addon_path)
+    except (ValueError, OSError) as e:
+        print(f"ERROR: Could not determine addon module name: {e}")
+        sys.exit(1)
 
     # Install and enable addon
     success, message = install_and_enable_addon(addon_path, addon_module)
